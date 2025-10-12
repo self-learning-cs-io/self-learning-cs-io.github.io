@@ -1,0 +1,732 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00So we’ve now gotten through all the lectures on machine code, and we’re starting to talk about, okay, now that you know this stuff, what can you do with it? And this lecture is along the li">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 010-Program Optimization">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-010/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00So we’ve now gotten through all the lectures on machine code, and we’re starting to talk about, okay, now that you know this stuff, what can you do with it? And this lecture is along the li">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:09.000Z">
+<meta property="article:modified_time" content="2025-10-12T13:12:10.958Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 010-Program Optimization - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 010-Program Optimization"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          17k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          139 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 010-Program Optimization</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>So we’ve now gotten through all the lectures on machine code, and we’re starting to talk about, okay, now that you know this stuff, what can you do with it? And this lecture is along the lines of that. This is sort of what you are now empowered to do now that you can look at and understand machine code.<br>所以我们现在已经通过了所有关于机器代码的讲座，并且我们开始谈论，好吧，现在你知道这些东西了，你能用它做什么？这次讲座就是这样的。这就是你现在有权做的事情，你现在可以查看和理解机器码了。</p>
+<p>发言人   00:21<br>This material is a little, actually. There’s a whole chapter of the book, chapter 5 on performance optimization. And we’re only going to do one lecture on it. And we don’t have any labs, unfortunately, that really get you to push your limits on this, which is too bad because it’s a very interesting topic. One, I think you’d find yourself well equipped for. There are typically a few small exam problems that are sort of based on some of the material here you’ll find in old exams.<br>这种材料实际上有点。这本书有一整章内容，第五章是关于性能优化的。我们只打算做一个关于它的讲座。不幸的是，我们没有任何实验室可以真正让你突破极限，这太糟糕了，因为这是一个非常有趣的话题。我认为你会发现自己准备好了。通常有一些小的考试问题，这些问题是基于你在旧考试中找到的一些材料。</p>
+<p>发言人   00:53<br>But really the idea is, how can I make programs run fast given that I sort of know what algorithm I’m using? And I’ve perhaps gotten a program that runs, how can I make it run faster? And one of the themes of it is you can sort of do this in layers.<br>但实际上的想法是，考虑到我知道我在使用什么算法，我如何让程序运行得更快？我可能已经得到了一个可以运行的程序，我怎样才能让它运行得更快？其中一个主题是你可以分层完成。</p>
+<p>发言人   01:15<br>First of all, do this stuff to avoid. Sort of things that make programs run slow across a wide variety of machines. And just, I would describe it as making your code more compiler friendly. And we’ll talk about what that means. And you have to have some understanding and appreciation for what compilers are good at and what they’re not good at to be able to do that. And I describe these, is the kind of things that you should just be in the habit of when you write programs, writing this code that I’ll describe as compiler friendly way. And then the next level is OK, given that I’ve sort of taking away the things that really shouldn’t have been there in the first place.<br>首先，做这些事情来避免。有一些事情会让程序在各种各样的机器上运行缓慢。而且，我会将其描述为使您的代码更加编译友好。我们将讨论这意味着什么。你必须对编译器擅长什么和不擅长什么有一些理解和欣赏，才能做到这一点。我描述这些，是你在编写程序时应该养成的习惯，编写这段我将描述为编译器友好的代码。然后下一个层次是可以的，因为我已经拿走了本来就不应该存在的东西。</p>
+<p>发言人   02:03<br>Now, how can I make my programs run faster? And particular, how can I adapt it to the capabilities of the types of machines that this program is going to run on? And that can, again, go from ones that will generally make programs run fast across a wide variety of of machines to ones that become very specific. And very specific is a risky thing because even in the world of, say, x 86 machines, there’s quite a variety of them that are available at any given point in time. And they evolve over time as well. So you can make a program run really fast on one particular model of 1x 86 processor. But it might not that if you’re trying too hard, you’ll find your effort is sort of wasted when you move it to another.<br>现在，我怎样才能让我的程序运行得更快？特别是，我如何使它适应这个程序将要运行的机器类型的能力？这可能会从通常使程序在各种机器上快速运行的那些，发展到变得非常具体的那些。而且非常具体是一件冒险的事情，因为即使在x86机器的世界中，在任何给定的时间点都有相当多的可用机器。它们也随着时间的推移而演变。因此，您可以使程序在一个特定型号的1x86处理器上运行得非常快。但如果你太努力，当你把努力转移到另一个地方时，你可能会发现你的努力有点白费了。</p>
+<p>发言人   02:52<br>On the other hand, these general ideas I’m going to describe actually work across quite a range of machines. So, and I’ll talk about that more as we go along. So it used to be in the bad old days that if you wanted a program to run fast, you had to write an assembly code. And that’s just plain not true anymore. And if anyone tells you it’s true, it’s because they’re full of it. It’s just not true unless, except for the exceptional case where you’re running on a very small resource constrained machine, such as a very small, underpowered, embedded system.<br>另一方面，我要描述的这些一般想法实际上适用于相当多的机器。所以，随着我们的进行，我会更多地谈论这个。所以过去在糟糕的日子里，如果你想让一个程序快速运行，你必须写一个汇编代码。这已经不是真的了。如果有人告诉你这是真的，那是因为他们充满了它。这不是真的，除非你在一个非常小的资源有限的机器上运行，比如一个非常小的、动力不足的嵌入式系统。</p>
+<p>发言人   03:30<br>So let’s just assume that we’re going to use a compiler.<br>所以让我们假设我们将使用编译器。</p>
+<p>发言人   03:32<br>And we’ll assume for this course, we’re going to use GCC because it’s generally available. It’s not actually the best compiler out there. Intel makes a compiler that costs money to license and stuff. It really can do some amazing things, and other compilers exist, but GCC is of a good enough compiler for most people. But there’s some features of showing things that sort of puzzle compilers that they don’t really understand. Compilers don’t really understand, for example, that the numbers you’re using when you say it’s an int might actually range over a much smaller set of values. And they have a very hard time understanding memory referencing patterns and the effect of procedure calls.<br>我们假设在本课程中，我们将使用GCC，因为它是普遍可用的。它实际上并不是最好的编译器。英特尔制造了一个编译器，需要花钱才能获得许可和其他东西。它确实可以做一些惊人的事情，并且存在其他编译器，但GCC对大多数人来说是一个足够好的编译器。但是有一些功能可以展示一些他们并不真正理解的谜题编译器。编译器并不真正理解，例如，当你说它是一个int时，你所使用的数字实际上可能只覆盖了一组更小的值。而且他们很难理解内存引用模式和过程调用的影响。</p>
+<p>发言人   04:26<br>And so in general, what happens with the compiler is it has a whole sort of cookbook of optimization strategies and some recipes for how to try out different strategies and apply them. But in general, if it ever feels like this code is something that it doesn’t feel confident about being able to make certain transformations, then it just won’t. It will keep things sort of a more direct implementation of exactly what you describe. And we’ll show examples of that as we go. Go along.<br>总的来说，编译器的作用是，它有一整套优化策略的食谱，以及一些如何尝试不同策略并应用它们的食谱。但总的来说，如果感觉这段代码对能够进行某些转换没有信心，那么它就不会。它将使事情更直接地实现你所描述的内容。我们将展示这方面的例子。继续前进。</p>
+<p>发言人   05:01<br>So the thing about optimizing compiler is it always has a fallback position, which is to not optimize. And sometimes that will get in trouble if you want your program to run faster and the compiler, just in its own conservative way, decides not to do that optimization. And one of the tricks that you’ll find is pretty useful now that you can read assembly code is you run the compiler, You see what optimizations it does. And if it doesn’t make something that you expect it to be able to do, you go back and figure it out. So it’s very common, by the way, to rewrite your program in the same language and sort of tune it and up to make it run faster, to make it more compiler friendly. There’s nothing wrong with that as long as you don’t then just totally obliterate the program and make it totally illegible.<br>所以优化编译器的问题是它总是有一个后备位置，那就是不优化。如果你想让你的程序运行得更快，有时候这会遇到麻烦，而编译器只是以自己保守的方式决定不进行优化。现在你可以阅读汇编代码，你会发现其中一个技巧非常有用，那就是运行编译器，看看它做了什么优化。如果它没有做出你期望它能够做的事情，你就回去想办法。因此，顺便说一句，用相同的语言重写程序并对其进行优化以使其运行更快，使其更加编译友好是非常常见的。只要你不这样做，那就没有什么错，只是完全抹掉这个程序，使它完全难以辨认。</p>
+<p>发言人   05:57<br>So let’s just describe some sort of general optimizations. And you’ve actually seen versions of this in some of the assembly code we’ve already looked at. And I’ll use mostly sort of examples from multidimensional arrays, because those are actually fairly easy optimization type of tasks. But these apply to other types of program as well.<br>所以让我们描述一些一般的优化。而且你实际上已经在我们已经看过的一些汇编代码中看到了这个版本。我将主要使用多维数组的示例，因为这些实际上是相当简单的优化类型的任务。但这些也适用于其他类型的程序。</p>
+<p>发言人   06:22<br>So you saw before when we described how to do array indexing and multidimensional arrays, that the old style of code was. If you had a variable size array, it was up to you, the programmer, to write the formula of how you convert row I, column J into a position in a one dimensional array. So remember, it’s just the number of columns times the row number plus the column number standard one, so that this would be pretty typical code. Then notation like this, if you wanted to set one row in array A to the values in one dimensional row B, this is the code you’d write. And the main observation is within this loop, the only variable that’s changing is j, and so from the array perspective, this computation n times I, if it gets repeated over and over again within this loop, then you’re just wasting, it’s a wasted effort. So you can do what’s called code motion, which is to pre compute the value of n times I outside of the loop, and then use it over and over again inside.<br>所以你之前在描述如何进行数组索引和多维数组时看到了旧的代码风格。如果您有一个可变大小的数组，那么由您这个程序员来编写如何将第I行，第J列转换为一维数组中的位置的公式。请记住，这只是列数乘以行号加上列号标准一，因此这将是非常典型的代码。然后像这样的符号，如果您想将数组A中的一行设置为一维行B中的值，这就是您要编写的代码。而主要观察结果在这个循环中，唯一变化的变量是j，因此从数组的角度来看，这个计算n次I，如果它在这个循环中反复重复，那么你只是在浪费，这是浪费的努力。所以你可以做所谓的代码运动，也就是在循环之外预先计算n次I的值，然后在内部一遍又一遍地使用它。</p>
+<p>发言人   07:44<br>And compilers will generally do this when they can detect, for example, that it’s array access code has this technique, it will generally do optimizations like this, say an optimization level of one or higher to GCC. And we can see this. In fact, this is this code. And I ran it through GCC using optimization 1. And you see, as this red instruction shows, it boosted this multiplication outside of the loop. And it’s a little as if you actually, this code does even more. It turns the code into something that looks more like a pointer code, accessing array A and stepping through that element by element of the array.<br>当编译器能够检测到数组访问代码具有这种技术时，通常会这样做，它通常会进行这样的优化，例如对GCC的优化级别为1或更高。我们可以看到这一点。事实上，这就是这个代码。我使用优化1通过GCC运行它。你可以看到，正如这个红色指令所显示的，它在循环之外增强了这个乘法。这有点像实际上，这段代码做的更多。它将代码转换为看起来更像指针代码的东西，访问数组a并逐个元素地单步执行该数组。</p>
+<p>发言人   08:40<br>Another one, and we’ve seen this already, that when GCC turns a multiplication or a division by shifting and adding an operations like that, multiplication or division by constants, we’ve seen examples of that. And a similar one would happen.<br>另一个例子，我们已经看到过了，当GCC通过移动和添加类似的操作来转换乘法或除法时，我们已经看到过这样的例子。类似的事情也会发生。</p>
+<p>发言人   09:02<br>If we took that program I showed before and applied it to every row. So we wanted to set for array A, we wanted to set every one of its rows to the value of the one dimensional array B? Then again, if we took that code, we boosted the M times I in there. So now the inner loop is good, but you realize that this multiplication isn’t necessary either, because what we’re doing from I equals 0 to I equals 1 to I equals 2 is we’re just increasing the parameter ni I by we’re adding n to it so we can, and that’s called a reduction in strength. We’ve taken a multiplication and turned it into addition because there’s some predictable pattern of how this variable ni is going to be updated.<br>如果我们采用我之前展示的程序并将其应用于每一行。所以我们想为数组A设置，我们想将它的每一行设置为一维数组B的值？然后，如果我们拿走那个代码，我们就把里面的我提高了M倍。所以现在内部循环很好，但是你意识到这个乘法也不是必要的，因为我们从I等于0到I等于1到I等于2，我们只是增加参数ni，我们加了n，这样我们就可以了。这就是所谓的力量减弱。我们进行了一个乘法并将其转换为加法，因为对于这个变量ni的更新方式有一些可预测的模式。</p>
+<p>发言人   09:57<br>Another example. And again, array indexing is a good example for optimizations. Imagine we had an image that we represent as a two-dimension array of pixel values. And we want to do something that’s filtering operation where we want to take the sum of the four neighbors of a given pixel north, southeast, and west, and average those together or sum them together.<br>另一个例子。再次强调，数组索引是优化的一个很好的例子。想象一下，我们有一个图像，我们将其表示为像素值的二维数组。我们想要做一些过滤操作，我们想要将给定像素的四个邻居的总和分别取为北、东南和西部，然后将它们平均在一起或相加。</p>
+<p>发言人   10:28<br>And so the natural way you’d write this in C is to say, I want usually in images you count from the top down, you’d say this is the pixel above, this is the pixel below, this is the pixel to the left, and this is the pixel to the right. And if you do this, and just compile it straight through, unfortunately, it appears as if there’s three different multiplications by n I -1 I plus 1, and I, and if the compiler isn’t too clever, it won’t realize that these are related to each other. And it will issue three different multiply operations just to do this 1 pixel thing. Whereas if I’m a little more clever, and this is one where I manually rewrote the code, so the compiler would pick it up. I’d say, well, if so, inj is I times n plus j, and I can get the pixel above the pixel below by shifting that, offsetting that by value of n? And then it will issue the code. This will compile with the code with just one multiplier.<br>所以你用C写这个的自然方式是说，我通常想在你从上到下计数的图像中，你可以说这是上面的像素，这是下面的像素，这是左边的像素，这是右边的像素。如果你这样做，并直接编译它，不幸的是，似乎有三个不同的乘法n I -1 I加1和I，如果编译器不太聪明，它不会意识到这些是相互关联的。它将发出三个不同的乘法操作来完成这个1像素的事情。然而，如果我更聪明一点，这是我手动重写代码的地方，这样编译器就会把它捡起来。我会说，如果是这样，inj是I乘以n加上j，我可以通过移动它来获得下面像素上方的像素，并通过n的值来抵消它？然后它会发布代码。这将使用只有一个乘数的代码进行编译。</p>
+<p>发言人   11:47<br>In general, by the way, multiply used to be a very expensive instruction. Nowadays, there’s enough hardware resources that it takes about three coul cycles, so it’s not a huge deal, but anytime you can take three multiplies and use just one instead, that’s generally a good idea question.<br>顺便说一下，通常乘法指令非常昂贵。如今，有足够的硬件资源需要大约三个周期，所以这不是一个大问题，但任何时候你可以使用三个乘法只使用一个，这通常是一个好主意。</p>
+<p>发言人   12:09<br>So the question is, what if you’re trying to optimize for space? And there are a lot of optimizations that will make your code be bigger at the expense of in order to go faster, right? This one though I’d argue this is actually shorter code, right? Just look at the number of instructions and usually so code that used to be a bigger concern when memory was sort of back. The original IBM PC had 640 kB of memory in its maximum configuration. And that was a big deal to actually buy it that much. So know back then that was a big deal memory. But nowadays memory, the size of the program is usually a pretty small fraction of what you’re dealing with overall.<br>所以问题是，如果你试图优化空间怎么办？并且有很多优化可以让你的代码变得更大，代价是为了变得更快，对吧？我认为这实际上是更短的代码，对吧？只需看一下指令的数量，通常是代码的数量，这些代码在内存不足时曾经是一个更大的问题。最初的IBM PC在其最大配置中有640 kB的内存。实际上买那么多是一件大事。所以知道当时那是一个很重要的记忆。但是现在的内存，程序的大小通常只占你处理的整体的一小部分。</p>
+<p>发言人   12:53<br>But it’s a valid question. Okay, so that just shows you an example. And in general, compilers are pretty good at doing those low level optimizations like that. If you write the code in a way that’s reasonable. But there’s some other ones that the compiler and even the fanciest compiler you can buy might not be able to figure it out.<br>但这是一个有效的问题。好的，这只是给你一个例子。一般来说，编译器非常擅长做那些低级优化。如果你以合理的方式编写代码。但是还有一些其他的编译器，即使是你能买到的最高档的编译器也可能无法解决。</p>
+<p>发言人   13:17<br>So I like to illustrate this with when the first term we ever taught, 213, I was looking at some lab. Code that some of the students wrote. And I was horrified about this code. And I showed it to the Tas, and none of them figured out what was wrong. And I’ve shown it to many other highly trained C programmers, professionals, and they go, looks okay to me. So let’s figure out why I was horrified by this code.<br>所以我想用我们教的第一学期213时看的一些实验室来说明这一点。一些学生写的代码。我对这段代码感到震惊。我把它给那些学生看了，但他们都没有弄清楚哪里出了问题。我已经向许多其他训练有素的C语言程序员、专业人士展示了它，他们看起来还可以。那么让我们弄清楚为什么我被这段代码吓坏了。</p>
+<p>发言人   13:46<br>So the idea of this code is supposed to be pretty straightforward.<br>因此，这段代码的思想应该非常简单明了。</p>
+<p>发言人   13:49<br>There’s a string S, and I want to convert that string all the characters in to lowercase. So I’m just going to read through this string, and for each string position, test that character. And if it’s somewhere between uppercase A and uppercase Z, then I’m going to shift it to being between lowercase a and lowercase z, otherwise I won’t change it. So pretty straightforward. But if you run this, you see that if you go up to half a million characters, which might sound like a lot, but it takes 240 or so, so four minutes to run this code, and you go, well, that’s a pretty big string.<br>有一个字符串S，我想将该字符串所有字符转换为小写。所以我只是要通读这个字符串，并针对每个字符串位置测试该字符。如果它在大写字母A和大写字母Z之间，那么我要将其转换为小写字母a和小写字母z之间，否则我不会更改它。那么简单。但是如果你运行这个代码，你会发现如果你达到五十万个字符，这听起来可能很多，但需要240个左右，所以运行这个代码需要四分钟，你会发现这是一个相当大的字符串。</p>
+<p>发言人   14:38<br>It’s really not a big string. You should be able to do lowercase conversion of a string in a lot less than 4 seconds. And you also notice this growth is non-linear, it’s quadratic, it’s growing as the square of the string light. So this is not good, and unfortunately, it’s the kind, and by the way this is one of is very easy, surprisingly easy, have programs, have some hidden performance bug that makes them run quadratic, and you run tests and you test for strings of 10000 or less.<br>这真的不是一根大绳子。你应该能够在不到4秒的时间内完成字符串的小写转换。你也会注意到这种增长是非线性的，它是二次的，它增长为灯串的平方。所以这不好，而且不幸的是，顺便说一下，这是非常简单的，令人惊讶的是，有一个程序，有一些隐藏的性能错误，使它们运行二次，你运行测试并测试10000或更少的字符串。</p>
+<p>发言人   15:12<br>And it doesn’t look like a big deal because the runtime is insignificant, but then all of a sudden it hits a really bad case. There’s something wrong here. So what’s so bad about this program? The key is in a test like this of calling Stewy. So the way it’s determining whether it’s reached the end of the string is by calling Stern one to figure out how long the string is.<br>这看起来没什么大不了的，因为运行时是无关紧要的，但突然间它遇到了一个非常糟糕的情况。这里有些不对劲。那么这个项目有什么不好呢？关键在于像调用Stewy这样的测试。因此，确定它是否到达字符串的末尾的方法是调用斯特恩来确定字符串的长度。</p>
+<p>发言人   15:48<br>Now, and remember, if we do the conversion of a for loop into a go to form, like you’ve seen, there’s various ways to convert it, but all of them the gets built into the loop. So the main feature of that is this call to Stirling will happen every time you go through the loop. And people overlook that fact. When you look at the different parts of a for loop, the initialization only gets executed once. But both the test and the update get incremented, get applied every time you run through the loop. So that’s getting called as many times as there are characters in the loop in the string.<br>现在，请记住，如果我们将for循环转换为go形式，就像您看到的那样，有各种方法可以将其转换，但所有方法都内置在循环中。因此，其主要特征是每次您通过循环时都会发生对斯特林的呼叫。人们忽视了这个事实。当您查看for循环的不同部分时，初始化只执行一次。但是测试和更新都会递增，每次运行循环时都会应用。因此，只要字符串中的循环中有字符，就会调用它。</p>
+<p>发言人   16:38<br>And now how does st-line work, remember and C, the only way you know how long a string is, is to step through the whole thing and find the null character at the end. So stern land itself is a linear time operation in the string, and you’re doing that. And so you’re doing n calls to a function that takes time n, the string is getting shorter as you go, but not very fast. So basically, that’s quadratic performance. And that explains why you get that runtime.<br>现在，st-line是如何工作的，记住C，你知道一个字符串有多长的唯一方法是逐步遍历整个过程并找到结尾的空字符。所以斯特恩土地本身是字符串中的线性时间操作，而你正在这样做。所以你正在对一个需要时间的函数进行n次调用，字符串随着时间的推移变得越来越短，但不是很快。基本上，这就是二次性能。这就解释了为什么你会得到那个运行时。</p>
+<p>发言人   17:14<br>So in particular, if I just make the following little change, I introduced a local variable called Glenn, and I precompute stir 1, because the string, the length of the string isn’t changing. I’m just changing the characters in the string. Then so the program will do the same thing, but now the runtime is so short, it doesn’t even show up. Maybe a second to do a million characters. It’s just not a big deal at all, as it should be. It’s just running through. And so that’s just an example, one of many that I’ve seen in my career, where something that seems almost insignificant turns out to be a serious performance problem.<br>因此，特别是，如果我只是进行以下小更改，我引入了一个名为Glenn的局部变量，并且我预先计算了搅拌1，因为字符串的长度不会改变。我只是在改变字符串中的字符。那么程序也会做同样的事情，但是现在运行时间太短了，甚至没有显示出来。也许一秒钟就可以写一百万个字符。这根本没什么大不了的，应该是这样。它只是通过跑步。这只是一个例子，我在职业生涯中看到的许多例子之一，一些看似几乎无关紧要的事情却变成了严重的性能问题。</p>
+<p>发言人   18:04<br>So why couldn’t a compiler figure this out? Why couldn’t a smart compiler? Look at the original code and say? This is what the programmer wrote, but I know a better way to do it. I’ll precompute Stewie in advance.<br>那么为什么编译器不能解决这个问题呢？为什么不能有一个聪明的编译器？查看原始代码并说？这是程序员写的，但我知道更好的方法。我会提前计算好Stewie。</p>
+<p>发言人   18:28<br>Well, there’s a couple of reasons. One is actually, if you look at the code for Sterling, you see that it’s actually modifying the string, and I mean, the code here is modifying the string and we’re calling string land on it. You’d have to be pretty careful to do the analysis, the compiler would, to figure out that even though the string is changing, the result you’re going to get from St 1 is not going to change. So that’s. One reason.<br>有几个原因。一个实际上是，如果你看一下英镑的代码，你会发现它实际上在修改字符串，我的意思是，这里的代码正在修改字符串，我们正在调用字符串。你必须非常小心地进行分析，编译器会，要弄清楚即使字符串在变化，你从St 1得到的结果也不会改变。就是这样。一个原因。</p>
+<p>发言人   19:05<br>And the second is, well, and how? Can the be which version of Sterling is actually going to get used? You remember and see each of the files gets compiled separately and only afterwards does it all get brought together in the linking phase. And some of that even happens after the program gets started. So even though there’s a standard Stern L function, it’s not necessarily the case that that’s the one that will actually get used in the final program. So the compiler really can’t be sure of that.<br>第二个问题是，好吧，怎么做？哪个版本的英镑实际上会被使用吗？你会记得并看到每个文件都被单独编译，只有之后它们才会在链接阶段全部汇集在一起。其中一些甚至发生在程序启动后。因此，即使有一个标准的斯特恩L函数，也不一定是最终程序中实际使用的函数。编译器真的无法确定这一点。</p>
+<p>发言人   19:42<br>In particular, imagine I provided a sort of customized sterling function like this that is keeping track of the sum of the lengths of all the strings that it’s been called on, or some other side effect like that. That program would produce a very different result than if whether or not I make the optimization. The compiler has to assume that Sterling is just a black box that does whatever it does and can’t make any assumptions about what side effects it might have and so forth. So it won’t make that optimization on any machine, even with the best compiler.<br>特别是，想象一下我提供了一种像这样的自定义英镑函数，它可以跟踪所有被调用的字符串的长度总和，或者其他类似的副作用。该程序将产生与我是否进行优化完全不同的结果。编译器必须假设英镑只是一个黑盒子，无论它做什么都不能做任何假设它可能有什么副作用等等。因此，即使使用最好的编译器，它也不会在任何机器上进行优化。</p>
+<p>发言人   20:28<br>So that’s just an example. And you can tell that I’ve gotten kind of sensitized to this so that I spot these. But a lot of people don’t. So let’s look at this.<br>这只是一个例子。你可以看出我对这个有点敏感，所以我发现了这些。但很多人并没有。让我们来看看这个。</p>
+<p>发言人   20:45<br>Let’s see, am I looking at now? Oh, this is another bad example, a bad coding example of imagine I want to compute for a two dimensional array A in a one dimensional array B, I want to make b sub I be the sum of all the elements in rho I of of A, so again, this is a fairly obvious kind of way to write this program that you say, well, b, I 0, and I’m going to just c, I’ll step through the row and accumulate all the values. And of course, we know now we could improve this by moving I times n out and so forth. I’m not trying to illustrate that, but what you’ll see in the program this is in the inner loop.<br>让我们看看，我现在在看吗？哦，这是另一个糟糕的例子，一个糟糕的编码例子，想象我想在一维数组B中计算二维数组a，我想使b sub I成为a的rho I中所有元素的总和，所以再次，这是一种相当明显的编写程序的方法，你说，嗯，b，I 0，而我只需要c，我将逐步遍历行并累积所有值。当然，我们现在知道我们可以通过将I乘以n等方式来改进这一点。我并不是想说明这一点，但你将在程序中看到的是内循环。</p>
+<p>发言人   21:41<br>And we’ve looked briefly at some floating point instructions. And remember, the main feature of them is the move instructions look like the move ones you’re familiar with, except when we put floating point data in one of these Xmm registers. So the main thing you see here is it’s reading from memory, it’s adding something to it, and then it’s writing back to memory. And what that memory location corresponds to B of I, so what it means is every time through this loop, it’s having to do a memory read and a memory write of B in addition to the memory read of A, even though presumably B of I is the same value that you just updated it to in the previous execution of this loop. So why do you write it out and then read it back in, increment it, and then again, copy it back out?<br>我们简要地看了一些浮点指令。请记住，它们的主要特点是移动指令看起来像您熟悉的移动指令，除非我们将浮点数据放入这些Xmm寄存器之一。所以你在这里看到的主要是它从记忆中读取，向其中添加内容，然后写回记忆。并且该内存位置对应于I的面向企业，因此它的意思是每次通过此循环时，除了读取a的内存之外，还必须执行B的内存读取和内存写入，即使假定I的B值与您在此循环的上次执行中更新它的值相同。那么为什么你要把它写出来，然后读回来，递增，然后再复制回来？</p>
+<p>发言人   22:43<br>Why does it have to go keep jumping back and forth between memory and registers over and over again? Well, the reason is because in C, you can’t be sure that there isn’t what’s known as aliasing, and I’m demonstrating it here.<br>为什么它必须一遍又一遍地在内存和寄存器之间来回跳跃？嗯，原因是因为在C中，你不能确定没有所谓的别名，我在这里演示它。</p>
+<p>发言人   22:59<br>Imagine if RBIs just declared to be okay. So imagine, and you can do this in C, this is legal C code. You can make one memory data structure over and away another data structure that’s referred to as aliasing two sort of separate parts of the program are referring to the same locations in memory, and the C compiler has no way of knowing whether there’s a lot of work in optimizing compilers to detect Alyson possibilities. But in general, it has to assume Alia thing might happen. So imagine this aliasing happened. Array B corresponds then to this row of array A. Then of course, its initial value is 4, 8, 16. But if you trace to what this code will do has a sort of odd behavior that is probably not useful for anything, But it just demonstrates that what will happen is as.<br>想象一下，如果RBIs刚刚宣布正常。想象一下，你可以在C中做到这一点，这是合法的C代码。你可以将一个内存数据结构重复成另一个数据结构，称为别名，程序的两个独立部分都引用了内存中的相同位置，而C编译器无法知道在优化编译器以检测概率方面是否有很多工作。但总的来说，它必须假设事情可能会发生。所以想象一下这个别名发生了。然后，数组B对应于数组A的这一行。当然，它的初始值是4、8、16。但是，如果你追溯到这段代码将要做的事情，它会有一些奇怪的行为，可能对任何事情都没有用，但它只是表明将要发生的事情是这样的。</p>
+<p>发言人   24:09<br>B gets updated. It’s effectively changing A, and it’s changing then what’s being read during the summation. And so this is a real possibility in C, and so the compiler, when it’s given code like this, it has to assume that these two memory locations might overlap each other. So that’s why it’s carefully writing it out and then reading it back in over and over again.<br>B得到更新。它有效地改变了A，并且它正在改变求和期间所读取的内容。因此，这在C语言中是真实存在的，因此编译器在给出这样的代码时，必须假设这两个内存位置可能相互重叠。所以这就是为什么它仔细地把它写出来，然后一遍又一遍地读回来。</p>
+<p>发言人   24:42<br>And so if I just rewrite this code by introducing, again, a local variable and accumulating in that local variable, and then only at the end do I assign that to B sub, I then you’ll see this exact same loop all of a sudden gets a lot simpler read, quoting, point read, and add to do that. And we’ll see, in fact, the memory. It is actually one of the limiting performance limiters in a program. So this is will be significantly faster. And again, that’s something that you as a programmer would hardly think is a big deal, but the C compiler can’t do that in general, because it can’t determine in advance, what possible aliasing there can be.<br>因此，如果我只是通过再次引入一个局部变量并累积该局部变量来重写这段代码，然后只有在最后才分配该面向企业子变量，那么你会看到这个完全相同的循环突然变得简单了很多，引用，指向读取，并添加来做这件事。事实上，我们会看到记忆。它实际上是程序中限制性能的因素之一。因此，这将显著加快。再说一遍，作为一名程序员，你几乎不会认为这是一个大问题，但C编译器通常无法做到这一点，因为它无法事先确定可能存在的别名。</p>
+<p>发言人   25:36<br>So as these two examples say, sort of get in the habit of introducing local variables and using them. And it’s your way of telling the compiler, don’t call the same function over and over again. Don’t read and write the same memory location over and over again. Hold it in a temporary one, and then it will automatically allocate a register and store it in that register and everything will be good.<br>就像这两个例子所说的，要养成引入局部变量并使用它们的习惯。这是你告诉编译器不要一遍又一遍地调用同一个函数的方式。不要一遍又一遍地读写同一个内存位置。将其保存在临时寄存器中，然后它会自动分配寄存器并将其存储在该寄存器中，一切都会很好。</p>
+<p>发言人   26:02<br>Okay, so that’s sort of the. What we call optimization blockers, the kind of things that you as a programmer can make a difference on. And the main blockers are memory referencing, aliasing, and function calls, and sort of understanding what might happen in that function call. So now what we’re going to do is transition question. So, two great questions.<br>好的，就是这样。我们称之为优化拦截器，作为一名程序员，你可以在这些事情上做出改变。主要的阻滞剂是内存引用、别名和函数调用，以及理解该函数调用中可能发生的事情。所以现在我们要做的是过渡问题。所以，有两个很好的问题。</p>
+<p>发言人   26:30<br>So on the, memory areas inside, there’s this declaration of. Of array of size 3 equals a plus 3. This doesn’t quite seem to be. I think C still makes a distinction between array and no, no, this is all C code. I’m sure this is valid C code because it ran.<br>因此，在里面的内存区域上，有这样的声明。大小为3的数组等于加号3。这似乎并不完全是这样。我认为C仍然区分了数组和no，no，这都是C代码。我确信这是有效的C代码，因为它运行了。</p>
+<p>发言人   27:02<br>This is initializing, calling it an array B, remember, these are stars. These aren’t two dimensional arrays, right? So this is saying A is now think of it as a. Linear array of four elements, of 9 elements. And a plus 3 is just to go in three. So it is declaring b is not a pointer, it’s an array. But remember, with an array, you can use the name of that array as a reference to a pointer, a readable reference, not a writable reference.<br>这是初始化，称其为数组B，记住，这些是星星。这些不是二维数组，对吧？所以这就是说A现在可以把它看作a。四个元素的线性阵列，9个元素。加3就是进去三个。所以它声明b不是指针，它是一个数组。但请记住，对于数组，您可以使用该数组的名称作为对指针的引用，这是一个可读的引用，而不是可写的引用。</p>
+<p>发言人   27:46<br>Really for this exact code, well I’ll double check it. And also like a few years before.<br>对于这个确切的代码，我会仔细检查。就像几年前一样。</p>
+<p>发言人   28:00<br>This design of C programming language used multi related strings instead of hascosay. So the question is why does C use null terminated strings? And it does, and it might be a bad decision for multiple reasons, right?<br>这种C编程语言的设计使用多个相关字符串而不是hascosay。所以问题是为什么C使用以null结尾的字符串？确实如此，出于多种原因，这可能是一个错误的决定，对吧？</p>
+<p>发言人   28:16<br>I think in general, think of C was somebody who had or a couple of people who had been writing a lot of assembly code and wanted to lift up that level. So they weren’t writing the same stuff over and over again, but not thinking in terms of how can I be the most abstract possible? So they were trying to provide sort of a minimum layer on top of machine level programming that would let them write code that could run from one machine to another. So in everything they do, they sort of use the most simple representation and don’t assume kind of there’s no array. Most languages would have array bounds checking, and array would be a data structure that would include its size range of values and stuff. C just doesn’t. So everything about C is sort of the minimum, and so it’s been around for 40 or something years.<br>我认为总的来说，C是一个拥有或几个一直在编写大量汇编代码并想要提升那个层次的人。所以他们没有一遍又一遍地写同样的东西，却没有思考如何成为最抽象的人？所以他们试图在机器级别编程之上提供一种最小层，让他们编写可以从一台机器运行到另一台机器的代码。所以在他们所做的一切中，他们使用最简单的表示，并不假设没有数组。大多数语言都会进行数组边界检查，而数组将是一种数据结构，包括其值和内容的大小范围。C就是没有。所以关于C的一切都是最低限度的，所以它已经存在了40年左右。</p>
+<p>发言人   29:22<br>No Pascal does not precede C, no, that’s simply not true. Pascal was created as a language for teaching by this fellow named nicos Vert, and it was very much an instructional language. So it was really designed to help students who needed help. And C was designed by professional programmers to let them write their code and not get in their way. So they’re very different theory between the two languages, yes.<br>没有帕斯卡不先于C，不，那根本不是真的。Pascal是一种教学语言，由一个名叫nicos Vert的家伙创造的，它在很大程度上是一种教学语言。所以它真正的目的是帮助需要帮助的学生。而C是由专业程序员设计的，让他们编写自己的代码，而不会妨碍他们。所以它们是两种语言之间非常不同的理论，是的。</p>
+<p>发言人   30:04<br>What’s that?<br>那是什么？</p>
+<p>发言人   30:09<br>I’m sorry, oh, yes, that’s a mistake there. I’ll double check this or people could check it. I’m pretty sure this code is okay though. If not, you could certainly say double star B equals a plus 3. And that would work, right?<br>对不起，是的，那是个错误。我会仔细检查，否则人们可以检查。不过我很确定这段代码没问题。如果没有，你当然可以说双星B等于a加3。那会起作用的，对吧？</p>
+<p>发言人   30:37<br>You think what? You think this is 28? Well I’m not going to try and hand execute it here, but you and I will check this code out and we’ll fix it if it needs to be fixed.<br>你觉得呢？你觉得这是28吗？我不会尝试在这里手动执行它，但你和我会检查此代码，如果需要修复，我们会修复它。</p>
+<p>发言人   30:53<br>Okay, thanks for pointing it out. When you do this, the array get stack allocated as a local AR. No, that doesn’t make any difference at all in this code. No, no, where it’s allocated makes no difference at all here. So I’ll check that might have to be double star B equals a plus 3. This was a while ago that I wrote this code. I’ll double check it though. Okay, so. Anyways, that’s the sort of end of the story for simple, and they are simple optimizations. It’s just you have to get in the habit of doing it.<br>好的，谢谢你指出来。当你这样做时，数组会被分配为本地AR的堆栈。不，这在这段代码中根本没有任何区别。不，不，分配在哪里根本没有区别。所以我会检查一下，可能必须是双星B等于a加3。这段代码是我写的。不过我会仔细检查的。好的，所以。无论如何，这就是简单故事的结局，它们是简单的优化。这只是你必须养成这样做的习惯。</p>
+<p>发言人   31:40<br>Okay, now what we’re going to do is go a little bit fancier than this. And as I said, this becomes somewhat more system dependent. And but pretty much nowadays, all processors have similar implementation. They all do what’s known as is out of order execution, except for the most primitive microcontrollers. And so this is the kind of optimization I’ll show you’ll find. This general approach will work across quite a variety of machines. So what I’m going to do is do this by a series of examples starting from some not very efficient code and making it run faster and faster. And we’ll get speed up of around 40 just in doing what we’re doing.<br>好的，现在我们要做的是比这更华丽一点。正如我所说，这变得更加依赖系统。而且几乎现在，所有处理器都有类似的实现。它们都做所谓的无顺序执行，除了最原始的微控制器。所以这就是我将向您展示的优化类型。这种通用方法将适用于相当多的机器。所以我要做的是通过一系列示例来实现这一点，从一些不是非常有效的代码开始，并使其运行得越来越快。并且我们将在做我们正在做的事情中获得大约40的速度。</p>
+<p>发言人   32:30<br>So I’ll start by saying, well, assume I have a data structure that looks like the way Pascal implements arrays. Sorry, I have nothing against Pascal. We used to teach it back in the old days. But so a typical way you’d implemented an array in a language is you’d provide both the values that are stored in that array, and then there’d be other information associated with it, for example, what size it is. And so this is the sort of nice abstract way to do that. And you write code, Make sure that if you ever try to exceed the bounds on the array, you’d return an error signal. And so this particular function you’re seeing is when I want to retrieve an element, I pass a pointer, and then value. The pointer gets used to retrieve the value from the array, and the return value of this function is then just 0 or 1, 0 meaning failure and one meaning success.<br>所以我将开始说，假设我有一个看起来像Pascal实现数组的数据结构。抱歉，我并不反对帕斯卡。我们过去常常教它。但是，用一种语言实现数组的典型方法是提供存储在该数组中的值，然后还有其他与之相关的信息，例如，它的大小。所以这是一种很好的抽象方式。并且在编写代码时，确保如果您试图超出数组的边界，将返回错误信号。所以你看到的这个特定函数是当我想检索一个元素时，我传递一个指针，然后赋值。指针用于从数组中检索值，此函数的返回值为0或1，0表示失败，一个表示成功。</p>
+<p>发言人   33:38<br>And I’m writing it in this way that I use a data type. I’ll call data underscore t, and that way I can compile this code using different definitions of data underscore t to get ins long floats and doubles, and we’ll see how the performance characteristics of those shift with the different data types. And the benchmark I’m going to use is a fairly simple one. It’s just to, for a, an array, one of these vector is I just want to combine all the elements of it, either compute their sum or their product. And again I’m going to use macros here, identical up and define those. So the opposite addition and the identity value is 0, or the Op is multiplication, and the identity element is one, so that I can compare addition and multiplication. So that gives us sort of 8 possibilities here, two different operations in four different data types. And so this is written in the sort of the most straightforward manner that I’m using this function called get vec element to retrieve the successive values of this array and then performing this operation on it.<br>我以这种方式编写它，我使用一种数据类型。我将调用数据下划线t，这样我就可以使用不同的数据下划线t定义来编译此代码，以获取ins长的浮点数和双精度值，我们将看到这些性能特征如何随不同的数据类型而变化。我要使用的基准相当简单。这只是一个数组，其中一个向量只是我想组合它的所有元素，要么计算它们的和，要么计算它们的乘积。我将再次在这里使用宏，将它们相同并定义。因此，相反的加法和单位值为0，或者Op是乘法，单位元素是一，这样我就可以比较加法和乘法。所以这给了我们8种可能性，四种不同的数据类型中的两种不同操作。因此，这是以最直接的方式编写的，我使用这个名为get vec element的函数来检索此数组的连续值，然后对其执行此操作。</p>
+<p>发言人   34:59<br>So now to express performance of this, we’re going to use a metric I introduced called CPE, which stands for cycles per element.<br>所以现在为了表达这个性能，我们将使用我引入的一个指标，叫做CPE，它代表每个元素的周期。</p>
+<p>发言人   35:13<br>And the idea is that usually when you write code that say steps through a vector, anything that has sort of some linear performance as you get bigger, you don’t really want to know for exactly, it takes this many seconds or or microseconds or nanoseconds to do an operation. You kind of want to know often more what’s its overall performance characteristics? And also, it turns out when you’re doing low level of code optimization, it’s much more useful to think in terms of clock cycles of the inner clock of the processor rather than an absolute term such as nanoseconds.<br>这个想法是，通常当你编写代码说通过向量的步骤时，随着规模的增长，任何具有某种线性性能的东西，你并不真的想知道确切的情况，需要这么多秒、微秒或纳秒才能完成一个操作。你有点想知道更多它的整体性能特征是什么？而且，事实证明，当您进行低水平的代码优化时，以处理器内部时钟的时钟周期来考虑比以纳秒为绝对术语更有用。</p>
+<p>发言人   35:50<br>Because whether a processor is running at 2 GHz or 2.3 GHz, I don’t really, I have no control over that as a programmer. But I can control sort of at the low level how many clock cycles are being used for different parts of the computation. So that’s why it’s called cycles per element. And you can think of it as, and this shows some actual measurements, but typically a function like this, what I showed the combined will have some overhead fixed amount that’s associated with setting up the loop, doing the top level call, and all that stuff, and then some component that’s linear in the size. And so what I want to know is the slope of that linear component. And will determine, that’s what I’ll call the cycle element. You can think of the scope as the sort of incremental cost of adding one more element to the array.<br>因为无论处理器是在2 ghz还是2.3ghz下运行，我真的不知道，作为一名程序员，我无法控制这一点。但我可以在低级控制用于不同计算部分的时钟周期数。这就是为什么它被称为每个元素的循环。你可以把它想象为，这显示了一些实际的测量，但通常是这样的函数，我展示的组合将有一些固定的开销，这与设置循环、进行顶级调用以及所有这些相关，然后是一些尺寸为线性的组件。所以我想知道的是那个线性分量的斜率。并且将确定，这就是我所说的循环元素。您可以将范围视为向数组中添加一个元素的增量成本。</p>
+<p>发言人   36:56<br>So now if I run this function I showed you, and I’m only showing mostly only show 4 results because it turns out whether it’s Intel or long or float or double is not going to actually have any effect on performance for most of the cases. So if I just run this code through a compiler and don’t do any optimizations, it takes around 20 cycles per element. And if I turn on optimization level 1, which is sort of the first serious optimization, it takes the time in half.<br>所以现在，如果我运行向你展示的这个函数，我只显示了大部分只显示4个结果，因为事实证明，在大多数情况下，它是英特尔还是long，float或double实际上对性能没有任何影响。因此，如果我只是通过编译器运行此代码而不进行任何优化，则每个元素大约需要20个周期。如果我打开优化级别1，这是第一次认真的优化，它需要一半的时间。</p>
+<p>发言人   37:31<br>I’m down to 10 clock cycles per element just by changing the compilation. And that’s using the most unoptimized code I could think of here. And then I won’t go through it all, but using sort of the kind of things I described earlier of sort of cut away some of the redundancy in this program.<br>只需更改编译，我就可以将每个元素的时钟周期降低到10个。这使用了我能想到的最未经优化的代码。然后我不会全部讲述，但是使用我之前描述的那种东西可以减少这个程序中的一些冗余。</p>
+<p>发言人   37:56<br>You can get it down to something a little bit simpler. And so one thing, instead of you saw before I was making a call to this get vec element. And every time it did that, it went bounds checking. And it’s kind of silly to keep bounds checking the same array over and over again. When I stepping I’m using its length as the determinant of how many elements to access. So if I’m willing to sort of forego bounds checking, what I can do is introduce a function that will just give me the actual data storage part of this vector and skip over all the other stuff. And so I can write a loop, and I introduce local variables and all the kind of things we described and accumulate in temporaries and things like that. Then the program actually gets a lot faster.<br>你可以把它简化为简单一点的东西。所以有一件事，而不是你在我打电话给这个get vec元素之前看到的。每次这样做，它都会进行边界检查。不断地对同一个数组进行边界检查是一种愚蠢的行为。当我步进时，我使用它的长度作为要访问的元素数量的决定因素。所以，如果我愿意放弃边界检查，我可以做的是引入一个函数，该函数将只给我这个向量的实际数据存储部分，并跳过所有其他内容。所以我可以写一个循环，并引入局部变量和我们描述的所有东西，并在临时变量中累积和类似的东西。那么程序实际上会变得更快。</p>
+<p>发言人   38:48<br>Again, everything from here out is optimization level 1. And so it drops it down to a little over a CAQ cycle for integers addition or three clock cycles up to five clock cycles for double precision multiple. So that’s pretty good. Definitely improve things.<br>再说一遍，从这里开始的一切都是优化级别1。因此，它将整数加法的时钟周期降至一个稍多的CAQ周期，双精度倍数的时钟周期降至三个时钟周期，最多为五个时钟周期。所以这相当不错。肯定会改善情况。</p>
+<p>发言人   39:09<br>But the question is, well, is that the best there is first and well, so try to understand what is it about these numbers 3, 5? And this seems to be something close to 1.25. So where are those numbers coming from? And does that indicate some fundamental limitation in my program? Well, in order to do that, you have to have some understanding of the underlying hardware. And there’s a really good course you can take.<br>但问题是，最好的是先有最好的，所以试着理解这些数字3，5的原因是什么？这似乎接近1.25。那么这些数字是从哪里来的呢？这是否表明我的程序存在一些基本限制？为了做到这一点，你必须对底层硬件有一些了解。你可以学一门非常好的课程。</p>
+<p>发言人   39:37<br>I think it’s called ECE 741, that will tell you everything you ever could imagine wanting to know about processor design. And you actually design processors like this. But I’m assuming you’re not going to do that for a while because you have 7 prerequisites to do before that happens. So let me just give you the simple version.<br>我认为它叫做ECE 741，它会告诉你所有你能想象到的想要了解的处理器设计的东西。你实际上是这样设计处理器的。但我假设你暂时不会这样做，因为在这种情况发生之前你有7个先决条件要做。所以让我给你简单的版本。</p>
+<p>发言人   40:02<br>And this is sort of an idea of what a processor has looked like since about 1995. So this is old stuff, but it’s actually, to really understand it, it’s so hard. It’s really the details, pretty massive, and so it’s not even taught, for example, 447 is the ECE is the computer architecture course, and they don’t really go into this kind of design here because they’re actually hard to design on your own.<br>这有点像自1995年以来处理器的样子。所以这是旧东西，但实际上，要真正理解它是如此困难。这真的是细节，相当庞大，所以甚至没有教，例如，447是计算机体系结构课程，他们在这里并没有真正进入这种设计，因为他们实际上很难自己设计。</p>
+<p>发言人   40:32<br>But the basic idea is you think about a program is the computer just reads in an instruction, does whatever it says to do, reads in another instruction, does what that says to do, And that has nothing to do with how programs actually execute. What they’ve built up is this massive hardware infrastructure to make a program run way faster than it would if it were just doing one instruction at a time. And it employs a technique that’s called super scalar out of order execution.<br>但基本的想法是，你认为一个程序是，计算机只是读入一条指令，做它说要做的事情，读入另一条指令，做它说要做的事情，这与程序实际执行的方式无关。他们建立了这个庞大的硬件基础设施，使程序比一次只执行一条指令运行更快。并且它采用了一种称为超级标量不按顺序执行的技术。</p>
+<p>发言人   41:06<br>And the idea is, roughly speaking, it takes your program. If you think of your program as a linear sequence of instructions, and it just sucks in as many of those as it can. And it pulls it apart to realize that certain operations don’t really depend on each other. So I can start one, even though it’s later in the program than the one I’m working on right now, because they’re independent of each other. And it’s extracting what they call instruction level parallelism, andism places where even though your program is a linear sequence of instruction buried in there is actually a sort of forest of different computations that need to be done, some of which depend on each other and some of which don’t. And then it has a bunch of hardware. And so that’s up here.<br>这个想法是，粗略地说，它需要你的程序。如果你把你的程序看作是一个线性的指令序列，并且它会尽可能多地吸收这些指令。它将它拆开，意识到某些操作实际上并不相互依赖。所以我可以开始一个，即使它在程序中的时间比我现在正在处理的要晚，因为它们彼此独立。它正在提取他们所谓的指令级并行，即使你的程序是埋藏在其中的线性指令序列，实际上还是需要完成一种不同计算的森林，其中一些相互依赖，一些不相互依赖。然后它有一堆硬件。所以就在这里。</p>
+<p>发言人   41:54<br>This upper part shows this idea of of fetching instruction. So there’s a CA memory, a high speed local memory that is just pulling in your instructions as fast as it can. And those instructions are then feeding a big pile of hardware that will extract out of it these low level operations and figure out which ones depend on which others. And then there is a set of a functional units in this part of it that are able to perform these low level operations, to do arithmetic, floating point operations, to read data from memory, to stored data back to memory, all using a cache, which is something you’re going to learn about fairly soon. What all this cache is, but think of this as a high speed copy of some of the data memory. And so what this logic tries to do is keep forking out, spawning off operations based on your program and keeping these as busy as they can be, doing different fragments of your code, doing different instructions in a different order from before.<br>这个上部展示了获取指令的想法。所以有一个CA内存，一个高速的本地内存，它可以尽可能快地提取你的指令。然后，这些指令会提供一大堆硬件，这些硬件将从中提取这些低级操作，并找出哪些操作依赖于其他操作。然后在这部分有一组功能单元，它们能够执行这些低级操作，进行算术、浮点操作，从内存读取数据，将数据存储回内存，所有这些都使用缓存。这是你很快就会学到的东西。所有这些缓存是什么，但请将其视为一些数据内存的高速副本。因此，这个逻辑试图做的是保持分叉，产生基于你的程序的操作，并让这些操作尽可能繁忙，执行不同的代码片段，以不同的顺序执行不同的指令。</p>
+<p>发言人   43:14<br>And it turns out you think of a register as a, the set of registers as a part of memory that get read and written. It turns out that in executing a register now just becomes the name of something that one instruction produces and some other instructions consume. It’s a destination for some, it’s a source for others. And this whole bunch of stuff here just sort of magically passes the results of one computation, the input to another computation based on register names, without ever storing them in explicit register file. There is a register file. When things kind of settle down, they get stored away.<br>而事实证明，你把一个寄存器想象成一个寄存器，一组寄存器是记忆的一部分，可以被读取和写入。事实证明，现在执行寄存器只是成为一条指令产生和其他一些指令消耗的某些事物的名称。它是一些人的目的地，也是其他人的来源。而这一大堆的东西只是神奇地将一个计算的结果传递给另一个基于寄存器名称的计算，而没有将它们存储在显式寄存器文件中。有一个注册文件。当事情有点稳定下来时，它们会被储存起来。</p>
+<p>发言人   43:59<br>Anyways, there’s a lot of stuff going on here, but the main thing to think about is your machine has resources to do multiple operations all at the same time. If you can somehow structure your program so that those can all get used. So this is, as I mentioned, it’s called a super scalar instruct processor is one that can do more than one instruction every Cocc cycle.<br>不管怎样，这里有很多事情要做，但要考虑的主要事情是您的机器有资源同时执行多个操作。如果你能以某种方式构建你的程序，以便所有这些都可以被使用。所以，正如我所提到的，它被称为超级标量指令处理器，每个Cocc周期可以执行多个指令。</p>
+<p>发言人   44:28<br>And actually Intel started in 93. The very first Pentium could do two instructions at once. But then a little later, they came out with one called the Pentium Pro, which is sort of the basis of all modern processors. And the lead architect, by the way, was a CMU graduate.<br>实际上，英特尔始于93年。第一个奔腾可以同时执行两条指令。但不久之后，他们推出了一款名为奔腾Pro的处理器，它是所有现代处理器的基础。顺便说一下，首席建筑师是一名CMU毕业生。</p>
+<p>发言人   44:49<br>This out of order execution is the model that’s used nowadays. So the other thing is those functional units are more complex than you think they might be in that they have what’s called pipelining.<br>这种不按顺序执行的模式是现在使用的模式。所以另一件事是这些功能单元比你想象的要复杂，因为它们有所谓的流水线。</p>
+<p>发言人   45:04<br>And the idea is of pipelining is imagine you can break up a computation into a series of distinct stages. A simple example is if you want to compute a times b plus c, you first do the times and then you do the plus. But it actually gets deeper than that. You can take something like multiplication and break it up into smaller steps. That can be done one after the other in a way. And then if you have a separate dedicated hardware for each of those stages, then you can do what’s called pipelining, which is when one operation moves from one stage to the next, a new operation can come in behind and start its thing.<br>流水线的想法是想象你可以将一个计算分成一系列不同的阶段。一个简单的例子是，如果你想计算A乘以b + c，你首先计算乘以，然后再计算加号。但实际上它比这更深。你可以把像乘法这样的东西分解成更小的步骤。这可以以某种方式一个接一个地完成。然后，如果每个阶段都有单独的专用硬件，那么您可以进行所谓的流水线操作，即当一个操作从一个阶段移动到下一个阶段时，一个新的操作可以进来并开始它的事情。</p>
+<p>发言人   45:48<br>So this example shows, imagine I had a three stage pipeline multiplier, and I want to do this computation a times BA times c, and now multiply those together. So the thing to observe is that a times b and a times c don’t depend on each other in any way. So I can do them both, and I don’t have hardware to do them simultaneously, but I have them enough to do one right after the other.<br>所以这个例子展示了，假设我有一个三阶段的管道乘法器，我想做这个计算a乘以BA乘以c，现在把它们相乘在一起。所以要观察的是，a倍b和a倍c并不以任何方式相互依赖。所以我可以同时做它们，而且我没有硬件来同时做它们，但是我有足够的硬件来让它们一个接一个地做。</p>
+<p>发言人   46:18<br>So I can feed the first computation into the first stage a times b on time step 1. And then time step 2, it will move on to stage 2. And time step 3, it will move on to.<br>所以我可以在时间步骤1上将第一个计算输入第一阶段a乘以b。然后时间步骤2，它将进入阶段2。和时间步骤3，它将继续前进。</p>
+<p>发言人   46:34<br>Stage 3. But now I can start a times c times step 2 because this stage became available once A times B moved from stage 1 to stage 2. And so I can follow right behind, just one clock cycle behind this other operation. Now, p times one times P2 obviously depends on both of these products. So it can’t start until a times c is completed, and then it will run through the pipeline without anything else. So overall, then, we’ve done what would have normally seem to be 9 steps worth of arithmetic in a total of seven steps here because of pipelining question.<br>第三阶段。但是现在我可以开始一次c次步骤2，因为这个阶段一旦a次B从阶段1移动到阶段2就可用了。所以我可以紧跟在后面，只比另一个操作晚一个时钟周期。现在，p倍，一倍，P2显然取决于这两种产品。所以它只能在c完成一次之前启动，然后它将通过管道运行，没有其他任何东西。总的来说，由于流水线问题，我们在总共七个步骤中进行了通常看起来值得进行9个步骤的算术。</p>
+<p>发言人   47:31<br>If you had like in this picture here, if there were different multipliers in these different places, yes, you could do those two completely independent of each other.<br>如果你像这张照片里一样，如果这些不同的地方有不同的乘数，是的，你可以完全独立地做这两个。</p>
+<p>发言人   47:51<br>Yes, this is all in a single core of a single processor. Multicore is yet another. This is a lower level parallelism than you get through multicore, and it’s present except in the sort of lowest and lowest powered embedded processors. Some version of this exists, and most of the time your hardware is not being fully utilized. Is this one thing you’re going to learn from this? So that’s the idea of pipelining, sort of like parallelism. But it’s not that you have multiple copies of resources that you have this ability to stream operation through a single hardware resource in close succession to each other. And so Haswell, which is a little bit more recent than the shark machines, but not that much more, is one of the most recent versions of the Intel x 86 series.<br>是的，这一切都在一个处理器的单核中。多核是另一个。这是一种比通过多核获得的低级并行，除了在最低和最低功耗的嵌入式处理器中存在。这个版本存在，并且大多数时候您的硬件没有得到充分利用。这是你要从中学到的一件事吗？这就是流水线的想法，有点像并行。但是，并不是说您拥有多个资源副本，您就能够在单个硬件资源中彼此紧密连续地进行流式操作。因此，Haswell比鲨鱼机更新一点，但不多，是英特尔x86系列的最新版本之一。</p>
+<p>发言人   48:51<br>And the functional units include there’s a lot of functional units that can do different things. When you add it all up, there’s a possibility of it doing two loads and one store, 4 integer operations, 2 floating point multiplies, one addition, and one division. They can’t all happen at the same time because there’s some shared functional units. The point is, there’s really a lot of equipment there that can do stuff.<br>功能单位包括有许多可以做不同事情的功能单位。当你把它们全部相加时，它有可能进行两次加载一次存储、4次整数运算、2次浮点乘法、一次加法和一次除法。它们不可能同时发生，因为有一些共享的功能单元。重点是，那里真的有很多设备可以做事情。</p>
+<p>发言人   49:23<br>And also, you can measure how an instruction now has two characteristics in operation is how long does it take from beginning to end? But also how closely spaced can two operations be because of this pipelining? So you see that most of them take some number of Cox cycles to perform, but they’re also pipelines so that you can do a series of them just one cycle apart. The only different ones that aren’t is you’ll notice the division is both very slow and it’s not. Pipeline division is a very expensive operation on most machines, relatively speaking. So what I claim then is these characteristics then provide a limit on how fast our program can run.<br>而且，您可以测量一条指令在操作中现在如何具有两个特征，即从开始到结束需要多长时间？但是由于这种流水线，两个操作之间的距离能有多近？所以你会看到，它们中的大多数都需要一定数量的Cox循环来执行，但它们也是管道，这样你就可以在一个循环之间执行一系列它们。唯一不同的是你会注意到分裂非常缓慢，而且不是。相对而言，管道划分在大多数机器上是一项非常昂贵的操作。所以我认为这些特征限制了我们程序的运行速度。</p>
+<p>发言人   50:19<br>Our original program in that I have a series of multiplications, for example, of integers here. And this shows the code for it. And I need the result of one multiplication before I can begin the next. So there’s a three clock cycle bound here. And you’ll see that, in fact, my measurements all correspond to what I’m calling the latency bound of these machines, which is just based on how much time it takes from a beginning of an operation to the end.<br>我们最初的程序中，我有一系列乘法，例如这里的整数。这显示了它的代码。我需要一个乘法的结果，然后才能开始下一个乘法。所以这里有三个时钟周期。你会发现，事实上，我的测量结果都符合我所说的这些机器的延迟界限，这只是基于从操作开始到结束所花费的时间。</p>
+<p>发言人   50:55<br>And the reason is we consider a diagram, the computation being done by this, that it’s doing a series of multiplications. And I require the result of one multiplication before I can start the next. In general, if you look at this loop code, it has to compute ecx, the updated value of it, before it can now start the next one. And so that’s why, even though this, I have a pipeline multiplier, my program itself limits me to the sequential execution of all the multiplies. So let’s see if we can’t get beyond that bound, that latency bound.<br>原因是我们考虑一个图表，它正在进行一系列的乘法计算。我需要一个乘法的结果，然后才能开始下一个。一般来说，如果你看看这个循环代码，它必须计算ecx，它的更新值，然后才能开始下一个循环。这就是为什么即使我有一个管道乘数，我的程序本身也限制我按顺序执行所有的乘法。所以让我们看看我们是否无法超越这个界限，即延迟界限。</p>
+<p>发言人   51:44<br>Well, there’s a fairly common technique that you might have heard of before. That’s called loop unrolling. And the idea of loop unrolling is just that you. Rather than executing one value within a loop, you execute multiple ones. And so this code shows unrolling by two. And what it says is I’m going to step through this array two elements at a time. And within each of the inner loop I’m going to combine the values from Di and Di plus 1. And I have to put in some extra code to finish off. What happens if the original ray was a odd length, but you get the idea.<br>嗯，有一种相当常见的技术，你之前可能听说过。这被称为循环展开。而循环展开的想法就是你自己。而不是在循环中执行一个值，而是执行多个值。因此这段代码显示展开为2。它说的是我将逐步通过这个数组，一次两个元素。在每个内循环中，我将合并Di和Di加1的值。我必须加入一些额外的代码来完成。如果原始光线的长度是奇数，会发生什么，但你明白了。</p>
+<p>发言人   52:27<br>And this idea, I show this code of two, but you could imagine this applying for different values of loop unrolling. So will this help us any?<br>这个想法，我展示了这段两个代码，但你可以想象这适用于不同的循环展开值。这对我们有帮助吗？</p>
+<p>发言人   52:38<br>Well, when I run it, I get that the integer addition got a little faster, but the other ones didn’t improve at all. So this one is going faster because basically the old code. Just the overhead of the loop indexing and incrementing was enough to be slowing me down. It’s already close to a clock cycle, so I just managed to knock that down to be at the latency bound of this particular instruction. But it didn’t improve the other ones because I still have this sequential dependency in order to get my new value of x, I have to first do one computation and then do the other before I can begin another one. But this shows me the way I could make a very, very small change and change performance fairly dramatically.<br>当我运行它的时候，我发现整数加法速度加快了一点，但其他的并没有任何改进。所以这个速度更快，因为基本上是旧代码。仅仅是循环索引和递增的开销就足以让我放慢速度。它已经接近时钟周期，所以我设法将其降低到这个特定指令的延迟范围。但它并没有改善其他的，因为我仍然有这种顺序依赖，以便获得我的新x值，我必须先进行一次计算，然后再进行另一次计算，然后才能开始另一次计算。但这向我展示了我可以做出非常非常小的改变并相当显著地改变性能的方式。</p>
+<p>发言人   53:34<br>What if I take these parentheses and shift them to the right? Would that make any difference? And lo and behold, yes, you find that. And I’ll call that transformation unrolling.<br>如果我把这些括号向右移动怎么办？会有区别吗？瞧，是的，你找到了。我称这种转变为展开。</p>
+<p>发言人   53:59<br>By two, computing one element at a time. I’ll talk about that in a minute, but I’ll use this lowercase A to say I’ve done an associativity transformation. And you see, all of a sudden, my time dropped in half for these three cases. So something’s going on. And so let’s see why that is. And now I’ll introduce it.<br>按两个，一次计算一个元素。我稍后会讨论这个问题，但我会使用这个小写的a来表示我已经做了一个关联性转换。你看，突然间，我在这三个案例中的时间减少了一半。所以有些事情正在发生。所以让我们看看为什么会这样。现在我来介绍一下。</p>
+<p>发言人   54:30<br>And so if I take my picture from before and think about what those computations imply, you’ll see that right now I’ve changed the structure of the computation so that I’m pair wise, combining each element and a pair of elements of the array, and then accumulating those into the overall computation. So have actually that shifting of the parentheses fundamentally changed how I’m doing my computation? And you can see now that this critical path, which is what determines, in this case, the performance limitation, just got shorter by a factor of 2. And that’s why I’m now running twice as fast for the operations, not for integer addition, but for the other three operations.<br>因此，如果我从之前拍摄照片并思考这些计算意味着什么，你会看到现在我已经改变了计算的结构，这样我是成对的，将数组的每个元素和一对元素组合在一起，然后将它们累积到整体计算中。所以，括号的移动是否真的从根本上改变了我的计算方式？现在你可以看到，这个关键路径在这种情况下决定了性能限制，它缩短了2倍。这就是为什么我现在运行这些操作的速度是原来的两倍，不是为了整数加法，而是为了其他三个操作。</p>
+<p>发言人   55:23<br>I’ve cut by a factor of 2 just by that shift.<br>仅仅因为这个转变，我就减少了2倍。</p>
+<p>发言人   55:27<br>Now, there’s some good news and bad news here. The good news is if this is integer arithmetic, we know already, you know, that choose complement arithmetic is associative and commutative. So it really doesn’t matter for both multiplication and addition. So it really doesn’t matter what order I combine these elements in. I’m going to get the exact same answer no matter what. But you also saw for floating point, that’s not the case. So with floating point, that shifting these parentheses because of rounding possibilities and even potentially overflow, you might get different values results from these computations.<br>现在，这里有一些好消息和坏消息。好消息是，如果这是整数算术，我们已经知道，你知道，选择补码算术是结合和交换的。所以对于乘法和加法来说真的都不重要。所以我组合这些元素的顺序真的不重要。无论如何，我都会得到完全相同的答案。但是你也看到了浮点运算，但情况并非如此。因此，对于浮点数，由于舍入的可能性而移动这些括号，甚至可能溢出，您可能会从这些计算中得到不同的值结果。</p>
+<p>发言人   56:11<br>But then again, if you think about, is that really going to happen? Chances are no, that it’s not really going to affect the outcome of your program, but it’s enough of a change that most C compilers or most compilers, period, will not make any changes. That changes associativity because they’re very conservative when it comes to voting point. So that’s something you as an application programmer have to know well enough.<br>但是话又说回来，如果你想想，那真的会发生吗？机会是没有的，它不会真正影响你的程序的结果，但它已经足够改变，大多数C编译器或大多数编译器，时期，不会做任何改变。这改变了结合性，因为他们在投票点方面非常保守。这是作为应用程序程序员必须充分了解的事情。</p>
+<p>发言人   56:38<br>Is this a valid? Can I do this transformation without messing things up? And now what I’ll say is now there’s a new set of bounds. So a bound is what would appear to be sort of the best you can do based on some constraint in the program. And before, it was saying, well, the latency total time through for a given operation was abound.<br>这是有效的吗？我能在不搞砸事情的情况下进行这种转变吗？现在我要说的是，现在有一组新的界限。因此，限制似乎是基于程序中的某些约束，您可以做的最好的事情。之前，它的意思是，一个给定操作的总延迟时间很多。</p>
+<p>发言人   57:04<br>And now I say, well, there’s an even more fundamental bound, which I’ll call the throughput bound, which is just based on I only have so much hardware out there, and I can only pump it so fast. So for example, these two, the throughput bound is one because I only have. That actually becomes limited by the requirement that I’m having to read from memory. And I have two different load units. Oh no I’m sorry. I only have one multiplier for integers and one for addition. The throughput bound for these two actually is just a half because it turns out there’s some odd part of the hardware design that has two floating point multipliers, but only one floating point adder. And we’ll see that we can actually make this multiplication code run faster than addition code.<br>现在我说，嗯，还有一个更基本的界限，我称之为吞吐量界限，这只是基于我只有那么多硬件，而且我只能非常快地输送它。例如，这两个，吞吐量限制是一个，因为我只有一个。这实际上受到我必须从记忆中读取的要求的限制。我有两个不同的负载单位。哦，不，对不起。我只有一个整数乘数和一个加法乘数。这两个的吞吐量限制实际上只有一半，因为事实证明硬件设计中有一些奇怪的部分有两个浮点乘法器，但只有一个浮点加法器。我们会看到，我们实际上可以让这个乘法代码比加法代码运行得更快。</p>
+<p>发言人   58:07<br>And over here, again, my limit will be that I only have two load units. And I read for every element I’m computing, I have to be reading 1 element from memory. So I can’t get below that. So, but we saw this transformation now has let us break out of this latency limitation and get something closer to throughput.<br>在这里，我的限制将是我只有两个负载单位。并且我读取我正在计算的每个元素，我必须从内存中读取1个元素。所以我无法低于这个。所以，但是我们现在看到这种转变让我们突破了延迟限制，更接近吞吐量。</p>
+<p>发言人   58:33<br>Here’s another technique that can be used to, again, sort of get more parallelism going. And I call this multiple accumulators. And the idea is, let’s imagine that we have the odd numbered elements and the even numbered elements in the array. And we can compute separate sums or products of those two sets of elements. And then the very end combine them together. So this is another form of an associativity transformation.<br>这里还有另一种技术，可以用来再次提高并行性。我称之为多个累加器。这个想法是，让我们想象一下，我们有奇数元素和偶数元素在数组中。我们可以分别计算这两组元素的总和或乘积。然后最后把它们结合在一起。所以这是结合性转换的另一种形式。</p>
+<p>发言人   59:04<br>We’re changing the order in which we combine things together. It’s just that we’re doing it in this sort of odd even manner, or in general, every ith value, if we do it by some. By some parameter, I and it has the same issues that if it’s integer arithmetic, it’s fine. If it’s floating point, there’s a risk of changing the behavior of the program. But you’ll see that, again, we get cutting in half here and a little bit below one for integer addition. And again, we can think of it by looking at these pictures of what are what gets computed?<br>我们正在改变我们将事物组合在一起的顺序。这只是因为我们以这种奇怪的方式进行，或者一般来说，如果我们以某种方式进行，每一个都是值。通过一些参数，I和它有同样的问题，如果它是整数算术，那没问题。如果它是浮点数，则存在改变程序行为的风险。但是你会看到，对于整数加法，我们在这里切成两半，略低于一。再说一次，我们可以通过查看这些图片来思考它，这些图片是什么被计算出来的？</p>
+<p>发言人   59:47<br>And you see what we’re doing is we’re computing the even numbers, even numbered elements being combined. Here are all the odd ones. And at the very end, we’re combining those together.<br>你可以看到我们正在做的是计算偶数，将偶数编号的元素组合在一起。这些都是奇怪的。最后，我们将它们结合在一起。</p>
+<p>发言人   01:00:00<br>And so we can generalize this if we can unroll by a factor of k of l, and we can accumulate k results in parallel. And we can use various values of l and k for it, in general, LS to be a multiple of k, and so you run it out, and you can get for floating point multiply, you can actually get it down almost to this throughput bound of 0.5.<br>因此，如果我们能够以l的k倍展开，并且可以并行累积k个结果，我们就可以推广这一点。我们可以使用不同的l和k值，一般来说，LS是k的倍数，所以你把它运行出来，你可以得到浮点乘法，你实际上可以把它降到几乎0.5的吞吐量边界。</p>
+<p>发言人   01:00:40<br>This is incorrect, this is integer addition, I should say. In addition, you can again, get it down to around .5 in general by sort of picking the best parameters, I can get very close to the throughput bound of this processor. So I’ve been able to take something, remember originally was 20 clock cycles, then 10, and now I’m getting it down to one or fewer clock cycles per element. So now, just as the final step is OK, is that as good as it goes?<br>这是不正确的，这是整数加法，我应该说。此外，通过选择最佳参数，您可以再次将其降低到0.5左右，这样我可以非常接近该处理器的吞吐量边界。所以我已经能够采取一些措施，记得最初是20个时钟周期，然后是10个，现在我正在将其降低到每个元素一个或更少的时钟周期。那么现在，最后一步就可以了，有这么好吗？</p>
+<p>发言人   01:01:20<br>Actually, no, you remember when I talked about floating point, I mentioned that there’s this special set of registers that are on x 86 that were called Xmm registers on the shark machines. And now this has, well, this newer generation has something called ymm registers, which have the feature being twice as big as Xmm registers. So in particular, these registers are are. 32 B long. And there’s a new version coming out within a year or something they call a 512, where the register is 512 b. So that’s 256 B wrong. No, it 2, 5, 12, excuse me, it’s 64 B, 64 B, so it will be twice as big as these.<br>实际上，不，你还记得我谈论浮点数时，我提到过x86上有一组特殊的寄存器，在shark机器上被称为Xmm寄存器。现在有了，嗯，新一代有了一种叫做 “ymm寄存器” 的东西，它的功能是Xmm寄存器的两倍。所以特别地，这些寄存器是。32 B长。在一年内有一个新版本即将推出，他们称之为512，其中寄存器是512 b。所以那是256 B错了。不，它是2、5、12，对不起，它是64 B、64 B，所以它的大小是这些的两倍。</p>
+<p>发言人   01:02:18<br>As I mentioned before, you can think of these as a way of operating on 32 individual characters, or I can treat them as floating point. And we saw before that nowadays the regular floating point makes use of sort of the low order 4, 8 B of these registers, but there’s also instructions called vector addition, where one instruction has the effect of doing eight floating point additions at once on float data and on double precision. Its counterpart does four of them at once on these. And that hardware is there. It’s just sitting there waiting to use, and it seldom gets fired up to really make use of it. But so that floating point multiplier that can do floating point multiplication in three clock cycles and is fully pipelined can actually do 8 voiding point multiplications in parallel and pipeline in three clock cycles. And as I mentioned, the Shark Machines has an earlier version where the numbers are half of these. So it can do for single precision or two double precision at once.<br>正如我之前提到的，您可以将它们视为一种对32个单独字符进行操作的方式，或者我可以将它们视为浮点。我们之前看到，现在常规浮点使用这些寄存器的低阶4、8 B，但也有称为向量加法的指令，其中一条指令可以同时对浮点数据和双精度进行8个浮点加法。它的对应部分在这些上面同时做了四个。而且硬件也在那里。它只是坐在那里等待使用，很少会被激发去真正利用它。但是，能够在三个时钟周期内进行浮点乘法并且完全流水线化的浮点乘法器实际上可以在三个时钟周期内并行执行8个空洞点乘法。正如我所提到的，鲨鱼机器有一个早期版本，数字是其中的一半。所以它可以同时进行单精度或两个双精度。</p>
+<p>发言人   01:03:42<br>And if I write code uses that what I call vector code, then you can see I can drop by a vector of about four across the board here and make it run much faster. So this is really 0 6 2 5. It’s doing 16 operations per Cox cycle on that. And can’t quite hit the vector throughput bound, but in general, making this thing run much faster.<br>如果我编写代码使用我所谓的矢量代码，那么你可以看到我可以在这里下降大约四个矢量，并使它运行得更快。所以这真的是0 6 2 5。它在每个Cox周期上执行16个操作。并且不能完全达到向量吞吐量的限制，但总的来说，使这个东西运行得更快。</p>
+<p>发言人   01:04:22<br>And so the people really worry about, and you can imagine these instructions were introduced for things like video processing, image processing, sound sort of signal processing, where performance really matters, how fast you can display an image, how fast you can rotate something, how fast you can perform graphics makes a big difference in video games are one of the big drivers. But even for sort of other operations you might do on images. And so these instructions were really designed to do it and people who write code for those kind of applications get pretty good at right encode in a way that they can do this to what’s called vector. And unfortunately, so the Intel compiler will actually automatically do some of this for you. GCC, they attempted to implement it and it didn’t work very well. So I think they discontinued it.<br>所以人们真的很担心，你可以想象这些指令被引入到视频处理、图像处理、声音信号处理等领域，其中性能真正重要的是，显示图像的速度有多快，旋转物体的速度有多快，你执行图形的速度有多快会对视频游戏产生很大的影响，这是其中一个重要的驱动因素。但即使是你可能对图像执行的其他操作。因此，这些指令确实是为了做到这一点而设计的，为这些应用程序编写代码的人在正确编码方面表现得相当出色，他们可以对所谓的向量进行编码。不幸的是，英特尔编译器实际上会自动为您完成一些任务。GCC，他们试图实现它，但它并没有很好地工作。所以我认为他们已经停产了。</p>
+<p>发言人   01:05:17<br>It turns out there’s a web side, so this is on the web from the web page that describes how to do this programming. If you’re interested, there’s extensions to GCC that are very funky, really weird stuff, but write code that then will get compiled down to make use of these kind of instructions. And that’s how I did it and how I got these performance results.<br>结果是有一个web端，所以这是从描述如何进行编程的网页上的。如果你感兴趣的话，有一些对GCC的扩展是非常时髦、非常奇怪的东西，但是编写代码，然后编译下来利用这些指令。这就是我如何做到的，以及我如何得到这些性能结果。</p>
+<p>发言人   01:05:47<br>Okay, so that shows you if you really want to, but that’s very machine specific. That will only work on, well, you have to, you can actually tune it. So it’s easy to compile it to go between different machines, but it’s still very specific, very specific too. GCC, in fact. So that sort of shows you, though, if you really want to push it, what you can do.<br>好的，这表明你是否真的想要，但这非常针对机器。那只会起作用，嗯，你必须这样做，你实际上可以调整它。因此，编译它以在不同的机器之间运行很容易，但它仍然非常具体，也非常具体。实际上，GCC。这样就向你展示了，如果你真的想推动它，你可以做些什么。</p>
+<p>发言人   01:06:14<br>Now, let’s get back to one of the things I told you about how if you think of your program as a very long linear sequence of instructions, then the thing is trying to grab as many of those and pull them apart as fast as it can. But of course, you know, your program is actually typically a loop, and there aren’t many instructions in that loop. So how is it turning that into a linear sequence?<br>现在，让我们回到我告诉过你的一件事情，如果你把你的程序看作是一个非常长的线性指令序列，那么问题就是尽可能多地抓住这些指令，并尽可能快地将它们分开。但当然，你知道，你的程序实际上通常是一个循环，而且循环中的指令并不多。那么它是如何将其转化为线性序列的呢？</p>
+<p>发言人   01:06:40<br>Well, that relies on an idea of how do you handle branches, typically program fetching ahead, grabbing instructions, and it will come to a branch instruction, a conditional jump of some sort. And there has a dilemma because in general, this branch could either I’m sorry, could either be taken, meaning it will go to the branch target, or it could do what’s called fall through, meaning the test fails. And so it just continues execution. And there’s no way a priority to know what will happen. These can often be data dependent.<br>嗯，这取决于如何处理分支的想法，通常是程序提前抓取指令，抓取指令，然后它会变成分支指令，某种条件跳转。而且有一个困境，因为通常情况下，这个分支可以要么对不起，要么被接受，这意味着它将转到分支目标，或者它可以做所谓的 “失败”，这意味着测试失败。所以它只是继续执行。而且没有办法优先知道会发生什么。这些通常可能依赖于数据。</p>
+<p>发言人   01:07:26<br>And so the way this is handled on a modern processor is by doing what’s known as branch prediction, which is essentially just guess which way is this branch going to go? Is it going to be taken or not predict? And then you start executing along the predicted direction, but do it in a way that if you make a mistake that you haven’t caused irreparable harm to the program. And we’ll see what that means.<br>因此，在现代处理器上处理这个问题的方法是进行所谓的分支预测，这基本上只是猜测这个分支将走向何方？它会被采取还是不会预测？然后你开始沿着预测的方向执行，但要以某种方式执行，如果你犯了一个错误，你还没有对程序造成不可弥补的伤害。我们会看看这意味着什么。</p>
+<p>发言人   01:07:53<br>So what really happens then is up here, there’s a lot of logic that’s trying to suck out instructions. And then there’s a branch unit that’s basically coming along later and saying, yeah, you’re OK, you predicted that correctly. So you can keep going or it will throw up a flag and say, oh, wait a minute, stop misp you mispredicted this branch way back 100 clock cycles ago. It’s not that long ago. Some number of clock cycles ago, you’ve got to fix it. And so the handling jumps then becomes more a case of of guessing up here and then either confirming or denying that guess down below.<br>所以真正发生的是，在这里，有很多逻辑试图吸取指令。然后有一个分支单位基本上是稍后出现并说，是的，你没事，你预测得正确。所以你可以继续前进，否则它会抛出一面旗帜并说，哦，等一下，别误了，你在100个时钟周期前错误地预测了这个分支。这不是很久以前的事了。在一些时钟周期之前，你必须修理它。因此，处理跳跃就变得更多地是在这里猜测，然后在下面确认或否认那个猜测。</p>
+<p>发言人   01:08:44<br>So in general, then, it will predict it one way and begin executing. So imagine, for example, in a loop like I’ve shown you, that you predict that the branch will be taken, that you’ll go back to the start of the loop. Again, a pretty good guess. It’s a good guess until you hit the end of the loop, but let’s just guess that way. And so the program will just keep guessing that the branch will be taken. And by that means, by all those guesses, basically create this long linear sequence of instructions that can be pulled in and executed. And in general, some of them will be fetched and some of them will actually have done the operations that are called for in the instruction.<br>因此，一般来说，它会以一种方式预测它并开始执行。例如，想象一下，在一个像我展示给你的循环中，你预测分支将被采取，你将回到循环的开头。再一次，一个相当好的猜测。直到你到达循环的末尾，这是一个很好的猜测，但让我们这样猜测。因此，程序将继续猜测该分支将被采取。通过这种方式，通过所有猜测，基本上创建了这个可以被拉入和执行的长线性指令序列。一般来说，它们中的一些将被获取，其中一些将实际上完成了指令中调用的操作。</p>
+<p>发言人   01:09:37<br>And then what happens is if the flag goes up to say, no, this was invalid, then what will happen is it will go back and cancel all the instructions that have been fetched and executed. And the way it does that is you’ll notice all these instructions only modification registers. And it has multiple copies of all the registers. Going back. These are the values that I’m sure of. These are sort of speculative values, a pending updates to them. And so when it comes time to cancel, it just cancels out all those pending updates and goes back to values that it’s certain of question. There’s a big block they call the register renaming unit, which is sort of multiple copies of all the registers as they get accumulated.<br>然后发生的事情是，如果标志上升说，不，这是无效的，那么它将返回并取消所有已获取和执行的指令。它的方式是你会注意到所有这些指令只是修改寄存器。并且它有所有寄存器的多个副本。回去。这些是我确定的价值观。这些都是投机性的价值，是一个悬而未决的最新进展。因此，当需要取消时，它只是取消所有挂起的最新进展，并返回到确定有问题的值。有一个大的块被称为寄存器重命名单元，它是所有寄存器累积的多个副本。</p>
+<p>发言人   01:10:46<br>It has many more. We typically have several hundred of these sort of virtual registers to keep pending copies to the actual registers.<br>它还有更多。我们通常有数百个这样的虚拟寄存器，以保持对实际寄存器的挂起副本。</p>
+<p>发言人   01:10:57<br>It does, it stores. Here’s the old value, here’s the first update, here’s the second update, here’s the third, and it keeps track of all the you can imagine why this is not something you learn in a one semester course to keep track of all those different things flying by and make sure that it works is a pretty tricky business, but the conceptual way, it’s a pretty simple idea that it just races off, does a lot of things based purely on speculation, and then only if it makes a mistake, it goes, oh, and it sort of rolls back to as if it only execute up to a certain point, and then it moves forward and starts going the correct way. So, and it can get away with this, it’s very interesting and tricky stuff, but you remember we talked early in the course about the difference between using conditional moves and conditional jumps to implement conditional operations. And conditional moves can take place totally within the structure of this pipeline. But a conditional jump, if it’s an unpredictable branch, the problem is it might go off executing and make do a lot of wasted work, but even worse than when it gets back and has to restart, it takes a while to sort of fill up all the buffers and the system and get the whole thing running at full steam ahead. So that kind of finishes up.<br>它有，它存储。这是旧的值，这是第一次更新，这是第二次更新，这是第三次。它会跟踪所有你能想象到的东西，为什么这不是你在一个学期的课程中学到的东西，以跟踪所有这些不同的东西，并确保它有效，这是一个相当棘手的事情，但是概念性的方式，这是一个非常简单的想法，它只是逐渐消失，做很多事情纯粹基于猜测，然后只有当它犯了错误时，它才会回到好像只执行到某个点的状态，然后它向前移动并开始朝着正确的方向前进。所以，它可以逃脱这个，这是非常有趣和棘手的东西，但是你还记得我们在课程的早期讨论了使用条件移动和条件跳转来实现条件操作之间的区别。有条件的移动完全可以在这个管道的结构内进行。但是条件跳跃，如果它是一个不可预测的分支，问题是它可能会停止执行并做很多浪费的工作，但比它回来并必须重新启动时更糟糕，需要一段时间才能填满所有缓冲区和系统，并让整个系统全速运行。这样就结束了。</p>
+<p>发言人   01:12:34<br>And the way I describe it is, first of all, don’t do anything stupid. And stupid is probably it too strong a word. Don’t do sort of keep in mind, there’s certain things that you should, as a programmer be doing all the time, and they’re not obvious, perhaps. And then begin thinking about tuning and getting some of instruction level parallelism. And I describe it as for the machine, But as I said, pretty much all processors nowadays, it’s a class of machines. And so these general techniques will work.<br>我对此的描述是，首先，不要做任何愚蠢的事情。“愚蠢” 这个词可能太过强烈了。不要做，记住，作为一个程序员，有一些事情你应该一直在做，也许它们并不明显。然后开始考虑调优和获得一些指令级并行。我将其描述为针对机器的，但正如我所说，如今几乎所有的处理器，它是一类机器。因此，这些通用技术将起作用。</p>
+<p>发言人   01:13:07<br>Those ideas of changing the associativity, they’ll work, whether it’s the Arm processor built into my cell phone or the x 86 processor built into your laptop, or one of the shark machines, they all have the same general implementation structures. So these techniques will work across across all of them. Okay, that’ll do us for today.<br>那些改变结合性的想法将会奏效，无论是我手机中内置的Arm处理器还是笔记本电脑中内置的x86处理器，或者是鲨鱼机器中的一个，它们都具有相同的通用实现结构。因此，这些技术将适用于所有这些技术。好的，我们今天就到这里了。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 010-Program Optimization</div>
+      <div>http://example.com/2025/10/12/15213-010/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-011/" title="深入理解计算机系统 011-The Memory Hierarchy">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 011-The Memory Hierarchy</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-009/" title="深入理解计算机系统 009-Machine-Level Programming V, Advanced Topics">
+                        <span class="hidden-mobile">深入理解计算机系统 009-Machine-Level Programming V, Advanced Topics</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

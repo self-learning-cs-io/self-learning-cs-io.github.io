@@ -1,0 +1,717 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00We’re still slogging through the material on machine level programming, which is I talked to you earlier, I think is in some ways the core of this course. Much of the rest of the material b">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 007-Machine-Level Programming III, Procedures">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-007/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00We’re still slogging through the material on machine level programming, which is I talked to you earlier, I think is in some ways the core of this course. Much of the rest of the material b">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:06.000Z">
+<meta property="article:modified_time" content="2025-10-12T13:01:45.140Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 007-Machine-Level Programming III, Procedures - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 007-Machine-Level Programming III, Procedures"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          118 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 007-Machine-Level Programming III, Procedures</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>We’re still slogging through the material on machine level programming, which is I talked to you earlier, I think is in some ways the core of this course. Much of the rest of the material builds upon, and hopefully you’ve all had a chance to check out Lab 2 and your Bam lab, and you’ve got it and started on that. And certainly by the time you’re finished with the material from today, you will be well on the way to solving all but the last one or two stages of the bomb web. So I highly recommend you get going on that, not put it off to the last minute. And what we’re talking about today is, is how procedures. I’m going to use the same terminology here, whether it’s a function, a procedure, or an object oriented programming, a method, those are all roughly the same thing. And what we’ll talk about covers them overall.<br>我们仍在努力学习机器级别编程的内容，这是我之前跟你谈过的，我认为从某些方面来说这是本课程的核心。其余的大部分材料都是建立在这个基础上的，希望你们都有机会查看实验室2和你们的Bam实验室，你们已经掌握了并开始了。当然，当你完成今天的材料时，你将会很好地解决炸弹网的所有阶段，除了最后一两个阶段。所以我强烈建议你继续这样做，不要把它推迟到最后一刻。今天我们谈论的是程序。我在这里将使用相同的术语，无论是函数、过程还是面向对象的编程方法，这些都是大致相同的东西。我们将讨论的内容涵盖了它们的整体。</p>
+<p>发言人   01:08<br>I’ll also mention at the outset that the way this is handled in the procedures that we’ll be talking about today is a combination of the actual x 86 hardware and how it supports it, but also in some ways, more importantly, a set of conventions that were developed that basically everyone agreed to. And it’s known as an ABI. That’s I want to, which stands for application binary interface.<br>我还将在一开始提到，在我们今天将要讨论的过程中处理这个问题的方式是实际的x86硬件及其支持方式的结合，但在某些方面，更重要的是，这是一套基本上每个人都同意的约定。它被称为ABI。这就是我想要的，它代表应用程序二进制接口。</p>
+<p>发言人   01:49<br>So the idea is a document. You can get it online and it’s cited in the book. It’s a document that people put together, the initial version when the first X 8664 machines were first being developed. And specifically for Linux, they said OK, all Linux programs that all compilers, all the operating system, all the different parts of a system that need to have some common understanding of how to manage the resources on the machine, we agree to adhere to this set of rules. And so it goes beyond actual what the hardware does to a set of software standards. And it’s called application binary interface because it’s particularly the interface at the machine level, programming machine program level. And so that’s what we’ll be covering today.<br>所以这个想法是一份文件。你可以在网上获取它，并且它在书中被引用。这是人们编写的一份文件，是第一批x8664机器首次开发时的初始版本。特别是对于Linux，他们说好的，所有的Linux程序，所有的编译器，所有的操作系统，系统的所有不同部分，需要对如何管理机器上的资源有一些共同的理解，我们同意遵守这一组规则。因此，它超越了硬件的实际功能，而是一套软件标准。它被称为应用程序二进制接口，因为它尤其是在机器级别，即编程机器程序级别的接口。这就是我们今天将要报道的内容。</p>
+<p>发言人   02:48<br>So people ask sort of, well, who makes up these rules and things? And the point was, there was a working group that did this, and there’s a separate ABI for Windows, it’s similar, but not quite the same. There’s a separate ABI for OSX for Apple, and even free BSD, A different variant of a unix-like operating system has its own ABI that they all share a lot of in common, but some of the details differ.<br>所以人们会问，谁制定了这些规则和规则？重点是，有一个工作组做了这件事，还有一个单独的Windows的ABI，它是相似的，但不完全相同。有一个单独的ABI for OSX for Apple，甚至免费的BSD，一个类似unix的操作系统的不同变体也有自己的ABI，它们都有很多共同点，但一些细节有所不同。</p>
+<p>发言人   03:20<br>So if you think about what goes on in a procedure, even in C, which is a relatively unsophisticated language in many ways, there’s a lot going on. And so it’s worth breaking down those and thinking about it.<br>因此，如果你考虑一个过程中发生的事情，即使是在C语言中，这在很多方面都是相对不复杂的语言，也有很多事情要做。因此，值得将它们分解并思考。</p>
+<p>发言人   03:34<br>One is there’s a notion of control. So in my example, I show a procedure P calling a procedure Q, and so when p calls Q, then somehow the program has to jump down and begin executing the lines of code for Q, and then when Q hits it’s exit point, it’s point. Somehow it’s to get back to P and not just to any old place in P, but specifically to whatever came comes in p right after the call to Q, so somehow we have to record the information about where the return should be to be able to return to the correct place. So that’s, first of all, passing and control to a function and having that function return back to where it should get back to. Second, there is data, how do we get operands to it? So in this particular case, q is a function that takes a single argument that it calls internally. It calls I and up here, where p is calling it, it’s passing some value within p called x, so somehow that data value of x has to be recorded in a form that within q, it will have access to that information. And similarly, when q wants to return a value, and then P will make use of that value, there has to be some convention of how that data gets communicated back.<br>一是有控制的概念。所以在我的例子中，我展示了一个过程P调用一个过程Q，当p调用Q时，程序必须以某种方式跳下并开始执行Q的代码行，然后当Q到达它的退出点时，它就是点。在某种程度上，它是为了回到P，而不仅仅是回到P中的任何旧地方，而是特别是在调用Q之后，p中出现的任何东西，因此我们必须以某种方式记录返回应该在哪里的信息，以便能够返回到正确的位置。首先，传递控制给一个函数，让该函数返回到它应该返回到的地方。第二，有数据，我们如何得到它的操作数？因此，在这种特定情况下，q是一个函数，它接受内部调用的单个参数。它在这里调用I，p在这里调用它，它在p中传递一些值称为x，所以x的数据值必须以一种形式记录在q中，它将有权访问该信息。同样，当q想要返回值，然后P将利用该值时，必须有一些约定来确定数据如何传回。</p>
+<p>发言人   05:07<br>And then finally, in a function might have some local data that requires allocation of some amount of space. And so where does that space get allocated? How do we make sure it gets allocated properly? And in particular, in C, as you know, when a function returns, any local data that it all-local should de-allocated should be freed up so that we don’t sort start consuming an unbounded amount of storage. So how do we do that?<br>最后，在一个函数中可能会有一些本地数据需要分配一些空间。那么这个空间分配在哪里呢？我们如何确保它被正确分配？特别是在C语言中，正如你所知道的，当一个函数返回时，它所有本地的数据都应该被释放，这样我们就不会开始消耗无限的存储量。那么我们该怎么做呢？</p>
+<p>发言人   05:38<br>Those are all the of different aspects that a procedure call and return have to deal with somehow. And part of the reason for breaking it down into those good old segments is in X 8 664.<br>这些是过程调用和返回必须以某种方式处理的所有不同方面。将其分解为那些好的旧段的部分原因是在X 8 664中。</p>
+<p>发言人   05:53<br>One of the clever things they did was to try and reduce the overhead of procedure calls as much as possible, because as you know, in good programming style, you often write these functions that do a fairly small amount of actual useful stuff. And it’s sort of good programming style to do that, especially in a more object oriented programming style. And so you don’t want the overhead, the extra number of steps taken to invoke a procedure and deal with all those aspects to take any more time than it needs to, because it’s a fairly critical overhead. So one of the things they do in this is they only do whatever is absolutely needed. So in particular, if no local storage is needed on this for data, then don’t allocate it, Don’t free it. If you’re not passing any values, don’t pass them. And in general, sort of how little can you get away with. And that makes it a little bit confusing from teaching point of view and that there’s no set template that it follows every time it sort of you have each case is a special case for how a particular procedure gets implemented.<br>他们做的一件聪明的事情是尽可能地尝试减少过程调用的开销，因为如你所知，在良好的编程风格中，你经常编写这些函数来做相当少量的实际有用的事情。这样做是一种很好的编程风格，特别是在更面向对象的编程风格中。因此，您不希望开销，即调用过程和处理所有这些方面所需的额外步骤数量花费比需要更多的时间，因为这是相当关键的开销。所以他们在这方面做的一件事是他们只做绝对需要的事情。因此，特别是，如果数据不需要本地存储，那么不要分配它，也不要释放它。如果您没有传递任何值，请不要传递它们。总的来说，你几乎无法逃脱。从教学的角度来看，这有点令人困惑，而且没有固定的模板，每次你有这种情况时，它都会遵循每个案例是如何实现特定过程的特殊情况。</p>
+<p>发言人   07:11<br>So we’ll go through all these parts and see how they happen. And you’ve already seen little glimpses of them looking at the little fragments of code that we’ve shown already.<br>所以我们将浏览所有这些部分，看看它们是如何发生的。你已经看到了他们在看我们已经展示的代码小片段的一些小瞥见。</p>
+<p>发言人   07:22<br>So the first one, sort of the most critical, is how do we pass control to a function? But before we can even talk about that, we have to talk about the stack. And you’ve heard that term, the stack in various ways. The stack is really not a special memory. It’s just a region of the normal memory. Remember, to the programmer’s perspective, some of a programmer’s perspective is memory is just a big array of bytes, and somewhere within that bunch of bytes, we’re going to call it the stack.<br>所以第一个问题，也是最关键的，就是我们如何将控制权传递给一个函数？但在我们谈论这个之前，我们必须先谈论堆栈。你听说过这个术语，堆栈的方式有很多种。堆栈实际上并不是特殊的内存。这只是正常记忆的一个区域。请记住，从程序员的角度来看，内存只是一个大的字节数组，在这一堆字节中，我们称之为堆栈。</p>
+<p>发言人   08:00<br>Stack is used by the program to manage the state associated with the procedures that it calls as they return. All these potential information, the control information data and allocates local data. And the reason why it can be managed as a stack is because of the nature of the whole idea of procedure calls and returns that you make a call and you might need some information, but when you return from a call, all that information can be discarded. And so it makes use of that sort of last in, first out allocation principle meshes very well with this idea of procedure call and return.<br>堆栈被程序用来管理与其调用的过程相关联的状态，这些过程在返回时被调用。所有这些潜在信息，控制信息数据并分配本地数据。之所以可以将其作为堆栈进行管理，是因为过程调用和返回整个概念的本质，您进行调用可能需要一些信息，但是当您从调用返回时，所有这些信息都可以丢弃。因此，它利用了这种后进先出分配原则，与过程调用和返回的概念非常吻合。</p>
+<p>发言人   08:46<br>So in x 86 stacks actually start with a very high numbered address and when they grow when more data are allocated for the it’s done by decrementing the stack pointer, So the stack pointer, as you know, is just a regular register Rsp. And its value is the address of the current top of the stack. And every time you allocate more space on the stack, it does it by decrementing that pointer now just for convention and.<br>因此，在x86中，堆栈实际上从一个非常高的地址开始，当它们增长时，随着为它分配更多的数据，它通过递减堆栈指针来完成，因此堆栈指针，如你所知，只是一个常规寄存器Rsp。其值是当前堆栈顶部的地址。每次您在堆栈上分配更多空间时，它都会通过递减该指针来实现，仅用于约定和。</p>
+<p>发言人   09:24<br>I’m not sure why this happens, but this is the way we do it is we draw stacks upside down so that the term, the top of the stack is actually shown at the bottom. And just to add to that confusion, and also remember that the addresses go from bottom to top, not from top to bottom. So when you add to the stack, you decrement the stack pointer. Neither of those kind of meshes with your intuition, perhaps, but you just have to get used to it. We’re not going to redraw all the slides. So anyways, remember that over and over again. And that’s why these arrows show that if we were to enumerate the addresses of these different bytes in the data, they’d be increasing in this direction.<br>我不确定为什么会发生这种情况，但我们的做法是颠倒绘制堆叠，这样术语 “堆叠的顶部” 实际上会显示在底部。为了增加混淆，还要记住地址是从下到上，而不是从上到下。因此，当您添加到堆栈时，您将递减堆栈指针。这两种网格都不符合你的直觉，也许，但你只需要习惯它。我们不会重新绘制所有的幻灯片。所以无论如何，一遍又一遍地记住这一点。这就是为什么这些箭头表明，如果我们要枚举数据中这些不同字节的地址，它们会朝着这个方向增加。</p>
+<p>发言人   10:19<br>And when we add to the stack, the stack top is at the bottom of the picture. And we do it by decrementing the stack pointer. So in particular, there’s explicit instructions. Push and pop, make use of the stack. And it’s often written push Q and pop Q, but that Q is actually an optional suffix on the instruction. So the idea of pushing something onto the stack then is there is some source operand.<br>当我们添加到堆栈时，堆栈顶部位于图片的底部。我们通过递减堆栈指针来实现。特别地，有明确的指示。Push和pop，利用堆栈。它通常写为push Q和pop Q，但Q实际上是指令上的可选后缀。因此，将某些东西推入堆栈的想法是有一些源操作数的。</p>
+<p>发言人   10:56<br>It could be from register or from memory or an immediate. So this is sort of like a move instruction, but the destination of the move will be toward memory. And the address of the memory is determined by first decrementing the stack pointer and then doing a write. And similarly, the pop instruction takes reads data from the stack and stores it in the destination, which must be a register for this particular instruction. I think push must be a register too, now that I think of it, or immediate can’t from memory to so pop reads from memory, the address it reads from is given by the current stack pointer, and then it increments the stack pointer by 8. These both work only on 8 B operands. I’ll get to you in a second, and then the result of that is stored in a register question.<br>它可以来自寄存器、内存或即时。这有点像移动指令，但移动的目的地将是内存。内存的地址是通过首先递减堆栈指针然后进行写入来确定的。同样，pop指令从堆栈中读取数据并将其存储在目标中，目标必须是此特定指令的寄存器。我认为push也必须是一个寄存器，现在我想到了它，或者立即无法从内存中弹出读取内存，它读取的地址由当前堆栈指针给出，然后它将堆栈指针增加8。这两个都只能在8 B操作数上工作。我马上就会找到你，然后结果会存储在一个寄存器问题中。</p>
+<p>发言人   12:11<br>Like, is there a difference between like using the pop? Oh, could you write it as a set of instructions? Yeah, you could actually, except for some weird corner cases, write it out as a set of separate instructions. But it’s a common enough thing that sort of built in as an operation, whereas call and return are special, they can’t be simulated.<br>喜欢，使用流行音乐有区别吗？哦，你能把它写成一组说明吗？是的，除了一些奇怪的角落情况，你实际上可以把它写成一组单独的指令。但这是一种很常见的内置操作，而调用和返回是特殊的，它们无法模拟。</p>
+<p>发言人   12:37<br>So one thing to remember, too, is it’s important that in one case, you decrement, you do the arithmetic on the stack pointer before you write. Because when you first started out, the stack pointer was pointing to whatever was the top element of the stack. We want to create a new top element, so we’re going to decrement first and then do the row, whereas going the other direction, you want to read off the current top of stack element, and then you want to increment the stack pointer to sort of locate it. And one thing you’ll notice here is when I say de-allocate, it’s not like I magically erase this or something. All I’m doing is just moving a stack pointer, whatever was there at the top of the stack is still in memory. It’s just no longer considered part of the stack.<br>所以要记住的一件事是，在一种情况下，重要的是，在编写之前，你要对堆栈指针进行递减运算。因为当你刚开始的时候，堆栈指针指向堆栈的顶部元素。我们想要创建一个新的顶级元素，因此我们将首先递减然后执行行，而在另一个方向上，您想要读取当前堆栈顶部元素，然后想要递增堆栈指针以查找它。在这里你会注意到的一件事是，当我说 “取消分配” 时，它不像我神奇地擦除这个或什么东西。我所做的只是移动一个堆栈指针，堆栈顶部的任何东西仍然在内存中。它不再被视为堆栈的一部分。</p>
+<p>发言人   13:33<br>So the idea of the stack and the instructions push and pop are to put data on the stack or take it off. But we use the same basic idea for recall and return.<br>因此，堆栈的思想和指令push和pop是将数据放入堆栈或将其取出。但是我们对回忆和返回使用相同的基本思想。</p>
+<p>发言人   13:50<br>So let’s look at some examples. And there’s a lot of stuff up here, but this is AC function called Mt store. And then this is the slightly cleaned up output from the disassembler of that exact function. And similarly, this is a function called Mt 2, and this is its disassembled version. And the reason I’m showing this is because I want to make use of the addresses. These instructions are out that you don’t see when you write it in assembly code. So I’m showing it the disassembled version. And the reason all this is up here is because you’ll see the function malt store calls a Mt too. So I want to show how that works.<br>让我们看一些例子。这里有很多东西，但这是交流名为Mt store的功能。然后这是从该确切函数的反汇编程序中稍微清理过的输出。类似地，这是一个名为Mt 2的函数，这是它的分解版本。我展示这个的原因是因为我想利用这些地址。这些指令已经输出，当你用汇编代码编写它时看不到。所以我正在展示它的拆卸版本。所有这些出现在这里的原因是因为您会看到函数malt store也调用Mt。所以我想展示一下它是如何工作的。</p>
+<p>发言人   14:36<br>So, and there’s two instructions, and you’ve seen these in some form to call a function, you just call it where you give a label. But keep in mind that these two instructions, and the other is when you’re ready to return, you just execute the ret instruction. And keep in mind, though, that these functions don’t do the whole business of procedure call and return. They just do the control part of it, which is we saw as only one of three aspects of a procedure.<br>所以，这里有两条指令，你已经看到它们以某种形式调用一个函数，你只需在给出标签的地方调用它。但请记住，这两条指令，另一条是当你准备返回时，你只需执行ret指令。请记住，这些函数并不执行过程调用和返回的全部业务。他们只是做控制部分，我们认为这只是一个过程的三个方面之一。</p>
+<p>发言人   15:09<br>I also mentioned, you’ll see, especially in sometimes that we’ll say reap semicolon ret, and you can pretty much just ignore that. And it’s a bit obscure why it’s even there. It’s really the same idea.<br>我还提到，你会看到，特别是有时候我们会说收割分号，你几乎可以忽略它。它为什么还在那里有点模糊。这其实是同样的想法。</p>
+<p>发言人   15:31<br>Okay, so let’s sort of break this down into its simplest part. So let’s imagine a scenario in which the top of stack is at hex address 120, which is not realistic, by the way. And the program counter, which is called RP, which is not anything to do with death, is indicating that the current instruction is at 544, which is this call instruction. And so what would happen with the call instruction is it would do two things. It would actually three things, the Sta pointer subtracting 8 from one to 0 in hex gives you 118, and it would write the address of the instruction following the call onto the top of the stack. And it’s important that it does it the one following the call, because if that’s the instruction I’m going to return use for my return address and I want to resume execution in this function at the instruction after the call, not the call itself. Otherwise you’d have an infinite loop.<br>好的，让我们把它分解成最简单的部分。所以让我们想象一个场景，其中栈顶在十六进制地址120，顺便说一下，这是不现实的。而程序计数器被称为RP，与死亡无关，它指示当前指令位于544，这是这个调用指令。因此，调用指令会做两件事情。它实际上有三个东西，Sta指针在十六进制中将8从1减到0得到118，它会将调用后的指令地址写入堆栈顶部。重要的是它在调用之后执行，因为如果这是我要返回使用我的返回地址的指令，并且我想在调用后的指令处恢复此函数的执行，而不是调用本身。否则，你将有一个无限循环。</p>
+<p>发言人   16:55<br>And it is call instruction Also embedded in the encoding of the instruction is the. Destination address of it. Which happens to be the starting address of this particular function? So the program counter will be set to that value. And now the processor starts just executing along these instructions.<br>它是嵌入在指令编码中的呼叫指令。它的目标地址。哪个恰好是这个特定函数的起始地址？所以程序计数器将被设置为该值。现在处理器开始沿着这些指令执行。</p>
+<p>发言人   17:23<br>So it did a combination of a jump and a push. And that’s why the question was raised earlier is a push instruction, could you assemble that out of existing instructions? The answer is yes for push, but not for call question back there before you actually go to the function. And like bolt store, you would put the address of multi into two. No, no, it did that. You never explicit Ares that manipulate that. It’s implicitly part of the call instruction.<br>所以它做了一个跳跃和推动的组合。这就是为什么前面提出的问题是一个推送指令，你能在现有指令的基础上组装它吗？对于推送的答案是肯定的，但对于在你实际使用该功能之前的呼叫问题的答案不是肯定的。就像螺栓商店一样，你会把multi的地址分成两部分。不，不，它做到了。你从来没有明确表示操纵的是什么。它隐式地是调用指令的一部分。</p>
+<p>发言人   18:00<br>The call instruction will take, I don. It. Call instruction. It longs coding. And so it will take that address and use it for the new value of the program counter. So the call does both the pushing of the old, the return pointer, and setting the program counter to the new, the target for it. So it does both of those things. Question?<br>呼叫指令将会执行，我不知道。它。呼叫指令。它渴望编码。因此，它将获取该地址并将其用于程序计数器的新值。所以这个调用执行了老指针的推送返回，并将程序计数器设置为新的目标。所以它做了这两件事。问题？</p>
+<p>发言人   18:47<br>I don’t think so with either call or return. If so, it would be really obscure. No, I don’t think so, no. So call and return are the there might be some weird system instructions that let you do that, but not you’d see in any normal program. Other questions? These are good questions.<br>我不这么认为，无论是打电话还是退货。如果是这样，那就会非常晦涩。不，我不这么认为，不。所以调用和返回可能会有一些奇怪的系统指令让你这样做，但在任何正常程序中都不会看到。其他问题？这些问题很好。</p>
+<p>发言人   19:17<br>So that shows you control how the call works. And then so now imagine this multi two chugs along and it hits its return point and it hits this re instruction. But by the way, again, Q and red are the same instruction. And Rhet, well, its purpose is to sort of reverse the effect of a call. It assumes that the top of the stack has an address that you want to jump to. So it will pop that address off the stack, meaning it will increment the stack pointer. Like I said, the value doesn’t really disappear from the memory, is no considered part of the stack, and then it will set the program counter to what it just popped off the stack, and that will cause the program to resume back to where it came from. So you see that sort of clever idea of pushing the address of the next instruction so when the return comes, it will get it to the point where it should resume execution.<br>这表明您可以控制呼叫的工作方式。现在想象一下这个多两个点之间的碰撞，它达到了它的返回点，并且达到了这个重新指令。顺便说一下，Q和red是同一个指令。和Rhet，其目的是在某种程度上逆转呼叫的效果。它假设堆栈的顶部有一个您想要跳转到的地址。因此它将从堆栈中弹出该地址，这意味着它将增加堆栈指针。就像我说的，该值并没有真正从内存中消失，也没有被视为堆栈的一部分，然后它会将程序计数器设置为刚刚从堆栈中弹出的内容，这将导致程序恢复到原来的位置。所以你看到了推送下一条指令的地址这种聪明的想法，这样当返回到来时，它就会到达它应该继续执行的点。</p>
+<p>发言人   20:28<br>Okay, so that’s passing control. It’s pretty simple, all these things, by the way, and is just the nature of machine code. Every single part of it is pretty simple because it’s designed to be executed by the original hardware was fairly simple. It’s not anymore, but it’s really the basic ideas are and that we use kind of combinations of instructions to build up all the layers associated with operations like procedure, call, and return data.<br>好的，那就是通过控制权。顺便说一下，所有这些事情都非常简单，这只是机器代码的本质。它的每一个部分都非常简单，因为它的设计是由原始硬件执行的，非常简单。现在不是了，但它的基本思想是，我们使用各种指令组合来构建与过程、调用和返回数据等操作相关的所有层。</p>
+<p>发言人   21:00<br>Now, we’ve already seen a few small examples of passing data. A couple registers that get used when you’re passing arguments to a function. And we’ve seen the register rax getting used to return values from a function. And so that’s the basic idea. And again, this is all built into this ABI, defined as a set of conventions, not particularly a part of the hardware. So in particular, the rule is that the first six arguments get passed. In these particular registers. And you just have to memorize the order of them or have a table handy to look at or something like that, because there’s no particular logic to it. And the return value is returned in register Rax.<br>现在，我们已经看到了一些传递数据的小例子。当您将参数传递给函数时使用的几个寄存器。我们已经看到了寄存器rax习惯于从函数返回值。这就是基本思想。再次强调，这一切都内置在这个ABI中，定义为一组约定，不是特别硬件的一部分。所以特别的是，规则是前六个参数被传递。在这些特定的登记册中。你只需要记住它们的顺序，或者手边有一张桌子可以看，或者类似的东西，因为它没有特定的逻辑。并且返回值在寄存器Rax中返回。</p>
+<p>发言人   21:59<br>And by the way, this, this is all for arguments that are either integers or pointers. I think I’ve got a little bit unfolding point. Those are passed in a separate set of registers.<br>顺便说一句，这一切都是针对整数或指针的参数。我想我有一点点展开的观点。这些在一组单独的寄存器中传递。</p>
+<p>发言人   22:10<br>So these are just assume now we just are dealing with integer data, pointer data. And then you ask, well, what happens if you have more than six arguments to a function which isn’t very common, but it happens? Well, the rule on that is those get put in memory on the stack. And I’ll illustrate what I mean by that. So they’re passed to the function, and then the function has to retrieve those values off the stack.<br>所以这些只是假设现在我们只是在处理整数数据，指针数据。然后你问，如果一个函数有六个以上的参数，这不是很常见，但会发生什么？好的，那方面的规则是那些被放入堆栈上的内存中。我会说明我的意思。所以它们被传递给函数，然后函数必须从堆栈中检索这些值。</p>
+<p>发言人   22:38<br>Back in the bad old days of IA 32, by the way, all the arguments got passed on the stack. But now, for the most part, you pass arguments in the registers. And the reason for that is register access is way faster than memory access. Okay? So here’s a kind of messy bunch of code, but just to show all the time.<br>顺便说一下，在IA 32糟糕的日子里，所有的参数都被传递到堆栈上。但是现在，大部分情况下，您可以在寄存器中传递参数。原因是寄存器访问比内存访问快得多。好吗？所以这里有一堆杂乱的代码，但只是为了一直显示。</p>
+<p>发言人   23:09<br>And you can just see within this code that it’s making use of registers like RDI doesn’t show where and. In other places like Mt 2 has two arguments and you can see how it’s making use of RDI and RSI in the code. So basically, the code is generated under the assumptions that whatever arguments is being passed to, it will be passed in that particular set of registers in the particular order they’re listed. And the code sort of makes those assumptions. And then similarly, when you have a return value from a function, I would see Mt store does not have a return value, but Mt 2 does. And the way it does is it deposits the value into Rax. And then when the return from Rax occurs, a Tumult store, you see that it assumes now that the Mt store code can assume that register Rax holds the value, the return value, and it can store in its destination register.<br>你可以在这段代码中看到它正在使用寄存器，就像RDI没有显示位置和。在其他地方，比如Mt 2有两个参数，你可以看到它是如何在代码中使用RDI和RSI的。基本上，代码是在以下假设下生成的: 无论传递给什么参数，它都将按照列出的特定顺序传递到该组特定的寄存器中。代码会做出这些假设。类似地，当你有一个函数的返回值时，我会看到Mt store没有返回值，但Mt 2有。它的做法是将价值存入Rax。然后当Rax的返回发生时，一个动荡的存储区，你会看到它现在假设Mt存储区代码可以假设register Rax保存了值，返回值，并且它可以存储在其目标寄存器中。</p>
+<p>发言人   24:28<br>And we’ll look in a minute why rbx gets used here. We’ll cover that in just a little waiter, but that’s the point that as long as everyone sticks to this common interface standard, then you can even use different compilers to compile code and have them be able to cooperate with each other in terms of passing arguments, returning data. And that’s the reason why you want that convention, yes.<br>我们稍后会看一下为什么这里使用rbx。我们将在一个小服务员中介绍这一点，但只要每个人都坚持这个通用的接口标准，那么你甚至可以使用不同的编译器来编译代码，并让它们能够在传递参数、返回数据方面相互合作。这就是你想要那个惯例的原因，是的。</p>
+<p>发言人   25:00<br>8 B because, well, first of all, for call and return, it’s a 64 b machine. So all addresses are 64 b or 8 B. But also even the push and the pop instruction only work on 8 B values. If you said push L, if you tried to write that in 64 b code, it would come back with a syntax error on it if you had it in the Asse.<br>8 B，因为，首先，对于呼叫和返回，它是一台64 b的机器。所以所有地址都是64 b或8 B。但是即使是push和pop指令也只能在8 B的值上工作。如果你说push L，如果你试图用64 b代码编写它，如果你把它放在Asse中，它会返回一个语法错误。</p>
+<p>发言人   25:31<br>And that’s different. IA 32, there’d be 4 B values here. So like I said, you’ve sort of seen that implicitly in some of the code you’ve already been looking at. Pretty straightforward to get an example that shows passing arguments, you have to have a function with at least seven arguments, which is pretty messy to do. So I won’t do it. But there’s examples in the book. But now, and we’ll sort of pick it up. I’ll show you also in this later part.<br>那就不同了。如果是32，这里应该有4个B的值。就像我说的，你已经在一些你已经看过的代码中隐含了这一点。要获得一个显示传递参数的例子非常简单，你必须有一个至少有七个参数的函数，这相当混乱。所以我不会这么做。但书中有例子。但是现在，我们会把它捡起来。我将在后面的部分向您展示。</p>
+<p>发言人   26:09<br>And now the third part of it is, again, what if there’s some local data that we need to make use of. And so to get that idea across, I have to illus, bring in another concept, which is called the stack frame. And so this is a particular allocation pattern that’s used in memory.<br>现在第三部分是，如果有一些我们需要利用的本地数据怎么办。为了让这个想法得到理解，我必须引入另一个概念，称为堆栈框架。因此，这是内存中使用的特定分配模式。</p>
+<p>发言人   26:30<br>And as I mentioned earlier, one of the features of calling and returning is you can imagine when you have a nested series of calls to a function, when a particular function is executing, it only needs to reference the data within that function or values that have been passed to it, some of which might be pointers, and therefore pointing to other will in memory. But the point is, the rest of the functions in your code, however many they are, are sort of frozen at that moment. Really, there’s only one function executing at any given time. I’m assuming a sort of what you’d call a single threaded model here. And so we can just allocate on this stack, whatever space is required for this particular function, And then when we return from that function, we shouldn’t, if it’s correctly written, need any of the information associated with that function. It can just sort of disappear forever. And that’s why this idea of a stack, you allocate something, if you make more calls, you keep allocating more stuff, but as they return, you kind of back out of the stack and free things up. So the stack discipline is exactly the right matches.<br>正如我之前提到的，调用和返回的特点之一是，当你有一个嵌套的一系列函数调用时，当一个特定的函数正在执行时，它只需要引用该函数中的数据或传递给它的值，其中一些可能是指针，因此指向内存中的其他意志。但关键是，你代码中的其余函数，不管它们有多少，在那一刻都有点冻结了。实际上，在任何给定时间只有一个函数执行。我假设你在这里称之为单线程模型。因此，我们可以在此堆栈上分配此特定函数所需的任何空间，然后当我们从该函数返回时，如果写入正确，我们不需要与该函数相关的任何信息。它可能会永远消失。这就是为什么这个堆栈的想法，你分配一些东西，如果你打更多的电话，你就会不断分配更多的东西，但是当它们返回时，你就会从堆栈中退出来，释放一些东西。所以堆栈纪律是完全正确的匹配。</p>
+<p>发言人   27:57<br>Well, this whole idea of procedure call and return. So each block we use for a particular call, that is called a stack frame. And to be sort of more technical, we’ll say it’s a frame for particular instance of a procedure, a particular call to a procedure.<br>好的，这整个过程调用和返回的想法。因此，我们用于特定调用的每个块称为堆栈帧。并且更技术性地说，我们会说它是过程的特定实例的框架，对过程的特定调用。</p>
+<p>发言人   28:26<br>Which calls a function called who? And who has multiple calls to another function called mi? And mi is recursive. It calls itself. And imagine we had a chain of calls. Where you calls, who calls? Mi, which calls itself recursively twice. And then we’ll exit out of Mi and get back to who? And then who will hit a second call to Mi, which any further?<br>哪个调用了一个叫做谁的函数？谁多次调用另一个名为mi的函数？并且mi是递归的。它自称。想象一下我们接到了一连串的电话。你在哪里打电话，谁打电话？Mi递归调用自己两次。然后我们将退出Mi并回到谁那里？然后谁会给我打第二个电话，哪个还会打吗？</p>
+<p>发言人   29:08<br>It. But in terms of the stack? All we need, we’ll keep a frame for every sort of procedure that has been called but not yet returned on the stack. And in general, this stack is limited delimit by two pointers. One is the stack pointer, which we’re familiar with. And then there’s another called the base pointer, which register RBP indicates. But one feature of actually, it’s now become a feature of IA 32 as well, is that this is an optional pointer. And in particular, the code that we’ll see does not use a base pointer, except in some very special cases, this register.<br>它。但是在堆栈方面？所有我们需要的，我们将为已经调用但尚未返回到堆栈上的每种过程保留一个框架。一般来说，这个堆栈由两个指针分隔。一个是我们熟悉的堆栈指针。然后还有另一个称为基础指针的东西，它由寄存器RBP指示。但是实际上，它现在也成为了IA 32的一个功能，那就是这是一个可选的指针。特别是，我们将看到的代码不使用基本指针，除了在一些非常特殊的情况下，这个寄存器。</p>
+<p>发言人   30:06<br>Show up in program being used in a special way as a frame pointer. It will be used instead just as a regular register.<br>出现在程序中，以一种特殊的方式作为帧指针使用。它将被用作常规寄存器。</p>
+<p>发言人   30:16<br>So typically then, the only thing you’ll know about the stack pointer, you won’t even be able to figure out where the frame is exactly. You’ll just know that the top part of the stack is the top frame for the topmost function. And this is all managed by the code itself. And this is the same stack, by the way, in which you’re pushing in popping addresses too. And they all kind of get mixed together.<br>通常情况下，你唯一知道的关于堆栈指针的事情，你甚至无法弄清楚帧的确切位置。你只需要知道堆栈的顶部是最顶部函数的顶部框架。这一切都由代码本身管理。顺便说一下，这是同一个堆栈，你也在其中推入弹出地址。而且它们都有点混合在一起。</p>
+<p>发言人   30:49<br>So we haven’t actually seen any code up till now that has to do any explicit management of the stack, because all our examples were very simple and just did made use of the stack only for return addresses. But we’ll see some that uses more. But so in general, then imagine that each time you begin a function, some space gets allocated potentially on the stack for its frame. And then, and that frame is indicated by either one pointer only or two pointers.<br>因此，到目前为止，我们还没有真正看到任何需要对堆栈进行任何显式管理的代码，因为我们所有的示例都非常简单，只是将堆栈仅用于返回地址。但我们会看到一些使用更多的。但一般来说，再想象一下，每次开始一个函数时，一些空间可能会在堆栈上分配给它的帧。然后，该帧由一个指针或两个指针指示。</p>
+<p>发言人   31:29<br>And so now as u calls who, then that will create a new stack frame for who in some way, when Mi gets called, that creates a new stack frame.<br>所以现在当u调用谁时，这将以某种方式为谁创建一个新的堆栈帧，当Mi被调用时，这会创建一个新的堆栈帧。</p>
+<p>发言人   31:40<br>And as we continue with these recursive calls, we’re just adding more stuff to the stack, getting deeper and deeper. And that will keep happening. That’s one of the reasons why recursion is a little bit of a risky thing is that compared to iteration, it keeps requiring more space as you go deeper in the current. And in particular, most systems limit the total depth of the stack, And you can have, because they’re afraid of the sort of infinite loop version of recursion, runaway recursion, where it just keeps trying to push more and more stuff onto the stack.<br>随着我们继续这些递归调用，我们只是在堆栈中添加更多的东西，越来越深。这将继续发生。这就是递归有点冒险的原因之一，与迭代相比，随着您在当前领域的深入，它需要更多的空间。特别是，大多数系统限制了堆栈的总深度，因为它们害怕递归的无限循环版本，失控递归，不断尝试将越来越多的东西推到堆栈上。</p>
+<p>发言人   32:20<br>That’s an aside. And then? As these begin to return, those frames get deallocated, removed from the stack.<br>那是旁白。然后呢？当这些开始返回时，这些帧会被释放，从堆栈中移除。</p>
+<p>发言人   32:32<br>So part of it, the nice thing about this is it means that every time, if I have multiple calls to Mi, because I’ve gone deep recursively, each one of them will have its own local state that it needs to manage. And again, the whole stack discipline is what makes it work. And what we’ll find out in particular is because of the way this is set up, recursive calls are handled the same way that regular calls are. There’s nothing special about them. All sort of infrastructure required to support recursion is built into this whole stack discipline.<br>所以其中的一部分，这样做的好处在于，这意味着每次，如果我有多个Mi调用，因为我已经递归地深入了，它们中的每一个都有自己需要管理的本地状态。再次强调，整个堆栈规程是使其工作的原因。我们将特别发现的是，由于这种设置方式，递归调用的处理方式与常规调用相同。他们没有什么特别的。支持递归所需的所有基础设施都内置在整个堆栈规程中。</p>
+<p>发言人   33:16<br>So anyways, imagine that all these calls returned back to Who? And then who would call Mi again? And then again as we exit, we’re sort of deallocating these stack frames and getting back to the starting point. Yes, question?<br>所以无论如何，想象所有这些呼叫都返回给了谁？然后谁会再打电话给Mi？当我们退出时，我们会重新分配这些堆栈帧并回到起点。是的，有问题吗？</p>
+<p>发言人   33:39<br>Oh, so the question was, if RBP is optional, then how does the program know how to do the deallocation? How can it reset the stack back to the right place? And the answer is, and we’ll see examples, that code is compiled so it knows, for example, when it does the allocation, it’s going to allocate 16 B. And then it knows at the end that it can deallocate at 16 B. And it actually brings up a good point. There’s sort of an obscure part of the book that goes over this. There’s a few special cases where it can’t know in advance how much space will be allocated when it has to allocate an array or memory buffer of variable size. And then it will actually use the RBP in those cases for exactly that purpose.<br>所以问题是，如果RBP是可选的，那么程序如何知道如何进行解分配？它如何将堆栈重置回正确的位置？答案是，我们将看到示例，该代码已编译，因此它知道，例如，当它进行分配时，它将分配16 B。然后它最后知道它可以在16 B释放。这实际上提出了一个很好的观点。这本书有一个晦涩的部分。有一些特殊情况，当它必须分配可变大小的数组或内存缓冲区时，它无法提前知道将分配多少空间。然后它将在这些情况下实际使用RBP用于该目的。</p>
+<p>发言人   34:39<br>And so in general, what the stack frame will look like in one of these machines will be something like this. That and you’ll see this is the collar, and then this is the stack frame of the function that got called. So working our way back, if we have to pass more than 6 arguments, the caller will actually use its own stack frame to store those arguments so that they’d be available. And we already saw when you do a call. It will push the return address onto the stack. So before a function even starts, all this information would be on the stack.<br>因此，通常情况下，在这些机器中，堆栈框架的外观将是这样的。你会看到这是项圈，然后这是被调用函数的堆栈框架。因此，如果我们必须传递6个以上的参数，调用者实际上将使用自己的堆栈框架来存储这些参数，以便它们可用。我们已经看到你打电话的时候了。它会将返回地址推送到堆栈上。因此，在函数启动之前，所有这些信息都将在堆栈上。</p>
+<p>发言人   35:33<br>Now, if this particular, if we’re making use of a base pointer, then we have to have somewhere to store the old value of the base pointer so that we could fix it back when we return. We won’t show any code doing that here. So this is optional. But in general, if there’s some local state, like some registers that need to be saved, and we’ll see examples of that or an array that needs to be allocated locally that will be stored within the stack frame and there might be some requirement for some extra space in the stack frame for other stuff, in particular, if it’s going to pass more than 7 arguments that need space.<br>现在，如果我们正在使用基本指针，那么我们必须有一个地方来存储基本指针的旧值，以便我们可以在返回时修复它。我们不会在这里展示任何代码这样做。所以这是可选的。但总的来说，如果有一些本地状态，比如一些寄存器需要保存，我们将看到这样的例子，或者需要在本地分配的数组，它们将存储在堆栈框架中，并且可能需要在堆栈框架中为其他内容提供一些额外的空间。特别是，如果它要传递超过7个需要空间的参数。</p>
+<p>发言人   36:23<br>Stack pointer gets decremented soon after the procedure begins, and it gets incremented back just before it returns. That’s how it manages the stack. So let’s do some examples.<br>堆栈指针在过程开始后很快就会减少，并在返回之前增加回来。这就是它管理堆栈的方式。让我们举一些例子。</p>
+<p>发言人   36:47<br>Let’s see, I looked at this before, but this is a function. I think the interesting thing about this function is that it it has a pointer being passed to it. So this function takes an argument. One argument is a pointer and another is an an integer value. What it does is it dereferences that pointer to get a value called x, it computes a value y by summing x and the value passed to it. It stores y back at p, but it returns x, the original value of the pointer, not the updated version of the pointer. And you can see that in the code here. It code’s pretty short.<br>让我们看看，我之前看过这个，但这是一个功能。我认为这个函数有趣的地方在于它有一个指针被传递给它。所以这个函数接受一个参数。一个参数是指针，另一个参数是整数值。它的作用是取消对该指针的引用以获取一个名为x的值，它通过将x和传递给它的值求和来计算值y。它将y存储在p，但它返回x，指针的原始值，而不是指针的更新版本。你可以在这里的代码中看到这一点。它的代码非常短。</p>
+<p>发言人   37:34<br>Remember that in general RDI will hold the first argument. In this case, it’s a pointer. So it’ll do a read from that pointer, and it will put the value in Rax, which is where the return value should be anyhow. And then it will increment RSI, which has a value called value here initially, and now it has the value of x plus val. And then it will store that in the value pointed to by p, and it will do a return. So you see these three instructions do all the different parts of this. And as this shows, in general I’ll show register usage.<br>请记住，通常RDI将持有第一个参数。在这种情况下，它是一个指针。所以它将从该指针读取，并将值放入Rax中，无论如何返回值应该在哪里。然后它将增加RSI，它最初有一个名为value的值，现在它的值为x加val。然后它会将其存储在p指向的值中，并执行return操作。所以你可以看到这三个指令完成了这个过程的所有不同部分。正如这所显示的，一般我会展示注册使用情况。</p>
+<p>发言人   38:20<br>It’s handy, by the way, to document this when you’re looking at code.<br>顺便说一下，当您查看代码时，将其记录下来是很方便的。</p>
+<p>发言人   38:25<br>RDI is the first argument. RSI gets used. Initially it’s Val, but now it will be set to Y during the call. And similarly Rix is initially the value. Well, it’s both what x is here, and it’s used is the return value. So the reason to go through all that is to actually show you examples of calling this and how arguments get passed to the function and how it makes use of the stack frame.<br>RDI是第一个参数。RSI被使用了。最初它是Val，但现在在调用过程中将其设置为Y。同样，Rix最初是值。好的，它既是这里的x，也是返回值。所以，遍历所有这些的原因是为了向您展示调用这个的示例，以及参数如何传递给函数以及它如何利用堆栈框架。</p>
+<p>发言人   39:00<br>So now there’s a function called call in, and it’s going to create a value called v and have to generate a pointer to that. So what that means is V1 can’t just stay in a register because you can’t create an address of a register. It has to be stored in memory somewhere so that you can create a pointer, an address of it. Where does it? Well, it puts it in the stack. So how does it find space on the stack? Well, it allocates it so the function call in then, and we’ll go through all the different parts of it, but you see that this red code here is generated, generates these two instructions, 1 is to allocate 16 B on the stack, and the other is to store 1 5 2 1 3 at offset 8 from the stack pointer. And as we’ll often see, the program often allocates more space on the stack than it really needs to.<br>所以现在有一个名为call的函数，它将创建一个名为v的值，并且必须生成一个指向该值的指针。这意味着V1不能仅仅停留在寄存器中，因为您无法创建寄存器的地址。它必须存储在内存中的某个地方，以便您可以创建指针，地址。它在哪里？嗯，它把它放在堆栈中。那么它是如何在堆栈上找到空间的呢？好的，它分配它，然后函数调用，我们将浏览它的所有不同部分，但是你会看到这里生成了这个红色代码，生成这两条指令，1是在堆栈上分配16 B，另一个是在堆栈指针的偏移量8处存储1 5 2 1 3。并且正如我们经常看到的那样，程序经常在堆栈上分配比实际需要更多的空间。</p>
+<p>发言人   40:05<br>And there’s some conventions about trying to keep.<br>并且有一些关于试图保持的惯例。</p>
+<p>发言人   40:10<br>Addresses aligned in various ways that are sort of obscure. And you should just kind of not worry about the fact there’s unused space and functions. They do it. The reasons for doing it are are. Maybe interesting to some, but not really ones you need to understand at this point. So the point being that the way we got space on the stack was to just add to the stack point in the stack. For. And we can create a pointer to it. And so now to set up this call, we need to create a pointer V1 to V1. And we have to pass the number 3000. So we’ll see that we’ll copy 3000 to register ESI. And let me just double check here.<br>地址以各种方式对齐，有些晦涩。你不应该担心有未使用的空间和功能。他们做到了。这样做的原因是。可能对某些人来说很有趣，但在这一点上你不需要真正理解。因此，重点是我们在堆栈上获得空间的方式只是添加到堆栈中的堆栈点。为了。我们可以创建一个指向它的指针。所以现在要设置这个调用，我们需要创建一个指向V1的指针。我们必须通过数字3000。所以我们会看到我们将复制3000来注册ESI。让我在这里再确认一下。</p>
+<p>发言人   41:27<br>Just looking. So one of the annoying features is you see all the data type here on longs.<br>只是看看。因此，其中一个烦人的功能是您在longs上看到所有数据类型。</p>
+<p>发言人   41:33<br>There’s no ints here, and yet it’s copying 3000 just to register ESI and not RSI. And it’s using a move L and not a move queue. I think we might have covered that last time, but 3000 is a small enough number. It will fit in 32 b. It’s a positive number, so we don’t have to worry about s bits. So the thing can sort of get away with a trick here of using just a move L instruction, because when any instruction has one of the ere’s is its destination, it’ll set the upper 32 b of that register to zeros. So this will have the effect of copying the number 3000 and zeroing out the upper bytes to register RSI. And the reason the compiler likes this is it takes one less byte to encode a move L than it does to encode a move c.<br>这里没有整数，但它复制了3000只是为了注册ESI而不是RSI。它使用的是移动队列而不是移动队列。我想我们上一次可能已经涵盖了，但3000是一个足够小的数字。它将适合32 b。它是一个正数，所以我们不必担心s位。所以这个东西在这里可以用一个技巧逃脱，只使用一个移动指令，因为当任何指令有其中一个是它的目的地时，它会将那个寄存器的上部32 b设置为零。所以这将具有复制数字3000并将高字节清零以注册RSI的效果。编译器喜欢这个的原因是，编码移动L比编码移动c少一个字节。</p>
+<p>发言人   42:33<br>So just you have to get used to these kind of things. So that’s setting up argument, the second argument to the call. But the first argument, it’s using this instruction Lea or Lea Q for what it’s supposed to be used for, which is to create pointers. Remember, we talked about this instruction often getting used just to add two numbers, but it’s actually designed exactly for this purpose that it looks like a memory reference relative to the stack pointer. But instead of now reading from that memory reference, the instruction will just copy the computed address to RDI. And so RDI will now be equal to whatever the stack pointer plus 8 is. So that creates the two arguments that I’m passing to this function.<br>所以你必须习惯这些事情。所以这是设置参数，调用的第二个参数。但是第一个参数，它使用这个指令Lea或Lea Q来表示它应该用于什么，也就是创建指针。记住，我们谈到这个指令经常被用于将两个数字相加，但它实际上是专门为此目的而设计的，它看起来像相对于堆栈指针的内存引用。而不是现在从内存引用中读取，该指令只会将计算的地址复制到RDI中。因此，RDI现在将等于堆栈指针加上8的值。这样就创建了我传递给这个函数的两个参数。</p>
+<p>发言人   43:36<br>And now the call instruction will happen. And you’ll recall that the call instruction adds 3, adds these two numbers, and stores the result back in the pointer. So its effect will be to set.<br>现在呼叫指令将会发生。你会想起调用指令加3，将这两个数字相加，然后将结果存储回指针中。所以它的效果将是设置。</p>
+<p>发言人   43:53<br>This memory location to 18 to 13. You’ll notice the clever trick here. And also return a particular value, which we won’t make use of the return value. No, we do make use of the return value. And now the.<br>这个内存位置在18到13之间。你会注意到这里的巧妙技巧。并且还返回一个特定的值，我们不会利用这个返回值。不，我们确实利用返回值。而现在。</p>
+<p>发言人   44:19<br>Now, when we return back, what we wanted to do is add the value in V1 to the value we just computed. The value we just computed is in V2. And we know that the V1 is designated by this memory location at Rsp plus 8. And so just read from memory and add that to Rax.<br>现在，当我们返回时，我们想做的是将V1中的值添加到我们刚刚计算的值中。我们刚刚计算的值是在v2中。并且我们知道V1是由Rsp加8的这个内存位置指定的。所以只需从内存中读取并将其添加到Rax中。</p>
+<p>发言人   44:47<br>And then the final step is to de-allocate. So you see the map here. And this was to answer the question earlier, how does it know how to restore the stack back to its original place? Well, the compiler built into it figured out how much space it would need for this particular function, and it allocates that when it comes in, and it deallocates it when it goes out.<br>然后最后一步是取消分配。所以你可以看到这里的地图。这是为了回答之前的问题，它如何知道如何将堆栈恢复到原来的位置？嗯，内置的编译器计算出了这个特定函数需要多少空间，当它进入时分配，当它退出时释放。</p>
+<p>发言人   45:12<br>So, and this is a very simple example, but even more elaborate examples still based on the same set of ideas. So that shows you in one, then, the data management, the stack management, the idea of using a stack frame. And now the return. By this point, the only thing that’s left is after I increment the stack pointer, it will be pointing back to this return address. Oops, wrong direction here. So now if I do a, the re instruction will always take whatever is pointed to by the stack pointer and use that as the return address. So it’s very important that Rsp get set back to where it should be before it does a rep.<br>所以，这是一个非常简单的例子，但更复杂的例子仍然基于同一组想法。因此，这向您展示了数据管理、堆栈管理以及使用堆栈帧的想法。现在是回归。此时，唯一剩下的是在我增加堆栈指针之后，它将指向返回地址。哎呀，这里方向错了。现在，如果我执行，re指令将始终获取堆栈指针指向的任何内容，并将其用作返回地址。因此，在rep之前，Rsp必须回到应该回到的位置，这非常重要。</p>
+<p>发言人   46:08<br>Okay, so that’s sort of the basic principles now. Now let’s get a little bit more refined. An important idea is, well, what about these registers? What can be assumed about particular registers and how they get changed, so forth? And so again, it’s built into this idea of an ABI is a set of conventions about the register. Obviously Rsp is a very important register. And you don’t want programs just to randomly change its value without them knowing what to do. But it turns out we’ll also be careful with some of the other registers, too.<br>好的，这就是现在的基本原则。现在让我们再精炼一点。一个重要的想法是，这些寄存器怎么样？关于特定的寄存器可以假设什么以及它们如何更改等等？所以，再次强调，ABI是一组关于寄存器的约定，它内置于这个概念中。显然，Rsp是一个非常重要的寄存器。你不希望程序只是随意改变它的值而不知道该做什么。但事实证明，我们对其他一些寄存器也要小心。</p>
+<p>发言人   46:47<br>And so here’s sort of a thought experiment. Imagine we had a function called you that’s going to call who, and it has some data that it wants to. Put somewhere. And then who’s going to get called? And then the question is, can I rely on the fact that register RDX will still hold the number 15 to 13? And the answer is not in general, because who might have overwritten RDX and put something else there? So in particular, of who did some operation involving Register RDX, it could have messed up the value that was there before. So the obvious answer is, well, you should not have used RDX for that purpose, right? And that’s why we’ll come up with a set of conventions.<br>所以这里有点像一个思想实验。想象一下，我们有一个名为 “你” 的函数，它将调用 “谁”，并且它有一些想要的数据。放在某个地方。然后谁会被召唤？然后问题是，我可以依赖于寄存器RDX仍将持有数字15到13的事实吗？答案不是一般的，因为谁可能会覆盖RDX并在那里放其他东西？因此，特别是谁做了一些涉及寄存器RDX的操作，它可能会搞乱之前的值。所以显而易见的答案是，你不应该为此目的使用RDX，对吧？这就是为什么我们要制定一套公约的原因。</p>
+<p>发言人   47:52<br>So just some terminology when we’re talking about one function calling another, it’s useful to have use the following words. So we’ll call the calling function the caller, and the function that gets called the call e.<br>因此，当我们谈论一个函数调用另一个函数时，使用以下词语是有用的。因此，我们将调用调用函数作为调用者，而被调用的函数则称为调用e。</p>
+<p>发言人   48:09<br>And now there’s basically two ways we can manage. A register can be what’s called caller saved, which means if the caller really cares, if you really wants a value that will be there when it returns, when control returns back to it, then it should store it away first.<br>现在我们基本上有两种方法可以管理。一个寄存器可以被称为调用者保存，这意味着如果调用者真的关心，如果你真的想要一个值，当它返回时，当控制返回到它时，它应该先把它存储起来。</p>
+<p>发言人   48:32<br>It shouldn’t assume that the register will be. It should assume that the register might get altered by it. But there’s another class we can define it called call esafe, which is sort of a contract between all the functions. And it’s built into the ABI that says if a particular function wants to alter this register, what it needs to do is first store it away. And it will do it by putting the value in the stack. And then before we return from that procedure, we should restore it back to whatever it was before. So that’s a convention called Call Me Save, and it’s a little less intuitive, and it takes a while to get the hang of this, but you’ll begin to see its value.<br>它不应该假设登记册会这样。它应该假设寄存器可能会被它更改。但是我们可以定义另一个类，称为call esafe，它是所有函数之间的一种契约。并且它内置于ABI中，表示如果特定函数想要更改此寄存器，它需要做的是首先将其存储起来。它将通过将值放入堆栈来完成。然后在我们从该过程返回之前，我们应该将其恢复到之前的任何状态。所以这是一个叫做 “叫我保存” 的约定，它有点不那么直观，需要一段时间才能掌握它的窍门，但你会开始看到它的价值。</p>
+<p>发言人   49:24<br>So in particular, with this ABI, we’ve already seen Rax gets used for the return value. And we’ve seen these six registers that get used for passing arguments. And we’ll also designate registers R 1 and R 11 to be just temporary values that can be altered by any function. That’s a meaning of color save.<br>因此，特别是有了这个ABI，我们已经看到Rax被用于返回值。我们已经看到了这六个用于传递参数的寄存器。并且我们还将指定寄存器R 1和R 11只是临时值，可以通过任何函数进行更改。这就是颜色保存的意义。</p>
+<p>发言人   49:54<br>We’ve already seen actually within code, often them overriding these registers, because whatever gets passed to a function, the function can do whatever it wants to that data, as long as it’s not somehow corrupting other data. So those often get used as temporary storage as well. And Rx gets often overwritten multiple times before it gets set to a final return value. But we’re going to say that these four registers, and most commonly rbx, are what are called calyce registers, meaning they’ll only get used in this special way that if a function wants to alter it one of these registers, it has to, it will push the value on the stack. And then just before returning, it will pop that value back off the stack.<br>我们已经在代码中看到过，通常它们会覆盖这些寄存器，因为无论传递给函数什么，该函数都可以对该数据做任何它想做的事情，只要它不会以某种方式破坏其他数据。所以这些也经常被用作临时存储。并且Rx在被设置为最终返回值之前通常会被多次覆盖。但我们要说这四个寄存器，最常见的是rbx，它们被称为calyce寄存器，这意味着它们只会以一种特殊的方式使用，如果一个函数想要更改其中一个寄存器，它必须这样做，它会将值推送到堆栈上。然后在返回之前，它会将该值弹出堆栈。</p>
+<p>发言人   50:47<br>So register RBP, as I told you about, is special if you’re using frame pointers. If you’re not using frame pointers, then it can be treated as a Collie save register. So I’ll get back to that in a minute. The fact can combine those two and it works fine.<br>所以，正如我告诉你的，如果你使用帧指针，注册RBP是很特别的。如果你没有使用帧指针，那么它可以被视为牧羊犬保存寄存器。所以我马上就回来讨论这个问题。事实可以将这两者结合起来，并且效果很好。</p>
+<p>发言人   51:07<br>It’s actually a little bit subtle. And then as I mentioned, rsp is special. I’ll mess with that unless you know what you’re doing.<br>这实际上有点微妙。然后就像我提到的，rsp很特别。除非你知道自己在做什么，否则我会搞砸的。</p>
+<p>发言人   51:15<br>So let’s look at an example of this use of call. You save registers, why, how it works, and I’ll do it by a version of of this similar function to what we did before. But now what I’m going to. Do is my return value is to add x, which is an argument being passed to this function? There were no arguments in the earlier version, so somehow I have to have x it gets passed originally and register RDI as you know, but RDI might well I’m going to have to reuse register RDI to pass a value to incur. So somehow I have to do something with X because I’m going to need x when I return back to here after the call.<br>那么让我们来看一个使用call的例子。你保存寄存器，为什么保存，它是如何工作的，我会用一个和我们之前类似的函数版本来保存。但现在我要做的是什么。我的返回值是添加x，这是传递给此函数的参数吗？早期版本中没有参数，所以不知何故，我必须让x最初传递并注册RDI，如你所知，但是RDI很可能我将不得不重复使用寄存器RDI来传递一个值。所以不知何故我必须对X做点什么，因为当我在通话后返回这里时，我将需要x。</p>
+<p>发言人   52:14<br>So where am I going to put it? Well, that’s why I have call ESA registers, and so you see the code here at the outset of this function, then it will store away whatever is in rbx currently. It will put it on the stack. And so now the stack frame for this function looks like ISS, the return address from before, but I’m going to save the value of rbx, and then I’m going to decrement the stack pointer by 16 as I did before, but that will be on top of the 8 B I’ve already allocated to store rbx. And then you’ll see within the code, for example, when it wants to compute this return value, it can assume that rbx is whatever this call does.<br>那么我要把它放在哪里？这就是为什么我要调用ESA寄存器，所以你可以在这个函数的开头看到这里的代码，然后它会存储当前在rbx中的任何内容。它会放在堆栈上。所以现在这个函数的堆栈帧看起来像ISS，是之前的返回地址，但是我要保存rbx的值，然后像之前一样将堆栈指针减少16，但这将是在我已经分配给存储rbx的8 B之上。然后你会在代码中看到，例如，当它想要计算这个返回值时，它可以假设rbx是这个调用所做的任何事情。</p>
+<p>发言人   53:09<br>Inker. We assume inker is well behaved, that if it makes use of register rbx, it will fix it up before it returns. And then this function, well in its exit code, will not only increment the stack pointer, but it will then pop the value of rbx back. And again, you see this of bracketing, push, subtract, add. And you’ll notice that things on the cleanup part of it, the end, you sort of do things in the reverse order that they were done coming in again because of this stack discipline.<br>这是一种补液。我们假设inker表现良好，如果它使用寄存器rbx，它会在返回之前修复它。然后这个函数，在它的退出代码中，不仅会增加堆栈指针，还会弹出rbx的值。再一次，你可以看到这个包围，推，减，加。你会注意到清理部分的事情，最后，你以相反的顺序做事情，因为这个堆栈纪律。</p>
+<p>发言人   53:49<br>Demon? Everyone will treat rbx this way, it will save it on the stack if it’s going to alter it. If it’s not going to alter it, it doesn’t have to save. Anything is question I saw. So we haven’t seen that in other code because we didn’t typically need it. And that’s, again, an example. In this particular machine code, we only do what we have to do.<br>恶魔？每个人都会这样对待rbx，如果它要更改它，它会将其保存在堆栈上。如果它不打算改变它，它就不必保存。我看到的任何事情都是问题。所以我们在其他代码中没有看到这一点，因为我们通常不需要它。这又是一个例子。在这个特定的机器码中，我们只做我们必须做的事情。</p>
+<p>发言人   54:20<br>Okay? Okay, so now we can kind of put this all together and look at some examples of recursion. And the important thing to keep in mind is recursion is one of those sort of magical parts of computer science that seems like some black art that it actually works. But when you look at these goal levels mechanisms, it all works out.<br>好吗？好的，现在我们可以把这些放在一起，看看一些递归的例子。需要记住的重要一点是，递归是计算机科学中一种神奇的部分，看起来像是某种黑色艺术，实际上它确实有效。但是当你观察这些目标水平机制时，一切都会奏效。</p>
+<p>发言人   54:49<br>The C compiler doesn’t have to make any special consideration for a recursive function versus a normal function, because this whole stack discipline makes it work.<br>C编译器不必对递归函数与普通函数进行任何特殊考虑，因为这整个堆栈规程使其工作。</p>
+<p>发言人   55:03<br>So I’m going to illustrate that then with a version of this function I call p count. I had various instances of it where you remember the role of this is to count the number of ones in an initial word. So the recursive version of this says if the argument is 0, then it has no ones in it. Otherwise, take the leading bit, the least significant bit, which is either going to be a one or a zero, of course, and add that to what you’d get by shifting x right by one position and recursively counting the number of 1 b in that. So pretty natural kind of recursion. And keep in mind, these are all unsigned numbers. The argument is, so the right shifts are logical. This would really be a bad idea with arithmetic right shifts.<br>所以我将使用这个函数的一个版本来说明这一点，我调用p计数。我有各种各样的例子，你记得这的作用是计算初始单词中1的数量。所以这个递归版本说，如果参数是0，那么它里面就没有。否则，取前导位，即最低有效位，当然，它要么是一，要么是零，然后将其添加到通过将x右移一个位置并递归计数其中的1 b的数量所得到的值上。这是一种非常自然的递归。请记住，这些都是无符号数字。论点是，因此正确的转变是合乎逻辑的。这对于算术右移位来说真的是个坏主意。</p>
+<p>发言人   56:06<br>And this is a code generated Re. A bigger blob of code than the iterative version, because it has to do all this stack stuff. So this is about as simple as it gets in recursive calls. It apart.<br>这是生成的代码。比迭代版本更大的代码块，因为它必须做所有这些堆栈的事情。所以这就像递归调用一样简单。它分开了。</p>
+<p>发言人   56:35<br>It first of all assumes x is going to be 0, in fact, and sets up the return value of 0 to the register. You remember the test instruction has two operands that get, and so they’re the same, just testing the value of x here. And if that Je means jump equal to 0 in this case, or it might say JZ is the. Same instruction. So if the value equals 0, it will jump to the end of the function and hit the return instruction. Like I said before, the RP semicolon, you can ignore that. So that handle set one and now the rest of the code is to handle this lower part where I have to set up the arguments to recursive call.<br>它首先假设x实际上将为0，并设置返回值0到寄存器。你记得测试指令有两个操作数，它们是相同的，只是在这里测试x的值。如果Je在这种情况下意味着跳跃等于0，或者它可能会说JZ是。同样的指示。因此，如果值为0，它将跳到函数的末尾并命中返回指令。就像我之前说的，RP分号，你可以忽略它。这样句柄就设置了一个，现在其余的代码将处理这个较低的部分，在那里我必须设置递归调用的参数。</p>
+<p>发言人   57:30<br>I have to keep track of what at least the least significant bit of x is and handle all that stuff. So here’s the code, and it’s need the tech. Space to store rbx, which is, again, whatever it was in rbx when you enter. I’m just going to put it on the stack. I won’t look at it, I won’t make use of it, but I’ll have it there so I can restore the register when I return. So it will push the value onto the stack. And now the real meat of the body of it is it will.<br>我必须跟踪x中至少最不重要的部分是什么，并处理所有这些东西。这是代码，它需要技术。空间来存储rbx，也就是您输入时rbx中的任何内容。我只是要把它放在堆栈上。我不会看它，也不会使用它，但我会把它在那里，这样我回来时就可以恢复寄存器。所以它会将值推送到堆栈上。现在它身体的真正肉是它愿意。</p>
+<p>发言人   58:16<br>Copy x into rbx, which we’ve just put on the stack so we can safely do it. And we just, we’ll clear out all but the least significant bit of that particular register. And again, this is one of these weird ones where I can use ebx is a destination knowing that all zero, all the high order bits. And then I’m going to take x, and I’m just going to shift it right by one position, which sets me up for this recursive call. So this red code does both of these parts of it here.<br>将x复制到rbx中，我们刚刚将其放在堆栈上，这样我们就可以安全地执行此操作。我们只需要清除该特定寄存器中除了最不重要的部分之外的所有内容。再说一遍，这是其中一个奇怪的例子，我可以使用ebx作为一个目的地，知道所有的零位，所有的高阶位。然后我将取x，并将其向右移动一个位置，这为这个递归调用设置了基础。所以这个红色代码在这里完成了它的这两个部分。</p>
+<p>发言人   58:56<br>And now I’m ready to call p count recursive weight, because I have the shifted value in RDI. And I know because this is a well-behaved, that when p count returns, it can assume that Rax holds the recursive result. And I also know even though p count actually does modify rbx, but I know because I, the code is well behaved, the rbx will get restored to whatever was there before. And rbx in this case, just before making the call, I set it to the value of the least significant bit. So when I return back, I can assume that rbx holds the least significant bit of x, my original argument, and rax holds recursive result. So I can just add those two numbers together, call that the return value, and I’ve correctly computed the result. And then the final queen up is to pop rbx to restore whatever was in there, and then to do the return.<br>现在我准备调用p计数递归权重，因为我在RDI中有移位的值。我知道，因为这是一个很好的表现，当p计数返回时，它可以假设Rax持有递归结果。我也知道，即使p计数实际上会修改rbx，但我知道，因为代码表现良好，rbx将恢复到之前的状态。在这种情况下，和rbx，就在进行调用之前，我将其设置为最低有效位的值。所以当我返回时，我可以假设rbx保存了x的最不重要的部分，即我的原始参数，而rax保存了递归结果。所以我可以将这两个数字相加，称之为返回值，我就正确地计算了结果。然后最后的女王是弹出rbx以恢复其中的任何内容，然后执行返回。</p>
+<p>发言人   01:00:12<br>So again, the pieces all kind of, it’s a puzzle that all fits together because all these functions are using this common set of conventions where arguments get passed, what registers can be used, hows, if some registers have to be restored back, if they get used, and all that stuff works together.<br>所以，所有的部分，都是一个拼图，因为所有这些函数都在使用一套通用的约定，在这些约定中，参数被传递，可以使用哪些寄存器，如何，如果某些寄存器必须被恢复，如果它们被使用，所有这些东西一起工作。</p>
+<p>发言人   01:00:39<br>Which gets me back to just the point I was making before, if you’re using register RBP. For a frame pointer. So it typically point to the beginning of a frame like that. So imagine you have a function that needs a base pointer, because as I mentioned, the case is there if it has to within, that function allocates some amount of space that’s unknown at compile time. Well, imagine now that some other code gets called deep recursive calls or whatever that. Might do other things? Well, if you treat RBP as a call save register, then when these other functions return, they altered if they’ve made use of RBP for one reason or another, it’s guaranteed that they will restore it back to whatever condition it was in originally before. So now this function will have a reliable value of RBP.<br>这让我回到了我之前说过的观点，如果你使用的是注册RBP。对于帧指针。因此，它通常指向一帧的开头。所以想象一下，你有一个需要一个基指针的函数，因为正如我所提到的，如果它必须在内部，那么这个函数会在编译时分配一些未知的空间。好的，现在想象一下其他一些代码被称为深度递归调用或其他什么。可以做其他事情吗？好的，如果你将RBP视为调用保存寄存器，那么当这些其他函数返回时，如果他们出于某种原因使用了RBP，它们会发生改变，保证它们会将其恢复到原来的状态。所以现在这个函数将有一个可靠的RBP值。</p>
+<p>发言人   01:01:57<br>So again, it shows as long as all the code obeys these conventions on how they use registers, then sort of life is good. You can make use of these. So to have a trust that things will be the way they are. And so again, that’s why there’s this sort of very careful process for creating an ABI early on in the lifetime of a new processor, so that all the compiler writers, operating systems people, and the ones who implement tools like Gdb, debugging tools, kind of all have the right set of standards by which they can work from. Okay, so just to sort of wrap things up.<br>因此，它再次表明，只要所有代码都遵守这些关于如何使用寄存器的约定，那么生活就很好。你可以利用这些。所以要相信事情会变成现在的样子。再次强调，这就是为什么在新处理器的生命周期早期创建一个ABI需要非常仔细的过程，以便所有的编译器编写者、操作系统人员以及实现像Gdb这样的工具的人，调试工具，几乎所有人都有一套正确的标准，可以据此开展工作。好的，那么就把事情总结一下。</p>
+<p>发言人   01:02:53<br>I would say, by the way, this is the kind of thing you can. I could lecture to you for weeks, but to really get it in your mind, the best way is to almost to hand execute some very simple examples or use a debugging tool and run through them yourself just to make sure you really are convinced that this is all going to work because all these pieces just fit together. And the way they fit together is what makes it work.<br>顺便说一下，这是你可以做的事情。我可以给你讲几个星期，但要真正记住它，最好的方法是几乎手动执行一些非常简单的示例或使用调试工具并自己运行，以确保您真正确信这一切都会成功，因为所有这些部分都可以组合在一起。它们结合在一起的方式是它运作的原因。</p>
+<p>发言人   01:03:24<br>So as I mentioned before, and I’ll say it again, that this discipline is what makes recursion work. So the idea of having a stack frame for every call to a function means that I can call a function call a function call a function call a function when I’m deep in that recursion, I still have data associated with the other outstanding calls to that function, but each of them will have their own stack frames. And so it has a place to store that sort of information that’s associated with one particular instantiation of a function. The register saving conventions, we saw a way that functions avoid sort of trashing each other’s data. If I’m using a call you save register, it’s my obligation to save it and restore it properly. It’s the obligation of any function that gets called further down to also do that, save and restore, and then the sort of.<br>所以正如我之前提到的，我会再说一遍，这个学科是使递归工作的原因。因此，为每个函数调用都有一个堆栈框架的想法意味着我可以调用函数，当我深入该递归时，函数调用函数，我仍然有与该函数的其他未完成调用相关联的数据。但它们每个人都有自己的堆栈帧。因此，它有一个位置来存储与函数的特定实例化相关联的那种信息。在寄存器保存约定中，我们看到了一种函数避免互相破坏数据的方式。如果我正在使用您保存注册的电话，我有责任保存并正确恢复它。这是任何被进一步调用的函数的义务，也要做到这一点，保存和恢复，然后是那种。</p>
+<p>发言人   01:04:36<br>Notion of a stack being the right match of how procedure call and return works. If P calls q, then before I go back to PQ will have returned. And so I won’t need that storage for Q anymore.<br>堆栈的概念是过程调用和返回工作方式的正确匹配。如果P调用q，那么在我回到PQ之前，它将已经返回。因此，我不再需要Q的存储空间了。</p>
+<p>发言人   01:04:52<br>Those of you who have taken 150 or other places where you look at fancier languages don’t have, can’t trust that stack discipline, and they have to use some other mechanism, though actually, if required, use heap allocation of the frames. They no longer stack frames to keep data around after function returns, but for C and sort of all the standard commonplace languages, the stack discipline is exactly what’s needed. And that’s not an accident. The designers of C knew this well. This matching of a stack to their language.<br>那些已经学习了150种或其他地方的人，如果你看到更华丽的语言，就不能相信堆栈纪律，他们必须使用一些其他机制，尽管实际上，如果需要的话，使用框架的堆分配。它们不再堆叠帧来在函数返回后保留数据，但对于C和所有标准通用语言来说，堆栈纪律正是所需要的。这不是意外。C的设计师很清楚这一点。堆栈与他们的语言的匹配。</p>
+<p>发言人   01:05:33<br>And I’ll mention also this, I was talking about simple recursion before. There’s also mutual recursion, where a function, say, p calls q, and then Q might call p, and it looks very exotic, quite clever. But again, how it’s implemented is exactly what we’ve seen here, doesn’t take any special kind of code. So? Then to finish up, this is sort of what you need to remember about.<br>我还要提到这一点，我之前谈论过简单递归。还有相互递归，其中一个函数，比如说，p调用q，然后Q可能调用p，它看起来非常奇特，非常聪明。但是，它的实现方式正是我们在这里看到的，不需要任何特殊类型的代码。所以呢？然后结束，这就是你需要记住的事情。</p>
+<p>发言人   01:06:11<br>Procedure calls that it’s all about the stack discipline get as you’re working through your lab, you’ll just get much more ingrained to this idea of the stack and what’s on there and being able to examine it. Okay, so that’s all I’ve got for today. So I’ll give you a little extra time in your calendar.<br>过程调用，这一切都与堆栈纪律有关，当你在实验室中工作时，你将会更加深入地了解堆栈的概念及其内容，并能够对其进行检查。好的，这就是我今天的全部内容。所以我会在你的日历上给你一点额外的时间。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 007-Machine-Level Programming III, Procedures</div>
+      <div>http://example.com/2025/10/12/15213-007/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-008/" title="深入理解计算机系统 008-Machine-Level Programming IV, Data">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 008-Machine-Level Programming IV, Data</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-006/" title="深入理解计算机系统 006-Machine-Level Programming II, Control">
+                        <span class="hidden-mobile">深入理解计算机系统 006-Machine-Level Programming II, Control</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

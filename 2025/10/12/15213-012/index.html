@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="2025年10月02日 08:53发言人   00:00Good afternoon everyone. Welcome to 2&#x2F;13, good to see you. Just a reminder that your attack lab is due tonight at 1159 PM. You have one Grace Day for this lab and CA l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 012-Cache Memories">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-012/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="2025年10月02日 08:53发言人   00:00Good afternoon everyone. Welcome to 2&#x2F;13, good to see you. Just a reminder that your attack lab is due tonight at 1159 PM. You have one Grace Day for this lab and CA l">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:11.000Z">
+<meta property="article:modified_time" content="2025-10-12T13:16:26.328Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 012-Cache Memories - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 012-Cache Memories"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          137 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 012-Cache Memories</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>2025年10月02日 08:53<br>发言人   00:00<br>Good afternoon everyone. Welcome to 2&#x2F;13, good to see you. Just a reminder that your attack lab is due tonight at 1159 PM. You have one Grace Day for this lab and CA lab will go out at right about the same time. Now it’s going to be a little tight for CA Lab is it’ll be due next Thursday, so you might want to get started on that soon.<br>大家下午好。欢迎来到2&#x2F;13，很高兴见到你。只是提醒一下，你的攻击实验室定于今晚1159下午。你有一个实验室的宽限期，CA实验室将在大约相同的时间离开。现在CA实验室的情况会有点紧张，下个星期四就要交了，所以你可能想很快开始做这件事。</p>
+<p>发言人   00:33<br>Last lecture, we learned about the memory hierarchy and the idea of caching. Today, we’re going to look at a very important kind of CA, which are called cache memories. And they’re very important to you as the programmer because they can have such a big impact on the performance of your program. So if you know about the existence of these cache memories and you know how they work as a programmer, you’ll be able to take advantage of that in your programs.<br>上一节课，我们学习了内存层次结构和缓存的概念。今天，我们将了解一种非常重要的缓存存储器，称为缓存存储器。它们对程序员来说非常重要，因为它们会对程序的性能产生很大的影响。因此，如果你知道这些缓存存储器的存在，并且你知道它们作为程序员是如何工作的，你就可以在你的程序中利用它们。</p>
+<p>发言人   01:08<br>So last time we looked at the memory hierarchy, it’s a collection of storage devices with smaller cost air is, and faster devices at the top and. Slower, cheaper, and much larger devices at the bottom. And then at each level in this hierarchy A, the device at level K serves as a cache, holds a subset of the blocks that are contained in the device at the lower level at level k plus one.<br>所以上次我们看内存层次结构时，它是一系列成本较小的存储设备的集合，顶部是更快的设备。较慢、更便宜、更大的设备在底部。然后在此层次结构A的每个级别上，位于级别K的设备用作缓存，保存位于级别k加一的较低级别设备中包含的块的子集。</p>
+<p>发言人   01:52<br>Now recall the general idea of caching. So we have a memory. It’s an array of bytes, and we break it up arbitrarily into a collection of blocks. This memory is larger, slower, and cheaper, and it’s much larger than a cache, which is smaller, faster, and more expensive, which holds a subset of the blocks that are contained in the main memory. And then blocks are copied back and forth between the cache and the memory in these block size transfer units.<br>现在回想一下缓存的一般想法。所以我们有了记忆。它是一个字节数组，我们将它任意分解为块的集合。这种内存更大、更慢、更便宜，并且比缓存大得多，后者更小、更快、更昂贵，后者保存了主内存中包含的一部分块。然后块在这些块大小传输单元中的缓存和内存之间来回复制。</p>
+<p>发言人   02:29<br>So for example, if our program requests a word that’s contained in block number 4. It asks the cache to return the word that’s contained in block 4. The cache looks, and at the blocks, the subset of the blocks that it’s stored discovers that block 4 is not there. So it asks the main memory to send it block 4, which it does. And then when that block arrives at the cache, the cache stores it, potentially overriding some existing block.<br>因此，例如，如果我们的程序请求包含在第4块中的单词。它要求缓存返回块4中包含的单词。缓存查看并查看块，它存储的块的子集发现块4不存在。所以它要求主内存发送块4，它会这样做。然后，当该块到达缓存时，缓存会存储它，可能会覆盖一些现有的块。</p>
+<p>发言人   03:05<br>Similarly, if our program asks for a data word that’s contained within block 10, the cache look sees that it doesn’t have that block. So it requests that block for memory, which copies it into the cache, which overwrites an existing block. Now, subsequently, if our program references a. Word that’s contained in block 10, for example. Then the cache. Then we have a hit, and the cache can return that block immediately without going through the expensive operation of contacting memory and fetching that block from memory.<br>同样，如果我们的程序要求一个包含在第10块中的数据字，缓存会发现它没有那个块。因此它请求该块内存，该内存将其复制到缓存中，从而覆盖现有块。现在，如果我们的程序引用了a。例如，包含在第10块中的单词。然后是缓存。那么我们有一个命中，缓存可以立即返回该块，而无需进行联系内存和从内存中获取该块的昂贵操作。</p>
+<p>发言人   03:50<br>Now there’s a very important class of caches, these so called cache memories, which are contained in the CPU chip itself and are managed completely by hardware. And they’re implemented using fast SRAM memories. And the idea for this cache, which is right next to the register file, is to hold frequently access blocks or blocks from main memory that are accessed frequently. So hopefully, because of the principle of locality, most of our requests for data will actually be served out of this cache memory in a few cycles, rather than rather than from this slow main memory.<br>现在有一类非常重要的缓存，这些所谓的缓存存储器，它们包含在CPU芯片本身中，完全由硬件管理。并且它们是使用快速内存存储器实现的。这个缓存的想法就在寄存器文件旁边，用于保存频繁访问的块或来自主内存的频繁访问的块。所以希望，由于局部性的原则，我们对数据的大多数请求实际上将在几个周期内从这个缓存内存中提供，而不是从这个缓慢的主内存中提供。</p>
+<p>发言人   04:40<br>Now, cache memories are managed completely in hardware. So this means that the heart, there has to be hardware logic that knows how to look for blocks in the cache and determine whether or not a particular block is contained there. Cache memories have to be organized in a very kind of strict, simple way so that if the lookup logic can be pretty simple.<br>现在，缓存内存完全在硬件中管理。因此，这意味着心脏必须有硬件逻辑，知道如何在缓存中查找块并确定是否包含特定块。缓存存储器必须以一种非常严格、简单的方式组织，这样如果查找逻辑可以非常简单。</p>
+<p>发言人   05:07<br>All cache memories are organized in the following way. You can think of that. You can think of the cache as an array of s equals 2 to the s sets. Each set consists of e to the two e lines. Where each line consists of a block of b equal equals 2 to the b bytes of.<br>所有缓存存储器按以下方式组织。你可以想到这一点。您可以将缓存视为s等于2的s集合的数组。每组由两个e行组成。其中每一行由一个块b组成，等于2的b字节。</p>
+<p>发言人   05:39<br>A valid bit. Which indicates whether these data bits are actually the bits in the data block are actually meaningful? It’s possible they could just be random bits. When you first turn on the machine, there’s nothing in the cache, but those bits will have values. They’ll either be ones or zeros, but they won’t actually correspond to data. So the valid bit tells us if these, if these b bytes actually mean anything. And then there’s some additional bits called the tag bits, which will help us search for blocks, which I’ll show you in a minute.<br>有效的位。这表明这些数据位是否实际上是数据块中的位实际上有意义？它们可能只是随机位。当你第一次打开机器时，缓存中没有任何东西，但那些位会有值。它们要么是1，要么是0，但它们实际上并不对应于数据。因此，有效位告诉我们这些，如果这些b字节实际上意味着什么。然后还有一些额外的位称为标记位，这将帮助我们搜索块，我稍后会向您展示。</p>
+<p>发言人   06:17<br>Now, when we talk about our cache size, we’re referring to the number of data bytes that are contained in blocks. And so each cache has, there’s s sets, there’s e, e blocks per set, and there’s b bytes per block. So the total cache size c is s times z times b now. So there’s a lot of terms to sort of keep straight. And it’s very easy to get to confuse the difference between lines and blocks and lines and sets. So we’ll go through some examples, and hopefully these will start to make more sense.<br>现在，当我们谈论缓存大小时，我们指的是块中包含的数据字节数。因此每个缓存都有，有s个集合，每个集合有e，e个块，每个块有b个字节。所以总缓存大小c现在是s次z次b。所以有很多术语来保持直截了当。而且很容易混淆线和块、线和集合之间的区别。所以我们将通过一些例子，希望这些例子能开始产生更多的感知。</p>
+<p>发言人   07:03<br>Now let’s look at in general. How the cache hardware implements a read, so accesses our program, executes an instruction that references some word in memory. The CPU sends that address to the cache and S, and it asks the cache to return the word.<br>现在让我们来看看总体情况。缓存硬件如何实现读取，因此访问我们的程序，执行引用内存中某个字的指令。CPU将该地址发送到缓存和S，并要求缓存返回单词。</p>
+<p>发言人   07:33<br>The word at that address? And so the cache takes that address. This would be a 64 b address in the case of x 86, 64. And it divides the address into a number of regions, which are determined by the organization of the cache. They’re determined by those parameters s sets s, the number of sets e, the number of lines per set, and b, the size of each data block. So the order bits there are low order bits, which determine the offset in the block that that word starts at. The next S bits are treated as an unsigned integer, which serves as an index into the array of sets.<br>那个地址的词？因此缓存会获取该地址。在x86 64的情况下，这将是一个64 b的地址。它将地址划分为许多区域，这些区域由缓存的组织确定。它们由这些参数集合s、集合的数量e、每个集合的行数以及每个数据块的大小b决定。所以那里的顺序位是低阶位，它们决定了该单词开始的块中的偏移量。接下来的S位被视为无符号整数，用作集合数组的索引。</p>
+<p>发言人   08:31<br>Remember, we just of these think of this cache as an array of sets. The set index bits provide the index into this array of sets, and then all of the remaining bits, all of the remaining t bits, constitute what we call a tag, which will help us when we do our search. So the cache logic takes this address, and it first extracts the set index and uses that as an index into this array to identify the set that if this block is in the set. I’m sorry if the word, if the block that contains the data word at this address is in the cache, it’s going to be in the set denoted by the set index. So first, it identifies which index to look in.<br>请记住，我们只是将这个缓存视为集合数组。集合索引位提供了这个集合数组的索引，然后所有剩余的位，所有剩余的t位，构成了我们所说的标记，这将在我们搜索时有所帮助。因此，缓存逻辑获取此地址，首先提取集合索引，并将其作为此数组的索引，以标识此块是否在集合中的集合。对不起，如果这个词，如果包含这个地址的数据字的块在缓存中，它将在由集合索引表示的集合中。所以首先，它确定要查看的索引。</p>
+<p>发言人   09:36<br>And then it checks the tag. It checks all of the lines in that set to see if there’s any of those lines have a matching tag, a tag that matches t, the tag bits in the address. And it checks to see if the valid bit is turned on. So if those two conditions hold, if there’s a line anywhere in the set where the valid bit is one and there’s a matching tag, then we have a hit. Then the block that we’re looking for is contained in this set.<br>然后它检查标签。它会检查该集合中的所有行，以查看是否有任何一行具有匹配的标签，一个与地址中的标签位t匹配的标签。它会检查有效的位是否打开。因此，如果这两个条件成立，如果在集合中的任意位置有一行，其中有效位为1，并且有一个匹配的标签，那么我们就有一个命中。那么我们要寻找的区块包含在这个集合中。</p>
+<p>发言人   10:17<br>Once we determine that we’ve identified the block, then the cache uses the low order B bits to determine where the data we’re interested in begins within that block.<br>一旦我们确定已经识别出了该块，缓存就会使用低位B位来确定我们感兴趣的数据在该块中从哪里开始。</p>
+<p>发言人   10:33<br>All right, let’s look at a more specific example for the simplest kind of cache, which is when e equals one, when there’s only one line per set. So e equal 1, 1 line per set, this kind of cache is called a direct map cache. So here we have S sets. Each set consists of a single line.<br>好的，让我们来看一个更具体的例子，关于最简单的缓存类型，也就是当e等于一时，每套缓存只有一行。所以e等于每套1，1行，这种缓存称为直接地图缓存。所以在这里，我们有S个集合。每组由一条线组成。</p>
+<p>发言人   10:57<br>And now suppose our program references a data item and a particular address. The CPU sends that address to the CA, the cache takes that address, breaks it up into into these three fields. For this particular address, the block offset is 4, and the set index is one. And then there’s some tag bits, which we’ll just denote with with the color pink. So the cache extracts the set index, which is one, and then it uses that as as the index into the set.<br>现在假设我们的程序引用了一个数据项和一个特定的地址。CPU将该地址发送给CA，缓存获取该地址，将其分解为这三个字段。对于这个特定的地址，块偏移量是4，而集合索引是1。然后还有一些标记位，我们将用粉红色表示。所以缓存提取集合索引，即1，然后将其作为集合中的索引。</p>
+<p>发言人   11:42<br>And then it just ignores all the other, the sets. If the block we’re looking for is in the cache, it’s going to be in this in set number one. Then it does the comparison of the tag bits and the valid bits and assume that it valid bits on and that it matches. Then it looks at the block offset, which is 4. Which tells it that the 4 B n, suppose that that’s what the instruction was referencing. The 4 B in begins at offset 4. So now the cache takes this in and it sends it back to the to the CPU, which puts it in the register.<br>然后它忽略了所有其他的集合。如果我们要寻找的块在缓存中，它将在集合1中。然后它对标记位和有效位进行比较，并假设其有效位并且匹配。然后它查看块偏移，即4。这告诉它4 B n，假设这就是指令所引用的。中的4 B从偏移量4开始。所以现在缓存接收这个内容并将其发送回CPU，CPU将其放入寄存器中。</p>
+<p>发言人   12:30<br>If the tag doesn’t match, then the old line. If the tag doesn’t match, then there’s a miss. And in that case, the cache has to fetch the block, the corresponding block from memory, and then overwrite this block in the line. And then it, it can get the word out of the block and send it back to the processor.<br>如果标签不匹配，则使用旧行。如果标签不匹配，则存在未匹配。在这种情况下，缓存必须从内存中获取块，相应的块，然后在行中覆盖此块。然后它可以从块中获取单词并将其发送回处理器。</p>
+<p>发言人   12:58<br>Let me ask you a question just to see, kind of check to see if you’re following along with this. So if there’s a miss and the cache has to request the block from memory, fetch it from memory, and then overwrite the block and the current line, does it also have to change the tag bits, or do those stay the same? So do the tag bits that were in this line get overwritten with a different value? Or is it the same, same, different, same, different? Now, why would it be different? We haven’t changed, yes.<br>让我问你一个问题，只是为了看看，看看你是否遵循了这个。因此，如果发生未命中，缓存必须从内存中请求块，从内存中获取它，然后覆盖块和当前行，它是否也必须更改标记位，或者这些位保持不变？这一行中的标记位会被不同的值覆盖吗？还是相同，相同，不同，相同，不同？现在，为什么会有所不同？我们没有改变，是的。</p>
+<p>发言人   13:56<br>I’m oh. It almost certainly has different data, but does it have a different address? What you missed because the tag didn’t?<br>我是哦。它几乎肯定有不同的数据，但是它有不同的地址吗？你错过了什么，因为标签没有？</p>
+<p>发言人   14:14<br>Exactly, it missed because the tag, it missed because the tag didn’t match. If the valid bit was false and the tag matched, then that would also be a miss. Oh, then you wouldn’t. Okay, that’s right. Good, good, good, great.<br>确切地说，它错过了，因为标签不匹配。如果有效位为假且标记匹配，则也将是未命中。哦，那你就不会。好的，没错。很好，很好，很好。</p>
+<p>发言人   14:40<br>A, let me do a really simple, specific example of how direct-mapped she works. I want you to understand in real detail how this would work. But I also want to make a point. The weakness of direct map caches and why you would want to have more than one line per set.<br>让我做一个非常简单、具体的例子，说明她是如何直接映射的。我希望你能真正详细地了解这将如何工作。但我也想提出一个观点。直接地图缓存的弱点以及为什么你希望每个集合有多条线。</p>
+<p>发言人   15:06<br>Okay, so this is a really simple we have our memory system consists of 16 B. So it’s not a very useful system with 4 b addresses, and it’s broken up into blocks of 2 B each. Our cache consists of four sets with one block per set. Now our 4 b addresses, because b equals 2, 2 to the one, we only need one block offset bit. There’s only 2 B in a block. The byte we’re looking for is either at 0 or one. Because we have four sets, two set index bits, and then the remaining bits are always tag bits. So in this case, there’s just one tag bit.<br>好的，这是一个非常简单的，我们的记忆系统由16个B组成。因此，它不是一个具有4 b地址的非常有用的系统，它被分成每个2 B的块。我们的缓存由四个集组成，每个集有一个块。现在我们的4个b地址，因为b等于2，2的1，我们只需要一个块偏移位。一个街区只有2个B。我们要寻找的字节不是0就是一。因为我们有四个集合，两个集合索引位，然后剩余的位总是标记位。所以在这种情况下，只有一个标记位。</p>
+<p>发言人   15:59<br>Alright, now let’s suppose that our program executes instructions that reference the following memory addresses 0, 1, 7, 8, and 0. And these references are reads that they’re reading 1 B per read.<br>好的，现在假设我们的程序执行的指令引用了以下内存地址0、1、7、8和0。这些参考文献是阅读材料，它们每次读取1 B。</p>
+<p>发言人   16:20<br>Like I said, this is a really simple system. So let’s look at what happens now. We start out, initially, our cache is empty. Valid bits are all set to 0. And now the cache receives a request for the byte that’s at address 0. So it extracts the set index bits, which in this case are 0, 0. So it’s going to look and set zero for. And in this case, since valid is 0, it’s a miss. So it fetches that block from memory, sticks the block. So this is using array notation for memory. So this is the bytes that extend from offset zero to offset one inclusive. In memory. The tag bit is 0, and the valid bit is one.<br>就像我说的，这是一个非常简单的系统。那么让我们看看现在发生了什么。我们开始时，最初，我们的缓存是空的。有效位都设置为0。现在缓存收到对地址0的字节的请求。所以它提取设置的索引位，在这种情况下为0，0。所以它会寻找并设置零。在这种情况下，由于valid为0，所以它是一个未命中。所以它从内存中获取那个块，然后粘在这个块上。所以这是对内存使用数组表示法。所以这是从offset 0到offset 1扩展的字节。在记忆中。标签位是0，有效位是1。</p>
+<p>发言人   17:27<br>Now, the next address that comes by is for address one, well, that’s a hit, right, because that block, the block that contains the byte at address one, is already in the cache tag, and the tags match, so we’re good. That’s a hit.<br>现在，下一个出现的地址是地址一，嗯，这是一个命中，因为那个块，包含地址一的字节的块，已经在缓存标签中了，标签匹配，所以我们很好。这很成功。</p>
+<p>发言人   17:48<br>Now we get address 7, so the cache extracts the set index bits, which in this case are 1, 1, or 4, or three rather looks in set three, there’s no valid bit, so that’s a miss, and it loads the data from memory that spans bytes 6 and 7. In this case, the tag bit is 0, so that we record that in our metadata.<br>现在我们得到了地址7，因此缓存提取了设置的索引位，在这种情况下是1、1或4，或者在设置三中查找三个，没有有效的位，所以这是一个错过，它从跨度为6字节和7字节的内存中加载数据。在这种情况下，标签位为0，因此我们将其记录在元数据中。</p>
+<p>发言人   18:24<br>The next reference that comes by is 8. Now 8 has a set index of 0 0 0, but that’s currently occupied by block 0 1. And we can tell that address 8 has a tag of one and the existing. The earlier address, address 0, has a tag of 0. So that’s a miss. So now we have to go fetch the block containing byte number 8 into memory. So now we have bytes 8 and 9 in our new tag bit.<br>接下来的引用是8。现在8的设置索引为0 0，但目前被块0 1占用。我们可以分辨出地址8的标签是1，而现有的标签是1。之前的地址，地址0，其标签为0。所以这是一个小姐。所以现在我们必须将包含字节数8的块提取到内存中。现在我们的新标签位中有字节8和字节9。</p>
+<p>发言人   19:07<br>Okay, now the next instruction is for byte 0, and we had that in our cache and we just replaced it. So it’s another miss. So that’s unfortunate. And the only reason we missed it, it’s because we’ve got just one line per set. So we were forced to overwrite.<br>好的，现在下一条指令是针对字节0的，我们已经把它放在缓存中，然后我们就替换了它。所以这是另一个小姐。所以这是不幸的。我们错过它的唯一原因是因为我们每套只有一行。所以我们被迫覆盖。</p>
+<p>发言人   19:37<br>That that block containing bytes block 0 1 when we missed on block 8 9. So this, and you see there’s plenty of room in our cache. We’ve still got, we’ve got 2, two lines that we haven’t even accessed. So our cache is plenty big. But just because of the low associativity of our cache and the sort of the pattern, the access pattern that we were presented with, we’ve got a miss that really was kind of unnecessary. Oh, yeah, sorry.<br>当我们错过了第8块9时，那个包含了第0 1块字节的块。所以这一点，你会发现我们的缓存中有足够的空间。我们还有，我们还有2，2行我们甚至还没有访问过。所以我们的缓存很大。但仅仅因为我们的缓存的低相关性和模式的类型，我们所呈现的访问模式，我们有一个实际上是不必要的遗漏。哦，是的，对不起。</p>
+<p>发言人   20:30<br>So when we referenced, when we referenced 7, it’s actually it’s at offset one in that block 6, 7. Since our blocks are 2 B, they’ll always start on an even multiple.<br>所以当我们引用时，当我们引用7时，它实际上是在那个块6、7中的偏移量1。由于我们的区块是2 b，它们总是从偶数倍数开始。</p>
+<p>发言人   20:53<br>Any other questions? Okay, so this, so this sort of is the reason why you have caches have higher associativities, higher values of e, so let’s look at, and so for values of e, greater, for values of e greater greater than one, we refer to them as e way set associative caches. So here e equals two, so it’s a two way associative.<br>还有什么问题吗？好的，所以这就是为什么缓存具有更高的关联性，更高的e值的原因，所以让我们来看看，对于e的值，更大的e，我们将它们称为e方式集关联缓存。这里e等于2，所以它是双向联想的。</p>
+<p>发言人   21:31<br>So let’s suppose we have a two way associative cache. We have our array of sets, and now each set contains two lines instead of one line. And suppose we’re presented with an address with the following form. We’re looking for a word that begins at an offset of four inside our block. At within set number one. So the cache extracts that set index. So this is set 0, this is set one, this is set two, throws away all the other sets.<br>那么让我们假设我们有一个双向关联缓存。我们有了集合数组，现在每个集合包含两行而不是一行。假设我们看到一个具有以下形式的地址。我们正在寻找一个在我们的区块内以四个偏移量开头的单词。在设定的第一个范围内。所以缓存提取了设置索引。所以这个设置为0，这个设置为1，这个设置为2，把所有其他的设置都扔掉。</p>
+<p>发言人   22:23<br>And now in parallel, it searches. It searches the tags. It searches for a matching tag in both of these lines and a valid bit. So if we get a matching tag and a valid bit true, then we’ve got A, then we’ve got a hit. Now, yes, yes.<br>现在，它同时进行搜索。它搜索标签。它在这两行中搜索匹配的标记和一个有效的位。因此，如果我们获得了匹配的标签和一个有效的位为真，那么我们就得到了一个，那么我们就得到了一个成功。现在，是的，是的。</p>
+<p>发言人   22:58<br>Oh, it’s a very good question. There’s hardware logic that does that compare. And that’s the reason as the number, as the associativity goes up, that logic gets more and more expensive.<br>哦，这是一个非常好的问题。有硬件逻辑可以进行比较。这就是原因，随着关联性的增加，逻辑变得越来越昂贵。</p>
+<p>发言人   23:12<br>It’s like, like you’re kind of doing some kind of tree search. And so that actually is the limit. That’s why I mean, because in general, if you take this to the limit, there’s just one set with. We call that a fully associative cache. So there’s just one set. And now a block can go anywhere. There’s no constraints now in where you place a block, but because of the complexity of that fully associative search, those are very rare. We do see, we’ll see fully associative caches, but they’re software caches. So in software, so the complexity of the hardware sort of doesn’t. It’s not worth the complexity of the hardware for the penalty of having a lower associativity.<br>这就像你在做某种树搜索。所以这实际上就是极限。这就是我的意思，因为一般来说，如果你把它带到极限，只有一组。我们称之为完全关联缓存。所以只有一组。现在一个街区可以去任何地方。现在在放置块的位置上没有任何限制，但由于完全关联搜索的复杂性，这种情况非常罕见。我们会看到完全关联的缓存，但它们是软件缓存。所以在软件方面，所以硬件的复杂性不是这样。不值得硬件的复杂性来换取较低的关联性的惩罚。</p>
+<p>发言人   24:14<br>But there are some systems later on when we study virtual memory. In a virtual memory system, the DRAM serves as a cache for data stored on the disk. And as we saw last time, the penalty for a miss if you have a cache on DRAM and you miss and you have to go to disk, the penalty is huge for that. And so because of that, it’s worthwhile having very complex searches, search algorithms, in particular, in a virtual memory system.<br>但是当我们研究虚拟内存时，还有一些系统。在虚拟内存系统中，DRAM充当存储在磁盘上的数据的缓存。正如我们上次看到的，如果您在DRAM上有缓存，并且您必须转到磁盘，则未命中的罚款是巨大的。正因为如此，非常复杂的搜索和搜索算法是值得的，特别是在虚拟内存系统中。</p>
+<p>发言人   24:47<br>The DRAM is implements a fully associative cache where blocks from disk can go anywhere. We’ll get into that later when we look in virtual memory. But you’re right. You’ll see in real systems nowadays that the number goes up because feature sizes are going down and designers can afford to implement more expensive hardware.<br>DRAM实现了一个完全关联的缓存，磁盘中的块可以被缓存到任何地方。我们稍后在查看虚拟内存时会深入探讨这个问题。但你是对的。你会发现，在当今的实际系统中，由于特征尺寸越来越小，设计人员可以负担得起实现更昂贵的硬件，因此这个数字会上升。</p>
+<p>发言人   25:08<br>The largest associ tivity on Intel systems that I know of is 16 way associative L 3 caches, and then the other is a right way associative. So that’s sort of the order of magnitude. That’s state of the art right now. So then once we’ve identified a match, we use the set offset bits. In this case, we are accessing a short in four. Is the offset within the block of this, the 2 B short, in which then we can return to the processor?<br>我所知道的在英特尔系统上最大的关联是16路关联L 3缓存，然后另一个是正确的关联。这就是数量级。这是目前的艺术水平。因此，一旦我们确定了匹配项，我们就使用设置的偏移位。在这种情况下，我们将访问一个短在四个。这个块内的偏移量，2 b短，然后我们可以返回处理器吗？</p>
+<p>发言人   25:41<br>So let’s do that same simulation that we did before, but this time with a two way associative cache. Now, memory system is the same, but now instead of one set, we have two sets. And I mean I’m sorry, instead of four sets, we have two sets. So the cache, this is the same sized cache, but we’re just going to organize it differently instead of one way, instead of a direct map cache with four lines containing four lines, 1 line per set, we’re going to implement a two way associative CA, where we have two sets with two lines per set. So in each case, there’s just there’s 4 total lines question.<br>所以让我们进行之前的相同模拟，但这次使用的是双向关联缓存。现在，记忆系统是相同的，但现在我们有了两个集合，而不是一个集合。我的意思是，对不起，我们有两套，而不是四套。所以缓存，这是大小相同的缓存，但我们将以不同的方式组织它，而不是一种方式，而不是直接使用四行包含四行的直接地图缓存，每行每行，我们将实现一个双向关联CA，其中我们有两个集合，每个集合有两条线。所以在每种情况下，只有总共4行的问题。</p>
+<p>发言人   26:31<br>Oh, so that comes in with the request somehow. And I actually don’t know the details of that. I guess it could ask for just there could just be a default size. Maybe it’s always, it’s always a 64 B word and then the processor extracts the current bits. Don’t know the details of that, but it either comes in on the request or there’s standard, there’s a standard size that the processor then parses out. We’ll just assume that the cash knows what size to return, yes?<br>哦，所以这是以某种方式与请求一起出现的。实际上我不知道其中的细节。我想它可能会要求一个默认大小。也许它总是，它总是一个64 b的字，然后处理器提取当前的位。不知道细节，但它要么根据请求提供，要么是标准的，处理器会解析出标准大小。我们假设现金知道返回的大小，对吧？</p>
+<p>发言人   27:10<br>How do you decide which block to replace? That’s a really good question. So there’s a lot of different algorithms. The most common algorithm or a common algorithm is least recently used. So by locality, you want to, you want to keep blocks in the cache that are being used a lot. And so if a block isn’t referenced for a long time by the principle of locality, by sort of the inverse locality principle, it’s likely not to be addressed, referenced in the near future. So that’s one algorithm that you just keep track of. And I’m not showing there needs to be additional bits in the line to sort keep sort of virtual timestamps. But that’s sort of the general way you do it.<br>你如何决定替换哪个区块？这是一个非常好的问题。所以有很多不同的算法。最常用的算法或常用算法最近最少使用。因此，根据位置，您希望将经常使用的块保留在缓存中。因此，如果一个区块在很长一段时间内没有被局部性原则所引用，或者被逆局部性原则所引用，那么在不久的将来，它很可能不会被解决。所以这是你只需要跟踪的一种算法。并且我没有展示需要行中有额外的位来排序并保持虚拟时间戳。但这是你通常的做法。</p>
+<p>发言人   27:59<br>Try to keep the things that are the blocks that are being accessed the most frequently, most recently.<br>尽量保留最频繁、最近访问的内容块。</p>
+<p>发言人   28:10<br>Okay, the question is, what determines the block size? That’s determined by the design of the memory system. So that’s a fixed parameter of the memory system. So when the Intel designers decided to put cache memories on their processors, they decided that the block size would be 64 B. Sorry. So the block size, the block size comes first. Then you determine how big you want your cash to be, and you determine the associativity. And then once you’ve determined the associativity and you know how big your cache is, then that determines the number of sets. So basically all of those.<br>好的，问题是，什么决定了块的大小？这是由记忆系统的设计决定的。所以这是记忆系统的固定参数。因此，当英特尔设计师决定在他们的处理器上放置缓存存储器时，他们决定块大小为64 b。对不起。所以区块大小，区块大小是第一位的。然后你决定你希望你的现金有多大，你决定了关联性。一旦你确定了关联性，并且知道了你的缓存有多大，那么就决定了集合的数量。基本上所有这些。</p>
+<p>发言人   29:11<br>The. And the capacity, the number of lines. Per set is sort of a fixed high level parameter design parameter. The size of the cache is a high level design parameter. And then the number of sets then is induced from that, yes?<br>这个。以及容量，线路数量。每个集合是一种固定的高水平参数设计参数。高速缓存的大小是一个高级设计参数。然后集合的数量是由此归纳的，对吗？</p>
+<p>发言人   29:43<br>Yeah, that’s the replacement policy. So the question is, when there’s multiple lines in a set, how does it determine which to overwrite? And that was the previous question. Maybe I should have repeated it. So you try to pick a line that was least recently used, so lines, lines that haven’t been accessed recently are good candidates for replacement because of the sort of inverse locality principle, right? That they haven’t been inverse referenced recently, chances are they won’t be referenced again.<br>是的，这就是替换政策。所以问题是，当一个集合中有多行时，它如何确定要覆盖哪一行？这是之前的问题。也许我应该重复一遍。因此，您尝试选择最近最少使用的行，因此最近没有访问的行是替换的良好候选，因为存在反向局部性原则，对吗？最近没有被反向引用，它们很可能不会被再次引用。</p>
+<p>发言人   30:21<br>Oh yeah, there’s additional bits that I’m not showing here that you have to. So, so when you replace a line in the set, if that data has changed, then it has to be written back to memory. And that’s another bit I haven’t shown yet.<br>哦，是的，还有一些额外的部分我不在这里展示，你必须这样做。因此，当替换集合中的行时，如果数据已更改，则必须将其写回内存。这是我还没有展示的另一点。</p>
+<p>发言人   30:46<br>So yeah. So this is a. Really, this is a really tricky parameter. And it’s a high level of system parameter that goes on for years. So the idea you want to have blocks in order to exploit spatial locality. Think about it, if you’re going to go to the trouble, if you have a miss in cash and you’re going to go to the trouble of going all the way to memory to get some data, you want to amortize the cost of fetching that data by fetching more than 1 B. That’s the motivation for block, because by the principle of locality, spatial locality in particular, if you reference a word inside of a block, chances are you’re going to reference a nearby word, which will also be an E block. So blocks, The whole purpose of blocks is to exploit spatial locality.<br>所以是的。所以这是a。真的，这是一个非常棘手的参数。这是一个持续多年的高水平系统参数。所以你想要有块来利用空间局部性的想法。想想看，如果你要麻烦了，如果你错过了现金，你要麻烦地去内存获取一些数据，你想通过获取超过1 b来分摊获取这些数据的成本。这就是块的动机，因为根据局部性原则，特别是空间局部性，如果你在一个块中引用一个词，你很可能会引用一个附近的词，这也将是一个E块。所以块，块的整个目的是利用空间局部性。</p>
+<p>发言人   31:45<br>Now, if you make your block too small, then you don’t amortize, you don’t get the same amortization, you maybe get one, you bring the block in, so there’s a reference, you get a miss, you bring the block in, there’s another reference nearby, you get a hit because the block’s in memory, but then the next reference is in a different block because your block sizes are too small. So you kind of want to make blocks big as big as possible, but without slowing the system down. So if you made your block size too big, it would just take too long to bring that block in Plus now your blocks are taking up bits in your cache memory. So now there’s no room for other blocks.<br>现在，如果你让你的区块太小，那么你就不会摊销，你不会得到相同的摊销，你可能会得到一个，你把区块带进来，所以有一个参考，你会错过，你把区块带进来，附近还有另一个参考。你会得到点击，因为块在内存中，但是下一个引用在不同的块中，因为你的块大小太小了。因此，您有点希望使块尽可能大，但不能减慢系统的速度。因此，如果您的块大小太大，那么将该块加入所需的时间太长，现在您的块正在占用缓存中的位。所以现在没有其他街区的空间了。</p>
+<p>发言人   32:30<br>So it’s a really tricky design problem, right? If we were taking an architecture class, then we would sort of dive into how architects make those design decisions, but in general that it’s kind of a balancing act, right? Were there any other questions, yes?<br>所以这是一个非常棘手的设计问题，对吧？如果我们上了建筑学课程，那么我们会深入了解建筑师如何做出设计决策，但总的来说，这有点是一种平衡，对吧？还有其他问题吗，是的？</p>
+<p>发言人   32:58<br>Oh, the question is, every time there’s a myth, do you have to select a victim line and overwrite it? Yeah, I don’t know of any caches that don’t do that. Now, we’ll see when we look at rights, we’ll see there’s an option of whether we’re only looking at reads right now, But with writes, that question does come up. If you wait in a couple of slides, we’ll go over. We’ll go over that. Any other questions?<br>哦，问题是，每次有一个神话，你必须选择一个受害者行并覆盖它吗？是的，我不知道有任何缓存不这样做。现在，当我们看权利时，我们会看到有一个选项，即我们现在是否只看阅读，但对于写作，这个问题确实会出现。如果您在几张幻灯片中等待，我们将会过去。我们会讨论一下。还有什么问题吗？</p>
+<p>发言人   33:31<br>OK, so let’s look at this two way associative cache. Now there’s one block offset bit. We only have two sets, so we only need one set index. And then the remaining 2 b are tagged.<br>好的，让我们来看看这个双向关联缓存。现在有一个块偏移位。我们只有两个集合，所以我们只需要一个集合索引。然后剩余的2 b被标记。</p>
+<p>发言人   33:45<br>So let’s go through our trace. So address 0 has a set is in set zero right here, that’s a miss, so we load that into memory. The reference to address one that’s in set zero. And that’s a hit because that byte is in, is in our block. The reference to 7 is a miss that’s in set one. So we load that. And we were just picking randomly pick one of these to overwrite because the cache is empty. The next reference is to address number 8, which is in set 0.<br>让我们回顾一下我们的踪迹。因此，地址0有一个集合在这里的集合0中，这是一个未命中，因此我们将其加载到内存中。在设置0中的地址的引用。这是一个命中，因为那个字节在，在我们的块中。对7的引用是在设置1中的失误。所以我们加载它。我们只是随机选择其中一个来覆盖，因为缓存是空的。下一个参考地址是8，它在集合0中。</p>
+<p>发言人   34:28<br>Now, here’s the difference between the direct map cache and this two way set associative cache. When we reference address 8, that block, the corresponding block has to go into set zero because of this zero set index bit. But we’ve got room now because we are sets have room for two lines instead of one. So when we load that in, if we have an available empty slot, we’ll put it there. We won’t overwrite anything. We’ll always try to overwrite empty, empty lines.<br>现在，这是直接地图缓存和这种双向集合关联缓存之间的区别。当我们引用地址8时，相应的块必须进入设置0，因为这个设置0的索引位。但是我们现在有空间了，因为我们的设置有两条线而不是一条线的空间。所以当我们加载它时，如果我们有一个可用的空插槽，我们会把它放在那里。我们不会覆盖任何东西。我们总是会尝试覆盖空的行。</p>
+<p>发言人   35:04<br>So now we’ve got in this set, we’ve got block 0 1 and block 8, 9. So when we get our reference block to address zero, whereas before with the when we had a conflict miss in the direct map cache, now we can satisfy that request. It hits in memory and the cache can satisfy it from the cache instead of going to memory.<br>所以现在我们有这个集合，我们有第0 1个区块和第8、9个区块。因此，当我们将参考块的地址设置为零时，而在之前，当我们在直接映射缓存中发生冲突时，现在我们可以满足该请求。它会进入内存，缓存可以从缓存中满足它，而不是进入内存。</p>
+<p>发言人   35:29<br>That makes sense? Okay, now what about rights? So there’s multiple copies of the data we’re subsetting. As we move up the hierarchy, we’re creating subsets of of the data in the caches. So what do we do? If we do a write to a word within a block that’s currently in the cache, we have two options.<br>这就是感知？好的，那么权利呢？所以我们正在创建子集的数据有多个副本。随着层次结构的向上移动，我们正在创建缓存中数据的子集。那么我们该怎么办？如果我们对当前缓存中的块中的单词进行写入，我们有两个选择。</p>
+<p>发言人   36:07<br>We can write that block immediately to memory. We’ve got a block that’s like this big, and we’re updating a little chunk of it. So we can either do the update and then flush it to memory immediately so that memory always mirrors the contents of memory, always mirror the contents of the cache. But that’s expensive, right? I mean, memory accesses are expensive.<br>我们可以立即将该块写入内存。我们有一个这么大的区块，我们正在更新其中的一小部分。因此，我们可以进行更新，然后立即将其刷新到内存中，以便内存始终镜像内存的内容，始终镜像缓存的内容。但那很贵，对吧？我的意思是，内存访问是昂贵的。</p>
+<p>发言人   36:36<br>So the other option is what’s called write back. So in this case, when we write to a block in the cache, we don’t flush it to memory until we elect that particular line as a victim that’s going to be overwritten. And only then, only then when we’re just, we sort of defer the writing to memory until the last possible minute. We defer it until just before the cache would overwrite that that data block. So that’s called right back. And for write back, you need to have an extra bit in the line that indicates whether that block’s been written to.<br>所以另一个选择是所谓的回写。因此，在这种情况下，当我们写入缓存中的块时，我们不会将其刷新到内存中，直到我们选择该特定行作为将被覆盖的受害者。只有这样，只有当我们公正的时候，我们才会把写作推迟到记忆的最后一分钟。我们将其推迟到缓存将覆盖该数据块之前。这被称为 “右后”。而对于写回，行中需要有一个额外的位，指示该块是否已写入。</p>
+<p>发言人   37:15<br>So the algorithm is when the cache identifies a particular line to overwrite, it checks the dirty bit on that line. If it’s set, then it writes that data back to disk. If the data, if that block hasn’t been written, there’s no need to write it back it. It has the same value as the copy of the block on disk.<br>因此，算法是当缓存标识要覆盖的特定行时，它会检查该行上的脏位。如果设置了，那么它会将数据写回磁盘。如果数据，如果那个块没有被写入，就不需要把它写回去了。它与磁盘上的块副本具有相同的值。</p>
+<p>发言人   37:43<br>OK, now, so that’s a right hit. Now, what happens if we have a right miss? So we’re doing a write to memory, and the word that we’re writing is not contained in any block that’s in our cache. So we have two options, we can do what’s called write allocate, so we can treat it if there’s a miss, we can do sort of the symmetric thing that we did with a hit, which was create a new, a new line, possibly overriding an existing line, and then, right? So we could, so we could create that cache ent that cache line, fetch it from memory, and then do the right. So this is sort of symmetric to reads, So every right, if it misses when the write finishes, that block will be in the cache. And if we do a subsequent read, we’d get a hit. So that’s the reason you might want to do that.<br>好的，现在，这是一个正确的打击。现在，如果我们有正确的失误会发生什么？所以我们正在对内存进行写入，并且我们正在编写的单词不包含在我们缓存中的任何块中。所以我们有两个选项，我们可以做所谓的写入分配，这样如果有未命中，我们可以对待它，我们可以做一些对称的事情，就像我们在命中一样，创建一个新行，可能覆盖现有行，然后，对吗？所以我们可以创建那个缓存线，从内存中获取它，然后执行正确的操作。所以这对读取有点对称，所以如果在写入完成时错过了，那个块将在缓存中。如果我们进行后续的阅读，我们会得到一个打击。这就是你可能想要这样做的原因。</p>
+<p>发言人   38:42<br>The other option is just don’t loate an entry in the cache. Don’t allocate a new line, just write the data directly to memory. You don’t really need to understand the distinction between these two things.<br>另一种选择是不要在缓存中存储条目。不要分配新行，只需将数据直接写入内存。你真的不需要理解这两件事之间的区别。</p>
+<p>发言人   38:59<br>Different caches use different policies for your own mental model. A good model to use is just to assume right back, right allocate. So just assume that we won’t copy the data to disk. If there’s a hit, we won’t write it back to disk until the last possible minute. And every time there’s a right myth, we’ll create a new entry in the cache. I think that’s sort of the simplest model, and it’s a reasonable model that you can use regardless of the particular CA implementation.<br>不同的缓存针对您自己的心理模型使用不同的策略。一个好的模型就是假设正确的回报，正确的分配。所以只要假设我们不会将数据复制到磁盘上。如果发生命中，我们直到最后一分钟才会将其写回磁盘。每当出现正确的神话时，我们都会在缓存中创建一个新条目。我认为这是最简单的模型，而且这是一个合理的模型，无论特定的CA实现如何，您都可以使用。</p>
+<p>发言人   39:36<br>Now, in a real system, so far, we’ve only looked at, we’ve only assumed that there’s a single cache, but in real systems. There’s multiple caches. So modern Core i7 Haswell architecture from Intel. Contains multiple processor cores, so 4 is a typical number for like desktop systems, 8, 8 to 12 is typical for server class systems. These processor cores can each execute their own independent instruction stream in parallel, and each processor core contains general purpose registers, which that’s level 0 in the cache. And then two different kinds of L 1 caches, the data CA, the L 1 D cache, and the i-cache, which is the instruction cache. And these are fairly small, 32K bytes. They’re 8 way associative, and they can be accessed in a very small number of cycles.<br>现在，在一个真实的系统中，到目前为止，我们只看到了，我们只假设有一个单一的缓存，但在真实的系统中。有多个缓存。因此，现代核心i7具有来自英特尔的良好架构。包含多个处理器内核，因此4是台式机系统的典型数字，8、8到12是服务器级系统的典型数字。这些处理器内核可以并行执行它们自己的独立指令流，每个处理器内核包含通用寄存器，即缓存中的0级寄存器。然后是两种不同类型的L 1缓存，即数据CA、L 1 D缓存和i缓存，后者是指令缓存。这些都是相当小的，32k字节。它们是8路关联的，并且可以在非常少的周期内访问它们。</p>
+<p>发言人   40:49<br>The next level of the hierarchy is is an L 2 cache, which is still fairly small, 256 kB, same associativity. And it has a slightly longer access time. And it’s unified in the sense that the L 2 cache contains both data and instructions. So that’s all within a single core on the chip and then also on the chip, but external to all the cores and shared by all the cores is an L 3 unified cache, which is 8 MB and 16 way associative with an access time that’s like 40 to 75 cycles. So if there’s a miss in L 1, then the L 1 sends a request to L 2 to try to find the data in L 2. Since L 2 is a little bigger, maybe the data hasn’t been flushed out of L 2 yet. If L 2 can’t find it, it sends a request to L 3 to see if it can find the data in L 3. If L 3 can’t find it, then it gives up and it goes off chip to memory.<br>层次结构的下一个级别是一个L2缓存，它仍然相当小，256 kB，相同的结合性。并且它的访问时间稍长。并且L 2缓存包含数据和指令的感知是统一的。所以这一切都在芯片上的一个核心内，然后也在芯片上，但是在所有核心的外部并由所有核心共享的是一个L 3统一缓存，它是8 MB和16方式相关联的访问时间，大约是40到75个周期。因此，如果在L 1中存在未命中，则L 1向L 2发送请求以尝试查找L 2中的数据。由于L 2稍微大一些，也许数据还没有从L 2中清除出去。如果L 2找不到，它会向L 3发送请求，以查看是否能在L 3中找到数据。如果L 3找不到它，那么它会放弃，从芯片转到内存。</p>
+<p>发言人   42:02<br>Yes, question? Yes, name memories. Is it’s the DRAM built of DRAM chips? It’s in a separate, separate set of chips on the motherboard connected by those that IO bridge and the various buses that we talked about last time.<br>是的，有问题吗？是的，回忆的名字。这是由DRAM芯片构建的DRAM吗？它位于主板上单独的一组芯片中，由我们上次谈到的IO桥和各种总线连接。</p>
+<p>发言人   42:31<br>And for all of these different caches, the block size is 64 B. Now, there’s a number of different ways to think about the performance of caches. My most common way is using a metric called the miss rate. So this is the fraction of references that miss. And it’s one minus the hit rate. So typical for caches to work, the miss rate has to be pretty low. And fortunately, because of locality, these miss rates are low.<br>对于所有这些不同的缓存，块大小为64 B。现在，有许多不同的方式来考虑缓存的性能。我最常用的方法是使用一种叫做缺失率的指标。所以这是错过的参考文献的分数。这是一个减去命中率。缓存工作如此典型，缺失率必须相当低。幸运的是，由于当地的原因，这些误差率很低。</p>
+<p>发言人   43:16<br>Another metric is the hit time. So if we do have a hit in the cache, how long does it actually take to sort of look up, do the lookup to determine that there was a hit, and then return the value? So for L 1 in an Intel system, this is four clock cycles, 10 clock cycles for L 2, and then there’s an additional cost. So you always have to pay the hit time. The hit time is the best you can do, but if you have a miss, then you pay the hit time because you have to do the search and eventually you’re going to have to return the word back to the requester. But then you have this additional cost, which is going to the memory to fetch the data.<br>另一个指标是命中时间。所以，如果我们在缓存中确实有一个命中，实际上需要多长时间来查找，进行查找以确定有一个命中，然后返回值？因此，在英特尔系统中，对于L 1，这是四个时钟周期，对于L 2，则需要10个时钟周期，然后需要额外的费用。所以你总是需要支付命中时间。命中时间是你能做到的最好的，但是如果你错过了，那么你需要支付命中时间，因为你必须进行搜索，最终你将不得不将单词返回给请求者。但是这样你就有了额外的费用，这笔费用将用于内存获取数据。</p>
+<p>发言人   44:06<br>That miss penalty, that’s so called miss penalty is on the order of hundreds of cycles for main memory. But at other levels of the hierarchy, it can be huge. So the miss penalty, if you have a cache in main memory that’s caching blocks that are stored on disk, the missed penalty is enormous. So it’s kind of interesting, if you think about it, that the performance of these systems is very sensitive to the miss rate, much more sensitive than you would think. And in fact, 99% hit rate is twice as good as a 97% hit rate, yes.<br>那个失误惩罚，即所谓的失误惩罚，对于主存储器来说，约数百个周期。但在其他层次结构中，它可能是巨大的。所以未命中的惩罚，如果你在主内存中有一个缓存存储在磁盘上的块，错过的惩罚是巨大的。所以有趣的是，如果你仔细想想，这些系统的性能对误操作率非常敏感，比你想象的敏感得多。事实上，99% 的命中率是97% 命中率的两倍，是的。</p>
+<p>发言人   45:01<br>Incorporated the agency?<br>注册机构？</p>
+<p>发言人   45:09<br>Yeah, so the question is, does the hit time include the time tag to access the tag? Yes, the hit time is the time it takes to search to determine if that item is is in the cash and then return it.<br>是的，所以问题是，点击时间是否包括访问标签的时间标签？是的，命中时间是搜索以确定该项目是否在现金中并返回所需的时间。</p>
+<p>发言人   45:42<br>Yeah, so the. Miss penalty is the time it takes for the cache to fetch the data from memory. So that’s all the latency going across the buses. The time it takes the memory to respond to the request, the time it takes the data to flow back over the buses back to the cache. So the time for a miss is going to be the hit time plus the miss penalty. That clear?<br>是的，所以。错过惩罚是缓存从内存中提取数据所需的时间。这就是总线上的所有延迟。内存响应请求所需的时间，数据通过总线流回缓存所需的时间。因此，未命中的时间将是命中时间加上未命中罚款。清楚吗？</p>
+<p>发言人   46:12<br>So I mean, imagine, suppose there’s a hit time of one cycle and a miss penalty of 100 cycles. Those are reasonable numbers. So the average access time, if you have 97% hits, it’s the hit time plus the percentage of misses times the miss penalty. So that’s four cycles for the average access time. But if we just increase the hit rate by 2%, the average access time drops by 50%, a factor of 2.<br>所以我的意思是，想象一下，假设命中时间为一个周期，未命中罚款为100个周期。这些是合理的数字。所以平均访问时间，如果你有97% 的点击，它是点击时间加上未命中百分比乘以未命中惩罚。这就是平均访问时间的四个周期。但如果我们只是将命中率提高2%，平均访问时间会下降50%，是2倍。</p>
+<p>发言人   46:50<br>All right, so why is this stuff important? Why should you care about it?<br>好的，那么为什么这些东西很重要呢？你为什么要关心它？</p>
+<p>发言人   46:56<br>So caches, as we’ve seen, are these, they’re automatic, they’re all built in hardware, there’s no part of the. Sort of the visible instruction set, letsgo manipulate caches and your some machine coding programs. So it all happens behind the scenes automatically in hardware. But if you know about the existence of caches and you have this general idea of how you can work, how they work, then you can write code that’s cache friendly in the sense that your code will have a higher, higher miss rate than code that isn’t cache friendly.<br>正如我们所看到的，缓存是自动的，它们都是内置在硬件中的，没有任何部分。类似于可见的指令集，letsgo操纵缓存和你的一些机器编码程序。所以这一切都会在硬件上自动在幕后发生。但是，如果您了解缓存的存在，并且您对如何工作有了大致的了解，那么您可以编写缓存友好的代码，感知您的代码将比非缓存友好的代码有更高、更高的误码率。</p>
+<p>发言人   47:40<br>So the idea is to you want to focus on making the common case go fast. Don’t spend your time on code, that sort of code that doesn’t get execute very much. So look at the most commonly called functions and then within those functions, look at the inner loops of those functions, because it’s the inner loops that are executing the most. So you can, as a first approximation, can just, if you have nested loops, you can ignore stuff that’s going on in the outer loops and just focus on the code in the inner loop. Now, what you want to do is try to minimize the misses in the inner loop.<br>所以这个想法是你想专注于让普通案例快速发展。不要把时间花在代码上，那种不会得到很多执行的代码。因此，请查看最常见的函数，然后在这些函数中，查看这些函数的内循环，因为执行最多的是内循环。因此，作为第一次近似，如果您有嵌套循环，您可以忽略外层循环中发生的内容，而只专注于内层循环中的代码。现在，你想做的是尽量减少内循环中的失误。</p>
+<p>发言人   48:19<br>So repeated references to a variable is variables are good, especially if those are local variables. So remember, if you declare a local variable in C, the compiler can put that in a register. If you’re referencing global variables, maybe not, the compiler doesn’t know what’s going on, so it can’t put, it can’t put the reference to that variable in AC in a register. So repeated references to local variables stored on the stack are good because those will get turned into register accesses. You’ll never go to memory.<br>所以重复引用一个变量是好的，特别是如果那些是局部变量。所以请记住，如果您在C中声明一个局部变量，编译器可以将其放入寄存器中。如果你引用全局变量，也许不是，编译器不知道发生了什么，所以它不能把对该变量的引用放在寄存器的交流中。因此，对存储在堆栈上的局部变量的重复引用是很好的，因为这些变量将被转换为寄存器访问。你永远不会想起。</p>
+<p>发言人   48:58<br>Also, stride 1 accesses to arrays are good, and they’re good because of the existence of these blocks. So the only way you’d know that stride 1 references are good is if you knew that caches have these 64 B blocks.<br>此外，对数组的步幅1访问是好的，而且它们之所以是好的，是因为这些块的存在。所以你知道步幅1引用是否有效的唯一方法是，如果你知道缓存有这些64 B的块。</p>
+<p>发言人   49:15<br>So, and stride 1 reference will have half the miss rate as a stride 2 reference. Because if you’re doing stride 1 references, the first reference to a word in a block will miss, but then subsequent references will hit. And you’ll hit, if you’re doing a stride, one reference, you’re going to hit every, every word in that block. If you’re doing stri 2 references, you’re only going to hit every other word. You’ll get sort of half. So you’ll miss at twice the rate. So? So basically, the point I want to make to you is that our understanding of caches allow us to sort of quantify this qualitative notion of locality that we developed the last time.<br>因此，步幅1的参考将具有一半的未成功率作为步幅2的参考。因为如果你正在进行步幅1的引用，对块中某个单词的第一个引用将会丢失，但随后的引用将会命中。如果你步幅大，你会碰到一个参考，你会碰到那个块中的每一个单词。如果你正在进行2个单词的引用，你只会命中每一个单词。你会得到一半。所以你会以两倍的价格错过。所以呢？所以基本上，我想要告诉你的是，我们对缓存的理解使我们能够量化我们上次开发的这种定性的局部性概念。</p>
+<p>发言人   50:09<br>The last time we looked at, we said, if it’s doing stride 1 references, that’s good. If we’re accessing the same variable over and over, that’s good. But if we understand caches, now we can quantify it in terms of miss rate.<br>上次我们看的时候，我们说，如果它是步幅1参考，那就很好。如果我们一遍又一遍地访问同一个变量，那很好。但如果我们了解缓存，现在我们可以用缺失率来量化它。</p>
+<p>发言人   50:29<br>All right, so let’s finish up the rest of the class. We’re going to look at the performance impact of caches on your code and why you need to know about these things and the impact that they can have. So there’s a very interesting function that’s actually plotted on the cover of your textbook. Now we call the memory mountain. I learned about this from a graduate student here at Carnegie Mellon back in the 90s who developed this notion named Tom Stricker.<br>好的，那我们把剩下的课结束吧。我们将了解缓存对代码性能的影响，以及为什么需要了解这些事情以及它们可能产生的影响。所以有一个非常有趣的功能实际上绘制在你的教科书的封面上。现在我们称之为记忆山。我是从卡耐基梅隆大学的一位研究生那里了解到这个问题的，他在90年代提出了这个名为Tom Stricker的概念。</p>
+<p>发言人   51:03<br>And what it is, it’s a the memory mountain plots, a measure called read throughput or read bandwidth, which is the number of bytes read from memory. So if you have a loop and you’re scanning over a vector, you have a vector of, say, double words, and you’re reading those elements from a vector one after the other, the read throughput is the number of megabytes per second that you can, that you can perform that task at. And the memory mountain plots read throughput as a function of the temporal and spatial locality in that loop. So in a sense, it’s looking at a wide range of locality options or characteristics in a program, and it’s plotting the performance of that memory system on that across that range is a 200 dimen a function. So in some ways, the memory mountain is kind of a fingerprint, right?<br>它是一个内存山图，一种称为读取吞吐量或读取带宽的度量，即从内存读取的字节数。因此，如果您有一个循环并且正在扫描一个向量，那么您有一个双单词向量，并且您从一个向量一个接一个地读取这些元素，读取吞吐量是您每秒可以读取的兆字节数，你可以执行这项任务。而记忆山地图读取吞吐量作为循环中时间和空间局部性的函数。因此，在一个感知中，它查看程序中广泛的局部性选项或特征，并绘制该内存系统在该范围内的性能是一个200 dimen的函数。所以在某些方面，记忆山有点像一种指纹，对吧？</p>
+<p>发言人   52:03<br>Every system has its own unique memory mountain that we can measure by writing a simple program. The idea here is that to construct the memory mountain, we write a program called Test.<br>每个系统都有自己独特的内存山，我们可以通过编写简单的程序来测量。这里的想法是，为了构建记忆山，我们编写一个名为Test的程序。</p>
+<p>发言人   52:39<br>Oh shoot?<br>哦，射击？</p>
+<p>发言人   52:55<br>For some reason, it’s not. Okay? All right? So when we build a memory mountain, we’re given a vector that consists of a collection of double words. And then we write a loop that reads those words, that reads some number of words in this case.<br>出于某种原因，它不是。好吗？一切正常吗？因此，当我们构建一个记忆山时，我们会得到一个由双单词集合组成的向量。然后我们编写一个循环来读取这些单词，在这种情况下会读取一些单词。</p>
+<p>发言人   53:46<br>There we go, so it it reads LMS number of elements. So we’ve got each of these double word elements with a stri of stride. So if we have a stride of one. I know that was kind of redundant.<br>我们去那里，所以它读取LMS元素数量。所以我们得到了这些双词元素，每个元素都有一个stride的stri。所以，如果我们有一个步伐。我知道那有点多余。</p>
+<p>发言人   54:07<br>Owl, we have a stride of one. Then we’ll have our loops. We’ll sort of loop through and read these elements until we’ve read elements, number of those elements, and then we’ll do it again. And then that warms up the cache. Then we do it again and do exactly the same thing. So if we’re doing this with a stride of 2, then we would be reading, we would read this word zero or LM 2, LM 4, and so on. Then so all we’re doing, we’re just for a wide range of strides in a wide range of of sizes.<br>猫头鹰，我们步幅只有一大步。然后我们就有了我们的循环。我们会依次循环并读取这些元素，直到我们读取完元素和这些元素的数量，然后我们会再次执行此操作。然后就会温暖储藏处。然后我们再做一次，做同样的事情。如果我们以2的步幅进行此操作，那么我们将阅读，我们将阅读这个单词0或LM 2，LM 4，依此类推。那么我们所做的一切，只是为了在各种尺寸上取得广泛的进步。</p>
+<p>发言人   54:57<br>We’re scanning over this vector and just recording how long it takes to do that read and then convert. We convert that into megabytes per second.<br>我们正在扫描这个向量，只是记录读取和转换所需的时间。我们将其转换为每秒兆字节。</p>
+<p>发言人   55:08<br>And in order to, I just wanted to show you this we need, we’re not going to go into detail about this, but this is actually how I generated the cover on the book in order use to exploit the parallelism inside the Intel processor. Like you learned about last week, there’s a lot of parallel functional units in order to exploit those I. Did 4 by 4 loop unrolling. So I’m actually doing sort of four scans in parallel. But the general idea is just what I’ve showed you here. And this 4 by 4 loop unrolling is just an optimization, but I wanted to show it to you because it actually, it’s the exact same principles you learned about last week.<br>为了向您展示我们需要的这个，我们不打算详细说明，但这实际上是我生成书封面的方式，以便利用英特尔处理器内部的并行性。就像你上周学到的，有很多并行的功能单元来利用这些I。做了4乘4的循环展开。所以我实际上正在并行进行四次扫描。但总体思路就是我在这里给你展示的。这个4乘4的循环展开只是一个优化，但我想向你展示一下，因为它实际上与你上周学到的原理完全相同。</p>
+<p>发言人   55:57<br>Professor Bryant talked about code optimization. So what we do is we call this test function with these various ranges of LMS and stride, and then we measure the performance and we get this beautiful picture, this beautiful function. To me, it’s beautiful, I don’t know, does it look beautiful to you?<br>Bryant教授谈到了代码优化。所以我们做的是用这些不同的LMS和stride范围来调用这个测试函数，然后我们测量性能，我们得到这个美丽的图片，这个美丽的函数。对我来说，它很漂亮，我不知道，你觉得它漂亮吗？</p>
+<p>发言人   56:25<br>So on our z axis is plotting read throughput in megabytes per second, ranging from 2000 MB per second up to 16000 MB per second.<br>因此，在我们的z轴上绘制读取吞吐量，以每秒兆字节为单位，范围从每秒2000个MB到每秒16000个MB。</p>
+<p>发言人   56:46<br>This axis is measuring is stride. So going from stride 1 up to stride 12. And this axis is so as we increase stride, we’re decreasing the spatial locality, right? And this axis is the size axis. So we’re going from, I think, 16K up to 128 MB. So this is the number of elements we’re going to read each pass through. So as we increase the size, we’re sort of decreasing the impact of temporal locality. As we increase the size, there’s fewer and fewer caches in our hierarchy can hold all that data. And so we’ve got spatial locality decreasing in this direction and temporal locality decreasing in this direction.<br>这个轴测量的是步幅。从步幅1到步幅12。这个轴是这样的，当我们增加步幅时，我们就减少了空间局部性，对吗？这个轴就是尺寸轴。所以我们从16k到128 MB。这是我们每次通过读取的元素数量。因此，随着大小的增加，我们在某种程度上减少了时间局部性的影响。随着大小的增加，我们层次结构中可保存所有数据的缓存越来越少。因此，我们的空间局部性在这个方向上减小，时间局部性在这个方向上减小。</p>
+<p>发言人   57:58<br>So as a programmer, what you want to do, you want to be up here, Good spatial locality, good temporal locality, because you can get like 14 GB per second measured read-through put. You don’t want to be down here, which is only about 100 MB per second, where you’re reading out of memory. So the difference between reading all of your data from memory and or reading it from some part of the caches, it is huge. It’s enormous. So because you’re 213 students, you’ll be up here and all the students that didn’t take 213, they’ll be down here and actually had. I’ve actually had people, several people write back to tell me about their experiences, internships, and jobs after they left CMU where they were given some code that was down here and they recognized the locality issues and they got it better up here, at least better.<br>所以作为一名程序员，你想要做的事情，你想要在这里，良好的空间局部性，良好的时间局部性，因为你可以获得每秒14个GB的读取量。你不希望待在这里，这里每秒只有大约100个MB，你正在从内存中读取。因此，从内存中读取所有数据和从缓存的某些部分读取数据之间的差异是巨大的。这是巨大的。因为你们是213名学生，所以你们会在这里，而所有没有参加213的学生，他们会在这里并且实际上已经参加了。我实际上遇到过一些人，有几个人在离开CMU后写信告诉我他们的经历、实习和工作，在那里他们得到了一些在这里的代码，他们认识到当地的问题，他们在这里做得更好，至少更好。</p>
+<p>发言人   59:07<br>This picture, this so itca AED memory mountain has all kinds of interesting features. First of all, there’s these, what I call ridges of temporal locality, where these ridges, you see these ridge lines, if you think of this as like a mountain, you see this ridge line and you see this ridgeline, and here’s another ridgeline, and then here’s another one. These correspond to different levels in the hierarchy.<br>这张照片，这个itca AED记忆山有各种有趣的特征。首先，有这些我称之为时间局部性的山脊，在这些山脊中，你看到这些山脊线，如果你把它想象成一座山，你会看到这条山脊线，你会看到这条山脊线，这里是另一条山脊线，然后这里是另一条山脊线。这些对应于层次结构中的不同级别。</p>
+<p>发言人   59:29<br>So this top ridgeline is where you’re reading directly out of L 1, and it should be perfectly flat, and it’s so fast that we’re getting like measurement jitter, performance jitter. And this little drop off here is a measurement artifact. It shouldn’t be there. It should be flat and go all the way to the wall back here. And then here, this ridge line is where we’re accessing L 2.<br>这个顶部山脊线是你直接从L 1中读取的地方，它应该是完全平坦的，而且它太快了，以至于我们得到了测量抖动，性能抖动。这里的这个小下降是测量伪影。它不应该在那里。它应该是平坦的，一直走到这里后面的墙壁。然后在这里，这条脊线是我们访问L 2的地方。</p>
+<p>发言人   01:00:02<br>This is what we’re accessing L 3. And here’s what we’re accessing mostly from memory. So you have these ridges of temporal locality, and then you have these slopes of decreasing spatial locality. So you see the slope here. So as we’re moving from the top of the slope down to the bottom, we’re decreasing our spatial locality. So we’re getting less benefit for these blocks that we’re bringing in. So you can see we’re getting less benefit out of the cost that we went through of importing, of fetching these blocks.<br>这就是我们正在访问的L 3。这就是我们主要从内存访问的内容。所以你有这些时间局部性的脊，然后你有这些空间局部性递减的斜率。所以你可以看到这里的坡度。所以当我们从斜坡的顶部向下移动到底部时，我们正在减少我们的空间局部性。所以我们带来的这些区块的收益越来越少。所以你可以看到，我们从导入和获取这些块的成本中获得的收益越来越少。</p>
+<p>发言人   01:00:41<br>And once the stride hits the block size, now every reference is hitting a different block, and then it flattens out. Then you’re getting no benefit from spatial locality. And similar here is this slope is where we’re reading from L 3, and it flattens out. They always flatten out at the at the block size, which is stride.<br>一旦步幅达到了块的大小，现在每个参考都会碰到不同的块，然后它就会变平。那么你就得不到空间局部性的好处。类似于这里的斜率是我们从L 3读取的地方，它变平了。它们总是以块大小 (即步幅) 扁平化。</p>
+<p>发言人   01:01:12<br>These are double words. So it’s stride of 8, it is 64 B. So once you exceed a stride of 8, then you’re no longer, you’re missing every time in a different block. And there’s this interesting thing.<br>这些是双重词汇。所以步幅为8，是64 B。所以一旦你超过了8步，你就不再是，你每次都在不同的街区错过了。还有个有趣的事情。</p>
+<p>发言人   01:01:28<br>This one puzzled me for a while. You might be wondering like, how come like over here, as we increase the size, we can sort of, we’re sort of getting the sort of, as we increase the size, we’re doing most of our references out of caches that are lower in the cache hierarchy.<br>这让我困惑了一段时间。你可能会想，为什么这里会出现这样的情况，当我们增加大小时，我们可以得到一种，当我们增加大小时，我们正在从缓存层次结构中较低的缓存中进行大部分引用。</p>
+<p>发言人   01:01:51<br>But except when we’re doing stride 1 references, you can see all the way up to right at the end, right before it exceeds the size of L 3, it’s flat. And it’s running at the L 2 rate. So here’s the L 1 rate, and then it drops off. And then it’s running at a constant L 2 rate until the data no longer fits in L 3. And so I think what’s going on here is that the hardware, the L 2 cache hardware is recognizing, or maybe it’s an L 1, but some logic in the cache system is recognizing the stride one reference pattern because it sees all the addresses. It’s recognizing that stride 1 pattern, and then it’s aggressively prefetching from L 3 into L 2 so that those, so it’s fetching ahead of time, it’s anticipating, it’s saying, look I’ve gotten five stride one references in a row.<br>但除非我们在进行步幅1的参考，否则你可以在最后看到从右边一直到右边，在它超过L 3的大小之前，它是平坦的。它以L 2的速率运行。这是L 1速率，然后它会下降。然后它以恒定的L 2速率运行，直到数据不再适合L 3。因此，我认为这里发生的事情是硬件，L 2缓存硬件正在识别，或者可能是L 1，但缓存系统中的一些逻辑正在识别步幅一个参考模式，因为它可以看到所有地址。它识别出了步幅1的模式，然后积极地从L 3预取到L 2，以便提前获取，它在预测，它在说，看我连续收到了五个步幅1的引用。</p>
+<p>发言人   01:02:59<br>I’m going to go grab a whole bunch of blocks and load them all up because by the principle of spatial locality, those blocks, those blocks are going to be referenced in the near future. So this was really neat, and this only happened within the last couple years. So the Intel engineers are always hard at work and maybe by the time, the time we do the next, the next edition of the Memory Mountain, those systems will recognize stride 2 and other stride patterns too. But from this data, it appears that it’s only recognizing stride 1.<br>我打算抓取一堆区块并将它们全部加载，因为根据空间局部性的原则，这些区块将在不久的将来被引用。所以这真的很整洁，而且这只是在最近几年才发生的。因此，英特尔工程师们总是在努力工作，也许当我们做下一个，下一版的记忆山时，这些系统也将识别步幅2和其他步幅模式。但从这些数据来看，它似乎只识别了步幅1。</p>
+<p>发言人   01:03:40<br>So, you? We can improve the spatial and temporal locality of our programs in several different ways.<br>所以，你呢？我们可以通过几种不同的方式改善我们程序的空间和时间局部性。</p>
+<p>发言人   01:03:51<br>One way to improve the spatial locality is to rearrange loops. And I’ll use a matrix multiplication as an example. So here’s sort of a simple matrix multiplication. Code where we’re multiplier A times b and adding it, we’re taking what’s in of the IJF element of c, and then to that, we’re adding the sum, the inner product of rho I of A and the row j, a, column j of b, and then so we’re going through, and for each ij in this matrix C, we’re computing an inner product and then creating that sum. So we can actually, it turns out there’s a lot of different ways to do matrix multiply, and we can permute these loops in any of six different possible permutations. So this is a permutation where it’s I followed by j followed by k, but five other possibilities are feasible, and so we can actually analyze those different permutations and predict which one will have the best performance.<br>改善空间局部性的一种方法是重新排列循环。我会用一个矩阵乘法作为例子。所以这是一个简单的矩阵乘法。代码中，我们将乘数A乘以b并将其相加，我们将c的IJF元素中的内容相加，然后再将其相加，即A的rho I的内积与b的j行、a的j列的总和，然后，我们将经历，对于这个矩阵C中的每个ij，我们正在计算一个内积，然后创建总和。所以我们实际上可以，事实证明有很多不同的方法来进行矩阵乘法，我们可以将这些循环排列在六种不同的可能排列中。所以这是一个排列，后面是I，后面是j，后面是k，但还有其他五种可能性是可行的，因此我们可以实际分析这些不同的排列并预测哪一种性能最好。</p>
+<p>发言人   01:05:14<br>So what we’ll do is we’ll look at the inner loop. And we’ll look at the access pattern of the inner loops and the access pattern on arrays CA and b? Okay, so let’s look at the ijk implementation that I just showed you. So as always, we focus on the inner loop. And if you notice, this inner loop is doing a row wise access of column A and a column wise A I’m sorry, a row wise A of array A and column wise A of a row B, so row y of a column y of b, we don’t really care about c because it’s not in the inner loop. So just ignore that.<br>所以我们要做的是看看内部循环。我们将查看内部循环的访问模式以及数组CA和b上的访问模式？好的，那么让我们来看看我刚刚向您展示的ijk实现。因此，一如既往，我们专注于内环。如果您注意到，这个内部循环正在按行访问列a和列A，对不起，按行访问数组a和列访问行B，因此按行访问列y，按行访问列b，我们并不真正关心c，因为它不在内部循环中。所以忽略这一点。</p>
+<p>发言人   01:06:05<br>So given our assumption that we can hold, in this case, we’re assuming that we can hold 4, 4 of these integer elements in one block, so the row wise A, which has good spatial locality, will miss 1 every four accesses. The very first reference will miss, and then the next three will hit, and then the next reference after that will hit a new block. So one out of four references to A will miss access pattern for B is column wise, every reference to B will miss, so the average number of misses per loop iteration is 1.25.<br>因此，鉴于我们的假设，在这种情况下，我们假设我们可以在一个块中容纳4，4个这些整数元素，因此具有良好空间局部性的行，每四次访问将丢失1个。第一个引用将丢失，然后接下来的三个引用将命中，之后的下一个引用将命中一个新的块。因此，对A的四个引用中有一个会错过B的访问模式，每个引用面向企业都会错过，因此每个循环迭代的平均错过次数是1.25。</p>
+<p>发言人   01:06:51<br>The jik version is exactly the same pattern. Kj is a little different here. We’re doing rho y a of b and a rho y axis of c, so that’s good, right? So now we’ve got stride. 1 axis is on both B and C, and the reference to A is outside of the loop, so we don’t care about it. So both B and C will miss one quarter of the time. So the total average number of misses per loop iteration will be 0.5.<br>jik版本是完全相同的模式。Kj在这里有点不同。我们正在进行b的rho y a和c的rho y轴，所以这很好，对吧？所以现在我们有了步幅。1个轴同时在B和C上，并且对A的引用在循环之外，因此我们不关心它。所以B和C都会错过四分之一的时间。因此，每次循环迭代的平均失误总数将为0.5。</p>
+<p>发言人   01:07:29<br>That’s pretty good, and I Kj has the same similar behavior. Now jki is sort of the exact opposite jki does column wise access of A and column wise access of C, so we know that’s a stinker, right? And qualitatively, we know it’s bad. And we can compute that it’ll miss 1 time per loop iteration. So that’ll be total of 2 misses per iteration, kji has the same bad pattern.<br>这相当不错，而且I Kj也有类似的行为。现在，jki与按列访问A和按列访问C的jki完全相反，所以我们知道这很臭，对吧？从质量上来说，我们知道它是不好的。我们可以计算出每个循环迭代将错过1次。因此，每次迭代总共有2次失误，kji具有相同的不良模式。</p>
+<p>发言人   01:08:03<br>So if we look at all these permutations, you can see that ijk and JK myth 1.25 have 1.25 misses, kij has 0.5 misses, and jki has two misses. So clearly, it looks like kij and its brethren are the best option.<br>因此，如果我们查看所有这些排列，你可以看到ijk和JK神话1.25有1.25的失误，kij有0.5的失误，而jki有两个失误。很明显，kij和它的弟兄们看起来是最好的选择。</p>
+<p>发言人   01:08:25<br>The only difference is that kij has this additional store. So there might be a question of, is that going to slow things down? Well, it turns out in systems in storage systems, rights are much easier to deal with than reads, can you think about why that might be true? So writes, you have a lot more flexibility than you do with reads.<br>唯一的区别是kij有这个额外的商店。所以可能会有一个问题，这是否会减缓速度？嗯，事实证明在存储系统中，权限比读取更容易处理，你能想到为什么这是真的吗？所以写，你比读有更多的灵活性。</p>
+<p>发言人   01:08:57<br>I mean, yes? Yeah, so you have options. You can write back. You can defer writing until the value that you’ve written is actually used. But when you read an item, you’re stuck. You can’t do anything until you get that data. So it turns out that rights don’t really, that this additional store doesn’t really hurt us.<br>我是说，是吗？是的，所以你有选择。你可以回信。你可以推迟写入，直到你所写的值被实际使用。但是当你读一个项目时，你就被卡住了。在获得这些数据之前，你什么也做不了。所以事实证明，权利并没有，这个额外的商店并没有真正伤害我们。</p>
+<p>发言人   01:09:22<br>And so when we measure these on a modern system, you can see that the Kate kij, which has the fewest number of misses, has you see we’re getting like 1 miss. What we’re plotting here is cycles per interloop iteration. So each iteration is taking about one cycle, which is really good. This ijk pattern, which was kind of the intermediate 1, 2 misses, that’s sort of in between, and the jki, which has two misses per iteration, is the worst. So what’s interesting is we could actually, just by doing a little bit of analysis, simple analysis, we could actually predict what this graph would look like in the in last 10 minutes of the class, we’re going to look at how to improve temporal locality.<br>因此，当我们在现代系统上测量这些时，你可以看到，Kate kij的失误次数最少，你可以看到我们得到了1次失误。我们在这里绘制的是每个interloop迭代的周期。所以每次迭代大约需要一个周期，这真的很好。这个ijk模式，有点像中间的1、2次失误，介于两者之间，而jki，每次迭代有两次失误，是最糟糕的。所以有趣的是，我们实际上可以通过做一点分析，简单的分析，预测这张图在课程的最后10分钟内会是什么样子，我们将看看如何改善时间局部性。</p>
+<p>发言人   01:10:16<br>So what we did when we rearranged our loops in the matrix multiplication, what we were doing was in improving our spatial locality. But we didn’t really do anything to improve the temporal locality. To improve temporal locality, you have to use a technique called blocking. And this is important to understand because you’re going to need it in your cache lab for one thing. But it’s also a very general technique. Anytime you need, anytime you’re having issues with temporal locality.<br>所以当我们在矩阵乘法中重新排列循环时，我们所做的是改善我们的空间局部性。但我们并没有真正做任何事情来改善时间局部性。为了改善时间局部性，你必须使用一种叫做阻塞的技术。这一点很重要，因为你需要在你的缓存实验室中使用它。但这也是一种非常通用的技术。任何时候你需要，任何时候你遇到时间局部性问题。</p>
+<p>发言人   01:10:46<br>Okay, so. We’re not going to go into too much detail of this code. But what I did, I rewrote the matrix multiply so that it operates, you know, a two dimensions onal matrix. You can really just think of it as a contiguous array of bytes. So I just rewrote this code to operate on a contiguous array, one dimensional array. And then I’m doing the indexing explicitly here. So here, c I times n plus j, this is an n by n matrix. What I’m doing is I’m accessing I’m computing where the I throw starts, and then I’m going to the j column of that row and then accessing that element.<br>好的，所以。我们不会对这段代码进行太多的详细介绍。但是我所做的是，我重写了矩阵乘法，使其运行，你知道，一个二维矩阵。你可以把它想象成一个连续的字节数组。所以我只是重写了这段代码来操作一个连续的一维数组。然后我在这里明确地进行索引。所以这里，c I乘以n加j，这是一个n乘n的矩阵。我正在做的是访问我正在计算I抛出开始的位置，然后我要去那一行的j列，然后访问那个元素。</p>
+<p>发言人   01:11:32<br>But it’s the same idea as before. So let’s look at the miss rate for this. Just our, this is our original unblocked matrix multiply. So what we’re doing is we’re computing C 0, 0, and we’re doing that by taking an inner product of row 0 and column 0, whos So if you look at, we’re assuming that the.<br>但这和以前的想法一样。让我们来看看这个的缺失率。只是我们的，这是我们最初的畅通矩阵乘法。所以我们正在计算C 0，0，并且我们通过取行0和列0的内积来进行计算，所以如果你看，我们假设。</p>
+<p>发言人   01:12:01<br>The cache blocks hold 8 doubles and that the matrix elements are doubles. Then we’re going to miss one eighth of the time. So in the first iteration. We’re going to miss the first iteration does n of these things. And since n over 8 at the time, we’re missing one block for every 8 references. Each for the first iteration, we’re going to miss n over 8. And since there’s n for each element for each block I’m sorry. Oh, so this is the number of blocks and the number of misses. And then we have n elements so that the total number of misses is 9 over n divided by 8 misses for the first iteration.<br>缓存块容纳8个双精度，而矩阵元素是双精度的。那么我们将错过八分之一的时间。所以在第一次迭代中。我们将错过第一次迭代完成其中的n件事情。由于当时n超过8，我们每8个引用就会缺失一个块。每次第一次迭代，我们将错过8个以上的n个。由于每个块的每个元素都有n，我很抱歉。哦，这是块的数量和未命中的数量。然后我们有n个元素，因此在第一次迭代中，未命中的总数是9除以8次未命中。</p>
+<p>发言人   01:12:59<br>The second iteration will have the same number of misses Because of our assumptions about the size of this array. So these rows are way too big to fit in the cache. So we never get any, we don’t get any temporal locality. Okay? So the total number of misses is 9 n over eight times the number of elements that we’re updating, which is n squared. So our total misses is 9 over eight times n cubed.<br>第二次迭代将有相同的失误数，因为我们对这个数组的大小进行了假设。所以这些行太大，无法放入缓存中。所以我们从来没有得到任何，我们没有得到任何时间局部性。好吗？因此，未命中的总数是9 n，超过我们正在更新的元素数量的8倍，这是n的平方。所以我们的总失误是9乘以8乘以n立方。</p>
+<p>发言人   01:13:30<br>Now let’s rewrite the code to use blocking. And so you can look at this code later, but it’s much simpler just to look at it pictorially. So what we’re doing, instead of updating one element at a time, we’re updating a sub-block AB by b sub-block And we’re doing that just totally analogously to when our original case where b equal one, this, b by b sub block in c, is computed by taking an inner product of the sub blocks of a set of sub-blocks in A with a set of sub blocks in b, and for each one of those, we’re doing a little mini matrix multiplication. So we’re, we’re taking this sub block times this sub block plus the second sub block of a times the second sub-block of b plus the third sub block of a times the third sub block of b, and so on. So we’re doing the same inner product operation, but instead of on scalars, we’re doing it with these little tiny matrices.<br>现在让我们重写代码以使用阻塞。所以你可以稍后再查看这段代码，但只需要以图形方式查看就简单多了。所以我们正在做的不是一次更新一个元素，而是更新一个子块AB乘b的子块，我们这样做完全类似于我们最初的情况，其中b等于c中的一个子块，通过将a中的一组子块的子块与b中的一组子块的内积进行计算，对于其中的每一个，我们进行了一个小的迷你矩阵乘法。所以，我们将这个子块乘以这个子块加上第二个a的子块，乘以b的第二个子块，再加上a的第三个子块，再乘以b的第三个子块，依此类推。所以我们正在做相同的内积操作，但不是针对标量，而是使用这些小小的矩阵。</p>
+<p>发言人   01:14:50<br>Alright, so let’s look at what happens to the miss rate when we do this. So there’s n over b blocks. In any row or column. Since there’s b squared items in each block, b times b, there’s b squared over 8 misses for each block, okay? So, and then since there’s n over b blocks in each matrix, and there’s two matrices, there’s 2 n over b times b squared over 8 misses for this first iteration. So that works out to be NB divided by 4. And the second iteration has the same miss rate. So the total number of misses is the number of misses for each iteration times.<br>好的，那么让我们来看看当我们这样做时，缺失率会发生什么变化。所以在b个区块上有n个。在任何行或列中。由于每个块中有b平方的项目，b乘以b，因此每个块的b平方超过8次失误，好吗？所以，由于每个矩阵中有n个超过b个块，并且有两个矩阵，因此第一次迭代有2个n乘以b的平方，超过8次失误。因此，这可以被计算为NB除以4。第二次迭代具有相同的缺失率。因此，总失误次数是每次迭代的失误次数。</p>
+<p>发言人   01:16:03<br>The number of elements in C that we’re updating, which is n over b squared. So that all works out too. It still, it’s n cubed divided by 4 b.<br>我们正在更新的C中的元素数量，即n的平方。这样一切也能奏效。它仍然是n的立方除以4 b。</p>
+<p>发言人   01:16:17<br>So in our first case with no blocking, although the number of misses is asymptotically the same, but there’s pretty this big difference in the constant factor. So for no blocking, it’s nine over eight. For blocking, it’s one over four b, where now we can just sort of drive that down by increasing the block size. So this gives us some control. But still, we can’t make the blocks too big because we need to fit three blocks in cash at any one point in time. So the reason this is a dramatic difference. This is that by doing the blocking, we’re sort of exploiting.<br>所以在我们的第一种情况下，没有阻塞，虽然未命中的次数渐进相同，但在常数因子上有相当大的差异。所以为了没有阻碍，它是九比八。对于阻塞，它是一到四b，现在我们可以通过增加块大小来降低它。这给了我们一些控制权。但是，我们仍然不能把积木变得太大，因为我们需要在任何一个时间点现金三个积木。所以这是一个戏剧性的差异的原因。这就是通过阻塞，我们在某种程度上进行利用。</p>
+<p>发言人   01:17:05<br>Once we load a block into memory, we’re sort of reusing its items over and over again. So we’re exploiting more temporal locality. And matrix multiplication has this implicit locality. The computation is order n cubed, but the size of the data is n squared, So we must be reusing some data items.<br>一旦我们将一个块加载到内存中，我们就会一遍又一遍地重用它的项目。所以我们正在利用更多的时间局部性。而矩阵乘法具有这种隐含的局部性。计算的顺序是n次立方，但数据的大小是n的平方，因此我们必须重用一些数据项。</p>
+<p>发言人   01:17:29<br>The problem with our scalar approach is that we, when we were reusing them, they weren’t in the cache. All right, so the point that I wanted to make with you is that cache memories, although they’re sort of built in automatic hardware storage devices, and you can’t really control them if you know about them, you can take advantage of your knowledge and exploit them and make your code run faster. And the way you do this is, like I said, focus on inner loops. Do is try to do accesses that are stride 1 and to maximize spatial locality and try to maximize temporal locality by reusing local variables, which can then be put into registers.<br>我们的标量方法的问题在于，当我们重用它们时，它们不在缓存中。好的，我想和你说的一点是缓存内存，尽管它们有点内置于自动硬件存储设备中，如果你了解它们，你就无法真正控制它们，但你可以利用你的知识和利用它们，让你的代码运行得更快。你这样做的方法是，就像我说的，专注于内部循环。做的是尝试进行步幅为1的访问并最大化空间局部性，并尝试通过重用局部变量来最大化时间局部性，然后可以将其放入寄存器中。</p>
+<p>发言人   01:18:26<br>Okay, so that’s it for today. Good luck with your attack lab if you haven’t finished it, and don’t forget to get started on Cash lab this weekend.<br>好的，今天就到这里。祝你的攻击实验室好运，如果你还没有完成它，不要忘记本周末开始现金实验室。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 012-Cache Memories</div>
+      <div>http://example.com/2025/10/12/15213-012/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-013/" title="深入理解计算机系统 013-Thread-Level Parallelism">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 013-Thread-Level Parallelism</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-011/" title="深入理解计算机系统 011-The Memory Hierarchy">
+                        <span class="hidden-mobile">深入理解计算机系统 011-The Memory Hierarchy</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
