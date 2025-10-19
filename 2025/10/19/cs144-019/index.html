@@ -1,0 +1,634 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00The n to n principle holds a very special place in the design of the internet. This is because it really refers to two different principles. The first deals with correctness. If you don’t f">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 019 The End-to-End Principle">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-019/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00The n to n principle holds a very special place in the design of the internet. This is because it really refers to two different principles. The first deals with correctness. If you don’t f">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:18.000Z">
+<meta property="article:modified_time" content="2025-10-19T12:41:52.773Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 019 The End-to-End Principle - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 019 The End-to-End Principle"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 019 The End-to-End Principle</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>The n to n principle holds a very special place in the design of the internet. This is because it really refers to two different principles. The first deals with correctness. If you don’t follow the end to end principle when you design your network system, then chances are it has a flaw or might transfer data incorrectly. The second, which we call the strong end to end principle, is much broader and general.<br>n对n原则在互联网设计中占有非常特殊的地位。这是因为它确实涉及两个不同的原则。第一个是关于正确性的。如果您在设计网络系统时没有遵循端到端的原则，那么它很可能存在缺陷或可能会错误地传输数据。第二个原则，我们称之为强有力的端到端原则，更加广泛和普遍。</p>
+<p>发言人   00:23<br>So let’s say we want to transfer a file from one computer to another. Our application opens a connection between A and B, it reads a file on computer A and writes it to the TCP connection B, reads the data from the socket, and writes the data to a file on computer B, the network in this case does very little, it just forwards packets from A to BA and B, set up the connection, and the application reads and writes the data. Why doesn’t the network do more? It turns out there are a lot of things it could do to make the file transfer faster, the network could automatically compress packets between A and B if the file is plain English text. This could reduce the transfer size tenfold. The network could reformat or improve requests. Let’s say A wants to transfer two files to B, the network could see this and combine the two transfers into a single request, or it could be the ace files already stored on another computer C, that’s closer and faster to B than A is The network could transfer the file from C rather than A, or the network could automatically add security, encrypting the data so bad guys can read the file. If the network does this for us, then we don’t have to worry about it in our application, the network could add mobility support such that computer as computer A moves through a network, routes automatically update, and packets continue to flow to it with a support could even pop migrate connections across the network, moving something like a Skype video stream from our phone to our laptop.<br>所以假设我们想将文件从一台计算机传输到另一台计算机。我们的应用程序打开a和B之间的连接，它读取计算机A上的文件并将其写入TCP连接B，从套接字读取数据，并将数据写入计算机B上的文件，在这种情况下，网络的作用非常小，它只是将数据包从A转发到BA和B，建立连接，然后应用程序读取和写入数据。为什么网络不能做得更多？事实证明，它可以做很多事情来加快文件传输速度，如果文件是纯英文文本，网络可以自动压缩a和B之间的数据包。这可以将传输大小减少十倍。网络可以重新格式化或改进请求。假设一个想要面向企业传输两个文件，网络可以看到这一点，并将这两个传输组合成一个请求，或者它可能是已经存储在另一台计算机上的ace文件。这比网络可以从C而不是A传输文件更面向企业更快，或者网络可以自动增加安全性，加密数据，让坏人可以读取文件。如果网络为我们做到了这一点，那么我们在应用程序中就不必担心了，网络可以添加移动支持，例如计算机在网络中移动，路由自动更新，数据包继续流向它，甚至可以通过网络弹出迁移连接，将类似Skype视频流的东西从我们的手机移动到我们的笔记本电脑。</p>
+<p>发言人   01:56<br>It turns out that there are many things the network could do to improve our application and make design it easier, but generally speaking, it doesn’t, why? The reason is the end to end principle.<br>事实证明，网络可以做很多事情来改进我们的应用程序并使设计更容易，但总的来说，它没有，为什么？原因是端到端的原则。</p>
+<p>发言人   02:09<br>The end to end principle was first described by salzer Reed and Clark in a 1984 paper. You’ll meet David Clark later in the course when he gives a guest lecture the end to end principle, as they describe it is shown here, the function in question can completely and correctly be implemented only with the knowledge and help of the application standing at the endpoints of the communication system, therefore providing that question function as a feature of the communication itself is not possible.<br>端到端原则最初是由salzer Reed和Clark在1984年的一篇论文中提出的。在课程的后期，你会遇到大卫·克拉克，当他在客座讲座中讲述端到端的原则时，正如他们在这里所描述的那样，只有在通信系统端点的应用程序的知识和帮助下，才能完全正确地实现所讨论的功能。因此，将该问题作为通信本身的特征提供是不可能的。</p>
+<p>发言人   02:39<br>Sometimes an incomplete version of the function provided by the communication system may be useful as a performance enhancement we call this line of reasoning the end end argument. Put another way, the network could possibly do all kinds of things to help, but that’s all it can do, help If the system is going to work correctly, then the endpoints need to be responsible for making sure it does. Nobody else has the information necessary to do this correctly, The network can help you, but you can’t depend on it. For example, if you want to be sure your application is secure, you need to have end to end security implemented in the application. The network might add additional security, but end to end security can only be correctly done by the application itself, so making security a feature of the network so that applications don’t have to worry about it is not possible.<br>有时，通信系统提供的函数的不完整版本可能有助于性能增强，我们称之为终点参数推理的思路。换句话说，网络可能会做各种事情来提供帮助，但这就是它所能做的，如果系统要正常工作，那么端点需要负责确保它能够正常工作。没有其他人拥有正确执行此操作所需的信息，网络可以帮助您，但您不能依赖它。例如，如果要确保应用程序的安全，则需要在应用程序中实现端到端的安全性。网络可能会增加额外的安全性，但端到端的安全性只能由应用程序本身正确完成，因此将安全性作为网络的一项功能，以便应用程序不必担心它是不可能的。</p>
+<p>发言人   03:32<br>Let’s go back to our example of transferring a file between two computers. It was this exact problem, along with others, that led selzer Clark and Re to formulate the end to end argument. You want to make sure the file arrives completely and uncorrupted. The file data is going to pass through several computers between the source and the destination. So the file coming from the source passes through computer CD, and e before arriving at the destination. Each link source to CC to DD to e, and e to destination has error detection.<br>让我们回到在两台计算机之间传输文件的例子。正是这个确切的问题，以及其他问题，导致塞尔泽克拉克和重新制定了端到端的论点。你想确保文件完全到达且未损坏。文件数据将在源和目标之间通过几台计算机。因此，来自源的文件经过计算机CD，然后再到达目的地。每个要CC到DD到e，以及e到目标的链接源都有错误检测。</p>
+<p>发言人   04:07<br>If a packet of data is corrupted in transmission, then the recipient can detect this and reject the packet. The sender will figure out the packet didn’t arrive successfully, for example, through TCP ads, and resend it. Now, one could say, look, I know the packet won’t be corrupted on any link because I have my checks. Since it won’t be corrupted on any link, it won’t be corrupted at all. Therefore, if it arrives successfully at the destination, there’s no corruption and the file has arrived successfully. This is exactly what some programmers at MIT did.<br>如果一个数据包在传输中损坏，则接收方可以检测到这一点并拒绝该数据包。发送者将找出数据包没有成功到达，例如通过TCP广告，然后重新发送。现在，人们可以说，看，我知道数据包不会在任何链接上损坏，因为我有支票。因为它不会在任何链接上损坏，所以它根本不会损坏。因此，如果它成功到达目标，则没有损坏，并且文件已成功到达。这正是麻省理工学院的一些程序员所做的。</p>
+<p>发言人   04:40<br>Since the network provided error detection, they assumed it would detect all errors. This assumption turned out to be wrong, and because of this mistake, the developers ended up losing a lot of their source code. This is what happened. One of the computers on the transfer path, let’s say computer D, had buggy memory such that sometimes some bits would be flipped. D received packets of data, checked them, and found them correct. It would then move them into main memory, at which point they would become corrupted. D would then forward the packet, but because error detection occurs in the link, from the links perspective, the packet looked fine and it would pass E check the link. Error detection was designed for errors in transmission, not errors in storage.<br>由于网络提供错误检测，他们认为它会检测到所有错误。这个假设被证明是错误的，由于这个错误，开发人员最终失去了很多源代码。这就是发生的事情。传输路径上的其中一台计算机，比如计算机D，内存有问题，有时一些位会被翻转。D接收数据包，检查它们，并发现它们是正确的。然后它会将它们移动到主内存中，此时它们会损坏。然后D将转发数据包，但是由于在链路中发生了错误检测，从链路的角度来看，数据包看起来很好，它将通过E检查链路。错误检测是为传输中的错误而设计的，而不是存储中的错误。</p>
+<p>发言人   05:30<br>The only way to put the next hop? Wireless links can sometimes be more like 50% or 80%. And it turns out TCP doesn’t work well when you have low reliability. So wireless link lay improve their reliability by retransmitting out the link layer. When your laptop sends a packet to an access point, if the access point receives the packet, it immediately, just a few microseconds later, sends a link layer acknowledgement to tell your laptop the packet was received successfully. If the laptop doesn’t receive a link layer a.n.g.i., it retransmits. It does this several times.<br>下一跳的唯一方法是什么？无线链接有时可能更接近50% 或80%。结果发现，当您的可靠性较低时，TCP无法很好地工作。因此，无线链路通过重发链路层来提高其可靠性。当您的笔记本电脑向接入点发送数据包时，如果接入点收到数据包，它会立即 (仅在几微秒后) 发送链路层确认，告诉您的笔记本电脑该数据包已成功接收。如果笔记本电脑没有收到链路层a.n.g.i.，它会重新传输。它这样做了好几次。</p>
+<p>发言人   06:06<br>Using these link layer adgs can boost a poor link with say, only 80% re reliability to 99% or higher. This letsencrypt better TCP will work. Correctly, it will reliably transfer data without this link layer help, but the link layer help greatly improves tcp’s performance. So that’s the NTEN principle.<br>使用这些链路层adgs可以将较差的链接提高到99% 或更高的80% 可靠性。这个letsencrypt更好的TCP将起作用。正确地说，它将在没有链路层帮助的情况下可靠地传输数据，但链路层帮助大大提高了tcp的性能。这就是NTEN原则。</p>
+<p>发言人   06:30<br>For something to work correctly, it has to be done end to end. You can do stuff in the middle to help us performance improvements, but if you don’t rely on end to end, then at some point it will break.<br>要使某事正常工作，它必须端到端地完成。你可以在中间做一些事情来帮助我们提高性能，但如果你不依赖端到端，那么在某个时候它会崩溃。</p>
+<p>发言人   06:44<br>There’s a second version of the end to end principle described in the IETF request for comments number 1958, the architectural principles of the Internet. We call it the strong end to end principle. And it says the network’s job is to transmit datagrams as efficiently and flexibly as possible. Everything else should be done at the fringes. This end to end principle is stronger than the first one. The first one said that you have to implement something end to end at the fringes, but that you can also implement it in the middle for performance improvements. This principle says to not implemented in the middle, only implemented at the fringes.<br>1958年IETF评论请求中描述的端到端原则的第二个版本，即互联网的架构原则。我们称之为强有力的端到端原则。它说网络的工作是尽可能高效和灵活地传输数据报。其他一切都应该在边缘完成。这个端到端的原则比第一个原则更强大。第一个说你必须在边缘实现端到端的东西，但你也可以在中间实现它以提高性能。这个原则说不要在中间实施，只在边缘实施。</p>
+<p>发言人   07:22<br>The reasoning for the strong principle is flexibility and simplicity.<br>强原则的理由是灵活和简单。</p>
+<p>发言人   07:26<br>If the network implements a piece of functionality to try to help the endpoints, then it is assuming what the endpoints do. For example, when a wireless link layer uses retransmissions to improve reliability so TCP can work better, it’s assuming that the increased latency of the retransmissions is worth the reliability. This isn’t always true. There are protocols other than TCP where reliability isn’t so important, which might rather send a new different packet than retry sending an old one. But because the link layer is incorporated, improved reliability. These are the protocols I stuck with it.<br>如果网络实现了一项功能来尝试帮助端点，那么它就会假设端点所做的事情。例如，当无线链路层使用重传来提高可靠性以使TCP能够更好地工作时，假设重传增加的延迟值得可靠性。这并不总是正确的。除了TCP以外，还有一些协议的可靠性并不那么重要，这可能宁愿发送一个新的不同的数据包，也不愿重试发送一个旧的。但由于包含链路层，可靠性得到了提高。这些是我坚持的协议。</p>
+<p>发言人   08:01<br>This can and does act as an impediment to an innovation and progress as layers start to add optimizations, assuming what the layers above and below them do, it becomes harder and harder to redesign the layers. In the case of Wii Fi, it’s a link layer that assumes certain behavior at the network and transport layers. If you invent a new transport or network layer, it’s likely going to assume how Wii Fi behaves so it can perform well. In this way, the network design becomes calcified and ossified and really hard to change.<br>这可能并且确实会成为创新和进步的障碍，因为层开始添加优化，假设它们上面和下面的层做什么，重新设计层变得越来越困难。在Wii的情况下，它是一个链接层，假设在网络层和传输层有某些行为。如果你发明了一个新的传输层或网络层，它很可能会假设Wii Fi的行为方式，因此它可以表现良好。这样，网络设计就变得钙化和僵化，很难改变。</p>
+<p>发言人   08:31<br>In terms of Longstaff design and network evolution, the strong end to end argument is tremendously valuable. The tension is that in terms of short term design and performance, network engineers and operators often don’t follow it. So over time, the network performs better and better, but becomes harder and harder to change.<br>在漫长的设计和网络演进方面，强大的端到端论证是非常有价值的。紧张局势在于短期设计和性能方面，网络工程师和运营商通常不遵循它。因此，随着时间的推移，网络表现越来越好，但变得越来越难以改变。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 019 The End-to-End Principle</div>
+      <div>http://example.com/2025/10/19/cs144-019/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-020/" title="计算机网络 020 Error detection">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 020 Error detection</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-018/" title="计算机网络 018 The ICMP Service Model">
+                        <span class="hidden-mobile">计算机网络 018 The ICMP Service Model</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

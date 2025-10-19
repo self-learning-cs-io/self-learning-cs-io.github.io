@@ -1,0 +1,724 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00Good afternoon, everybody. Welcome, good to see you, as always. Today we’re going to learn about an important concept in computer science called virtual memory.大家下午好。欢迎，很高兴见到你，一如既往。今天我们将学习计">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 018-Virtual Memory, Concepts">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-018/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00Good afternoon, everybody. Welcome, good to see you, as always. Today we’re going to learn about an important concept in computer science called virtual memory.大家下午好。欢迎，很高兴见到你，一如既往。今天我们将学习计">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:17.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.138Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 018-Virtual Memory, Concepts - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 018-Virtual Memory, Concepts"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          15k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          122 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 018-Virtual Memory, Concepts</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>Good afternoon, everybody. Welcome, good to see you, as always. Today we’re going to learn about an important concept in computer science called virtual memory.<br>大家下午好。欢迎，很高兴见到你，一如既往。今天我们将学习计算机科学中的一个重要概念，称为虚拟内存。</p>
+<p>发言人   00:19<br>So consider a system that uses physical addressing. We’ve always our idea about memory so far has been that it’s a contiguous array of physical bytes that we can access just by giving an offset called an address. So in a system that uses physical addressing. The CPU executes like, say, a move instruction, which generates an effective address, the physical address. And this address is actually the offset of a byte in main memory. So here, the CPU has generated a physical address of 4. Send that address to the memory, and then the memory fetches the word from at that address and then sends it back to the CPU.<br>所以考虑一个使用物理寻址的系统。到目前为止，我们关于内存的想法一直是，它是一个连续的物理字节数组，我们只需给出一个称为地址的偏移量就可以访问它。所以在使用物理寻址的系统中。CPU执行像移动指令一样，生成一个有效地址，即物理地址。这个地址实际上是主内存中字节的偏移量。所以在这里，CPU生成了一个4的物理地址。将该地址发送到内存，然后内存从该地址获取单词，然后将其发送回CPU。</p>
+<p>发言人   01:14<br>Now this is in fact, the way that very simple microcontrollers work, but it’s not the way most systems work, including your phones, your desktops, your servers. These systems instead virtualize this main memory. Now, the idea of virtualization is a very important one in computer science, and it expands, applies to a lot of areas of computer systems.<br>现在这实际上是非常简单的微控制器的工作方式，但不是大多数系统的工作方式，包括你的手机、桌面和服务器。这些系统将此主存储器虚拟化。现在，虚拟化的概念在计算机科学中是一个非常重要的概念，它扩展并应用于计算机系统的许多领域。</p>
+<p>发言人   01:46<br>Now, when you virtualize a resource, you present the user of that resource with some different kind of view of that resource. You present typically some kind of kind abstraction or some kind of a different view of the resource. And you do it by interposing on accesses to that resource. So in all cases, there’s some resource, and you want to virtualize it. And you do that by intercepting or interposing on the accesses to that resource. And then once we saw this when we created wrapper functions for like Malik, when I was showing you in positioning, the same technique is used to virtualize a resource. And once you’ve intercepted that access, then you can deal with it any way you want. And so that’s how you have sort of full power to change the view of that resource.<br>现在，当您虚拟化资源时，您会向该资源的用户呈现某种不同类型的资源视图。你通常会呈现某种类型的抽象或某种不同的资源视图。你可以通过干预对该资源的访问来实现这一点。所以在所有情况下，都有一些资源，您希望将其虚拟化。你可以通过拦截或干预对该资源的访问来实现这一点。然后，当我们为Malik创建包装函数时看到了这一点，当我向您展示定位时，相同的技术被用于虚拟化资源。一旦你拦截了那个访问，那么你就可以以任何你想要的方式处理它。因此，这就是你如何拥有完全的力量来改变对资源的看法。</p>
+<p>发言人   02:40<br>So a good example you.<br>这是个很好的例子。</p>
+<p>发言人   02:43<br>Saw this when we looked at disks. And, you know, physically disc consists of cylinders, tracks, sectors, platters, surfaces. And to access a particular sector on one of those disks, you have to specify the cylinder and the track and the surface. But we saw that the view that Dis controllers present is actually different. It’s a virtualized view of the disk, and the controller instead presents to the kernel of view of the disk as a series, a sequence of logical blocks. And it presents that view by intercepting the requests from the kernel for IO and changing those logical block numbers that the kernel sends into the actual physical address. So that’s a very important.<br>当我们看磁盘时看到了这个。而且，你知道，物理磁盘由柱面、轨道、扇区、盘片和表面组成。并且要访问其中一个磁盘上的特定扇区，您必须指定圆柱体、轨迹和曲面。但是我们看到，显示控制器存在的观点实际上是不同的。它是磁盘的虚拟化视图，而控制器将磁盘的视图内核呈现为一系列逻辑块的序列。它通过拦截来自内核的IO请求并将内核发送的逻辑块编号更改为实际物理地址来呈现该视图。所以这是非常重要的。</p>
+<p>发言人   03:41<br>Example of virtualization in a system. Now the memory is, is is a. Crucial resource in the system. And what we found is that it’s useful to virtualize that memory resource.<br>系统虚拟化的例子。现在的记忆是，是一个。系统中的关键资源。我们发现虚拟化内存资源是很有用的。</p>
+<p>发言人   04:00<br>And the way this is done, you remember before we virtualized the disk by having the disk controller intercept request In the case of the main memory resource, the requests are actually intercepted by a piece of hardware called the MMU, the memory management unit. So the way this works is that the CPU executes an instruction, say it’s a move instruction that generates some effective address. So this is actually a virtual address. The CPU sends that address to the MMU, which goes through a process called address translation, which we’ll study later today, and it converts that virtual address in this case 4, into a physical address 4, which actually corresponds to the address of the data object that we want. So once the MMU translates the virtual address to a physical address, then the memory will return the word at that address.<br>而这样做的方式是，你记得在我们虚拟化磁盘之前，通过磁盘控制器拦截请求，在主内存资源的情况下，请求实际上是由一个称为MMU的硬件，即内存管理单元拦截的。因此，它的工作方式是CPU执行一条指令，例如生成一些有效地址的移动指令。所以这实际上是一个虚拟地址。CPU将该地址发送到MMU，MMU将经历一个称为地址翻译的过程，我们将在今天稍后研究这个过程，它将该虚拟地址转换为物理地址4，这实际上对应于我们想要的数据对象的地址。因此，一旦MMU将虚拟地址转换为物理地址，内存将返回该地址的单词。</p>
+<p>发言人   05:09<br>So this, you might wonder, why in the world would you want to do this? Well, it turns out there’s all kinds of good reasons to virtualize the address space. And so before I can explain those to you, let me just define a few, a few terms. So an address space is a set of addresses. So an address space is a set not of data bytes, but of the addresses of those bytes, and a linear address space.<br>所以，你可能会想，为什么在这个世界上你想要这样做？嗯，事实证明，有各种各样的充分理由来虚拟化地址空间。因此，在我向你们解释这些之前，让我先定义一些术语。因此，地址空间是一组地址。因此，地址空间不是数据字节的集合，而是这些字节的地址的集合，以及一个线性地址空间。</p>
+<p>发言人   05:45<br>An ordered set of contiguous nonnegative integers. Zero, 1, 2, 3, 4, 5, and so on. The virtual address space is a set of n equal 2 to the n virtual address. It’s a linear address space. And the physical address space is a set of m equal to m physical addresses. And so typically, the virtual address spaces is usually much larger than the physical address space. The physical address space corresponds to the amount of DRAM that you actually have in the system. The virtual address space is the same for all processes running on that system.<br>一组连续的非负整数的有序集合。零、1、2、3、4、5，依此类推。虚拟地址空间是一组n等于2的虚拟地址。它是一个线性地址空间。物理地址空间是一组m，等于m个物理地址。因此，通常情况下，虚拟地址空间通常比物理地址空间大得多。物理地址空间与系统中实际拥有的DRAM数量相对应。虚拟地址空间对于该系统上运行的所有进程都是相同的。</p>
+<p>发言人   06:35<br>Now, why do we want to implement virtual memory? Why do this? Why do this level of indirection with the MMU?<br>现在，我们为什么要实现虚拟内存？为什么这样做？为什么这个级别的MMU是间接的？</p>
+<p>发言人   06:45<br>Well, there’s really three big reasons. The first is that virtual memory use uses the DRAM as a cache for the actual data stored on disk. So you can think of virtual memory as a DRAM cache for data stored on the disk. And this allows us to use the memory much more efficiently because we only need to cache items that are frequently used. Just the same idea that we learned when we talked about caches and locality. So that’s one thing. We can use the memory much more efficiently by only using the portions of the virtual address space, by only actually storing the portions of the virtual address space in the physical memory.<br>其实有三个主要原因。第一个是虚拟内存使用DRAM作为存储在磁盘上的实际数据的缓存。因此，您可以将虚拟内存视为存储在磁盘上的数据的DRAM缓存。这使我们能够更有效地使用内存，因为我们只需要缓存经常使用的项目。就像我们在谈论缓存和地点时学到的相同想法。所以这是一件事。我们可以通过仅使用部分虚拟地址空间，仅将部分虚拟地址空间实际存储在物理内存中，来更高效地使用内存。</p>
+<p>发言人   07:32<br>The second thing is it greatly simplifies memory management. So we saw it, every process has the same, the same view, right? There’s code, loaded code, and data are always loaded at the same address, the stack is at the top of the user visible address space. So every process has this same similar looking virtual address space. But in actuality, the memory that corresponds to those addresses is actually scattered all over main memory. So that’s a really important. Benefit of virtual memory.<br>第二件事是它极大地简化了内存管理。所以我们看到了，每个进程都有相同的视图，对吧？有代码、加载的代码和数据始终在相同的地址加载，堆栈位于用户可见地址空间的顶部。所以每个进程都有相似的虚拟地址空间。但实际上，与这些地址对应的内存实际上分散在主内存中。所以这非常重要。虚拟内存的好处。</p>
+<p>发言人   08:16<br>And then finally, it allows us to protect access. We had 2 A. Process We saw that a process provides the separate address space that’s that’s protected from accesses by other processes. So virtual memory allows us to create these, the separate protected private address spaces. And so what we’ll do today, we’ll look in more detail at these three ideas, and then we’ll go into the specifics of address translation.<br>最后，它允许我们保护访问。我们有两个A。我们看到一个进程提供了独立的地址空间，防止其他进程访问它。因此，虚拟内存允许我们创建这些单独的受保护私有地址空间。所以今天我们要做的是，我们将更详细地了解这三个想法，然后我们将进入地址翻译的具体细节。</p>
+<p>发言人   08:51<br>For the first part of this lecture, we’re going to talk about dress translation, just in kind of high level terms. But then we’ll go into the details at the end. You can see how it really works. Okay, so let’s look at VM as a tool for caching. So conceptually, you can think of your virtual memory as a sequence of bytes stored on disk. And then the contents of that.<br>在本讲座的第一部分，我们将谈论着装翻译，只是高层次的术语。但最后我们会详细讨论。你可以看到它是如何运作的。好的，那么让我们看看VM作为缓存工具。因此，从概念上讲，您可以将虚拟内存视为存储在磁盘上的字节序列。然后是其中的内容。</p>
+<p>发言人   09:21<br>Virtual memory stored on disk or cached in DRAM. So think of the DRAM as a cache for this array of contiguous bytes stored on the disk. And just like any cache, the data is broken up into blocks. And then we have here, we have, and those blocks for virtual memory systems are called pages. They’re typically larger than much larger than the CA blocks that we studied do. So 4K bytes typically, instead of the 64 B that we that we learned about when we studied cache memory.<br>虚拟内存存储在磁盘上或缓存在DRAM中。因此，将DRAM视为存储在磁盘上的此连续字节数组的缓存。就像任何缓存一样，数据被分成块。然后我们在这里，我们有，那些用于虚拟内存系统的块被称为页面。它们通常比我们研究的CA块大得多。所以通常是4k字节，而不是我们在研究缓存时学到的64 b。</p>
+<p>发言人   10:03<br>So this virtual memory, conceptually, you can think of it as being a sequence of pages stored on the disk, so called virtual pages. And each of these pages, we’ll identify with a number. So here’s virtual page 0, virtual page 1. And then a subset of those pages are stored in the physical memory, in the physical DRAM memory. And then there’s some mapping function that tells us which pages have been cached. So in this case I’ve just shown a snapshot where we have three virtual pages cached somewhere in DRAM, and there’s no relation between the virtual page number and the physical page number that it’s mapped to. Some of these pages are not cached, so they’re still stored on disk.<br>因此，从概念上讲，这个虚拟内存可以看作是存储在磁盘上的页面序列，称为虚拟页面。每个页面，我们都会用一个数字来标识。这是虚拟页面0，虚拟页面1。然后，这些页面的子集存储在物理内存中，即物理DRAM内存中。然后还有一些映射功能告诉我们哪些页面已被缓存。所以在这种情况下，我刚刚展示了一个快照，其中我们在DRAM中缓存了三个虚拟页面，虚拟页面编号和它映射到的物理页面编号之间没有关系。有些页面没有缓存，所以它们仍然存储在磁盘上。</p>
+<p>发言人   10:57<br>So in this case, VP 2 is still stored on disk and there’s some pages which aren’t even allocated, so they don’t exist on the disk yet. It’s a way to think of that because we really wouldn’t want to store every single page in a dress space with that’s two to the size 2 to the 48th. We really wouldn’t want to store all those, those on disk. So most of the address space is unallocated, okay?<br>因此，在这种情况下，VP 2仍然存储在磁盘上，并且有一些页面甚至没有分配，因此它们还不存在于磁盘上。这是一种思考方式，因为我们真的不希望将每个页面存储在大小为2的48号的着装空间中。我们真的不想将所有这些都存储在磁盘上。所以大部分地址空间都没有分配，好吗？</p>
+<p>发言人   11:29<br>So we can just think of this. So this DRAM is just a cache, but it has a much different organization. Then the cash memories we studied earlier. And the difference is driven by the enormous miss penalty when you go from if you have a cache in DRAM, the missed penalty to fetch a data item from the disk is huge. So the design of this virtual memory cache is totally driven by this enormous miss penalty. And so as a result, the blocks are larger.<br>所以我们可以想到这一点。所以这个DRAM只是一个缓存，但它有一个非常不同的组织。然后是我们之前研究的现金记忆。这种差异是由巨大的未命中罚款驱动的，如果您在DRAM中有一个缓存，则从磁盘中提取数据项的错过罚款是巨大的。所以这个虚拟内存缓存的设计完全是由这个巨大的未命中惩罚驱动的。因此，这些区块就更大了。</p>
+<p>发言人   12:05<br>So remember, we talked about that the block size is kind of a trade off between sort of useful being able to usefully amortize the cost of fetching that block versus sort of consuming too much of this scarce cash space. In this case, our cache memories were 64 B blocks. Most virtual memory systems have like 4K byte blocks with an option to increase to 4 MB in the case of x 86.<br>所以请记住，我们讨论过的块大小是一种权衡，在某种程度上是能够有效地摊销获取该块的成本与消耗过多稀缺现金空间之间进行权衡。在这种情况下，我们的缓存内存为64 b块。大多数虚拟内存系统都有类似于4k字节的块，并且可以选择在x86的情况下增加到4 MB。</p>
+<p>发言人   12:41<br>And now this cash, another consequence of the enormous miss penalty is that you really want to have as large associativity as you can. You remember, we saw with direct map caches that we’re subject to these conflict misses. And if you increase the associativity of the cash, you reduce the probability of those conflict misses, but you never completely eliminate them until you have a fully associative cache with just one set. So in a virtual memory cache, it’s fully associative. There’s one set, and each virtual page can go anywhere in the cache. So this requires a really complicated mapping function.<br>现在这个现金，巨大的失误惩罚的另一个后果是你真的想要尽可能大的联想。你还记得，我们在直接地图缓存中看到我们受到这些冲突失误的影响。如果增加现金的相关性，就会降低这些冲突未命中的概率，但在只有一个集合的完全关联缓存之前，永远无法完全消除它们。所以在虚拟内存缓存中，它是完全关联的。有一组，每个虚拟页面可以去缓存中的任何地方。这需要一个非常复杂的映射函数。</p>
+<p>发言人   13:26<br>Somehow we’re going to have to keep track of where all these cached pages are. And we can’t really do a search that would be way too inexpensive. So you remember with a cache memory, the hardware actually did a search within the set, a parallel search to find, try to find a cache line. But with a software cache like this, that’s not feasible. So somehow, we’re going to have to remember where these cached blocks are in this very large set. And again, because it’s so expensive, if you make a mistake when you’re trying to identify a victim victim page, if you make a mistake and you eviction a page that then is referenced again in the near future, you pay a big price for it.<br>我们将不得不以某种方式跟踪所有这些缓存页面的位置。我们不能真正做一个太便宜的搜索。所以你还记得，使用高速缓存，硬件实际上在集合内进行了一次搜索，并行搜索来查找，试图找到一个高速缓存线。但是对于这样的软件缓存，这是不可行的。所以不知何故，我们必须记住这些缓存块在这个非常大的集合中的位置。再一次，因为它是如此昂贵，如果你在试图识别受害者页面时犯了一个错误，如果你犯了一个错误并驱逐了一个在不久的将来再次引用的页面，你就会为此付出巨大的代价。</p>
+<p>发言人   14:17<br>So virtual memory caches have much more sophisticated replacement algorithms than like simple LRU that we saw with cache memories. Now, these replacement algorithms are outside of the scope of this course. You’ll learn about them when you take OS, but because it’s in software, we can afford to do very expensive replacement algorithms. And we can take a long, fairly, relatively long time to execute the code for those algorithms. Because any time we spend figuring out a victim block, will it be much less than the cost of making a mistake and paying the access time, the miss time, the miss penalty to disk? And then also as a result, virtual memory systems never use write through just because it takes too long. So they always use write back, and they try to defer writing anything back to the disk as long as possible.<br>因此，虚拟内存缓存比我们在缓存内存中看到的简单的LRU具有更复杂的替换算法。现在，这些替换算法超出了本课程的范围。当你使用操作系统时，你会了解到它们，但由于它是在软件中，我们可以负担得起非常昂贵的替代算法。我们可能需要相当长的时间来执行这些算法的代码。因为任何时候我们花在找出一个受害者块上的时间，它是否比犯错误和支付访问时间、错过罚款到磁盘的成本要少得多？因此，虚拟内存系统从不使用写入，因为它花费的时间太长。所以他们总是使用写回，并尽可能地推迟将任何内容写入磁盘的时间。</p>
+<p>发言人   15:20<br>All right, now how do we keep track? Somehow we have to keep track of this complicated cache and DRAM and the data structure that keeps track of the location of the virtual pages in memory is called the page table. Now, a page table is just a data structure in memory that the kernel maintains as part of each process context. So every process has its own page table, and it’s just it’s an array of so called page table entries, or Ptes, where PTK contains the physical address of physical page K in DRAM.<br>好的，现在我们该如何跟踪呢？不知何故，我们必须跟踪这个复杂的缓存和DRAM，而跟踪虚拟页面在内存中的位置的数据结构称为页表。现在，页表只是内核维护的内存中的数据结构，作为每个进程上下文的一部分。因此，每个进程都有自己的页表，它只是一个所谓的页表条目数组，或Ptes，其中PTK包含DRAM中物理页面K的物理地址。</p>
+<p>发言人   16:10<br>So here’s how it works. There’s this page table in DRAM. There’s virtual pages stored on disk. And then there’s virtual pages stored in various physical pages in DRAM. And then the page table keeps track of where those are stored. So here we have a case. This Pte 1 corresponds to virtual page 1. And in this case, it says that virtual page 1 is mapped into physical page 0, virtual page 2 is mapped into physical page 1, and so on some of these.<br>这是它的工作原理。DRAM中有这个页表。有虚拟页面存储在磁盘上。然后是虚拟页面存储在DRAM中的各种物理页面中。然后页表跟踪这些数据的存储位置。这里我们有一个案例。这个Pte 1对应于虚拟页面1。在这种情况下，它说虚拟页面1被映射到物理页面0，虚拟页面2被映射到物理页面1，依此类推。</p>
+<p>发言人   17:02<br>The pages that aren’t in memory are stored on disk, the allocated pages. And so for those pages, the page table entry contains a pointer to the location of that page on disk. So think of it as a logical block number where that page can be found on the disk. And then some of the pages are not allocated. So there’s a null null entry in the page table. Now a page hit. So this is just a cache, right? So we have hits and misses.<br>不在内存中的页面存储在磁盘上，即分配的页面。因此，对于那些页面，页表条目包含指向该页面在磁盘上的位置的指针。因此，请将其视为一个逻辑块编号，其中该页面可以在磁盘上找到。然后一些页面没有被分配。因此，页表中有一个null条目。现在一个页面命中了。所以这只是一个缓存，对吗？所以我们有命中和错过。</p>
+<p>发言人   17:37<br>So a page hit occurs when there’s a reference to a word in the virtual address space that’s contained in a page that’s cached in the DRAM.<br>因此，当存在对虚拟地址空间中包含在DRAM中缓存的页面中的单词的引用时，就会发生页面命中。</p>
+<p>发言人   17:49<br>So let’s say that we have the CPU executes this move instruction, It generates a virtual address. The MMU looks up in the page table. And let’s say this virtual address is somewhere within virtual page 2. So the MMU looks up the page table entry number 2, and it extracts the physical address of that virtual page 2. So that’s a hit. So in this case.<br>假设我们让CPU执行这个移动指令，它会生成一个虚拟地址。MMU在页表中查找。假设这个虚拟地址在虚拟页面2内的某个位置。因此，MMU查找页表条目编号2，并提取该虚拟页面2的物理地址。所以这是一个打击。在这种情况下。</p>
+<p>发言人   18:31<br>In this case, the page is in memory. It’s cached in memory. And so we have a hit. And now the memory can return that can return that physical address to the MMU. Now? A miss is a reference to a word that’s not cached in physical memory. So in this case, virtual page 0, 1, 2, 3, it’s not cached in DRAM, it’s stored on the disk.<br>在这种情况下，该页面在内存中。缓存在内存中。所以我们有一个打击。现在内存可以返回，可以将物理地址返回到MMU。现在？未命中是对未缓存在物理内存中的单词的引用。因此，在这种情况下，虚拟页面0、1、2、3不会缓存在DRAM中，而是存储在磁盘上。</p>
+<p>发言人   19:14<br>So now that triggers an exception, a page fault exception in the hardware. The hardware triggers the exception, and that causes a transfer of control to a chunk of code in the kernel called the page fault handler, which then selects a vict to be evi ded, in this case, virtual page 4. And it fetches virtual page 3 from the disk, loads it up into memory, and then changes and then updates this page table entry to reflect the fact that virtual page 4 is now stored on disk. And if virtual page 4 had been modified at any time, it would have to write the contents of it that to disk as well. So once the handler is copied virtual page 3 into memory, the instruction that caused the page fault now can be re-executed. So when the page fault handler and the kernel returns, it returns to the faulting instruction, which then re ex-csx now that pages, when the MMU checks that the Pte corresponding to that page, it finds that it’s indeed cached. So now the instruction can continue and we can fetch that whatever word at that virtual address from the DRAM.<br>所以现在这触发了一个异常，一个硬件中的页面错误异常。硬件触发异常，这会导致控制转移到内核中称为页面错误处理程序的代码块，然后该代码块选择要evied的vict，在本例中是虚拟页面4。它会从磁盘中获取虚拟页面3，将其加载到内存中，然后更改并最新进展此页表条目，以反映虚拟页面4现在存储在磁盘上的事实。如果虚拟页面4随时被修改，它也必须将其内容写入磁盘。因此，一旦处理程序将虚拟页面3复制到内存中，现在可以重新执行导致页面错误的指令。因此，当页面错误处理程序和内核返回时，它返回到错误指令，然后重新执行该页面，当MMU检查与该页面对应的Pte时，它发现它确实被缓存了。所以现在指令可以继续，我们可以从DRAM中获取该虚拟地址的任何单词。</p>
+<p>发言人   20:55<br>Okay, now we can allocate a new page of memory. So in this example, virtual page 0 1, 2, 3, 4, 5 is not allocated.<br>好的，现在我们可以分配一个新的内存页了。所以在这个例子中，没有分配虚拟页面0 1、2、3、4、5。</p>
+<p>发言人   21:07<br>So if you need to, let’s say you do malloc of a very large chunk of of virtual address space. If one of those pages hasn’t been allocated yet, then the kernel actually, or the malloc function actually has to create, allocate that memory by calling a function called S break. And then what S Braak does is actually allocates this page and. Records where it’s loaded. Now it probably actually put it up into. No, I guess it wouldn’t actually show up in the DRAM cache until that page was touched. So just allocating space just changes this page table entry. When that page is actually touched, then it’ll be brought into the cache.<br>因此，如果需要的话，假设你对一个非常大的虚拟地址空间块进行了malloc操作。如果其中一个页面尚未分配，那么内核或malloc函数实际上必须通过调用名为S break的函数来创建并分配该内存。然后S Braak所做的实际上是分配这个页面。记录它被加载的地方。现在它可能实际上把它放进去了。不，我猜它实际上不会出现在DRAM缓存中，直到该页面被触摸。所以只是分配空间只是改变这个页表条目。当该页面被实际触及时，它将被带入缓存中。</p>
+<p>发言人   21:59<br>So I don’t know about you, but the first time I learned about this, I was pretty appalled. It just seemed like the most inefficient, terrible idea. How in the world can you afford to on every single, every single instruction that uses memory, do all this copying back and forth and looking up and tables? It just seems like an awful idea.<br>所以我不知道你怎么想，但我第一次得知这件事时，我感到非常震惊。这似乎是最低效、最可怕的想法。你怎么能负担得起在每一个使用内存的指令上来回复制和查找表格？这似乎是个糟糕的主意。</p>
+<p>发言人   22:26<br>But once again, locality saves us and it actually works because programs have locality and it’s actually fairly efficient. And the reason is that at any point of time, programs tend to access a set of pages called the working set just by locality, by temporal locality, by the principle of temporal locality. In spatial locality, you tend to sort of reuse the same things and reuse nearby things. And so if that working set is less than the main memory size, then all of the pages in the current working set will fit in memory. Then things will be great. But if the sum of the working set sizes for every process, our system’s running multiple processes. If it exceeds the main memory size, then you have this meltdown where processes are thrashing each other and causing pages to be copied back and forth. So no process ever gets its working set fully into memory.<br>但又一次，局部性拯救了我们，它确实有效，因为程序具有局部性，而且实际上相当高效。原因是在任何时间点，程序都倾向于通过局部性、时间局部性和时间局部性原则访问一组称为工作集的页面。在空间局部性中，你倾向于重复使用相同的东西和附近的东西。因此，如果该工作集小于主内存大小，则当前工作集中的所有页面都将适合内存。然后事情会很棒。但是如果每个进程的工作集大小之和，我们的系统将运行多个进程。如果它超过了主内存大小，那么你就会遇到这种崩溃，进程之间互相碰撞，导致页面被来回复制。所以没有一个进程会将它的工作集完全放入内存中。</p>
+<p>发言人   23:35<br>And we’ll look at a technique. When we look at a dress translation, we’ll look at a little hardware cache called a translation lookaside buffer that further exploits the locality property of programs. Okay, so that’s virtual memory is a tool for caching. It’s also a tool for memory management, and it greatly simplifies all kinds of aspects of memory management for the kernel.<br>我们来看看一种技术。当我们看一个礼服翻译时，我们将看一个叫做翻译后备缓冲区的小硬件缓存，它进一步利用了程序的本地属性。好的，虚拟内存是一种缓存工具。它也是一种内存管理工具，它极大地简化了内核内存管理的各个方面。</p>
+<p>发言人   24:00<br>So the key idea is that each process has its own virtual address space. The kernel implements this by giving each process its own separate page table in the context of that process. So it’s just a data structure in the kernel process that the kernel keeps for that process. And the page table for each process maps the virtual address space for that process.<br>所以关键思想是每个进程都有自己的虚拟地址空间。内核通过在每个进程的上下文中给每个进程自己单独的页表来实现这一点。所以它只是内核进程中为该进程保留的数据结构。每个进程的页表映射该进程的虚拟地址空间。</p>
+<p>发言人   24:34<br>Now, what’s interesting, so you have these pages, contiguous pages in the virtual address space can be mapped anywhere in the DRAM, in the physical address space, and they can be scattered all over the place. And different virtual pages and different processes can be mapped to different physical pages. So here we have virtual page 1, which is mapped to physical page 2 in process 1. But in process 2, virtual page 1, it’s mapped to physical page 8. So in this way, we can present a view to each, to the programmer, and to the tools that each process has a very similar address space, virtual address space, same size address space, code and data start at the same place, but then the actual pages that that process used can be scattered in memory.<br>现在，有趣的是，你有了这些页面，虚拟地址空间中的连续页面可以映射到DRAM中的任何位置，在物理地址空间中，它们可以分散在各个地方。不同的虚拟页面和不同的进程可以映射到不同的物理页面。这里我们有虚拟页面1，它被映射到进程1中的物理页面2。但在进程2虚拟页面1中，它被映射到物理页面8。这样，我们可以向每个进程、程序员和工具提供一个视图，即每个进程都有非常相似的地址空间、虚拟地址空间、相同大小的地址空间、代码和数据起始于同一位置。但是该进程使用的实际页面可以分散在内存中。</p>
+<p>发言人   25:31<br>And then it gives us the most efficient way to use the memory if we didn’t have this mechanism, think about how would you keep track?<br>然后它给我们提供了最有效的方式来使用内存，如果我们没有这种机制，想想你会如何跟踪？</p>
+<p>发言人   25:41<br>Let’s say you had 50 processes running on the machine at any point in time, how in the world would you keep track of where all of the data, those processes were using? Well, one technique that you could imagine, in fact, it was used in the bad old days before virtual memory. One thing you can imagine is that just give every process its own chunk of the physical address space, just take your physical address space, partition it, and then each process loads and runs in its own part of the address space. Well, this has all kinds of problems, right? I mean, you could, what do you do if you add a process so you really can’t partition the address space? You really have to sort of say, well, each process gets some little chunk, and I’m going to reserve some of the address space in case there’s new processes that need memory.<br>假设您在任何时候都有50个进程在机器上运行，您将如何跟踪所有数据，这些进程正在使用的位置？嗯，你可以想象到的一种技术，实际上，在虚拟内存之前的糟糕的日子里，它就被使用了。您可以想象的一件事是，只需为每个进程分配自己的物理地址空间块，取出您的物理地址空间，对其进行分区，然后每个进程在自己的地址空间部分中加载和运行。嗯，这有各种各样的问题，对吧？我的意思是，你可以，如果你添加了一个进程，所以你真的无法分区地址空间，你会怎么做？你真的必须说，每个进程都有一些小的块，我将保留一些地址空间，以防有新的进程需要内存。</p>
+<p>发言人   26:33<br>Another problem is that now you have to write your programs. You can’t just link your program ahead of time because it has to be relocated when it’s loaded. Because you don’t a process, you don’t know where in the memory it’s going to go, it’s going to get some chunk, so you have to either relocate all the references, references to global symbols when it’s actually loaded, or you have to create a system where all of the instructions are relative. So there’s no absolute addresses. All addresses are relative to, say, the start of the program, something like that. So anyway, all of these things are just terribly complicated, and they’re all solved beautifully by virtual memory.<br>另一个问题是现在你必须编写你的程序。你不能只是提前链接你的程序，因为它必须在加载时重新定位。因为你不是一个进程，你不知道它在内存中的位置，它会得到一些块，所以你必须重新定位所有引用，当它实际加载时对全局符号的引用，或者你必须创建一个所有指令都是相对的系统。所以没有绝对的地址。所有的地址都是相对于程序的开头之类的东西。无论如何，所有这些事情都非常复杂，而且它们都可以通过虚拟内存完美地解决。</p>
+<p>发言人   27:27<br>So each virtual page can be mapped to any physical page. So that really helps simplify things. And even at different times, the same virtual page can be stored in different physical pages at different times. So if A for a while, it might be cached in one physical page, then it gets swapped out, and the next time it’s referenced, it can get cached in a different physical page that, if it’s no longer available, provides flexible scheduling freedom in way.<br>因此，每个虚拟页面可以映射到任何物理页面。这样真的有助于简化事情。即使在不同的时间，同一个虚拟页面也可以在不同的时间存储在不同的物理页面中。因此，如果一段时间后，它可能会缓存在一个物理页面中，然后它会被交换出去，下一次引用它时，它可以缓存在另一个物理页面中，如果它不再可用，则可以在某种程度上提供灵活的调度自由。</p>
+<p>发言人   28:00<br>In the way that we manage the memory. And it also provides this really neat capability where you can map virtual pages to the same physical page. So this is a very simple, straightforward way for multiple processes to share certain code or data. And what you do is you just the page table entry in these different processes just points to the same physical page. So in this case, virtual page 2 points to physical page 6 in each of the page tables for process 1 and process 2. So this is how shared libraries are implemented.<br>我们管理记忆的方式。它还提供了这种非常巧妙的功能，您可以将虚拟页面映射到相同的物理页面。这是多个进程共享某些代码或数据的一种非常简单、直接的方式。而你所做的只是这些不同进程中的页表条目指向同一个物理页面。因此，在这种情况下，虚拟页面2指向进程1和进程2的每个页表中的物理页面6。这就是共享库的实现方式。</p>
+<p>发言人   28:46<br>So libc is the same code for every process running on the system. So lib z just needs to be loaded once into physical memory processes that want to access functions and data in libc. Just map the pages in their virtual address space to the physical pages where libc is actually loaded. So now there’s only one copy of libc everywhere in the system, but every process thinks it’s got its own copy.<br>因此，libc对于系统上运行的每个进程都是相同的代码。因此，lib z只需要加载一次到物理内存进程中，以便访问libc中的函数和数据。只需将虚拟地址空间中的页面映射到实际加载libc的物理页面。所以现在系统中到处都只有一个libc副本，但是每个进程都认为自己有自己的副本。</p>
+<p>发言人   29:18<br>Now, this virtual memory for using virtual memory to help simplify memory management greatly simplifies linking and loading. For the reasons I mentioned before, linkers now can assume that every program is going to be loaded at exactly the same place. So the linker knows ahead of time where everything’s going to be, and then resolve. It can relocate all those references accordingly. Now it really makes loading simple, so xact vector loader.<br>现在，这个使用虚拟内存来帮助简化内存管理的虚拟内存大大简化了链接和加载。由于我之前提到的原因，链接器现在可以假设每个程序将在完全相同的位置加载。这样链接器就提前知道所有事情的位置，然后解决。它可以相应地重新定位所有这些参考文献。现在它确实使加载变得简单，所以xact矢量加载器。</p>
+<p>发言人   30:02<br>If you want to load a program now, exec vegan at the Elf binary. The executable binary it sees identifies how?<br>如果你现在想加载一个程序，请在精灵二进制文件处执行vegan。它看到的可执行二进制文件如何识别？</p>
+<p>发言人   30:12<br>Big the code and the data sections in that binary are it allocates virtual memory starting at a fixed address for the code and data. It creates Ptes for them and marks each of them as invalid. So each Pte contains a valid mapping. So each Pte that’s mapped to code and data contains a valid physical page number. But then it does this trick of setting the valid bit to 0. So when the MMU encounters a Pte whose valid bit is 0, it triggers a page fault. It looks as though that page is not, has not been initialized yet. So it’s kind of a trick. And then that triggers a page fault to the kernel, and then the kernel will then.<br>该二进制文件中的代码和数据段从固定地址开始为代码和数据分配虚拟内存。它为它们创建Ptes，并将它们标记为无效。所以每个Pte都包含一个有效的映射。因此，每个映射到代码和数据的Pte都包含一个有效的物理页码。但是它会将有效位设置为0的技巧。因此，当MMU遇到有效位为0的Pte时，它会触发页面错误。看起来该页面还没有初始化。所以这有点像个把戏。然后这将触发内核的页面错误，然后内核将会这样做。</p>
+<p>发言人   31:13<br>Can then copy that page into physical memory?<br>然后可以将该页面复制到物理内存中吗？</p>
+<p>发言人   31:20<br>The loading, actually programs and data aren’t actually, they’re not loaded you, they’re not just like copied into memory. It happens as a result of page faults, it happens as a result of misses. When and it’s deferred until a byte in that page is accessed. So this is called demand paging, but it’s really just like any of the other caches we’ve looked at. You don’t load a block into the cache until a word within that block is accessed. So loading, actually. So loading is actually, this is a very efficient mechanism, right?<br>加载，实际上程序和数据并没有被加载，它们并没有被加载到你的电脑中，它们不仅仅像复制到内存中一样。它是由于页面错误而发生的，它是由于错过而发生的。时间和延迟，直到该页面中的一个字节被访问。所以这被称为请求分页，但它实际上就像我们看过的任何其他缓存一样。你不会将一个块加载到缓存中，直到访问该块中的一个词。所以加载，实际上。所以加载实际上是一种非常有效的机制，对吧？</p>
+<p>发言人   32:02<br>Because you may have a program that contains a huge, say, a huge array, a large array, but you’re only accessing a portion of that array. So that entire array won’t actually be allocated. The pages will only come into DRAM when a word within that page is touched. So if you’re only accessing a portion of this extremely large array, only the data that you access gets loaded and used. It’s a very, very smart mechanism and extremely helpful for allowing us to use this precious memory resource.<br>因为你可能有一个程序包含一个巨大的，比如说一个巨大的数组，一个巨大的数组，但你只访问了数组的一部分。这样整个数组就不会被分配。只有当页面中的单词被触摸时，该页面才会进入DRAM。因此，如果您只访问这个极大数组的一部分，则只有您访问的数据会被加载和使用。这是一种非常非常智能的机制，对于允许我们使用这一宝贵的内存资源非常有帮助。</p>
+<p>发言人   32:45<br>So the third motivation for virtual memory is that it helps us. Protect portions of memory so you recall that our processes, portions of our virtual address space, are read only like the code section, and there are other portions of the address space that can only be executed by the kernel.<br>所以虚拟内存的第三个动机是它对我们有帮助。保护部分内存，以便您回忆起我们的进程，虚拟地址空间的一部分，就像代码部分一样是只读的，并且还有其他只能由内核执行的地址空间部分。</p>
+<p>发言人   33:20<br>On systems like X 8664, it’s a 64 b system. So the pointers and addresses are 64 b. But in actuality, the real virtual address space is 48 b. So is it only it’s 2 to the 48th and then the high order bits after bit 48 are either all zeros, are all ones. And so that’s just that’s sort of Intel’s rule for. And so the addresses were high order bits are all ones are reserved for the kernel, the kernel’s code, and the kernel’s data, the addresses where all the bits are 0 or reserved for user code. So any reference, any address that contains all ones in those high order bits, it is by definition, either code or data in the kernel.<br>在像x8664这样的系统上，它是一个64 b的系统。所以指针和地址是64 b。但实际上，真正的虚拟地址空间是48 b。所以它只是2的第48个，然后第48位之后的高阶位要么都是零，要么都是一。这就是英特尔的规则。因此地址都是高阶位，都是保留给内核、内核代码和内核数据的地址，其中所有位都是0或保留给用户代码。因此，任何引用，任何包含这些高阶位中的所有一的地址，根据定义，它是内核中的代码或数据。</p>
+<p>发言人   34:22<br>You can add bits to the Pte that specify whether certain virtual pages can be accessed by user code or if they have to be accessed by the kernel, so the so-called visitor mode. And you can also add bits that control whether that page can be read, written, or executed. So this execute bit is new with x 8, 6 64. It didn’t exist in 32 b x 86 systems. And this is the.<br>您可以在Pte中添加一些位，以指定某些虚拟页面是否可以被用户代码访问，或者它们是否必须被内核访问，这就是所谓的访问者模式。并且您还可以添加控制该页面是否可以读取、写入或执行的位。所以这个执行位是新的，带有x 8，6 64。它在32 b x86系统中不存在。这就是。</p>
+<p>发言人   34:56<br>Technique that’s used now to try to prevent against attack lab code injection style attacks because it makes it impossible. If this bit is set, you can’t load instructions from any byte within that page. And so in fact, it was the introduction of this execute bit that sort led to things like return oriented programming attacks like you did in your attack lab. So this by just the simple technique of adding, adding bits to the Pte, we provide a way, automatic way to protect different parts of our virtual address space from unauthorized accesses. And then the MMU actually checks these bits on each Axi. And if there’s a problem, if you’re trying to do a right and the right, the right that’s not enabled, then it throws an exception, which then the kernel, the kernel deals with.<br>现在用于尝试防止攻击实验室代码注入式攻击的技术，因为它使其变得不可能。如果设置了此位，则无法从该页面内的任何字节加载指令。事实上，正是这个执行位的引入导致了像你在攻击实验室中所做的那样的面向返回编程攻击。因此，通过向Pte中添加和添加位的简单技术，我们提供了一种自动方法来保护虚拟地址空间的不同部分免受未经授权的访问。然后MMU实际上会检查每个Axi上的这些位。如果出现问题，如果你试图做正确的事情，正确的事情没有被启用，那么它会抛出一个异常，然后由内核处理。</p>
+<p>发言人   36:02<br>OK, so so far I’ve been talking about address translation in kind of high, high level terms. So let’s get down to details and see how it really works. So we’re given a virtual address of n elements, a physical address of m elements. Like I said before, n is usually larger than m, but it doesn’t have to be. It’s perfectly, there’s no reason m could be much larger than m, and it’s typically not, but it could be.<br>好的，到目前为止，我一直在用高层次的术语谈论地址翻译。所以让我们深入了解细节，看看它到底是如何工作的。因此，我们被赋予了n个元素的虚拟地址，m个元素的物理地址。就像我之前所说的，n通常大于m，但并不一定非得如此。它是完美的，没有理由m可以比m大得多，而且通常不是，但它可能是。(m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.m.)</p>
+<p>发言人   36:37<br>And so given these two address spaces, we have a map function that takes that maps from V to P with an optional empty set or an additional empty set. And so for virtual address, a map A is equal to a prime if the data at virtual address A, is it physical address a prime? So I mean, that’s just what we’ve, it’s just a little more formal way to say what we’ve been talking about before with our diagrams. And then map A is the empty set.<br>因此，给定这两个地址空间，我们有一个map函数，它使用可选的空集或额外的空集获取从V到P的映射。因此对于虚拟地址，如果虚拟地址a的数据是物理地址A还是质数，则map a等于质数？所以我的意思是，这就是我们所拥有的，这只是一种更正式的方式，用我们的图表来表达我们之前一直在谈论的内容。然后map A是空集。</p>
+<p>发言人   37:09<br>If the data at virtual address A is not in physical memory. So just for a summary I’m going to put up a list of all the symbols we’re going to be using in a dress translation. This is just for summary. This is just for reference if you’re using the slides later on. Okay, so here’s how a dress translation with a page table works.<br>如果虚拟地址A的数据不在物理内存中。所以只是作为一个总结，我将列出我们将在着装翻译中使用的所有符号。这只是为了总结。这只是供以后使用幻灯片时参考的。好的，这就是带有页表的礼服翻译的工作原理。</p>
+<p>发言人   37:36<br>So we’re given some virtual address that consists of n bits. And we have blocks that consist of whose size can be represented with p bits, okay? So think about this now. So this is very similar to what we looked at when we did caching the address bits for a cache. So these first p bits correspond to the page offset. So this is analogous to the blocks offsets that we saw with caches. And then the remaining bits correspond to the virtual page number. So remember, this is fully associative, so there’s only one set.<br>所以我们得到了一个由n位组成的虚拟地址。我们有一些块，它们的大小可以用p位表示，好吗？所以现在想想。所以这与我们在缓存地址位时所看到的非常相似。所以这些前p位对应于页面偏移量。所以这类似于我们在缓存中看到的块偏移。然后剩余的位对应于虚拟页码。所以请记住，这是完全关联的，所以只有一个集合。</p>
+<p>发言人   38:26<br>So in a fully associative cache, everything after the block offset set is tagged. So think of this as like a tag. This is what uniquely identifies this block, and in virtual memory pars, we refer to it as a virtual page number.<br>因此，在完全关联的缓存中，块偏移集之后的所有内容都被标记。所以把它想象成一个标签。这是唯一标识此块的东西，在虚拟内存部分中，我们将其称为虚拟页码。</p>
+<p>发言人   38:45<br>Now the page table, the beginning of the page table is pointed to by this page table based register on Intel systems. It’s called CR 3 control register 3, but this register contains the physical address of the page table in memory, the beginning of that. And so when the CPU presents a virtual page, a virtual address to the MMU, it takes the virtual page number and uses that as an index into the page table. And then, and that identifies the page table entry, which contains, if this is mapped into memory, it contains the physical address of the corresponding physical page. So the whole purpose of a dress translation is to come up.<br>现在是页表，页表的开头在英特尔系统上由基于页表的寄存器指向。它被称为cr3控制寄存器3，但这个寄存器包含内存中页表的物理地址，它的开头。因此，当CPU向MMU提供虚拟页 (虚拟地址) 时，它会获取虚拟页码，并将其作为页表的索引。然后，它标识页表条目，如果该条目映射到内存中，则它包含相应物理页面的物理地址。所以一个服装翻译的目的就是要出现。</p>
+<p>发言人   39:41<br>You’re given a virtual address, and you want to come up with a corresponding physical address. So the physical address, the physical page number portion of the physical address comes out of the page table entry. And this is interesting. The physical page offset portion of the physical address comes out of the virtual page offset, and those bits are identical. So now you should convince yourself that this is true, right? The offset in a virtual block is going to be the same as the offset in a physical block. They’re the same size blocks. And.<br>你会得到一个虚拟地址，并且你想要得到一个相应的物理地址。因此，物理地址，物理地址的物理页码部分来自页表条目。这很有趣。物理地址的物理页面偏移部分来自虚拟页面偏移，并且这些位相同。所以现在你应该说服自己这是真的，对吗？虚拟块中的偏移量将与物理块中的偏移量相同。它们是相同大小的方块。而且。</p>
+<p>发言人   40:28<br>You can also see why this virtual page number identifies the.<br>您还可以看到为什么此虚拟页面编号标识了。</p>
+<p>发言人   40:36<br>Page number in the page table. So imagine a virtual address that’s all zeros, all zeros. So it’s virtual address 0. And now that will have a virtual page number of 0, and the byte at that address will be at offset zero. Now increment by one, virtual address 1, so that’ll be an offset of one, and it’ll be in the same virtual page of 0. Now keep incrementing until all the all of the bits in the virtual page off set are ones and the virtual page number is 0. So this is the last byte in that virtual page 0. Now increment one more time. The 1 b carries over to the virtual page number.<br>在页表中的页码。因此，想象一个全零的虚拟地址。所以它是虚拟地址0。现在它将有一个虚拟页码为0，并且该地址的字节将偏移零。现在虚拟地址1递增，这将是偏移量1，并且它将在同一个虚拟页面0中。现在不断递增，直到虚拟页面离开集合中的所有位都是一，虚拟页面编号为0。所以这是虚拟页面0中的最后一个字节。现在再递增一次。1 b会延续到虚拟页面编号。</p>
+<p>发言人   41:31<br>So now we go to the next virtual page, and it’s at an offset of 0. So can you see it’s sort of obvious when you think about it like that, why we can just take these bits after the virtual page offset and use them to uniquely identify what virtual page we’re working with.<br>所以现在我们转到下一个虚拟页面，它的偏移量为0。所以，当你这样思考时，你能发现这一点很明显吗？为什么我们可以在虚拟页面偏移量之后取这些位并使用它们来唯一地标识我们正在使用的虚拟页面。</p>
+<p>发言人   41:54<br>Okay, so let’s see how a hip works in this system in more detail. So our system, our CPU, sends a virtual address to the MMU as a result of executing a move instruction or call or return or any kind of control transfer the MMU. Looks up the Pte so it fetches the Pte from the page table stored in memory. So this is actually going off the chip onto memory into this Pte stored memory. It gets the it, fetches the Pte, extracts the, and uses that Pte to construct the physical address, and then it sends that physical address to the cache and memory system, which eventually results in the data being returned back to the CPU. So even for a hit, we still have memory references because we have to fetch that that page table entry.<br>好的，让我们更详细地看看髋关节在这个系统中是如何工作的。因此，我们的系统，我们的CPU，在执行移动指令、调用、返回或任何类型的控制转移MMU时，会向MMU发送一个虚拟地址。查找Pte，以便从存储在内存中的页表中获取Pte。所以这实际上是从芯片到内存进入这个Pte存储内存。它获取它，提取Pte，提取并使用该Pte构建物理地址，然后将该物理地址发送到缓存和内存系统，这最终导致数据被返回到CPU。所以即使点击一下，我们仍然有内存引用，因为我们必须获取那个页表条目。</p>
+<p>发言人   43:00<br>Now, a myth is, in this parlance, is called a page fault. So in this case, the same thing happens as before, that the CPU sends the virtual address to the MMU. The MMU fetches the Pte from memory. But then when the MMU looks at the Pte, it sees that there’s either an invalid valid bit or a zero valid bit, or the. It’s indicated that the data is stored on disk. And so in that case.<br>现在，一个神话，用这种说法来说，被称为页面错误。所以在这种情况下，同样的事情发生了，CPU将虚拟地址发送给MMU。MMU从内存中获取Pte。但是当MMU查看Pte时，它会看到有一个无效的有效位或零有效位，或者。这表明数据存储在磁盘上。所以在这种情况下。</p>
+<p>发言人   43:36<br>The MMU triggers a page fault exception which transfers control to this page fault handler. The handler identifies the victim if it’s been modified, copies it out to disk, then it fetches the new page from disk into memory and up through the cache hierarchy. And then it causes that. Then the handler returns to the process. And when a handler for a fault returns, it causes the faulting instruction to re executed. So now the move instruction that faulted it re executee s, but this time there’s a page hit.<br>MMU会触发一个页面错误异常，该异常会将控制权转移给这个页面错误处理程序。处理程序识别受害者 (如果它已被修改)，将其复制到磁盘，然后将新页面从磁盘提取到内存中，并通过缓存层次结构向上缓存。然后它导致了这一点。然后处理器返回到进程。当错误的处理程序返回时，它会导致错误指令重新执行。所以现在执行错误的移动指令，但这次有一个页面点击。</p>
+<p>发言人   44:30<br>Now, you may be interested in how the cache is integrated into all of this. So the MMU fetches page table entries. So it passes page table addresses to the cache. And if those myths, those go to memory, the memory returns those page table entries to the cache and then ultimately to the MMU. The MMU constructs that physical address, and then it sends that physical address to the cache. With caching, The way we’ve been caching is done using physical addresses. In this case, it’s also possible to construct caches that work with virtual addresses. But yes.<br>现在，您可能对缓存如何集成到所有这些感兴趣。因此MMU会获取页表条目。所以它将页表地址传递给缓存。如果这些神话进入内存，内存会将这些页表条目返回到缓存，最终返回到MMU。MMU构造该物理地址，然后将该物理地址发送到缓存。使用缓存，我们缓存的方式是使用物理地址完成的。在这种情况下，也可以构建与虚拟地址一起工作的缓存。但是是的。</p>
+<p>发言人   45:27<br>Yeah, we’ll get into that. So the question is, how is the virtual address space implemented on disk? And what it actually does? It does a much more efficient thing than the sort of abstract model that I described. So most pages, there’s an option when you allocate a new virtual memory page, you can allocate it so that it’s all zeros. So there’s a special, you can say want, I want to allocate a page of all zeros. In that case, that page doesn’t need to ever get stored on disk, it’s just the memory, it’s as though it was created on disk and then loaded into memory. So those pages that are all zeros don’t exist on disk when pages are modified, it’s a.<br>是的，我们会讨论这个问题的。所以问题是，如何在磁盘上实现虚拟地址空间？它实际上做了什么？它比我所描述的那种抽象模型更有效。所以大多数页面，当你分配一个新的虚拟内存页面时，有一个选项，你可以分配它，使它全部为零。所以有一个特殊的，你可以说想要，我想分配一个全零的页面。在这种情况下，该页面不需要存储在磁盘上，它只是内存，就好像它是在磁盘上创建的，然后加载到内存中。因此，当页面被修改时，那些全零的页面在磁盘上不存在，这是一个。</p>
+<p>发言人   46:17<br>Little more pages can be mapped to particular files. For example, when we load an Elf binary, the pages that correspond to the code are actually mapped to the to the bytes in the binary that contain the code, so that when you miss on that page, it brings in those code pages. So pages can be mapped to user level files on disk or not. They can be anonymous and not mapped. So if they’re mapped to user level, if they’re mapped to user level files and you write to a page, then it’ll get written back to that, to the page that it’s mapped to. If it’s not mapped to any page, it’s stored in an area called the swap area or the swap file.<br>可以将更多页面映射到特定文件。例如，当我们加载一个Elf二进制文件时，与代码对应的页面实际上被映射到包含代码的二进制文件中的字节，这样当您错过该页面时，它会带来那些代码页。所以页面可以映射到磁盘上的用户级文件，也可以不映射。它们可以是匿名的，不会被映射。因此，如果它们被映射到用户级别，如果它们被映射到用户级别文件并且您写入到页面，那么它将被写回该页面，到它被映射到的页面。如果它没有映射到任何页面，它将存储在称为交换区域或交换文件的区域中。</p>
+<p>发言人   47:21<br>Oh yeah, so the question is, when you load a page from disk into memory, does it also get cached in the cache memory hierarchy? And the answer is yes. So if you load an entire page, that page will be broken up into blocks, 64 B blocks, and loaded into the cache. So everything that you fetch from the cache goes through the, from the memory, it goes through the CA hierarchy.<br>是的，所以问题是，当你把一个页面从磁盘加载到内存中时，它是否也会被缓存在缓存内存层次结构中？答案是肯定的。因此，如果您加载整个页面，该页面将被分成64个块并加载到缓存中。因此，您从缓存中获取的所有内容都要经过，从内存中经过CA层次结构。</p>
+<p>发言人   47:55<br>Okay, so? I claim that. Virtual memory works because of locality, and that’s true. But if we still had to fetch, if every time we had a myth, we still had to go to memory, it would be too inefficient.<br>好吧，所以呢？我这么说。虚拟内存的工作原理是由于局部性，这是事实。但是如果我们仍然必须获取，如果每次我们都有一个神话，我们仍然必须去记忆，那就太低效了。</p>
+<p>发言人   48:16<br>The MMU speeds up this translation process by caching page table entries in a hardware cache within the MMU called the translation lookaside buffer, or TLB. So the TLB is a hardware cache that caches Ptes page table entries and it contains it contains a cache of the most recently. It’s just like any other cache that it contains a cache of the most recently used page table entries.<br>MMU通过将页表条目缓存在称为翻译后备缓冲区 (TLB) 的MMU中的硬件缓存中，来加速这个翻译过程。因此，TLB是一个硬件缓存，用于缓存Ptes页表条目，并包含最近的缓存。它就像任何其他缓存一样，包含最近使用的页表条目的缓存。</p>
+<p>发言人   48:52<br>So the MMU, remember the unique part of virtual address that defines a virtual page is the virtual page number of bits. So the TLB uses the v.p.n. portion of the virtual address to access it. And so that just like any other set, it has ad set of set index bits, which are just determined by how many, how many entries, or how many sets the TLB has. And it has a tag for the remaining bits to disambiguate any and to disambiguate any cache lines or Pts that map to the same set. So the Vpn or the TLB I TLB index maps to the particular. And then it TLB uses the TLB TT LBT bit.<br>所以MMU，记住虚拟地址中定义虚拟页面的唯一部分是虚拟页面的位数。因此TLB使用v.p.n。 虚拟地址的一部分来访问它。因此，就像任何其他集合一样，它有一组索引位的广告集，这些位仅由TLB有多少个条目或多少个集合决定。并且它有一个标记，用于剩余的位可以消除歧义，并消除映射到同一集合的任何缓存行或副本的歧义。因此，Vpn或TLB I TLB索引映射到特定的。然后它使用TLB电汇LBT位。</p>
+<p>发言人   49:55<br>To disambiguate and determine if the Pte that it’s looking for is really stored in the cache.<br>以消除歧义并确定它要寻找的个人资料是否确实存储在缓存中。</p>
+<p>发言人   50:04<br>So the way this works is CPU generates a virtual address. It goes through the MMU. The MMU, instead of looking in memory directly going to the page table entry, it first asks the Tob if it has that, it sends it the Vpn and says, do you have this virtual page, the Pte for this virtual page? And if it does, the TLB returns a hit and it returns that page table entry, which the MMU can then use to construct the physical address to send to the cache and memory system eventually that results in the data being sent back.<br>这样的工作方式是CPU生成虚拟地址。它通过MMU。MMU，而不是直接在内存中查看页表条目，它首先询问Tob是否有那个，它向它发送Vpn并说，你有这个虚拟页面吗，这个虚拟页面的Pte？如果是，TLB会返回一个命中，并返回该页表条目，然后MMU可以使用该条目构建物理地址以发送到缓存和内存系统，最终导致数据被发送回。</p>
+<p>发言人   50:42<br>Now when you have a miss, then there’s one the MMU checks with the TLB for the Pte, it misses. So then the MMU has to go to memory just like before. So this is, and then everything is the same, the memory returns the Pte. To the MMU, which stashes it in the TLB. And just like before, if there’s no room in the. If a Pte has been modified, then it has to be written back out just like any other cache, and eventually the MMU uses that to construct a physical address and then the data gets sent back.<br>现在当你错过了一个，那么有一个MMU会用TLB检查Pte，它错过了。那么MMU必须像以前一样进入内存。所以这是，然后一切都是一样的，内存返回Pte。调至MMU，将其存放在TLB中。就像以前一样，如果里面没有空间。如果一个Pte被修改了，那么它必须像任何其他缓存一样被写回来，最终MMU使用它来构建一个物理地址，然后数据被发送回来。</p>
+<p>发言人   51:27<br>Okay, if you’ve been paying attention, unlike a couple people. If you’ve been paying attention, you’re going to be very concerned about the size of these page tables that, I mean, we’ve got 4K bytes, supposedly, we have 4K byte pages, and our effective address space is 48 b, like it is with an x 8 6 64 system then. And we have an 8 B, 8 B page table entry. We’d need a page table, 512 GB address space, 2 to the 48th bytes divided by 2 to the 12 B per page. So that’s the number of page table entries that we need. And then the size of each page table entry is 8 B, so we’d need almost a terabyte of.<br>好吧，如果你一直在关注，不像几个人。如果你一直在关注，你会非常关注这些页表的大小，我的意思是，我们有4k字节的页面，据说我们有4k字节的页面，我们的有效地址空间是48 b。就像使用x8 6 64系统一样。我们有一个8 B，8 B页表条目。我们需要一个页表，512 GB地址空间，每页2的第48个字节除以2的第12个字节。这就是我们需要的页表条目的数量。每个页表条目的大小为8 B，因此我们需要近1 TB的大小。</p>
+<p>发言人   52:28<br>DRAM just to hold the page table so that obviously it’s not going to work. And it’s obviously not how their page tables are really implemented. So the solution is to use a hierarchy of page tables. So so if we have a two level page table, there’s a top first level page table called the level 1 table, which is always in memory. It’s never paged out. And then there’s a sequence of level 2 page tables, and they’re all the same size, right? And the first level 1 label points to the beginning of the first level 2 table. So it contains a physical address that points to the base. The second level 1 table points to the second level 2 table, and so on.<br>DRAM只是为了保持页表，这样显然它不会起作用。这显然不是他们的页表真正实现的方式。因此，解决方案是使用页表的层次结构。所以，如果我们有一个二级页表，有一个称为一级表的顶层第一级页表，它总是在内存中。它从未被分页。然后是一系列2级页表，它们的大小都一样，对吧？并且第一个1级标签指向第一个2级表格的开头。所以它包含一个指向基础的物理地址。第二个级别1表指向第二个级别2表，依此类推。</p>
+<p>发言人   53:27<br>So if we have this kind of system, you remember, most of the virtual address space is unused. So if we have this kind of system, we can avoid creating many unnecessary page tables.<br>所以如果我们有这种系统，你记得，大部分虚拟地址空间都是未使用的。因此，如果我们有这种系统，我们可以避免创建许多不必要的页表。</p>
+<p>发言人   53:41<br>So imagine if we have a two level hierarchy. So let’s look at our virtual address space in this example, and what I’ve allocated 2K pages for code and data for this program. And then there’s 6K unallocated pages and the stack. Then there’s a page that’s allocated for the stack. I’m sorry, there’s 1024 pages allocated for the stack, most of which are I’m sorry, there’s a region of memory that that’s the size of 1000 and twenty-fourth-place, but most of them are unallocated and I’ve only allocated one for the top of the stack. So given this layout for my process, I only need three level two page tables. The first page table covers this region of my code and data, the first 1024 pages, the next page table covers the remaining thousand 24 pages, so these two level 2 page tables cover all of the code and data. And similarly, what I need for my stack, I just need one page table and it only has one valid Pte, it’s the very last one, and then I have a single level 1 table that points to the three level two tables.<br>想象一下，如果我们有两个层次结构。让我们看看这个例子中的虚拟地址空间，以及我为这个程序分配的2k页面的代码和数据。然后有6k未分配的页面和堆栈。然后有一个为堆栈分配的页面。对不起，为堆栈分配了1024个页面，其中大部分是对不起，有一个内存区域的大小为1000和第二十四位，但其中大部分是未分配的，我只为堆栈顶部分配了一个。因此，鉴于我的流程布局，我只需要三个二级页表。第一页桌布我的代码和数据的这个区域，前1024页，下一页桌布剩下的一千24页，所以这两个2级页表覆盖了所有的代码和数据。同样地，我需要的是我的堆栈，我只需要one page表，它只有一个有效的Pte，它是最后一个，然后我有一个指向三个二级表的单个1级表。</p>
+<p>发言人   55:21<br>So with four page tables I’ve covered the entire virtual address space.<br>所以我用四个页表覆盖了整个虚拟地址空间。</p>
+<p>发言人   55:28<br>Now the way that the MMU uses these multiple page tables to do a dress translation is as follows. Again, we have the virtual page offset, which consists of the first p bits and then the v.p.n., the remaining bits, the Vpn for AK level page table are broken up into K sub Vpn’s and each is the same size. And so now in this system, the upper Vpn one, which consists of the uppermost bits of the Vpn, are an offset into the level 1 table, which is, as before, is pointed to by the page table base register. So VP 1 is the index into the level 1 page table.<br>现在MMU使用这些多个页表进行着装翻译的方式如下。再次强调，我们有虚拟页面偏移量，它由前p位和v.p.n.组成，剩余的位，AK级页表的Vpn被分成K个子Vpn，每个子Vpn的大小相同。因此，在这个系统中，由Vpn的最上面的位组成的上层Vpn是级别1表的偏移量，与之前一样，该表由页台脚寄存器指向。所以VP 1是1级页表的索引。</p>
+<p>发言人   56:26<br>Remember, the level 1 page table points to the address of the level 2 an entry, a Pte, and the level 1 table points to the address of some level 2 page table or contains the address of some level 2 page table. So that points to the base of this level 2 page table, and then the v.p.n. 2 b are used as an index into that level 2 table and so on. So eventually you get at a Pte in the level K -1 table points to the beginning of the level K page table, and Vpn K points to an offset within that table, which finally contains the physical address of the page that we want to access. And then that physical address is used to form the PPN portion of the physical address. And just like before, the virtual page off set is just copied directly unchanged to the physical page offset.<br>请记住，1级页表指向2级页表的地址，1级页表指向某些2级页表的地址或包含某些2级页表的地址。这样就指向这个2级页表的基础，然后是v.p.n。 2 b被用作该2级表的索引，依此类推。因此，最终您在级别K -1表中获得的Pte指向级别K页表的开头，而Vpn K指向该表中的偏移量，最终包含我们要访问的页面的物理地址。然后，该物理地址被用于形成物理地址的PPN部分。就像以前一样，虚拟页面离开集合直接复制，保持不变到物理页面偏移量。</p>
+<p>发言人   57:32<br>So is that clear to everybody? Yes, question?<br>那么每个人都清楚了吗？是的，有问题吗？</p>
+<p>发言人   57:40<br>More than? Let’s see, is it always a power of two? Yes, at, and it’s defined by the architecture. So for Intel, it’s a 4 level system. Now, why would it be? And then will it always be less than 6?<br>超过？让我们看看，它总是2的幂吗？是的，在，它是由架构定义的。所以对于英特尔来说，它是一个4级系统。现在，为什么会这样呢？那么它会一直小于6吗？</p>
+<p>发言人   58:07<br>If it’s a 64 b system, yeah, theres only. The block size is fixed. So there’s 12 b here, 2 to the 12th is 4K, so the remaining, you actually have 48 b to play with. The remaining 48 b could, that’s right. So if it was 4, if it was 8, it would be 6. So you’re right. In this scheme, it could be a most 6. Turns out in practice it’s set at 4.<br>如果它是一个64 b系统，是的，只有。区块大小是固定的。这里有12个b，2到12个是4k，所以剩下的，你实际上有48个b可以玩。剩下的48 b可以，没错。所以如果是4，如果是8，那就是6。所以你是对的。在这个计划中，它可能是最多6。结果在实践中它被设定为4。</p>
+<p>发言人   58:44<br>There was a question over here. Point of view, like how does this save you any space as? Have it like this multilevel system. Oh, okay, so the question is. Yeah, the question is, how does it save you space? So the reason it saves you space is you go back to this other figure. Maybe I didn’t explain this well enough.<br>这里有一个问题。观点，这如何节省你的空间？像这样的多层次系统。好吧，问题是。是的，问题是，它如何节省空间？所以它节省空间的原因是你回到另一个人物。也许我没有解释得足够好。</p>
+<p>发言人   59:20<br>So you see this?<br>所以你看到这个了吗？</p>
+<p>发言人   59:29<br>So let’s say we wanted to map this virtual address space with a single page table. We would need a Pte for every page within that address, whether it was used or not.<br>所以假设我们想用一个页表来映射这个虚拟地址空间。我们需要为该地址中的每个页面提供一个Pte，无论它是否被使用。</p>
+<p>发言人   59:43<br>It goes back if we had a 48 b. Address space. We’d enough. We’d need a page table entry for each page, virtual page in that address space. Okay, whether that page was used or not. So I mean, think about it, 2 to the 48th is a x, several, several exabytes. We’d need a page table that would have an entry for each virtual page in that two of the 48th bit address space. And most of those pages, by far, the vast majority, would never, ever be used.<br>如果我们有48个b，那就回去了。地址空间。我们已经足够了。我们需要为每个页面创建一个页表条目，虚拟页面在该地址空间中。好的，不管那个页面是否被使用。所以我的意思是，想想看，2的48号是x，几个，几个艾字节。我们需要一个页表，该页表将在第48位地址空间中的每个虚拟页面有一个条目。大部分这些页面，到目前为止，绝大多数，永远不会被使用。</p>
+<p>发言人   01:00:27<br>So that’s where the waste comes in here with a multilevel page system with this multiply Itl scheme, you only need to generate, in this case, these level 2. If it’s a 2 level system, you only need to generate level two page tables, enough level 2 pages to cover the portion of the virtual address space that you’re actually using and that portion of the virtual address space that you’re not using, like this gap right here.<br>这就是浪费的地方，这里有一个多级页面系统，使用这个乘法Itl方案，你只需要生成这些级别2。如果它是一个2级系统，你只需要生成2级页表，足够的2级页面来覆盖你实际使用的虚拟地址空间部分和你不使用的虚拟地址空间部分，就像这里的这个差距。</p>
+<p>发言人   01:00:55<br>There’s no need to have a page table. Is that clear? That’s a really good, important question. You look unconvinced. You need 2 to 7 or no old GE over. I like to allocate one of those if you need. Well, yeah. You still need a page table that has.<br>没有必要有一个页表。明白了吗？这是一个非常好的、重要的问题。你看起来不服气。你需要2到7个或者没有旧的GE。如果您需要，我喜欢分配其中一个。嗯，是的。你仍然需要一个具有的页表。</p>
+<p>发言人   01:01:26<br>Let’s see, in this case, there’s 4K byte pages, 4 B Pte, there’s 1K, you have 1K Ptes in this. So you still need, you still need a level 1 page table that has 1K Ptes, but those are only 8 B, right? I mean, so you still, you still need to have space because you don’t know, you’re not sure which of these, which reason of the address space you’re going to need to cover. And it’s the same thing for here. In this case, in these two pts, these first two level two page tables, their portion of the address space was actually all being used. So each one of these Ptes at level 2 had to be initialized and used. But in this portion of the address space that contained the stack, this third level 2 page table has most of its Ptes are null. You still have to allocate space for them, but they’re null.<br>让我们看看，在这种情况下，有4k字节的页面，4 b字节的，有1k，你有1k字节。所以你仍然需要，你仍然需要一个有1k Ptes的1级页表，但这些只有8 b，对吗？我的意思是，你仍然需要有空间，因为你不知道，你不确定这些中的哪一个，你需要覆盖哪个地址空间的原因。对于这里来说也是一样的。在这种情况下，在这两个项目中，这些前两个级别的页表，它们的地址空间部分实际上都被使用了。因此，每个级别2的Ptes都必须被初始化并使用。但是在包含堆栈的地址空间的这一部分，这个第三级2页表的大部分Ptes都是空的。你仍然需要为它们分配空间，但它们是空的。</p>
+<p>发言人   01:02:39<br>Okay, that’s a really good question. It’s important, I hope that’s clear. Any other questions before we go on? Sorry.<br>好的，这是一个非常好的问题。这很重要，我希望这很清楚。在我们继续之前，还有其他问题吗？对不起。</p>
+<p>发言人   01:03:00<br>Address each level of the page entry or each level of the page tables. It just looks at part of the. Exactly, just like here with the MMU members doing all of this. This is all hardware logic. So, and the number of page tables levels is defined by the architecture. So the MMU takes the virtual address that’s presented to it, and it uses a portion, a subset of those bits to access each each page table. So it’s just like, did I answer your question? So it’s just like, before the level k Vpn k is used to compute an index into the level k page table, yes?<br>对页面条目或页表的每一层进行寻址。它只看一部分。就像这里的MMU成员做这一切一样。这都是硬件逻辑。因此，页表级别的数量由架构定义。因此，MMU获取提供给它的虚拟地址，并使用这些位的一部分来访问每个页表。所以就像，我回答你的问题了吗？所以这就像在使用级别k Vpn k计算索引到级别k页表之前，是吗？</p>
+<p>发言人   01:04:00<br>Indices arranged right to left on the diagram line. The question is, why are the indices arranged right to left? On which diagram? Oh, these are the bits. This is the least significant bit. It’s always bit 0. Yeah, that’s a good question. So the question was, why do, in this diagram, why are these bits labeled right to left starting at 0? And the answer is, is that we’re indicating the bit position, so 0 is the least significant bit, and n -1 is the most significant bit. Yes, question?<br>索引在图表线上从右到左排列。问题是，为什么指数是从右到左排列的？在哪个图表上？哦，这些是比特。这是最不重要的位。它总是位0。是的，这是个好问题。所以问题是，在这个图表中，为什么这些位从右到左从0开始标记？答案是，我们指示的是位位置，所以0是最不重要的位，而n -1是最重要的位。是的，有问题吗？</p>
+<p>发言人   01:04:51<br>Yeah, so the question is, what’s the overhead involved in these when you have these multiple levels?<br>是的，所以问题是，当你有这些多个级别时，这些涉及的开销是什么？</p>
+<p>发言人   01:04:56<br>Now, are you talking about overhead to? Publicly used stake or they? Yeah, well, so there’s clearly, if you don’t get TLB hits, it would be a lot of overhead because it would be you would be fetching Ptes from multiple page tables from memory. So that, but because of locality, the chances are almost the chances this level 1 table covers the entire address space. So it’s always going to be in the Tob.<br>现在，你是在谈论头顶上的事情吗？公开使用的股份还是他们？是的，所以很明显，如果你没有得到TLB的点击，这将是一个很大的开销，因为你将从内存中的多个页表中获取Ptes。因此，由于位置的关系，这个级别1几乎有机会桌布整个地址空间。所以它总是会出现在Tob中。</p>
+<p>发言人   01:05:38<br>These level two tables are covering a huge swath of the address space, so chances are they’re going to be in the TLB 2. So as long as your program has reasonable locality, most of these lookups are going to hit in the tolb. So it turns out that the overhead with reasonably written programs, it’s negligible. But it’s a very important consideration. Maybe that speaks against increasing at some point. If you had too many page tables, you might increase the probability of misses in the TLB. So it’s probably something very carefully considered. Okay, any other questions?<br>这些二级表覆盖了大量的地址空间，因此它们很可能会在TLB 2中。因此，只要您的程序具有合理的局部性，大多数这些查找都将在tolb中进行。因此，事实证明，合理编写程序的开销是可以忽略不计的。但这是一个非常重要的考虑因素。也许这在某个时候反对增长。如果您有太多的页表，可能会增加TLB中错过的可能性。所以这可能是经过非常仔细考虑的事情。好的，还有其他问题吗？</p>
+<p>发言人   01:06:39<br>The segmented linear address were real physical. Oh boy, the question was, how does segmentation fit into this? And we’re not going to go there.<br>分段线性地址是真实的物理地址。哦，天哪，问题是，段如何适应这一点？我们不会去那里。</p>
+<p>发言人   01:06:54<br>So in earlier Intel systems. Such as the actually the first Intel System I program was a 286. So the 286, no, it was the 8086. Anyway, earlier Intel systems had 16 b addresses, which is tiny. It’s only two to the 16th for your address space. And so as a hack to try to increase the effective size of this address space, they introduced the notion of segmentation. And so 4 b, there were register segment registers that contained 4 b. That. Could be applied to the address?<br>所以在早期的英特尔系统中。例如，实际上第一个英特尔系统I程序是286。所以286，不，它是8086。无论如何，早期的英特尔系统有16个b地址，这是很小的。您的地址空间只有2的16分。因此，作为一种增加地址空间有效大小的黑客方法，他们引入了段的概念。所以4 b，有包含4 b的寄存器段寄存器。这个。可以应用于该地址吗？</p>
+<p>发言人   01:07:43<br>So an address was the combination of the segment? No, it’s more than. Yeah, the segment formed the address then was a combination of the segment bits plus the address. So you could use the segment bits to create an offset. So it was effectively a 2 to the 20th, 20 b address space. But you can only address, you can only access it in 2 to the 16 chunks. The segment would determine an into an offset into the. This 20 b address space. And then from that, you could address 16 b.<br>地址是段的组合吗？不，不止如此。是的，段构成了地址，然后是段位加上地址的组合。所以你可以使用段位来创建一个偏移量。所以它实际上是一个2的20 b的地址空间。但是你只能寻址，你只能在2到16个块中访问它。段将决定一个到的偏移量。这个20 b的地址空间。然后从中你可以称呼16 b。</p>
+<p>发言人   01:08:31<br>So it was this very unsatisfying, devilishly hard to program thing because you can only access 16 b chunks at a time. So anyway, we’re not going to a few years later, they came to their senses and just created a real virtual memory system with linear address spaces. But you know, really there.<br>所以这是一个非常不令人满意的，非常难以编程的事情，因为你一次只能访问16个块。所以无论如何，我们不会在几年后，他们意识到并创建了一个具有线性地址空间的真正虚拟内存系统。但你知道，真的在那里。</p>
+<p>发言人   01:09:06<br>Yeah, I don’t know. We’re just. I’m not even sure if they do address translation on those, actually. So I’m not sure. But you really don’t want to go there. Yeah, oh, it does, it does. So the question is, it doesn’t exist anymore. Everything Intel’s been incredibly good about maintaining backward compatibility, so that stuff’s all in there, but there’s a mode bit. When you boot your system up, you set a bit that says, I want a linear address space. Okay, any other question?<br>是的，我不知道。我们只是。实际上，我甚至不确定他们是否会在这些问题上发表翻译。所以我不确定。但你真的不想去那里。是的，是的，是的。所以问题是，它已经不存在了。一切都是英特尔在保持向后兼容性方面非常出色，所以这些东西都在那里，但有一个模式位。当你启动系统时，你会设置一点说，我想要一个线性地址空间。好的，还有其他问题吗？</p>
+<p>发言人   01:10:00<br>Oh no Vpn two is the offset. Okay, so the question is, why do we care about Vpn two? So it points to the level 2 table. So what gives you the beginning of the level 2 table is the p.t. entry in the level 1 table. So the level 1 table points to the beginning of that level 2 table, and Vpn two gives you the offset into that level 2 table. So it finds the address by taking the base address and then Vpn two times the Pte size. Okay, good, good. Any other questions?<br>哦，没有Vpn两个是偏移量。好的，问题是，我们为什么关心Vpn 2？所以它指向2级表。所以给你第2级表格开头的是p.t. 1级表格中的条目。所以级别1表指向该级别2表的开头，而Vpn 2为您提供该级别2表的偏移量。所以它通过获取基地址，然后获取两倍于Pte大小的Vpn来找到地址。好的，好的，好的。还有什么问题吗？</p>
+<p>发言人   01:10:54<br>Okay, well that’ll do it for today. Next week, or on Thursday, we’ll look at how virtual memory is implemented in real systems and in Linux.<br>好的，今天就到这里。下周或周四，我们将看看虚拟内存是如何在实际系统和Linux中实现的。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 018-Virtual Memory, Concepts</div>
+      <div>http://example.com/2025/10/12/15213-018/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-019/" title="深入理解计算机系统 019-Virtual Memory, Systems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 019-Virtual Memory, Systems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-017/" title="深入理解计算机系统 017-System-Level I/O">
+                        <span class="hidden-mobile">深入理解计算机系统 017-System-Level I/O</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

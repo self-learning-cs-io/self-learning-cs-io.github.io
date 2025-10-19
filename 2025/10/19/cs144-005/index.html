@@ -1,0 +1,641 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00The four layer model of the Internet takes a stream of data from the application layer. The transport layer breaks the stream into segments of data that it reliably delivers to an applicati">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 005 The life of a Packet">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-005/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00The four layer model of the Internet takes a stream of data from the application layer. The transport layer breaks the stream into segments of data that it reliably delivers to an applicati">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:04.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:44:43.726Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 005 The life of a Packet - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 005 The life of a Packet"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 005 The life of a Packet</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>The four layer model of the Internet takes a stream of data from the application layer. The transport layer breaks the stream into segments of data that it reliably delivers to an application running on another computer. The transport layer sends these segments as network layer packets, which the network layer delivers to the other computer. Let’s see what this looks like in practice. The actual packets that a web browser and server send and receive.<br>互联网的四层模型从应用层获取数据流。传输层将流分解成数据段，并将其可靠地传递给在另一台计算机上运行的应用程序。传输层将这些段作为网络层数据包发送，然后由网络层将其传送到另一台计算机。让我们看看这在实践中是什么样子的。web浏览器和服务器发送和接收的实际数据包。</p>
+<p>发言人   00:30<br>First, let’s look at the transport layer. Almost all web traffic is over TCP the transport control protocol.<br>首先，让我们看一下传输层。几乎所有的web流量都是通过TCP传输控制协议实现的。</p>
+<p>发言人   00:39<br>In its typical operation, there’s a client and a server. A server listens for connection requests to open a connection, a client issues a connection request, which the server responds to. I won’t go into the details of exactly how this works, but it turns out this exchange takes three messages, something called the three handshake. The first step of the message, it’s when the client sends a synchronized message, the server often called a sin. The second step is when the server responds with a synchronized message that also acknowledges the client synchronize or a synchronize and acknowledge message, often called a sin act. The third and final step is when the client responds by acknowledging the service synchronize, often called an act. So often the three handshake is described as synchronize, synchronize, and acknowledge acknowledge or sin synacmy.<br>在其典型操作中，有一个客户端和一个服务器。服务器监听连接请求以打开连接，客户端发出连接请求，服务器响应该请求。我不会详细说明这是如何工作的，但事实证明，这种交换需要三个消息，称为三个握手。消息的第一步是客户端发送同步消息时，服务器通常称为sin。第二步是服务器用同步消息或同步并确认消息 (通常称为sin act) 进行响应，该消息也确认客户端同步。第三个也是最后一个步骤是客户端通过确认服务同步来响应，通常称为行为。三个握手通常被描述为同步、同步和确认或同步。</p>
+<p>发言人   01:42<br>Recall that the network layer is responsible for delivering packets to computers. The transport layer is responsible for delivering data to applications. From the perspective of the network layer, packets sent to different applications on the same computer look the same. This means that to open a TCP stream to another program, we need two addresses. The first, an Internet Protocol address, is the address the network layer uses deliver packets to the computer. The second, the TCP port, tells the computer software which application to deliver. Data to.<br>回想一下，网络层负责将数据包传送到计算机。传输层负责将数据传送到应用程序。从网络层的角度来看，发送到同一台计算机上的不同应用程序的数据包看起来是一样的。这意味着要打开一个TCP流到另一个程序，我们需要两个地址。第一个地址是互联网协议地址，是网络层使用的向计算机发送数据包的地址。第二个端口是TCP端口，告诉计算机软件要提供哪个应用程序。数据。</p>
+<p>发言人   02:22<br>Web servers usually run on TCP port 80. So when we open a connection to a web server, we send IP packets to the computer running the web server, whose destination address is that computer’s IP address. Those IP packets have TCP segments, segments whose destination port is 80. But how do those IP packets get to their destination? We don’t have a direct wire connecting my client to the server. Instead, my client is connected to an intermediate computer, a router. This router is itself connected to other routers.<br>Web服务器通常在TCP端口80上运行。因此，当我们打开与web服务器的连接时，我们会向运行web服务器的计算机发送IP数据包，其目标地址是该计算机的IP地址。这些IP数据包具有TCP段，目标端口为80的段。但是这些IP数据包是如何到达目的地的呢？我们没有直接将我的客户端连接到服务器的电线。相反，我的客户连接到一台中间计算机，一台路由器。此路由器本身连接到其他路由器。</p>
+<p>发言人   02:58<br>IP packets between the client and the server take many hops, where a hop is a link connecting two routers. Since my client is on a WiFi network, the first hop, the first hop is wireless to the WiFi access point. The access point has a wired connection to the broader inet, so it forwards my packets, my client’s packets along this wired hop.<br>客户端和服务器之间的IP数据包经过许多跃点，其中跃点是连接两个路由器的链接。因为我的客户端在WiFi网络上，所以第一跳，第一跳是无线到WiFi接入点的。接入点与更广泛的inet有一个有线连接，因此它沿着这个有线跃点转发我的数据包，我的客户端的数据包。</p>
+<p>发言人   03:23<br>A router can have many links connecting it. As each packet arrives, a router decides which of its links to send it out on. Routers have IP addresses, so it’s also the case that it might not forward a packet, but rather deliver it to its own software. For example, when you log into a router using TCP, the IP packets are destined to the router’s own IP address.<br>一个路由器可以有许多连接它的链路。当每个数据包到达时，路由器决定将其发送到哪个链接。路由器具有IP地址，因此它也可能不会转发数据包，而是将其传递给自己的软件。例如，当您使用TCP登录到路由器时，IP数据包将发送到路由器自己的IP地址。</p>
+<p>发言人   03:49<br>How does a router make this decision? It does so through something called a forwarding table shown here on the right. A forwarding table consists of a set of IP address patterns and the link to send it across for each pattern.<br>路由器是如何做出这个决定的？它通过右侧所示的转发表来实现。转发表由一组IP地址模式以及每个模式的发送链接组成。</p>
+<p>发言人   04:04<br>When a packet arrives, the router checks which forwarding table entries pattern best matches the packet. It forwards the packet along that entries link. Generally, best means the most specific match. I’ll describe how matching works in more detail in the video in longest prefix match, but in this simple example, let’s just consider the default route, the first entry in the table above the default route is the least specific route, it matches every IP address if when a packet arrives, there isn’t a more specific route than the default route, the router will just use the default one. The default route is especially useful in edge networks, say, for example, your Stanford University, and have a router connecting you to the larger internet. Your router will have many specific routes for the IP addresses of Stanford’s networks. Send packets to the engineering school over this link, send packets to the library over that link, But if the destination IP address isn’t Stanford, then the router should send it out to the larger Inet.<br>当数据包到达时，路由器会检查哪个转发表条目模式与该数据包最匹配。它沿着该条目链接转发数据包。一般来说，最佳意味着最具体的匹配。我将在视频中以最长前缀匹配更详细地描述匹配的工作原理，但在这个简单的例子中，让我们只考虑默认路由，默认路由上方表格中的第一个条目是最不具体的路由，如果数据包到达时，它与每个IP地址匹配，没有比默认路由更具体的路由，路由器将只使用默认路由。默认路由在边缘网络中特别有用，例如斯坦福大学，并且有一个路由器将您连接到更大的互联网。您的路由器将有许多针对斯坦福网络IP地址的特定路由。通过此链接向工程学院发送数据包，通过该链接向库发送数据包，但如果目标IP地址不是斯坦福，则路由器应将其发送到较大的Inet。</p>
+<p>发言人   05:10<br>So now let’s look at some IP packets in a real network. I’m going to request a web page from Www dot brown dot Edu. Use a tool called Wireshark to show you all of the packets. We’ll see how my web browser opens a TCP connection to the brown web server using a three way handshake of sin CAC A, then starts issuing httt v get requests, which the server responds to with data.<br>现在让我们看一下真实网络中的一些IP数据包。我将向Www点brown点Edu请求一个网页。使用名为Wireshark的工具显示所有数据包。我们将看到我的web浏览器如何使用sin CAC a的三向握手打开与棕色web服务器的TCP连接，然后开始发出httt v get请求，服务器会用数据响应该请求。</p>
+<p>发言人   05:36<br>Once we’ve seen the exchange of packets between my client and the Brown University web server I’ll use another tool called traceroute to observe the path that these packets take through the internet. So first I’ll start up Wireshark because my computer is using many network applications and sending lots of different packets. I’m going to tell wire shark to only display packets that are TCP segments to the brown server using port 80. This way, we’ll only see the web traffic I’m generating. I’m also going to tell Wireshark to listen on En one, which is the name my Mac gives to my WiFi link layer. As you can see, I have many link layers available, but let’s just look at En one since that’s on how I’m connected to the internet.<br>一旦我们看到我的客户端和布朗大学网络服务器之间的数据包交换，我将使用另一个名为traceroute的工具来观察这些数据包通过互联网的路径。所以首先我会启动Wireshark，因为我的计算机正在使用许多网络应用程序并发送许多不同的数据包。我将告诉wire shark只显示TCP段的数据包到使用80端口的棕色服务器。这样，我们只会看到我正在生成的web流量。我还打算告诉Wireshark在En one上收听，这是我的Mac给我的WiFi链路层取的名字。正如您所看到的，我有许多可用的链接层，但让我们只看一下En，因为这是关于我如何连接到互联网的。</p>
+<p>发言人   06:25<br>Next I’ll open my web browser and request the web page for Brown University’s computer science department. This is where I went as an undergraduate. And so I like to keep up with news in the department. You can see in Wireshark that loading this page involves sending and receiving a lot of packets. Wireshark shows me the timestamp of each packet, the source IP address, the destination IP address, what protocol it uses, its length, and further information.<br>接下来我会打开我的浏览器，请求访问布朗大学计算机科学系的网页。这就是我本科时去过的地方。所以我喜欢跟上部门的新闻。您可以在Wireshark中看到，加载此页面涉及发送和接收大量数据包。Wireshark向我显示每个数据包的时间戳、源IP地址、目标IP地址、它使用的协议、它的长度以及进一步的信息。</p>
+<p>发言人   06:57<br>Let’s look at this first packet. It’s from my computer, whose address is 1 9 2 1 6 8 0 1 0 6, to the Brown CS web server whose address is 1 2 8 dot 1 4 8. Do 3, 2 do 1. It’s going to TCP port 80, the hypertext transfer protocol port on the server, which we can see from the Http field in the info column. The packet is the Sim packet, the first step of the three, a handshake.<br>让我们看看第一个包。它是从我的计算机，地址是1 9 2 1 6 8 0 1 0 6，到地址是1 2 8点1 4 8的棕色CS web服务器。做3，做2，做1。它将前往服务器上的超文本传输协议端口TCP端口80，我们可以从信息列的Http字段中看到。数据包是Sim数据包，三个步骤中的第一步是握手。</p>
+<p>发言人   07:27<br>Look at these first three packets. The first is a Syn from my computer to the web server. The second is a CAC packet from the web server back to my computer. The third is an act from my computer back to the web server. This is the three way handshake. Now the two computers can exchange data. And you can see that the first data packet, it’s an Http request. My computer sends a get request to the web server. The response to this get request is three packets. Wireshark shows the response when it receives the third one shown in the line, whose info is Http slash 1.120.<br>看看这前三个数据包。第一个是从我的计算机到web服务器的同步。第二个是从web服务器返回到我的计算机的一个CAC数据包。第三个是从我的计算机返回到web服务器的行为。这是三次握手。现在这两台计算机可以交换数据了。你可以看到第一个数据包，它是一个Http请求。我的计算机向web服务器发送了一个get请求。对此get请求的响应是三个数据包。Wireshark在收到该行中显示的第三个响应时显示响应，其信息为Http slash 1.120。</p>
+<p>发言人   08:07<br>OK, so here we can see how my requesting a web page from Brown’s computer science server creates a TCP connection to the three way 3 IP packets for the three way handshake, then more packets for the Http request and response. This is how the network looks to the end, hosts the computers as they exchange packets of the network layer.<br>好的，那么在这里我们可以看到我从布朗的计算机科学服务器请求网页如何创建一个TCP连接，该连接与三路3个IP数据包进行三路握手，然后为Http请求和响应创建更多的数据包。这就是网络看起来的样子，它承载着交换网络层数据包的计算机。</p>
+<p>发言人   08:34<br>But how does it look like inside the network layer? What hops these packets take? To see this I’m going to use the second tool, traceroute.<br>但是在网络层里面是什么样子的呢？这些包带什么啤酒花？为了看到这一点，我将使用第二个工具traceroute。</p>
+<p>发言人   08:44<br>Traceroute shows you the hop that packets take to a destination. So we can type traceroute Www dot CS dot brown dot edu to see the path through the internet. I’ll add the dash W flag, which specifies a timeout with a timeout of one second.<br>Traceroute显示数据包到达目标的跃点。所以我们可以输入traceroute Www点CS点brown点edu来查看通过互联网的路径。我将添加dash W标志，它指定一个超时，超时为一秒。</p>
+<p>发言人   09:04<br>The first hub, the packets takee is to my wireless router. So IP address is 1 9 2 do 1 6 8 dot 0 do 1. As you can see from the next top I’m at home, I have a cable modem and my internet provider is Astound. After this packets take another hop to an IP router with IP address 7 4 do 4 dot 0 dot 3. The hop after that is a router in San Francisco, California than several routers in San Jose, SJC for above dot net and San Jose 1 for level 3 dot net.<br>第一个集线器，数据包被发送到我的无线路由器。所以IP地址是1 9 2做1 6 8点0做1。正如你可以从下一个顶部看到的那样，我在家里，我有一个电缆调制解调器，我的互联网服务提供商令人震惊。在此数据包之后，再次跳跃到IP地址为7 4的IP路由器，执行4点0点3。在那之后的跳跃是加利福尼亚州旧金山的路由器，而不是圣何塞的几个路由器，SJC用于上面的点网，圣何塞1用于级别3点网。</p>
+<p>发言人   09:42<br>After San Jose 1 dot level 3 dot net, the packets are across the United States. In New York, they go through a series of routers. In New York, EBR, CSW, EBR, then on hop 13 to Boston. Boston is very close to Providence, where Brown is after ocean dot org comma, we see 3 stars. This means there’s a router that won’t tell the traceroute about itself. The star of Trace Route’s way to show it waited for a reply, but the reply time down.<br>在圣何塞1点级别3点网络之后，数据包跨越美国。在纽约，他们经过一系列的路由器。在纽约，EBR，CSW，EBR，然后跳13到波士顿。波士顿与普罗维登斯非常接近，布朗在海洋点组织逗号之后，我们看到3颗星。这意味着有一个路由器不会告诉traceroute有关自身的信息。跟踪路由的星星的方式表明它等待回复，但回复时间缩短。</p>
+<p>发言人   10:12<br>On hop 20, we see a router in brown CS department. After that, everything is hidden. Brown’s CS department doesn’t want you to be able to see what the rest and see inside of its network looks like.<br>在跳数20上，我们看到了布朗CS部门的路由器。在那之后，一切都被隐藏了。Brown的CS部门不希望你看到其他人以及其网络内部的样子。</p>
+<p>发言人   10:26<br>Because we couldn’t see the path end with Brown’s web server. Let’s try another one. The Computer Science and Artificial Intelligence Lab csail at MIT. We can see that packets take the same path to Boston until hop 15. The path of brown goes to ocean at hop 15, while the path to MIT continues in Level three’s network on the path to Www dot csail dot MIT dot Edu, only two routers are hidden, the 13th and 19th hops. We can see that Www dot csail dot MIT dot Edu is also named Akron dot csail dot MIT dot Edu. And after 22 hops, packets from my computer reach Mit’s web server. Look at the time values, the time from my packet to reach the MIT web server and its response to return to me there and back around trip time is under 90 milliseconds or less than an eye blink.<br>因为我们看不到以布朗的web服务器结尾的路径。让我们试试另一个。麻省理工学院计算机科学与人工智能实验室的csail。我们可以看到，数据包沿着相同的路径到达波士顿，直到跳跃15。布朗的路径在15跳点通往海洋，而通往麻省理工学院的路径在第三级网络中继续通往Www点csail点MIT点Edu，只有两个路由器被隐藏，第13和第19跳。我们可以看到，Www点csail点MIT点Edu也被命名为Akron点csail点MIT点Edu。经过22次跳跃后，我的计算机中的数据包到达麻省理工学院的网络服务器。查看时间值，数据包到达麻省理工学院web服务器的时间及其返回我的响应，大约在旅行时间低于90毫秒或小于眨眼时间。</p>
+<p>发言人   11:29<br>We’ve now seen the life of a packet starting as an application level client web request and taking nearly 20 hops of the internet to reach this destination.<br>我们现在已经看到数据包的生命周期从应用程序级客户端web请求开始，需要花费近20个互联网跳才能到达此目的地。</p>
+<p>发言人   11:38<br>For me, this is one of the best things about teaching this course. Everything we present is something that you and I interact with every day, even just in the space of watching one video, it’s easy to see the principles and ideas in practice. And with just a few simple tools, you can inspect the internet in operation in real time.<br>对我来说，这是教授这门课程最好的事情之一。我们呈现的一切都是你和我每天互动的东西，即使只是在观看一个视频的空间中，也很容易在实践中看到原则和想法。只需几个简单的工具，您就可以实时检查互联网的运行情况。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 005 The life of a Packet</div>
+      <div>http://example.com/2025/10/19/cs144-005/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-006/" title="计算机网络 006 Packet switching principle">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 006 Packet switching principle</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-004/" title="计算机网络 004 The IP Service">
+                        <span class="hidden-mobile">计算机网络 004 The IP Service</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

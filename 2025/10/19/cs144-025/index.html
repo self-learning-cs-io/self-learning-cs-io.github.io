@@ -1,0 +1,636 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00So in this video I’m going to talk about retransmission strategies for transport protocols in order to achieve reliability, in particular for sliding window protocols. The basic question is">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 025 Retransmission Strategies">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-025/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00So in this video I’m going to talk about retransmission strategies for transport protocols in order to achieve reliability, in particular for sliding window protocols. The basic question is">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:24.000Z">
+<meta property="article:modified_time" content="2025-10-19T13:00:43.145Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 025 Retransmission Strategies - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 025 Retransmission Strategies"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 025 Retransmission Strategies</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>So in this video I’m going to talk about retransmission strategies for transport protocols in order to achieve reliability, in particular for sliding window protocols. The basic question is we have with some sliding window, reliable transport, a window of packets that are in flight. Say 1, 2, 3, 4. And we’re using cumulative acknow. And so all we get is something back, such as a one act, 2 act, 3 act, 4, just the last byte that was successfully received, the last packet that successfully received. We’re maintaining a retransmission timer for each of these packets based on when they were sent, and essentially maintaining a conservative estimate of if we haven’t received an acknow for the packet by this time, then this means that it is almost certain that the packet was lost, and so we should retransmit it. And so the question is, given this set of parameters which are generally used for reliable transport, how is the protocol going to behave?<br>因此，在本视频中，我将讨论传输协议的重传策略，以实现可靠性，特别是对于滑动窗口协议。基本问题是我们有一些滑动窗口，可靠的传输，一个飞行中的数据包窗口。说1，2，3，4。我们正在使用累积的acwe。所以我们得到的只是一些东西，比如one act，2 act，3 act，4，只是成功接收的最后一个字节，成功接收的最后一个数据包。我们根据这些数据包的发送时间为每个数据包维护一个重新传输计时器，并且基本上维护一个保守的估计，如果到这个时候我们还没有收到数据包的确认，那么这意味着几乎可以肯定数据包丢失了，所以我们应该重新传输它。所以问题是，给定这一组通常用于可靠传输的参数，协议将如何表现？</p>
+<p>发言人   01:02<br>What is this retransmission strategy going to look like? So we’ll see is that there are essentially two strategies you up.<br>这种重传策略会是什么样子？所以我们会看到，基本上有两种策略。</p>
+<p>发言人   01:09<br>You end up set up emerging from different protocols. The first is we go go back in, which I wanted me to think of is like go back in as a very pessimistic. Approach or press domestical behavior, which is that if a single packet is lost, then we’re going to retransmit the entire outstanding window of packets. Go back end. So if the window of size n, we lose packet some packet, we’re going to go back and transmissions retransmit all of them.<br>您最终会从不同的协议中建立起来。第一个是我们回去，我想让我认为这就像是一个非常悲观的人回去一样。方法或按家庭行为，即如果单个数据包丢失，那么我们将重新传输整个未处理的数据包窗口。回到终点。因此，如果窗口大小为n，我们丢失了一些数据包，我们将返回并重新传输所有数据包。</p>
+<p>发言人   01:35<br>The second is selective repeat, which we think of as optimistic. So where go back? N assumes that if one packet is lost, all of them are lost in the window. Selective repeat assumes that if one packet is lost, only that packet is lost. So in selective repeat, if we lose a packet, it’s not acknowledged, we’ll retransmit that packet and only that packet. So let’s look at what go back n appears like or what it, what’s the behavior that you see? So let’s say that we have a window of size equal to 4. And so the sender sends packet 1, 2, 3, 4, and packet 2 is lost.<br>第二种是有选择的重复，我们认为这是乐观的。那么回到哪里？N假设如果丢失了一个数据包，则所有数据包都将在窗口中丢失。选择性重复假设如果一个数据包丢失，只有该数据包丢失。因此，在选择性重复中，如果我们丢失了一个数据包，它没有得到确认，我们将重新传输该数据包，并且只传输该数据包。让我们来看看go返回n的样子或者它是什么样子的，你看到的行为是什么？那么假设我们有一个大小等于4的窗口。因此发送方发送数据包1、2、3、4，而数据包2丢失。</p>
+<p>发言人   02:15<br>So here are four transmissions. Well, in response to packet one, the receiver is going to send acknowledgement and Ackman one. But it’s not going to send Ackman to. And so what will happen is at some point, we’re going to have retransmit timer go off.<br>这里有四个传输。好的，作为对数据包1的响应，接收方将发送确认和Ackman 1。但它不会让Ackman去。所以会发生的是，在某个时候，我们将会有重新传输计时器关闭。</p>
+<p>发言人   02:34<br>And then in a go back end protocol, what the sender is going to do is it’s going to retransmit the entire outstanding window. There’s some kind of timing. And so don’t forget, and window is going to include 5 because in response to this act 1, it can send five. But so the transmitter, seeing the packet was 2, is lost, is going to assume that the entire window is lost. And we transmit the entire window. This is very conservative, very, or very pessimistic.<br>然后在后端协议中，发送方将要做的是重新传输整个未处理的窗口。有某种时机。所以不要忘记，窗口将包含5个，因为响应此第一幕，它可以发送5个。但是，看到数据包是2，发射器丢失了，将假设整个窗口丢失了。我们传输整个窗口。这是非常保守的，非常悲观的。</p>
+<p>发言人   03:03<br>So now let’s see what a selective repeat protocol will do. So again, n equals 4. I’m going to transmit 1, 2, 3, 4. 1, 2, 3, 4. Packet 2 is lost. Packet one is acknowledged, which letsie send five. In a selective repeat protocol, the transmitter is going to retransmit 2, and then we’ll continue execution and transmit 6, 7, 8 9 dot, dot, dot, dot. So it’ll retransmit only the packets that were not acknowledged.<br>现在让我们看看选择性重复协议会做什么。所以，n又等于4。我要发送1、2、3、4。1，2，3，4。数据包2丢失了。数据包1被确认，其中letsie发送了5。在选择重复协议中，发送器将重新传输2个，然后我们将继续执行并传输6、7、8 9个点、点。因此，它将仅重新传输未确认的数据包。</p>
+<p>发言人   03:53<br>So one question that comes up is why, given the selective repeat doesn’t sends fewer packets, why would you ever want to do go back in. Well, there are a couple of reasons. One is that selective repeat, if actually all of those packets were lost, if packet 2, 3, 4 packets, 2, 3, 4, and 5, we’re all lost. In order to do each of these retransmissions involves timers and round trip times. So it can be much slower if there’s a burst of losses, a selective repeat protocol off and be slower to recover as opposed to go back in assumes that all the packets are lost. It retransmits all of them and it can get going faster. And so there’s a tradeoff here between sort of the amount of data that you send, how quickly you send it, and then how much of it is wasted versus the speed of recovery from significant errors.<br>因此，出现的一个问题是，既然选择性重复不会发送更少的数据包，为什么你会想要返回。嗯，有几个原因。一个是选择性重复，如果实际上所有这些数据包都丢失了，如果数据包2、3、4、2、3、4和5，我们都会丢失。为了进行这些重传，每次都涉及计时器和往返时间。因此，如果出现突发丢失、选择性重复协议关闭以及恢复速度较慢等情况，与假设所有数据包都丢失而返回时相比，恢复速度可能要慢得多。它会重传所有这些，并且可以变得更快。因此，在您发送的数据量、发送速度以及浪费的数据量与从重大错误中恢复的速度之间存在权衡。</p>
+<p>发言人   04:38<br>So let’s walk through two example transport protocols in their configurations and see how they behave, what happens. So in this first one, our sender has a window of size n, and let’s say that n is equal to 4, just like the power examples. And the receiver has a window of size 1, so the receive window size is one. So based on this, is the protocol going to behave as go back in or as selective repeat? Well, so let’s walk through what happens.<br>让我们浏览两个示例传输协议的配置，看看它们的行为和发生了什么。所以在第一个例子中，我们的发送方有一个大小为n的窗口，假设n等于4，就像幂的例子一样。接收器有一个大小为1的窗口，因此接收窗口的大小为1。基于此，该协议将表现为返回还是选择性重复？那么让我们来看看发生了什么。</p>
+<p>发言人   05:10<br>So the sender, let’s say, is going to send 1, 2, 3, 4. One, 2, 3, 4, and let’s say that packet 2 is lost, so it doesn’t arrive. Well, the receiver is going to acknowledge one. Which will allow the sender to send five, but the receiver is not going to acknowledge 2? Now, at some point, two’s retransmission timer is going to fire, and it’ll retransmit 2. But the thing is that because the receiver has a receive window size of only one, it has been unable to buffer packets 3, 4, and 5. And so when it receives packet 2, it’s going to act 2.<br>所以发送者，假设要发送1、2、3、4。1、2、3、4，假设数据包2丢失了，所以它没有到达。好的，接收者将会确认一个。这将允许发送者发送5个，但接收者不会确认2个？现在，在某个时候，2的重新传输计时器将触发，并且它将重新传输2。但问题是，因为接收方的接收窗口只有一个，所以它无法缓冲数据包3、4和5。因此，当它收到数据包2时，它将采取行动2。</p>
+<p>发言人   06:05<br>The sender has not received an acknowledging three. It’s going to have to retransmit 3. And then the receiver can acknowledge three. At some point, the sender can then start using its full window again. But the point being that since this first two was lost, 3, 4, and 5 couldn’t be buffered.<br>发件人尚未收到确认的三个。它将不得不重新传输3。然后接收者可以确认三个。在某个时刻，发件人可以再次开始使用其完整的窗口。但关键在于，由于前两个丢失，3、4和5无法缓冲。</p>
+<p>发言人   06:28<br>The fact that the receiver has a window size of only one is going to force the sender to retransmit every single packet in the window. So we’re going to see that this behaves is go back n, so let’s say a second example. So in this case, the sender has a window size of n, and the receiver has a window size n, and let’s say that for both of them, just again, for simplicity’s sake, this is a size 4. So in this case, with the protocol B, go back n or selective repeat.<br>接收方只有一个窗口大小的事实将迫使发送方重新传输窗口中的每个数据包。所以我们将看到这个行为是返回到n，所以让我们举第二个例子。所以在这种情况下，发送方的窗口大小为n，接收方的窗口大小为n，假设对于这两个窗口，为了简单起见，这是一个大小为4的窗口。因此，在这种情况下，使用协议B，返回n或选择重复。</p>
+<p>发言人   06:58<br>So let’s walk through what happens. We have again, 1, 2, 3, 4. Two is lost. So we get an Acker for two for one, Act 1 results in packet 5 being sent. Then at some point, two’s retransmission timer fires, so we resend 2.<br>让我们回顾一下发生了什么。我们又有了，1，2，3，4。两个不见了。所以我们得到一个二合一的Acker，第1个动作导致发送了第5个数据包。然后在某个时候，两个重传计时器触发，所以我们重新发送2。</p>
+<p>发言人   07:21<br>Now the receiver has been able to buffer these packets because it has a window of size n, and so it has three packets buffered. It can then. So here is its buffer. It had packets 3, 4, and 5. Packet two arrives, it can then acknowledge 5. So it might be that the sender was a little aggressive, maybe it did retransmit 3 or 4 or something, but the point is that it doesn’t have to for this to operate correctly if Sage just waited for those retransmission timers, or it did slow retransmissions that the sender is going to resend only packet to only the outstanding packet that was not acknowledged the rest of in buffer to the receiver.<br>现在接收方已经能够缓冲这些数据包，因为它有一个大小为n的窗口，因此它缓冲了三个数据包。那就可以了。这里是它的缓冲区。它有数据包3、4和5。数据包2到达后，它可以确认5。所以可能发送者有点咄咄逼人，也许它确实重新传输了3或4个左右，但关键是，如果Sage只是等待那些重新传输计时器，它不必正确运行，或者它确实减缓了重传的速度，发送方只会将数据包重发到未确认缓冲区中其余部分的未处理数据包给接收方。</p>
+<p>发言人   08:03<br>And so we see that this behaves as selective repeat.<br>因此，我们看到这表现为选择性重复。</p>
+<p>发言人   08:06<br>So when you’re implementing transport protocol, say if if when you’re doing lab 2, 1 thing you want to think about is how you handle retransmission. So one of the really important things is that you don’t retransmit earlier than you should, by which I mean, it’s not okay to say start a retransmit timer based on packet one or packet 2. And then when 2 is retransmit, timer fires retransmit an entire window because it could very well be that 3, 4 and 5 have been correctly received or something happened, but you’re going to retransmit them anyways.<br>因此，当您实施传输协议时，假设您在进行实验2时，需要考虑的一件事是如何处理重传。因此，其中一个非常重要的事情是你不要早于你应该重新传输的时间，我的意思是，启动基于数据包1或数据包2的重新传输计时器是不合适的。然后当重传2时，计时器触发重传整个窗口，因为很可能是3、4和5已正确接收或发生了某些事情，但无论如何您都要重新传输它们。</p>
+<p>发言人   08:43<br>You’re very aggressively putting additional packets in the network. You’re inflating the number of packets in the network beyond your window size. 3, 4, and 5 could still be in the network, yet you’re putting additional copies of them. So in that way, you want to be careful about the number of packets you put in the network and be careful about your transmission policy. And so we’ll see.<br>你非常积极地在网络中放置额外的数据包。您正在膨胀网络中的数据包数量，超出您的窗口大小。3、4和5可能仍在网络中，但您正在放置它们的额外副本。因此，在这种情况下，您需要注意放置在网络中的数据包数量，并注意您的传输策略。所以我们会看到。</p>
+<p>发言人   09:02<br>What you can see is that on one hand, you can assume trying to be very conservative and say, look, if one packet was lost I’m going to assume that the others or lost, and then I’m going to retransmit the entire window with a go back end policy. That will happen if, say, your receiver has a window size of only one. Or you can maybe be a bit slower and say, look, one pack was lost. I’m going to wait for round trip time, transmit that, see if I get an Ackman, see the acknowledgement puts me, and then perhaps just do a selective repeat and transmit only the packet that needs to be transmitted.<br>你可以看到的是，一方面，你可以假设自己非常保守地说，看，如果一个数据包丢失了，我将假设其他数据包丢失了，然后我将使用后端策略重新传输整个窗口。如果你的接收器的窗口大小只有一个，这种情况就会发生。或者你可以慢一点说，看，一个包裹丢失了。我将等待往返时间，传输那个，看看我是否得到了一个Ackman，看到确认把我放在了，然后也许只是做一个选择性重复，只传输需要传输的数据包。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 025 Retransmission Strategies</div>
+      <div>http://example.com/2025/10/19/cs144-025/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-026/" title="计算机网络 026 TCP header">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 026 TCP header</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-024/" title="计算机网络 024 Flow Control Sliding Window">
+                        <span class="hidden-mobile">计算机网络 024 Flow Control Sliding Window</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

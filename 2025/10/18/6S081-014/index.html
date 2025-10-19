@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00And can everybody see my screen or whiteboard that I shared? Okay, good. How are people doing with the log lab? Let me start there. Just ask if how progress is and whether it’s more difficu">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 014-Crash Recovery">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-014/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00And can everybody see my screen or whiteboard that I shared? Okay, good. How are people doing with the log lab? Let me start there. Just ask if how progress is and whether it’s more difficu">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:14.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.143Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 014-Crash Recovery - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 014-Crash Recovery"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          22k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          181 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 014-Crash Recovery</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>And can everybody see my screen or whiteboard that I shared? Okay, good. How are people doing with the log lab? Let me start there. Just ask if how progress is and whether it’s more difficult or it’s looking okay. Anybody who want to sort of report on their experience so far?<br>每个人都可以看到我共享的屏幕或白板吗？好的，好的。人们在日志实验室里做得怎么样？让我从这里开始。只需询问进展情况如何，以及它是否更加困难或看起来还可以。有谁想报告一下他们到目前为止的经历吗？</p>
+<p>发言人   00:30<br>I hope lots of people have started. Yeah, go ahead. Oh, sorry, go ahead. Oh, okay, cool. I’ll go I’ll go.<br>我希望很多人已经开始了。是的，继续。哦，抱歉，请继续。哦，好吧，很酷。我走，我走。</p>
+<p>发言人   00:47<br>The lock lab. I think the first part, the, the kalo on was not as bad. Well, then the second part was a bit harder. Well, it’s a lot harder in my opinion. You just have to figure it out. AI guess the hard part was thinking of a solution that it’s like, hey, this doesn’t cause deadlock. But then if you think there are cases where like deadlock could happen, if you acquire a buckets lock again and all that stuff. But yeah, you just have to think. You have to think like about extra cases and all that stuff. And after that, it shouldn’t be that bad.<br>锁的实验室。我认为第一部分，那个卡洛并没有那么糟糕。好吧，那么第二部分就有点难了。在我看来，这要难得多。你只需要弄清楚。我猜困难的部分是考虑一个解决方案，就像，嘿，这不会导致死锁。但是如果你认为在某些情况下可能会发生死锁，如果你再次获得一个桶锁等等。但是，是的，你只需要思考。你必须像思考额外的案例和所有这些东西一样。在那之后，情况不应该那么糟糕。</p>
+<p>发言人   01:39<br>Okay, anybody else who wanted to share their experience so far? I wanted to ask, are we allowed to do any part of the lab like lock for me? Because I know like their first part, for example, it’s the instructions said pretty clearly, like make apparel memory allocator, but can we do it just lock free and a thing, you know, leave it as it is, you’re free to do, any solution that passes, Make great, it’s fine lock free. I would be you could certainly free to do it. I’d be hesitant to start there if I were you, I would start first with a more fine grained lock implementation and then move to the lock free implementation. So the reason I started with a lock free is because if you go to a fine grain, you need to do all of the parallel stuff. But if you just go directly to a lock free 1, then you can keep it on a single free list and you just need to, you just need to autonomous size the free and allocate operations, which actually isn’t that bad. Yeah, I think maybe in if there’s a single list, in the case of the KC, that might be the case.<br>好的，还有谁想分享他们迄今为止的经验？我想问一下，我们是否可以像锁一样为我做实验室的任何部分？因为我知道他们的第一部分，例如，它的说明说得很清楚，比如制作服装内存分配器，但是我们可以做到无锁和一件事，你知道，保持它的状态，你可以自由地做任何通过的解决方案，这是很好的无锁。你肯定可以自由地做这件事。如果我是你，我会犹豫是否要从那里开始，我会先从一个更细粒度的锁实现开始，然后转向无锁实现。所以我开始使用无锁的原因是因为如果你进入一个细粒度，你需要做所有的并行操作。但是如果你直接进入无锁1，那么你可以把它放在一个单一的空闲列表中，你只需要自主调整空闲和分配操作的大小，这实际上并不是那么糟糕。是的，我想如果有一个单一的列表，在KC的情况下，可能就是这样。</p>
+<p>发言人   02:49<br>I think, you know, the lock free BLC is going to be a little bit more complicated. Yeah, that that I’m scared to do, but that’s the right reaction to have. Anybody else? I found it a bit hard to debug those problems because it’s not immediately clear what is happening. So we have to go and sit with gdb and break, break, break. And yeah. Yeah, I think one reason I’m always scared to get these lock laps, the laps is you they’re harder to debug and, you know, the bug might not show up on every run. But hopefully it is very educational because like learning programming locks inside of a kernel is a real thing. But it is definitely a core challenge.<br>我认为，你知道，无锁的BLC将会更加复杂一些。是的，我很害怕这样做，但这是正确的反应。还有谁？我发现调试这些问题有点困难，因为目前还不清楚发生了什么。所以我们必须去和gdb坐在一起，打破，打破。是的。是的，我认为我总是害怕得到这些锁定圈数的一个原因是，圈数是它们更难调试，而且，你知道，这个错误可能不会在每次运行中都出现。但希望这非常有教育意义，因为像在内核中学习编程锁一样，这是一件真实的事情。但这绝对是一个核心挑战。</p>
+<p>发言人   03:44<br>One thing about the maybe, this is a node for the, I encourage, you know, the next lab actually doesn’t involve basically any concurrency and should hopefully that will be much, much, much more straightforward.<br>关于可能的一件事，这是一个节点，我鼓励，你知道，下一个实验实际上不涉及任何并发性，应该希望这将更加简单。</p>
+<p>发言人   03:59<br>Okay, I guess how do you, how do you efficiently or effectively debug concurrent programs? Like with all those multiple threads I use? Very basic stuff. I use print statements, but the main thing I rely on is I sort of tried to write down or assertions for invariants that I think should be true at every point. And if the sertions off, then I know that, you know, there was something wrong in my thinking, or the assertion was wrong. And then I think for a while and try to decide what it is and then go from there.<br>好的，我猜你是如何高效或有效地调试并发程序的？就像我使用的所有那些多个线程一样？非常基本的东西。我使用打印语句，但我主要依赖的是我试图写下或断言我认为在任何时候都应该是真的不变量。如果声明偏离了，那么我知道，你知道，我的想法有问题，或者断言是错误的。然后我想了一会儿，试着决定它是什么，然后从那里开始。</p>
+<p>发言人   04:40<br>In normal for many other settings, there are reach detectors that can help you and basically flag code that looks like might be having problems or prone to raise conditions. But that’s a whole set of other tools that we’re not using. We could, but there’s a little bit of a big step to actually get that all up and going and running. So that’s the other mechanism that people use, waste detect.<br>在许多其他设置中，正常情况下，有到达探测器可以帮助您，基本上可以标记看起来可能有问题或容易出现问题的代码。但这是我们没有使用的一整套其他工具。我们可以这样做，但是要真正启动并运行这一切，还有一个小小的大步。这就是人们使用的另一种机制，垃圾检测。</p>
+<p>发言人   05:17<br>And basically flag any shared variable that is updated or red without actually holding a lock. That doesn’t help you with deadlocks. Like for example, in this lab in Bcas lock, you know, you get deadlocks. That locks tend to be easier to debu correct? Because you can, you get the panic and then you can look at Gdb, the back trace, and see actually what is was involved in the deadlock.<br>并且基本上标记任何已更新或红色的共享变量，而不实际持有锁。这对你的死锁没有帮助。例如，在这个实验中，在Bcas锁中，你知道，你会得到死锁。锁往往更容易进行正确的开发？因为你可以这样做，你会感到恐慌，然后你可以查看Gdb的回溯轨迹，看看死锁中实际上涉及了什么。</p>
+<p>发言人   05:44<br>Does that make sense, thank you. Okay, another suggestion that actually somebody posted on the feedback is the classes. The attendance is getting a little bit lower than in the beginning of the semester.<br>那感知吗，谢谢。好的，另一个建议实际上有人在反馈中发布的是课程。出勤率比学期开始时稍微低了一点。</p>
+<p>发言人   05:59<br>Think might be small enough or the size that it may be perfectly fine to actually have cameras on. And so maybe I want to encourage you to, if you ask a question, to turn on your camera and will it hopefully improve our experience as if in the classroom as opposed to in a virtual meeting? And you don’t have to look at me.<br>认为可能足够小，或者尺寸可能非常适合实际安装摄像头。所以也许我想鼓励你，如果你有问题，打开你的相机，它是否有望改善我们在教室里而不是虚拟会议中的体验？你不必看着我。</p>
+<p>发言人   06:25<br>So, okay, today’s lecture. So today’s lecture is going to be about crash safety, crash safety, and file systems. And this is not Cre safety in more general form. I’m actually really focusing on a particular problem. Or a specific problem, namely a crash or a power failure, can lead.<br>所以，好的，今天的讲座。所以今天的讲座将是关于碰撞安全、碰撞安全和文件系统的。这不是更一般形式的安全保障。我实际上非常关注一个特定的问题。或一个特定的问题，即崩溃或电源故障，可能会导致。</p>
+<p>发言人   06:52<br>On this file system. To be in an inconsistent state for an incorrect state. And what I mean with an incorrect state addition of example, a data block that belongs to two files or an inode is allocated through two different files. And so the scenario where this problem might sort of appear is, let’s say, you know, you’re running make, make a pretty file system interacts with the file system, regional rights files.<br>在这个文件系统上。处于不正确状态的不一致状态。我指的是状态添加不正确的示例，属于两个文件或inode的数据块通过两个不同的文件分配。因此，可能出现此问题的情况是，假设您正在运行一个漂亮的文件系统，使其与文件系统，区域权限文件进行交互。</p>
+<p>发言人   07:27<br>And somewhere, you know, during, you know, that thing, a payment powery Philly happens. You know, maybe your laptop run out of battery, you know, maybe the power just dropped or through your house. And you reboot. Your power comes back on at some point. You reboot the machine, the machine comes back up, and then you hopefully you get a prompt again.<br>在某个地方，你知道，在那件事中，费城发生了支付权力。你知道，也许你的笔记本电脑没电了，你知道，也许是电源突然断电，或者家里停电了。然后你重新启动。你的力量会在某个时候恢复。您重新启动机器，机器重新启动，然后您希望再次收到提示。</p>
+<p>发言人   07:54<br>You run LS and your whole basically that your file system is in good state and your state that actually can still use it. And so the particular failures or crashes that about are basically power failures during file system operations or the kernel panic, You know, while running some file system operation, you xvc s panix most kernels of panic. You know, maybe they’re some kernel bug that costs us a panic and suddenly your system, yours fails. And what you’d like to be the case is that after reboot, you can actually do something or you can still use the file system. And this might be something when you’re thinking, well, how could that not be right?<br>您运行LS并且您的整个文件系统基本上处于良好状态，并且您的状态实际上仍然可以使用它。因此，特定的故障或崩溃基本上是文件系统操作期间的电源故障或内核崩溃，你知道，在运行某些文件系统操作时，你xvc s会引起大多数内核的恐慌。你知道，也许它们是一些内核错误，让我们感到恐慌，突然你的系统出现了故障。你希望的是，在重新启动后，你实际上可以做一些事情，或者仍然可以使用文件系统。这可能是你在想的事情，好吧，这怎么可能不对呢？</p>
+<p>发言人   08:32<br>Because the file system, you know, stored on a persistent storage medium. And so if the power fails is, you know, the medium should be good. And so one machine comes back up, you know, all the blocks that you’ve written should be there. And we’ll see that.<br>因为文件系统，你知道，存储在持久性存储介质上。因此，如果电源故障，你知道，介质应该是良好的。所以一台机器回来了，你知道，你写过的所有块都应该在那里。我们会看到的。</p>
+<p>发言人   08:44<br>The tricky case is many file system operations have multi step operations. And really what is important in those. And if we, if we crash just in the wrong place in these multi step operations, the file system actually may end up being on disk inconsistent for that short period of time. And if the power failure just happened there, something bad could happen. And so that is sort of the problem that we’re focusing on today. And so this is different from the problem that, for example, whatever, you know, there’s a power failure and your disc caught fire and there’s nothing there anymore, and you need to, in that case, you need, you need, there’s a completely different problem that has different solutions. You know, for example, you have to go back to a backup after your file system, reinstall your file system, etc, etc. So that’s the problem we’re not worried about.<br>棘手的情况是许多文件系统操作具有多步操作。这其中真正重要的是什么。如果我们在这些多步骤操作中出现错误的位置崩溃，文件系统实际上可能会在短时间内出现磁盘不一致的情况。如果电力故障只是发生在那里，可能会发生不好的事情。这就是我们今天关注的问题。所以这与问题不同，例如，无论是什么，你知道的，电源故障，你的光盘着火了，那里什么都没有了，你需要，在这种情况下，你需要，有一个完全不同的问题，有不同的解决方案。你知道，例如，你必须在你的文件系统之后回到备份，重新安装你的文件系统，等等。所以这就是我们不担心的问题。</p>
+<p>发言人   09:37<br>We’re really worried about the specific problem of failure happening, right during a multi step operation.<br>我们真的很担心在多步骤操作期间发生故障的具体问题。</p>
+<p>发言人   09:46<br>Okay, and the solution for that problem that we’re going to be exploring is something that is called logging. This is a very popular solution originally coming out of the database world, but a lot of file systems use logging these days. It’s a 1 reason it’s popular because it’s a very principled solution. And we’re going to see the instantiation of logging in Xg 6. And of course Xb 6 has a very simple implementation, like a bare minimal implementation of logging, just to sort demonstrate the key ideas And even that very bare bone log implementation actually has some several issues that we’re going to be talking about. And that’s why it’s worth you studying it.<br>好的，我们将要探索的这个问题的解决方案是一种叫做日志记录的东西。这是一个非常流行的解决方案，最初来自数据库世界，但现在很多文件系统使用日志记录。这是它受欢迎的一个原因，因为它是一个非常原则性的解决方案。我们将看到xg6中日志记录的实例化。当然，Xb 6有一个非常简单的实现，就像日志的最小实现一样，只是为了展示关键思想，甚至那个非常简单的日志实现实际上有一些我们将要讨论的问题。这就是为什么它值得你学习。</p>
+<p>发言人   10:36<br>One downside, as we’ll see if the XV 6 solution is because of simplicity, its performance is also not so great, even though locking systems in principle can get good performance. And so what we’ll do next week is actually look how to implement a high performance logging system by studying the logging system that the Linux exd free file system uses. But that’s next week.<br>一个缺点，正如我们将看到的那样，如果XV 6解决方案是因为简单，它的性能也不是很好，尽管原则上锁定系统可以获得良好的性能。所以我们下周要做的实际上是通过研究Linux exd free文件系统使用的日志系统，来研究如何实现一个高性能的日志系统。但那是下周。</p>
+<p>发言人   11:02<br>Another maybe small .1 I want to make today is this is our last Xq six lecture. And from now on, we’re going to be switching to papers because in some ways, what we’ve done is we sort of covered the basic concepts and we can start looking at more advanced operating system ID by reading papers. Okay, any questions so far?<br>另一个可能很小。我今天想要做的是这是我们最后一次Xq六讲座。从现在开始，我们将转向论文，因为在某些方面，我们所做的是涵盖了基本概念，并且我们可以通过阅读论文开始寻找更高级的操作系统账号。好的，到目前为止有问题吗？</p>
+<p>发言人   11:34<br>We’re all good? Okay, so let me go back a little bit about like the scenario that we’re really, that we’re focusing about in this lecture. So file systems, file system operations, like creating a file, writing a file, are multi step disk operations.<br>我们都很好？好的，让我回顾一下我们在本次讲座中重点关注的场景。因此，文件系统和文件系统操作，如创建文件、写入文件，都是多步骤的磁盘操作。</p>
+<p>发言人   12:07<br>And, you know, we saw that last week or Monday, we talked about how creators implemented like creating a file or writing to a file. And we often see that, you know, sequence of events is of something. The sequence of steps are allocated an inode or mark, the inode allocated on disk. Then, you know, write the directory block that contains that ino. And so those are the milts steps that I’m talking about. We get a crash between two of these steps. That crash can leave. May leave the file system in variance? Viol?<br>而且，你知道，我们看到上周或周一，我们谈论了创作者如何实现创建文件或写入文件。我们经常看到，你知道，事件的序列是一些事情。步骤序列被分配一个索引节点或标记，索引节点分配到磁盘上。然后，你知道，编写包含该ino的目录块。所以这些就是我所说的milts步骤。我们在这两个步骤之间会发生崩溃。崩溃可以离开。可能会使文件系统发生变化？维奥尔？</p>
+<p>发言人   12:46<br>The invariance I’m talking about are invariance of the form. Every block is either free or allocated to one file and not to two files. And, you know, we might want to make sure that this happens despite, you know, these failures, right, between these operations. And the risk is if these variants are violated, the, you know, bad things can happen after reboot. You know, the you might crash again Mey because there’s some data structure, the file system now, now in the state that the file system actually can’t really deal with on this data structure is in such a shape that the file system really can’t process them anymore. Or more likely you not crash, no crash. You know, data may get lost or you read and write incorrect data.<br>我所说的不变性是形式的不变性。每个块要么是免费的，要么分配给一个文件，而不是两个文件。而且，你知道，我们可能希望确保尽管这些操作之间出现了这些故障，但还是会发生这种情况。风险在于，如果违反了这些变体，你知道，重启后可能会发生不好的事情。你知道，你可能会再次崩溃，因为有一些数据结构，现在文件系统处于文件系统实际上无法处理的状态，这个数据结构的形状使得文件系统实际上无法处理它们了。或者更有可能你没有崩溃，没有崩溃。你知道，数据可能会丢失，或者你读写的数据不正确。</p>
+<p>发言人   13:53<br>And we’ll show you a couple of examples to make that more clear. But so those are sort of the risks that we’re worried about. I don’t know if anybody actually ever in personal life or like in your daily life using computers actually has experienced a problem or basically you had a failure in the file system, or you had a failure, you had a power failure, You know, your machine rebooted or your phone restarted, and the basically was unusual afterwards. One reason that might be unusual because ISS actually, the file system just didn’t recover correctly.<br>我们将向您展示几个例子，以使这一点更清楚。但这些都是我们担心的风险。我不知道在个人生活或日常生活中使用电脑时，是否真的有人遇到过问题，或者基本上你遇到过文件系统故障，或者你遇到过电源故障，你知道，你的机器重新启动或手机重新启动，之后的情况基本上是不寻常的。有一个原因可能很不寻常，因为实际上，文件系统没有正确恢复。</p>
+<p>发言人   14:37<br>Okay, so to make it more clear, just let’s look at an example in the context of actually to make this risk a little bit more concrete. Let’s look at an example in the context of XV 6 and to see what actually could go wrong. So remember the from one day, the XV 6 file system, very simple file system has a simple disk layout. You know, the super block, there’s the superb, there’s the log that we’re going to be talking about a lot today that we didn’t talk about on Monday there in notes, you know, instead of blocks that actually contain each and each block may contain multiple in notes, just a bitmap block, you know, to record which blocks are free and which are not free. And then they’re the data blocks that actually contain the actual data of the file system. And you remember from Monday’s lecture, you reproduced the trace here we looked at actually how a file is created and you know, we see that the creation of a single file me a second.<br>好的，为了更清楚，让我们来看一个例子，实际上使这种风险更具体一些。让我们看一下XV 6上下文中的一个例子，看看实际上可能会出现什么问题。所以要记住，从某一天开始，XV 6文件系统，非常简单的文件系统有一个简单的磁盘布局。你知道，超级块，有很棒的东西，还有我们今天要谈论的很多日志，我们在周一的笔记中没有谈论它，你知道，而不是实际包含每个块的块，每个块可能包含多个笔记。只是一个位图块，你知道，记录哪些区块是免费的，哪些不是免费的。然后它们是实际包含文件系统实际数据的数据块。你还记得从Mond的讲座中，你在这里复制了我们看到的实际上是如何创建文件的痕迹，你知道，我们看到单个文件的创建一秒钟。</p>
+<p>发言人   15:42<br>The creation of a single file consists of multiple operations. So for example, like in this particular little scenario that I have here on the on this slide, we see that the An in is allocated. And we know this because there’s a block 43 is being written. Do we see that the ion narratives will be initialized and then written again to block 33? Then we see the block 46 is written, and the reason is written is presumedly because you know the directory block that actually contains X and the Ino number for X is written to the disk. Then the inode root inode is updated to reflect that the directory has grown in size to contain this particular file x, and then the inot is updated.<br>单个文件的创建由多个操作组成。例如，就像我在这张幻灯片上看到的这个特殊的小场景一样，我们看到分配了一个输入。我们知道这是因为有一个区块43正在编写中。我们是否看到离子叙述将被初始化，然后再次写入33块？然后我们看到块46被写入，写入原因应该是因为您知道实际包含X的目录块和X的Ino编号被写入磁盘。然后，更新inode根inode以反映目录大小已经增长以包含此特定文件x，然后更新inot。</p>
+<p>发言人   16:33<br>What we want to now understand is like, what happens? Like what could possibly go wrong, right? And so let’s say we have a power failure like right here. So here is it power failure or kernel crash. So what happens if the power failure correct all the in memory state is lost that in memory state, the data that’s actually in like all the processes, all the file descriptors, all the in-memory caches are gone because memory is not persistent. And the only thing that we have left is what actually is on the disk. So only the data structures and the bits and bytes they’re actually sitting on the disk are survived that power failure, because that actual medium is persistence, has durability.<br>我们现在想要理解的是，发生了什么？可能会出错的是什么，对吗？所以假设我们这里发生了一次停电。所以这里是电源故障或内核崩溃。所以，如果电源故障纠正了所有内存状态，会发生什么情况？在内存状态中，实际上所有进程、所有文件描述符和所有内存缓存中的数据都将丢失，因为内存不是持久的。我们唯一剩下的就是磁盘上实际存在的东西。因此，只有数据结构和它们实际位于磁盘上的位和字节才能在电源故障中幸存下来，因为实际的介质是持久性，具有持久性。</p>
+<p>发言人   17:28<br>And so we want to know like one understand. So if we crash here and we have no additional mechanisms, we have no logging as I that we’re going to be talking about, but we have no additional mechanisms, how bad is it? What risk are we running here?<br>所以我们想要像一个人理解的那样知道。如果我们在这里崩溃并且没有额外的机制，我们没有要讨论的日志记录，但是我们没有额外的机制，它有多糟糕？我们在这里冒什么风险？</p>
+<p>发言人   17:53<br>Anybody? So basically, you know, we’ve written a block 3 D3 to record that the Ioe has been allocated. Then we had a pyro failure, and then we come back up.<br>有人吗？所以基本上，你知道，我们已经编写了一个3d3块来记录已分配的iae。然后我们发生了一次失败，然后我们回来了。</p>
+<p>发言人   18:12<br>Go ahead Brenda, does that mean we’d the lose? This block, it’s like, it seems like it’s populated, but it’s actually not. Yeah, correct. We, I think we’re losing the, we’re not the whole block, but we use inode x, the inode x, or the inode 4x that was allocated where the mark is allocated is allocated on disk, but we have not put it in any, we have not succeeded, correct, in putting it in any directory.<br>继续，布伦达，这意味着我们会输吗？这个块，它看起来像是有人居住，但实际上并没有。是的，正确。我们，我认为我们正在失去，我们不是整个块，但是我们使用分配标记的inode x，inode x或inode 4x，它们被分配到磁盘上，但我们没有把它放在任何地方，我们没有成功，正确，把它放在任何目录中。</p>
+<p>发言人   18:41<br>So basically on the disk, you know, there’s an inode allocated, but it doesn’t appear in any directory, so we can’t even remove it. And so basically what will this cause us to happen is we will lose inotes. Does that make sense? So you might think, well, what I should do is like, maybe I should reorder the rights. And in a way, you know, then hopefully, you know this, you know, we don’t lose the eye notes. So for example, another thing we could try doing is say, well, what we’ll do is we’ll write 46 first, basically update the in, update the directory, write the directory iode. Write 32. And then we’ll actually mark the Iode as allocated on disk.<br>所以基本上在磁盘上，你知道，有一个分配的inode，但它不会出现在任何目录中，所以我们甚至无法删除它。基本上，这将导致我们失去inotes。感知了吗？所以你可能会想，好吧，我应该做的是，也许我应该重新排序权利。在某种程度上，你知道，那么希望你知道这一点，你知道，我们不会失去眼部笔记。例如，我们可以尝试做的另一件事是，我们首先编写46，基本上更新目录，更新目录，编写目录iode。写32。然后我们将实际标记为在磁盘上分配的Iode。</p>
+<p>发言人   19:33<br>To market indicate the market is allocated. So I’m going to do the same set of operations. I mean a slightly different order in the hope that we should avoid this losing of the Ino problem. And would this work? Well, the thing that we should do and ask ourselves like, you know, let’s think about this point in time.<br>市场表明市场已分配。所以我将进行相同的一组操作。我的意思是稍微不同的顺序，希望我们能避免失去这个Ino问题。这有效吗？我们应该做的事情，问问自己，你知道的，让我们考虑一下这个时刻。</p>
+<p>发言人   19:55<br>Let’s say a crash happens like right here, or power failure happens right at between updating the directory, basically. But before we allocated the inode on disk, and now we power fails, machine comes back up, and we look at the file system. You know, what state will the file system be in. You’ll still think it’s a free i-node and yeah, what happened if, for example, we read, you know, the file x in the directory, in the root directory? Because there’s the in there now, correct, in this data block?<br>假设在这里发生了崩溃，或者在更新目录之间发生了电源故障。但是在我们分配磁盘上的inode之前，现在我们停电了，机器重新启动，我们查看文件系统。你知道，文件系统将处于什么状态。你仍然会认为它是一个免费的i-node，是的，例如，如果我们阅读了根目录中的文件x，会发生什么？因为现在里面有，对吗，在这个数据块里？</p>
+<p>发言人   20:30<br>We’re going to be reading the I note that actually not even allocated, correct? There’s Mark UN allocated and worse, what could happen is correct, I know might be allocated again or might actually really be allocated because there’s a market unallocated to actually in fact in different file, right? And so now we have two files that might actually, the two files that actually share, even though they’re completely different, they share the same inode. So for example, if one file would be owned by user one and one by user two, then basically user two could user one’s data, right? So this is no good either, right?<br>我们将要阅读实际上甚至没有分配的I注释，对吗？有未分配的标记，更糟糕的是，可能发生的情况是正确的，我知道可能会再次分配，或者实际上可能会被分配，因为实际上在不同的文件中有一个未分配的市场，对吗？所以现在我们有两个文件，实际上可能，这两个文件实际上共享，即使它们完全不同，它们共享同一个inode。因此，例如，如果一个文件将由用户1拥有，另一个由用户2拥有，那么基本上用户2可以使用一个数据，对吗？所以这也不好，对吧？</p>
+<p>发言人   21:11<br>Does that make sense? So basically, switching on the order, you know, is not really going to solve our problem. You would just basically get a different problem than we had before.<br>感知了吗？基本上，打开订单并不能真正解决我们的问题。你只会得到一个与以前不同的问题。</p>
+<p>发言人   21:23<br>Okay, let’s look at one more example. Here’s the example of writing through the file x? So once we have the files allocated, let’s say that all succeeded, and now we’re executing the right system call. And the right system call also does multiple write operations.<br>好的，让我们再看看一个例子。这是通过文件x写入的例子？所以，一旦我们分配了文件，假设所有文件都成功了，现在我们正在执行正确的系统调用。正确的系统调用也执行多个写入操作。</p>
+<p>发言人   21:43<br>As we saw one day, you, for example, it will allocate a block, in this case, block $45. So it sets a bit in the free map. The block 45 is the bitmap block. So it allocates a block in the bitmap. It allocates a bit in the bitmap block to indicate that that block has to be allocated. That block turns out to be, I guess, 595.<br>正如我们所看到的那样，有一天它会分配一个区块，在这种情况下，区块 $45。所以它在自由地图中设置了一点。块45是位图块。所以它在位图中分配一个块。它在位图块中分配一个位，以指示必须分配该块。那个街区的样子，我猜是595。</p>
+<p>发言人   22:07<br>Then we write, you know, the character H, you know, to 5 95, and then the character I, and then we update the IO. And now we can ask ourselves the same question, like, what will happen? If we crash, so for example, let’s say we crash like right here between, you know, writing the bitmap block. But before we allocate, before we back to the right Ei node, so crash here.<br>然后我们写，你知道，字符H，你知道，到5 95，然后是字符I，然后我们更新IO。现在我们可以问自己同样的问题，比如，会发生什么？如果我们崩溃了，例如，假设我们在写入位图块之间崩溃了。但是在我们分配之前，在我们回到正确的Ei节点之前，所以在这里崩溃。</p>
+<p>发言人   22:40<br>And so we reboot, we come back up. And this is in a particular state. What is the risk? We use a data, block it, we lose it. Yeah, we lose it again, great, because the block is allocated, but it doesn’t show up in any file because it hasn’t been written into any I nodes. So we lose a data block.<br>所以我们重新启动，我们重新启动。这是在一个特定的状态下。有什么风险？我们使用数据，阻塞它，我们就会丢失它。是的，我们再次丢失了它，太好了，因为该块已分配，但它不会出现在任何文件中，因为它还没有写入任何I节点。所以我们失去了一个数据块。</p>
+<p>发言人   23:08<br>So you might think, okay, well, maybe, you know, just because we wrote them in the wrong order, what we should have done is what we should have done is I first read it in the inode. So first Wright 33, the with 595 S, either an indirect block or a direct block. And then, you know, actually we will mark, I know it, the block is allocated. So then we’ll write, you know, 45. So we change the order because we want to avoid these log of data blocking. We change the order in this way. And now let’s consider the case if there’s a failure right here. What is the risk?<br>所以你可能会想，好吧，也许，你知道，只是因为我们以错误的顺序编写它们，我们应该做的是我首先在inode中阅读它。因此，第一个Wright 33，带有595 s，可以是间接块，也可以是直接块。然后，你知道，实际上我们会标记，我知道，区块被分配了。所以我们会写，你知道的，45。所以我们更改顺序是因为我们希望避免这些数据阻塞的日志。我们用这种方式改变顺序。现在让我们考虑一下如果这里出现故障的情况。风险是什么？</p>
+<p>发言人   23:57<br>The size of the file is not compatible with actually how many data blocks are allocated. That might be, although I think at the right, the 33 actually update both the size and, you know, the block number, correct? Yeah, so that might be might work out okay if there were two separate rights may and of will be a problem, but there’s some bigger problem here.<br>文件大小与实际分配的数据块数量不兼容。这可能是，尽管我认为在正确的地方，33实际上更新了大小和区块编号，对吗？是的，所以如果有两个单独的权利可能会出现问题，但这里有一些更大的问题。</p>
+<p>发言人   24:27<br>It’s that the so the file has a so things that it has the data block, but the data block is marked as unallocated and other files can also use it. Yeah, correct. That’s the real big problem here is that, you know, the inode, the block 595 belongs to that file. But actually on disk, it’s still marked as unallocated. And so when later another file was created, you know, that block actually might be used for that other file. And so now certainly one file thinks it owns 595, but actually other file does. And in fact, both files will have 595 in there block numbers for that IO. And basically, you know, if one user owns that file and the other user own the other file, they can actually read or write each other’s data.<br>文件具有数据块，但数据块被标记为未分配，其他文件也可以使用它。是的，正确。这里真正的大问题是，你知道，inode，块595属于那个文件。但实际上在磁盘上，它仍然标记为未分配。所以当后来创建了另一个文件时，你知道，那个块实际上可能会用于另一个文件。因此，现在肯定有一个文件认为它拥有595，但实际上另一个文件认为它拥有595。事实上，这两个文件在那个IO的区块编号中都有595。基本上，你知道，如果一个用户拥有该文件，而另一个用户拥有另一个文件，他们实际上可以读取或写入彼此的数据。</p>
+<p>发言人   25:26<br>It’s clearly not what we want you.<br>这显然不是我们想要的。</p>
+<p>发言人   25:28<br>The file system should guarantee that every block only belongs in one file and no other file or is free. Okay, so this could lead to security problems, but basically block a share. Among multiple files. And that’s definitely wrong. Does that make sense in terms of the prompts that can appear? Again, the real issue here is not the ordering of the rights, but the real underlying problem here is that we’re doing multiple rights and they basically have to sort of show up on disk as an atomic operation.<br>文件系统应保证每个块只属于一个文件，没有其他文件或是免费的。好的，这可能会导致安全问题，但基本上会阻止共享。在多个文件中。这绝对是错误的。在可能出现的提示方面，这会感知吗？再说一遍，这里真正的问题不是权限的顺序，而是真正的根本问题是我们正在进行多重权限，它们基本上必须以原子操作的形式出现在磁盘上。</p>
+<p>发言人   26:19<br>Okay, so the solution that we’re going to explore in this lecture is, you know, logging. And as I said before, this is a.<br>好的，我们在这堂课将要探索的解决方案是日志记录。正如我之前所说，这是一个。</p>
+<p>发言人   26:32<br>A common solution used in file systems in originating actually out of the database literature. And it actually has a couple group properties. One, it’s going to make basically system calls or file system calls atomic. With that, I mean, so if a create file or you call create, or you call write, basically all the effects of that system called use all appear all or none of them. And so that avoids the sort of problem of only some subset of the rights actually showing up on disk.<br>文件系统中使用的一种常见解决方案，实际上源自数据库文献。它实际上有几个组属性。一，它基本上会进行系统调用或文件系统调用的原子性。因此，我的意思是，如果创建文件或您调用创建，或您调用写入，基本上称为使用的系统的所有效果都将显示为全部或全部。这样就避免了只有某些权限子集实际显示在磁盘上的问题。</p>
+<p>发言人   27:07<br>The second good property it has, it allows for fast recovery. So after reboot, it turns out we don’t actually have to do a lot of work to repair the file system, maybe very minimal amount of work. And this is in contrast to some other solution that I’m not talking about, which is basically you go and inspect the file system, maybe read all the blocks of the file system, or read all the inode blocks, read all the bitmap blocks. And so check out whether the file system is still in the correct shape, and maybe repair things.<br>它拥有的第二个好特性是，它允许快速恢复。因此，在重新启动后，事实证明我们实际上不需要做很多工作来修复文件系统，可能只需要很少的工作量。这与我没有谈论的其他解决方案形成了对比，后者基本上是你去检查文件系统，可能读取文件系统的所有块，或者读取所有的inode块，读取所有的位图块。所以检查文件系统是否仍然处于正确的状态，也许可以修复一些东西。</p>
+<p>发言人   27:38<br>Logging has this nice property that actually the recovery is fast. And then finally, in principle, it can be actually very high performance. Although the one, you know, the one we’re going to be looking in the context of XV 6 is not high performance. So we’re going to look at that next week.<br>日志记录有一个很好的特性，实际上恢复很快。最后，原则上，它实际上可以是非常高的性能。尽管你知道，我们将要在XV 6的背景下寻找的那个并不是高性能。下周我们将会看这个。</p>
+<p>发言人   27:55<br>We’ll see actually how to build a logging system that, yes, atomic file system calls fast recovery and high performance. Today, we’re going to be just focusing on the first two. Okay, the basic idea of logging is actually straightforward. And so basically what you do is you divide the disk in sort of two pieces, and it runs the log. One is the file system. And the file system might be much bigger than the log.<br>我们将实际看到如何构建一个日志系统，是的，原子文件系统调用快速恢复和高性能。今天，我们将只专注于前两个。好的，日志的基本思想实际上很简单。所以基本上你要做的是将磁盘分成两部分，然后运行日志。一个是文件系统。并且文件系统可能比日志大得多。</p>
+<p>发言人   28:24<br>When you need to update the file system, so update, let’s say ball block 33 or update the bitmap block, we’re actually not going to update you the file system blocks. So we’re not going to update the bitmap block directly. Instead, the only thing we’re going to do on the right is, so here’s our you memory.<br>当您需要更新文件系统时，例如更新球块33或更新位图块，我们实际上不会更新文件系统块。所以我们不打算直接更新位图块。相反，我们在右边唯一要做的事情是，这是我们的记忆。</p>
+<p>发言人   28:44<br>We have a block in memory. This is, say the bitmap block it 45, and instead of writing it 245, what we normally would have done, what we’re going to do is actually we’re going to write it into the log. So we’re going stick it here and remember that actually should go to 45, We’re to put it there. And we do that with all the other rights too. So for example, we’ll put our IO block there, you know, that was like maybe for the 3, I think if I remember correctly, and we’ll stick it in there and you know, remember that it actually has to go to 3 D3. So basically what we do, any rate is first walked. And so we don’t write directly to the home location of the block, but we just put it always in the law.<br>我们在内存中有一个块。这就是说，位图块为45，而不是将其写入245，我们通常会做的是将其写入日志中。所以我们要把它贴在这里，记住实际上应该是45，我们要把它放在那里。我们也这样做，拥有所有其他权利。因此，例如，我们将IO块放在那里，你知道，这可能是针对3的，我想如果我没记错的话，我们会把它粘在那里，你知道，记住它实际上必须去3 d3。所以基本上我们所做的，任何速度都是第一次行走。因此，我们不直接写入块的主位置，而是始终将其放在法律中。</p>
+<p>发言人   29:31<br>Then at some point, when the file system operation is done, you know, for example, it has you the four or five rights that we saw in the previous slides or in the log, we commit the operation. Basically, what it means is somewhere in the log, we just record a record, you know, in a fixed location that basically says, okay, well, you know, there are like five blocks in the lock and that is, you know, the locked rights. And then, you know, when we have all the rights stably on disk, we’re going to actually install them. This is called the installation phase. And really what that means is we’re going to move, you know, these logs from the log to their home location. So we know this one has to go to 45, so we put it at 45, this one has to go to 43, you know, we put it through 43, etc., etc..<br>然后在某个时刻，当文件系统操作完成时，例如，它具有我们在之前幻灯片或日志中看到的四到五个权限，我们提交操作。基本上，它的意思是在日志中的某个地方，我们只是在一个固定的位置记录一条记录，基本上说，好的，你知道，锁中有大约五个区块，也就是锁定的权利。然后，你知道的，当我们在磁盘上稳定拥有所有权限时，我们将实际安装它们。这被称为安装阶段。这实际上意味着我们要将这些日志从日志中移到它们的主位置。所以我们知道这个必须去45，所以我们把它放在45，这个必须去43，你知道，我们把它通过43，等等。</p>
+<p>发言人   30:23<br>And once we’re done, you know, basically we can clean the log and cleaning the log, it’s basically you’re rewriting, you know, basically setting this 5 to 0, and that is the basic plan. And why is this plan good? Well, let’s think about it, let’s say we crash before here, what would happen? So let me hold that question.<br>一旦我们完成了，你知道，基本上我们可以清理日志并清理日志，基本上你正在重写，你知道，基本上将这个设置为5到0，这就是基本计划。为什么这个计划很好？好吧，让我们考虑一下，假设我们在此之前崩溃了，会发生什么？所以让我回答这个问题。</p>
+<p>发言人   30:52<br>Let me actually talk about one thing before asking that question. Let’s say we crash, and so we reboot. And on the reboot, there’s basically what the file system does. It looks like the commit record sees what the value of the commit record is. If it is zero, you know, do nothing in our simple scheme. And if it’s bigger than 0, we know that there are basically blocks in the log that need to be actually installed. And we apparently didn’t finish the installation.<br>在问这个问题之前，让我先谈谈一件事。假设我们崩溃了，所以我们重新启动。在重新启动时，基本上就是文件系统的功能。它看起来像提交记录看到了提交记录的值。如果它是零，你知道，在我们的简单方案中什么也不做。如果它大于0，我们知道日志中基本上有需要实际安装的块。我们显然没有完成安装。</p>
+<p>发言人   31:27<br>We crashed, you know, after the commit, but before cleaning the log. So basically we reinstalled. And after we reinstall, we clean the lock. Okay, and this scheme is good because it actually ensures that no matter where a crash happens, we either install all the blocks of the rights or reinstall none of them, but will never end up in a situation where we install alled some of the rights, but not all of them.<br>我们崩溃了，你知道，在提交之后，但在清理日志之前。所以基本上我们重新安装了。重新安装后，我们会清洗锁。好的，这个方案很好，因为它实际上确保了无论在哪里发生崩溃，我们要么安装所有的权限块，要么不重新安装它们，但永远不会陷入这样的情况: 我们安装了一些权限，而不是全部。</p>
+<p>发言人   32:02<br>And just to see why this is true, let’s consider a couple cases where the things could crash. So things could crash. And between one and two, what will happen?<br>为了看看为什么这是真的，让我们考虑一些事情可能会崩溃的情况。所以事情可能会崩溃。在一到二之间，会发生什么？</p>
+<p>发言人   32:16<br>In what situation do we end up? The situation in which on recovery, we do nothing. And that’s okay because nothing has been written to the file system. Yeah, exactly, so this is the case where basically we just do nothing as if the system called basically never executed, as if the failure happened slightly earlier or right before the file system call started. And so that’s perfectly okay, that’s acceptable.<br>我们最终会陷入什么情况？在复苏方面，我们什么都不做的情况。这没关系，因为没有任何内容被写入文件系统。是的，确切地说，就是这种情况，基本上我们什么都不做，就好像调用的系统基本上从未执行过一样，就好像故障发生在文件系统调用开始之前或之前。所以这完全没问题，这是可以接受的。</p>
+<p>发言人   32:47<br>Okay, what happens if we crash, okay, between after committing but before we installed? Then you’ll just redo all the in. So you’ll kind of restore the correct state. Yeah, so exactly. So at that point, correct?<br>好的，如果我们在提交之后到安装之前崩溃了会发生什么？然后你只需重做所有的。所以你会恢复到正确的状态。是的，就是这样。那么在这一点上，对吗？</p>
+<p>发言人   33:05<br>Oh, we have, we know there all the blocks are in the log, there be all written because we committed. So it must be the case that the whole file system operation finished And so we can basically put them in their location where they should be. And then we’re all in good shape. And so in this case, all the file, you know, in this case, what will end up is as if it is if a file system call actually complete just before the crash, there’s like no difference, okay? So what happens if we crash during reinstall or like in install or during install before we cleaning? So a crash here, in this case, in this case, and now we’ll do the third case.<br>哦，我们有，我们知道日志里有所有的区块，因为我们承诺了，所以都被写入了。因此，整个文件系统操作必须完成，因此我们基本上可以将它们放在它们应该在的位置。然后我们都状态很好。所以在这种情况下，所有的文件，你知道的，在这种情况下，最终的结果是，如果一个文件系统调用实际上在崩溃之前完成，就像没有区别一样，好吗？那么，如果我们在重新安装或安装过程中崩溃，或者在清理之前的安装过程中崩溃，会发生什么？所以这里崩溃了，在这种情况下，在这种情况下，现在我们将进行第三种情况。</p>
+<p>发言人   33:44<br>We’ll install during installation or just before install. After installing, but before cleaning, what will happen then on the Oh? Sorry, on the next restart, nothing has really changed in terms of the recovery process. And so we’re just going to redo the log.<br>我们将在安装过程中或安装前进行安装。在安装之后，但在清洁之前，会发生什么呢？抱歉，在下一次重新启动时，恢复过程并没有真正改变。所以我们只是要重做日志。</p>
+<p>发言人   34:07<br>Yeah, we’re going to redo the log again. And we can copy basically the content again, you know, to the locations where maybe, in fact, we might do it multiple times. He said, okay.<br>是的，我们将再次重做日志。我们可以再次基本上复制内容，你知道，到可能的地方，事实上，我们可能会多次这样做。他说，好的。</p>
+<p>发言人   34:24<br>Yes, because those are just rights and it’s they are to a specific location that we don’t change, like it’s written in the logs that we know where we should write every time.<br>是的，因为这些只是权利，它们是到一个我们不会改变的特定位置，就像记录在日志中一样，我们知道每次应该写入哪里。</p>
+<p>发言人   34:38<br>Yeah, basically every time we’ll do the same, right? Correct? So let’s say in block 45, you know, there’s the value 10 and we’re just going to write 10, you know, the location 45 every time. And that’s exactly what it should be. And like, and repeating that right multiple times doesn’t really do any harm, right? Because we’re writing the same value that actually should be there anyway. And so it’s perfectly fine for us to reinstallation multiple times. Of course, we shouldn’t sure if any other file system calls at this particular point in time, we should do this before we restart the file system. But while, you know, during reboot or during recovery, you know, we can just do this, right?<br>是的，基本上每次我们都会做同样的事情，对吧？对吗？那么假设在45块中，你知道，有值10，我们每次只写10，你知道，位置45。这正是应该的。重复这句话多次并不会造成任何伤害，对吧？因为我们正在写入实际上应该存在的相同值。因此，我们完全可以多次重新安装。当然，我们不应该确定在这个特定的时间点是否有任何其他文件系统调用，我们应该在重新启动文件系统之前这样做。但是，你知道，在重新启动或恢复期间，我们可以这样做，对吗？</p>
+<p>发言人   35:16<br>Another way of saying that is that installation is basically item potent. You can just execute it many, many, many times and will have the same effect at the end.<br>另一种说法是安装基本上是物品强大的。你可以执行它很多次，很多次，最后会产生同样的效果。</p>
+<p>发言人   35:26<br>Question about that? Because the interface is just read and write. If we had an append, this would not be safe, right? Yeah, you know, you can make pensare to more fancy logging schemes, but for this particular logging scheme, you know, we don’t have to worry about that. In fact, like in some sense, the appendix is a file system level operation. And at that level, we can make it atomic using the logging scheme that are that we have here. I see, thank you.<br>关于这个的问题？因为这个接口只是读和写的。如果我们有一个append，这将是不安全的，对吗？是的，你知道，你可以使伐木方案更花哨，但对于这个特定的伐木方案，你知道，我们不必担心这个。事实上，就像在某些感知中一样，附录是文件系统级别的操作。在这个层面上，我们可以使用这里的日志记录方案使其原子化。我明白了，谢谢。</p>
+<p>发言人   36:00<br>I also have a question. Yeah, go ahead would happen if the file system crashed while you were committing, so you want to like execute multiple rights and then you only commit like half of them? Yeah, okay, can you speak up a little bit more? Because your volume is a little. Oh, yes, sorry. So if you wanted to like commit multiple rights at once, like in an atomic way, but your system crashes in the middle of committing, so you are only able to commit like half of the rights, what would happen in that instance? Okay, so there’s a very important point because I’m glad you asked the question.<br>我也有一个问题。是的，如果在您提交时文件系统崩溃，那就继续吧，所以您想执行多个权限，然后只提交一半吗？好的，你能再大声一点吗？因为你的音量有点小。哦，是的，对不起。因此，如果您想以原子方式同时提交多个权限，但是您的系统在提交过程中崩溃，因此您只能提交一半的权限，在这种情况下会发生什么？好的，有一点非常重要，因为我很高兴你问了这个问题。</p>
+<p>发言人   36:34<br>So first of all, you commit you writing this commit operation here, correct? This in step 2. You only execute that commit operation after you already logged all the rights that you were planning to execute, right? So at the point you do to commit, all the rights are in the log, and so the commit operation itself, you know, it’s an interesting question, like what happens there?<br>首先，您在这里提交编写这个提交操作，对吗？这在步骤2中。您只有在记录了计划执行的所有权限后才执行该提交操作，对吗？所以当你进行提交时，所有的权利都在日志中，所以提交操作本身，你知道，这是一个有趣的问题，就像那里发生了什么？</p>
+<p>发言人   36:58<br>So the way, the way I sort of indicated this on this slide, the commit operation writes a single block, a single sector on the disk. And the standards assumption that files instances make is that a single block, right? Or single sector right is an atomic operation, meaning that if you write it, the whole sector will be written or none of the sector will be written. So the sector will never be written partially. And so there’s always, you know, clearly no valid data in that particular sector. And so basically this operation, that commit operation, writing the log header is the running, the commit record is the real commit operation, Like if that succeeds, and there’s basically, say, the five in the commit header, we know that there are five blocks in the log, and we have to reinstall those five blocks if the commit header didn’t make it to disk, then the value would still be 0, and we’ll just treat it as if the projection never happened. Thank you, and the key rule that you’re sort of hinting at that has to be true is something that’s called the right ahead rule, which means that a logging system can not install rights until all the rights are in the log. Any more questions about this sort of basic plan?<br>所以这种方式，就像我在这张幻灯片上指出的那样，提交操作写入磁盘上的单个块、单个扇区。文件实例的标准假设是单个块，对吗？单扇区权利是原子操作，这意味着如果您编写它，整个扇区将被写入，或者任何扇区都不会被写入。因此，该部门永远不会被部分写入。因此，你知道，在那个特定行业显然没有有效数据。基本上这个操作，那个提交操作，写入日志标题是正在运行的，提交记录是真正的提交操作，如果成功了，基本上有五个提交标题，我们知道日志中有五个块，如果提交标头没有放到磁盘上，我们必须重新安装这五个块，那么该值仍然为0，我们将其视为投影从未发生过。谢谢，您所暗示的关键规则必须是真实的，这被称为右前规则，这意味着日志系统不能安装权限，直到所有权限都在日志中。关于这种基本计划还有什么问题吗？</p>
+<p>发言人   38:28<br>Okay? Good? Let’s see?<br>好吗？很好？让我们看看？</p>
+<p>发言人   38:42<br>So what I’m going to, there’s many, many different versions of logging schemes. And I sketched out here a very simple one. You know, it’s perfectly fine. You know, their schemes where basically the cleaning of the log is postponed, installation is postponed until later. But I’m just going to run sort of with this very simple scheme. And then next week we’ll see more sophisticated logging protocols. But all those logging protocols follow. This is right ahead.<br>所以我要讲的是，有很多不同版本的日志计划。我在这里画了一个非常简单的草图。你知道，这完全没问题。你知道，他们的计划基本上是将日志的清理推迟，将安装推迟到以后。但我只是打算用这个非常简单的方案来运行。然后下周我们将看到更复杂的日志记录协议。但所有这些日志协议都遵循。这就在前面。</p>
+<p>发言人   39:09<br>Rule that you know, before you write a commit record, you have to make sure that all the rights are in the log. But then there’s a lot of within that still, there’s a ton of flexibility in designing a particular logging protocol as typically halt, okay? I’m going to look a little bit how this then is manifest itself in XV 6 as a certification case study and to make things really concrete. Okay, so in x 6, there are sort of, we’re going to look at two sort of pieces of state, if you will, the stuff that is actually on disk and that things that are in memory and. In memory, contents will disappear on, or the way we should think about it is that in memory contents will disappear on a crash or a power failure.<br>规则是你知道的，在你写提交记录之前，你必须确保所有的权利都在日志中。但是在设计特定的日志协议时，仍然有吨的灵活性，通常会停止，好吗？我将研究一下作为认证案例研究在XV 6中是如何表现出来的，并使事情变得非常具体。好的，在x6中，我们将看两种状态，如果你愿意的话，磁盘上的东西和内存中的东西。在内存中，内容将消失，或者我们应该考虑的是，内存中的内容将在崩溃或电源故障时消失。</p>
+<p>发言人   40:07<br>Structure of the XV Sig log that’s always is extremely simple.<br>XV Sig日志的结构总是非常简单的。</p>
+<p>发言人   40:13<br>There’s actually, we have one block at the beginning, the header block, and that is basically our commit record. You know, it contains the number n, which is like the number of blocks in the log. And then for each block, the block number, the home location of that block, blah, blah, blah, blah. So they’re going to be n of those. And so within, in the log itself, r, basically it’s data for that belongs to that. So here’s the data of BN 0. Here’s the data of BN 1, etc., 2 b, and BN one. So that’s what’s in the log. And that’s the only thing that’s sort of in the log. There’s nothing more to it then in memory.<br>实际上，我们在开头有一个块，标题块，这基本上是我们的提交记录。你知道，它包含数字n，就像日志中的块数。然后对于每个区块，区块编号，该区块的起始位置等等。所以他们将成为其中的n个。因此，在日志本身中，r，基本上它的数据属于那个。所以这是BN 0的数据。这是BN 1等，2 b和BN 1的数据。这就是日志中的内容。这是日志中唯一的东西。在记忆中没有更多的东西。</p>
+<p>发言人   41:01<br>When the waham, the faus is running, there’s an in copy version, in memory version of the header. And it basically has the n, and it has an array of block numbers. Etc and then these block nomers refer to blocks that are sitting in the data that actually corresponds to the block numbers that are sort of sitting in this in memory data structure. They live in the block cache, which, you know, but now you’re well familiar with.<br>当waham，faus正在运行时，有一个复制版本，内存版本的标头。它基本上有n，它有一个块编号数组。等等，然后这些块命名者指的是坐在数据中的块，这些数据实际上对应于坐在内存数据结构中的块编号。它们位于块缓存中，你知道，但现在你已经很熟悉了。</p>
+<p>发言人   41:37<br>And so maybe this is like block 10 is the first blocking log. Or maybe let me take a more complete example from that, lines up with our previous thing so that maybe this is like 45. And basically, you know, somewhere in the in cache in the block CA, there’s of course, you know, whatever block for 45, here’s okay? And that’s sort of the structures. On this, the in memory file system has and the on disk file system has. So the on disk file system just has the log in memory, has tos these data structures to orchestrate these multi towrang operations that we’re going to be doing, okay?<br>所以也许这就像第10块是第一个阻止日志。或者让我举一个更完整的例子，与我们之前的东西一样，这可能是45。基本上，你知道，在CA区块的缓存中，当然，你知道，无论45块，这里是什么？这就是结构的类型。在这里，内存文件系统和磁盘文件系统都有。所以磁盘上的文件系统只有登录内存，有这些数据结构来编排我们将要进行的多信息操作，好吗？</p>
+<p>发言人   42:20<br>So to make those a little bit more concrete, let’s look at some code. And that will help us understand how everything works. So let me pull up some code and let me put next to it. And we keep that picture so that we can look at it if we want to, or I can point to it. Can everybody see my code? Yeah, somebody. Have you confirmed that they think the EBA window? Yeah, we can see it. Is it big enough? I think it’s good. Okay, looks good. Okay, thank you.<br>为了使这些更加具体，让我们看一些代码。这将帮助我们理解一切是如何运作的。所以让我拉一些代码，让我在它旁边放一些代码。我们保留那张图片，这样我们就可以根据需要查看它，或者我可以指向它。每个人都能看到我的代码吗？是的，有人。你确认了他们认为是EBA窗口了吗？是的，我们可以看到。它足够大吗？我觉得很好。好吧，看起来不错。好的，谢谢。</p>
+<p>发言人   43:08<br>Okay, so let’s start with the, you know, I talked about transactions, right? The fact that we not commit should not write to commit until all the rights have done. And so that means that the file system operations must indicate sort of what the beginning of the transaction is, and particularly what the end of the transaction is. And the way that happens in XV 6 is that every file system call, and here’s open the corresponds to create basically starts with beginner. And beginner basically indicates like, okay, I want to start a transaction and I want all the block rights that I’ll be doing between begin up and end up, which is basically at the end of the transaction to be a topic, meaning, you know, they should be all applied to, none of them should apply, okay? And so every file system call in, XV 6 has that structure and basically has begin up then the code that implements the file system call and then end up and then end up is basically where the commit operation happens.<br>好的，让我们从我谈到的交易开始，对吧？我们不承诺的事实不应该在所有权利完成之前写信承诺。这意味着文件系统操作必须指明事务的开始，尤其是事务的结束。在XV 6中发生的方式是，每个文件系统调用，这里是打开对应的创建，基本上从初学者开始。初学者基本上表示，好的，我想开始一个交易，我希望我在开始和结束之间所做的所有块权限，这基本上是在交易结束时成为一个主题，这意味着，你知道，它们应该全部应用于，他们都不应该申请，好吗？因此，XV 6中的每个文件系统调用都具有该结构，基本上已经开始，然后实现文件系统调用的代码，然后结束，最终基本上就是进行提交操作的地方。</p>
+<p>发言人   44:10<br>So basically between begin and end up the on disk or the in memory data structure should be updated, you know, whatever the in memory log may be updated, the block cache might be updated, but nothing really happens until it will end up in an end up time. We’re basically going to put things into the log. And then if we done with putting everything in the log, we’ll actually know write a commit record for the log header.<br>所以基本上在开始和结束之间，磁盘或内存中的数据结构应该被更新，你知道，无论内存日志可能被更新，块缓存可能会被更新，但在结束之前，什么都不会发生。我们基本上要把东西放进日志里。然后，如果我们将所有内容都放入日志中，我们实际上就会知道为日志标题写一条提交记录。</p>
+<p>发言人   44:36<br>Okay, so let’s, so what is interesting, of course, then what happens is whenever you write correctly, whenever one of these file system calls, does a disk write? So something must happen. So if we go back, for example, to FS stuff, see, you look at AOC. AOC basically what it calls it doesn’t call B right directly, but it actually calls log, right? And so we’re going to see what log right does. Log right is basically the function implemented by the logging system. And every rate, basically a file system called us between begin up and end up always goes to log, right?<br>好的，那么有趣的是，当然，当你正确写入时，每当这些文件系统调用时，磁盘会写入吗？所以必须有事情发生。所以，如果我们回到例如FS的东西，你看看AOC。AOC基本上它所说的并不直接调用B，但它实际上调用log，对吧？所以我们要看看日志的作用。Log right基本上是日志系统实现的功能。每个速率，基本上称为我们的文件系统在开始和结束之间总是转到日志，对吗？</p>
+<p>发言人   45:23<br>And so here’s log, right? And log right actually is reasonable and straightforward.<br>所以这是日志，对吗？而正确的对数实际上是合理和直接的。</p>
+<p>发言人   45:30<br>You know, we’ve written the block in the block hash. So somewhere basically 45, maybe this is like the right to 45. We’ve updated 45 in the block ash and now we basically learned a core in the in memory data structures that at some point later, at commit point, we need to write this block into the log. And so, you know, basically, you know, the code is coaches, reasonable, straightforward, acquires a lock on the header and basically updates the header. And particularly what it does, you know, it goes through, you know, the it updates n when it actually the first thing it does, it actually sees if there’s already a copy of 45 in the if 45 is already recorded as being having to written to. And if that’s the case, nothing has to be done because 45 will be written to. And so we’re done this sometimes it’s called lock absorption.<br>你知道，我们已经在区块哈希中写入了区块。所以基本上是45，也许这就像45的权利。我们已经在块ash中更新了45，现在我们基本上在内存数据结构中学到了一个核心，在稍后的某个时刻，在提交点，我们需要将这个块写入日志。所以，你知道，基本上，你知道，代码是教练，合理，直接，获取标题上的锁，基本上最新进展标题。特别是它所做的事情，你知道，它经过，你知道，当它做的第一件事情时，它实际上会看到是否已经有45的副本，如果45已经记录为必须写入。如果是这样的话，什么都不用做，因为45将被写入。所以我们这样做有时被称为锁吸收。</p>
+<p>发言人   46:31<br>If you know block 45 is not in the array yet or not in the list of blocks or the rave of blocks that needs to be written to disk, then basically, you know, the only thing this particular piece of code does is basically bump up in and stick, you know, that block number that needs to be written into the next entry or into that entry. Then the only other thing it does, and I’ll talk about this later, it will pin the block in the buffer cache and let me postpone y for a little while, but I will come back to that later, and that’s actually all the log right there is doing so every file system call that you know needs to update a block, you know, updates the block in the block cache, and then basically appends it to this in memory data structure unless it’s already there, in which case it just absorbs it. Does that make sense? So does that mean that Eri shouldn’t be used by itself all at all? Be right? Shouldn’t be used by itself only as that’s correct? Yeah, basically all one way to think about it is that every be right in the file system is replaced by log, right?<br>如果你知道45块还不在数组中，或者不在需要写入磁盘的块列表或大量块中，那么基本上，你知道，这段代码唯一能做的就是快速插入并粘贴，你知道，需要写入下一个条目或该条目中的区块编号。然后它唯一做的另一件事，我稍后会谈论这个，它会将该块固定在缓冲区缓存中，让我推迟一段时间，但我稍后会回来讨论这个问题。这实际上就是所有的日志，所以你知道的每个文件系统调用都需要更新一个块，你知道，在块缓存中最新进展块，然后基本上将其附加到内存数据结构中，除非它已经存在。在这种情况下，它只是吸收了它。感知了吗？那么，这是否意味着Eri根本不应该被单独使用？是对的吗？不应该只使用它自己，因为这是正确的？是的，基本上所有的思考方式都是将文件系统中的每个正确替换为日志，对吗？</p>
+<p>发言人   47:54<br>Okay, so now let’s see what actually happens at end off, because that’s where the exciting part happens. And I’m, there’s a couple things cases that I just want to before we talking about a little bit later because they even this simple logging system actually has some subtle complexities. Most the beginning of this code deals with these subtle complexities, but I just want to really get the normal case. You know, there’s or there’s the simple case where no other file system operations are in progress.<br>好的，现在让我们看看到底发生了什么，因为那就是令人兴奋的部分发生的地方。还有一些事情我只是想在稍后讨论之前先说一下，因为即使是这个简单的日志系统实际上也有一些微妙的复杂性。这段代码的开头大部分处理了这些微妙的复杂性，但我只想真正得到正常的情况。你知道，有一种简单的情况，没有其他文件系统操作正在进行中。</p>
+<p>发言人   48:26<br>We execute create file. And basically we’re getting to the point where we want to commit. And so the code is pretty straightforward and calls commit. So let’s look at commit. So here’s commit. Amazing commit does two basically steps. And basically it writes the log. And that’s basically writing all these, all these block numbers that are sitting, you know, in the in memory header and writes them basically alter the header on disk, including, you know, this number n and. So let’s see. That is, that’s what right head does.<br>我们执行创建文件。基本上我们已经到了我们想要承诺的地步。因此，代码非常简单，调用commit。让我们来看看提交。这就是我们的承诺。惊人的提交基本上有两个步骤。基本上它会写入日志。基本上就是将所有这些块号写入内存标头中，并将它们写入基本上会改变磁盘标头，包括这个数字n和。让我们看看。也就是说，这就是正确的头脑所做的事情。</p>
+<p>发言人   49:06<br>Sorry, the right log basically writes, you know, the blocks from the buffer cache into their respective or into the log itself. So let’s see, right log is right above here. You can see what it does, you know, it goes through, you know, this array, you know, 1 at a time and basically writes down to the lock position in the lock, okay? So it reads, you know, the log block, then sticks it in there by copying it and then writing it rightly out to the disk. So this basically insurers by walk 45 will end up here, you know, say this is 32, that will end up there, etc., etc.. Then in the end, so at this point, we have not committed yet, correct?<br>抱歉，正确的日志基本上是将缓冲区缓存中的块写入各自的日志或写入日志本身。所以让我们看看，右边的日志就在这里上方。你可以看到它做了什么，你知道，它通过这个数组，一次一个，基本上写到锁中的锁位置，好吗？因此，它读取日志块，然后通过复制将其粘贴到那里，然后正确地将其写入磁盘。所以这个基本上保险公司通过步行45号将最终出现在这里，你知道，假设这是32号，那将最终出现在那里，等等。那么最后，在这一点上，我们还没有承诺，对吗？</p>
+<p>发言人   49:52<br>The only thing we’ve done is basically putting blocks into the log. And if we were crash at this particular point in time before calling, right before right hex succeeded. And basically that is if the transaction didn’t execute at all. So let’s look at right head. So that right head is, you know, what I called earlier, basically the commit point and the commit point basically, you know ISS basically straightforward and read the header block from disk, which is probably sitting in the buffer cache.<br>我们所做的唯一一件事基本上就是将块放入日志中。如果我们在调用之前的特定时间点崩溃，就在正确的十六进制成功之前。基本上，这是如果交易根本没有执行。让我们看看正确的头部。因此，正确的头部就是我之前所说的，基本上是提交点和提交点，基本上是直接的，可以从磁盘读取标头块，磁盘可能位于缓冲区缓存中。</p>
+<p>发言人   50:24<br>It, you know, puts the copies the N, you know, this n into that block, puts all the block numbers into that array, into that block, and then basically writes that that particular block, this is the, this b, right? What is that? Is that the commit point? If a crash happens before this, be your right, what happens then?<br>它，你知道的，将副本N，你知道的，这个n放入那个块，把所有的块编号放入那个数组，那个块，然后基本上写入那个特定的块，这就是，这个b，对吧？那是什么？这是提交点吗？如果在这之前发生撞车事故，你是对的，那么会发生什么？</p>
+<p>发言人   50:57<br>Anybody, if the crash happened before bwrc isn’t the only modification that we’ve made to the in memory HP data structure. So it’s not, it’s going to be fine. Yeah, it’s going to be fine because basically we may have written Db 1, 0 DBN or whatever to the log, but we have not succeeded in writing the log header. And so we’ll do on recovering, nothing will happen. And what happens if there’s a crash right after the B, right? So like a crash year.<br>任何人，如果崩溃发生在bwrc之前，那不是我们对内存惠普数据结构所做的唯一修改。所以不是，会没事的。是的，它会很好，因为基本上我们可能已经在日志中写入了Db 1，0 dbn或其他内容，但我们还没有成功地写入日志标题。所以我们将继续恢复，什么都不会发生。如果在B之后发生崩溃会发生什么，对吧？就像一个崩溃的一年。</p>
+<p>发言人   51:32<br>And it’s no longer 0. So the log header is correctly, right? And it’s recovered. Yeah, it will be recovered, correct? Well, at some point, hopefully during recovery, yes, we inspect that you expect that recovery will actually read the log header, see that there is a five in there, for example, and then copy the first five blocks to their home location. So this is really this, this one line, this one disk, right? This one sector, right, is really the commit point GRE.<br>它不再是0。所以日志标题是正确的，对吗？它已经恢复了。是的，它会被恢复的，对吗？好吧，在某个时候，希望在恢复期间，是的，我们检查您预计恢复将实际读取日志标题，看到那里有五个，例如，然后将前五个块复制到他们的主位置。所以这真的是这一行，这一个磁盘，对吧？这一个部门，对，是真正的提交点GRE。</p>
+<p>发言人   52:03<br>Before the commitment point, the transaction it is the transaction didn’t happen. And after the commit point, the transaction will definitely be finished assuming recovery is correct.<br>在敬业点之前，交易没有发生。在提交点之后，假设恢复是正确的，交易肯定会完成。</p>
+<p>发言人   52:18<br>Okay, so let’s, you know, go back to commit. So commit after it’s committed, it actually installs the transactions. And, you know, that’s pretty straightforward. Basically, you know, it takes the blocks, looks at the header, word of blocks, blocks, and then basically writes into that particular location. And so we can actually look at the install trends and see that actually that’s what it does.<br>好的，所以让我们，你知道，回到承诺。所以在提交之后进行提交，它实际上会安装事务。而且，你知道，这很简单。基本上，你知道，它获取块，查看标题，块的单词，块，然后基本上写入该特定位置。因此，我们可以实际查看安装趋势，并看到这实际上就是它的作用。</p>
+<p>发言人   52:45<br>You know, it has a copy of the log header and it just reads the log header. It reads the destination block, the home location, copies the data from the log block into the destination, and then write the buffer to the destination. Okay, so basically, effectively what this does is basically, you know, you go back to this previous slide here, it copies, you know, it just does these copies from the log into the home location actually in the file system. Of course, you know, we might get a failure somewhere in, you know, this code or while we’re doing this. But, you know, that should be okay because hopefully in recovery, it will just start over from the beginning. So let’s look at so that was installed. So once install is done, then basically it sets, you know, the in memory header n back to 0 and it writes that lock header and effectively that causes to. Cleans the log because basically it does an out 0 in it question.<br>你知道，它有一个日志标题的副本，它只读取日志标题。读取目标块、主位置，将数据从日志块复制到目标，然后将缓冲区写入目标。好的，基本上，它的作用基本上是，你知道，你回到上一张幻灯片，它将这些副本从日志复制到文件系统中的主位置。当然，你知道，我们可能会在某个地方失败，你知道，在这段代码中或者在我们这样做的时候。但是，你知道，这应该没问题，因为希望在恢复过程中，它会从头开始。让我们看看它是被安装的。因此，一旦安装完成，基本上它会将内存中的标头n设置回0，并写入锁定标头，从而有效地导致。清理日志，因为基本上它在问题中执行了0输出。</p>
+<p>发言人   53:57<br>So you, the function you’re in just before, like where is does the front two or to I’m getting, so that puts the, the block that you’re going to like update the log block that you’re going to update into the buffer cash, could you make it faster by not putting it into the buffer cache and just directly writing it to the device? Instead?<br>所以你，你之前使用的函数，就像前面两个或我得到的一样，这样就把你想要更新的日志块放入缓冲区现金，你能通过不将其放入缓冲区缓存而直接将其写入设备来使其更快吗？相反？</p>
+<p>发言人   54:27<br>Let me which function we’re talking about. Forget its name it. It’s the one where you copy. Yeah, everything into the log.<br>让我来告诉我我们在谈论哪个函数。忘记它的名字吧。这是你复制的地方。是的，所有的东西都记录在日志中。</p>
+<p>发言人   54:39<br>Okay, install, install trends, I think so. Maybe it was this one. Everybody’s thinking probably of right head, but it’s the same thing. The only reason? Basically, our interface is not particularly good. You could just reg straight. You know, you’re wondering why you were doing the read. There’s no reason to do the read because we’re going to write anyway. Is that to the question? Yeah, that. And you’re also doing the men move, right? And you move. Yeah, so actually sign of code can definitely be optimized.<br>好的，安装，安装趋势，我想是这样的。也许是这一个。每个人可能都在想正确的头脑，但这是同样的事情。唯一的原因？基本上，我们的界面并不是特别好。你可以直接reg。你知道，你想知道为什么你在阅读。没有理由阅读，因为无论如何我们都会写。这就是问题吗？是的，那个。而且你也在做男人的动作，对吧？然后你移动。是的，所以实际上代码的标志是绝对可以优化的。</p>
+<p>发言人   55:23<br>You can save, you know, 1 or 2 disk rights just for simplicity. We don’t do it any of time, okay, thank you. Okay, so I think we’re an over commit, just like to just go back and double check. So we did the right log, we did the right head, and basically this is the cleaning operation. We erased the transaction by sending it to 0.<br>您可以保存1或2个磁盘权限，只是为了简单起见。我们现在什么都不做，好的，谢谢。好的，所以我认为我们是一个过度承诺，就像回去仔细检查一样。所以我们做了正确的记录，我们做了正确的头部，基本上这是清洁操作。我们通过将其发送到0来擦除交易。</p>
+<p>发言人   55:54<br>Okay, so the only thing to sort of fruit of inspect is like, how does recovery work? And so recovery happens when XV 6 starts. So we had a crash, the system failed, we rebooted.<br>好的，所以唯一需要检查的是，恢复是如何工作的？因此，当XV 6启动时会发生恢复。所以我们崩溃了，系统失败了，我们重新启动了。</p>
+<p>发言人   56:15<br>And one of the first things, one of the things that X research does during AMS inox calls in a log and in a log basically calls this function recover verb log. So let’s see what that does. And basically recover from log, you know, calls read head to basically extract or read the, let me see if I can scroll down here a little bit. Basically reads the header from disk and sees if n, well, it doesn’t really see if n is 0 or not. It just calls installed trends. And this is exactly the same installed trends that we just looked for looked at a little ago, and basically, you know, looks at these n and installs all the blocks from 0 to n out of the log into their home location. And if it’s done once, it succeeds, you know, then actually it calls clear log as before.<br>而X研究在AMS inox调用log和log期间所做的第一件事之一基本上是调用此函数恢复动词日志。让我们看看它有什么作用。基本上从日志中恢复，你知道，调用read head基本上提取或读取，让我看看是否可以在这里向下滚动一点。基本上从磁盘读取标头并查看是否为n，好吧，它实际上并没有看到n是否为0。它只是调用已安装的趋势。这与我们之前刚刚寻找的安装趋势完全相同，基本上，你知道，查看这些n并将日志中从0到n的所有块安装到它们的主位置。如果它完成一次，它就成功了，你知道的，然后它实际上像以前一样调用清晰日志。</p>
+<p>发言人   57:15<br>And so that’s actually all what the recovery dust, you know, recovery is basically always call dust installation and if we crash during installation here, no particular problem again, correct because will crash will boot extra shakespere and booting, we’ll call log in it, which we’ll call recoverable log, and it will basically reinstall or replay the log as sometimes it’s called again. And this might have this might end if we crash every time or you know, many, many times it will reinstall replay the log many, many, many times until hopefully at some point succeeds and actually, you know, gets the whole log written or gets the whole log installed, you know, to the due to home locations.<br>所以这实际上就是所有的恢复灰尘，你知道，恢复基本上总是被称为灰尘安装，如果我们在这里安装期间崩溃，没有特别的问题，正确的，因为崩溃会启动额外的shakespere和启动，我们将其称为日志，我们称之为可恢复日志，它基本上会重新安装或重放日志，因为有时会再次调用它。如果我们每次都崩溃，或者你知道，很多次它会重新安装日志很多次，很多次，直到希望在某个时刻成功，实际上，你知道，将整个日志写入或安装整个日志，你知道，由于家里的位置。</p>
+<p>发言人   57:59<br>Does it make sense? I had a question about, so if a process just runs normally, it writes some data to disk, and then at some point after that, before it commits and installs the changes, there is a failure. The process. From the process point of view, nothing happened. But something like, I guess the failure happened after the process ended, what I was doing. So is there anything bad about that? Not 100% sure. Where you getting it? The short answer? There’s nothing bad because the disk won’t be updated at all. So as if that file system operation didn’t happen, right? I guess the process disappears too. But we don’t expect the process to survive failures anyway. Right, or I guess, okay.<br>它有感知吗？我有一个问题，所以如果一个进程正常运行，它会将一些数据写入磁盘，然后在某个时候，在它提交和安装更改之前，就会出现故障。这个过程。从过程的角度来看，什么也没发生。但是类似的事情，我猜失败发生在过程结束后，我在做什么。那有什么不好的地方吗？不是百分百确定。你从哪里得到的？简短的回答？没有什么不好的，因为磁盘根本不会更新。好像那个文件系统操作没有发生，对吧？我想这个过程也消失了。但我们并不指望这个过程能在失败中幸存下来。对，或者我想，好吧。</p>
+<p>发言人   59:02<br>I think that answered my question, thank you. Yeah, it’s important to remember that basically the only thing that really survives failures or that’s persistent across failures is the disk or the state on the disk, nothing else, right?<br>我想这回答了我的问题，谢谢。是的，重要的是要记住，基本上真正从故障中幸存下来或在故障中持续存在的唯一东西是磁盘或磁盘上的状态，没有别的了，对吧？</p>
+<p>发言人   59:19<br>Okay, so just to make this all concrete one little bit more or two, let’s I put a statement in bwrc. So actually the thing that actually does write to disk, like in the block cache, and what you’re going to see what the trees of actual disk rights are, because basically on Monday, I sort of. I didn’t tell the full truth because basically I put the print statement in log, right? And not in B, right? And so now I put it in the D, right? And so we can actually see all the blocks that being written.<br>好的，为了使这一切更加具体，让我们在bwrc中放一个声明。所以实际上确实写入磁盘的东西，比如在块缓存中，你将看到实际磁盘权限的树是什么，因为基本上在周一，我有点。我没有说出全部真相，因为基本上我把打印语句放在了日志中，对吧？而不是在B中，对吗？所以现在我把它放在D里，对吗？因此，我们实际上可以看到正在编写的所有块。</p>
+<p>发言人   59:54<br>So we’ll do the same thing as before, you know, echo high x and just look at actually the actual disk rights and see if they make sense. So the first thing to note, correct, is that this trace is way longer than the trace that we looked at last time, in fact, that we looked at slides a couple slides ago, right? Because if you look at the, in fact, just the demonstrators here was that same echo high Earth. And what we see there is like only it’s 5 log right operations, but it turns into many disk operations, right? So let’s look at it. So what we think be right, 3, 4, and 5 are.<br>所以我们会像以前一样做同样的事情，你知道，回声高x，只需要实际查看磁盘权限，看看它们是否有感知。所以首先要注意的是，正确的是，这条痕迹比我们上次看的痕迹长得多，事实上，我们之前看了几张幻灯片，对吧？因为如果你看一下，事实上，只是这里的示威者是同样的回声高地。我们看到的只是5个正确的日志操作，但它变成了许多磁盘操作，对吧？那我们来看看。所以我们认为正确的3、4和5是。</p>
+<p>发言人   01:00:39<br>And what is B? Right 2.<br>B是什么？对，2。</p>
+<p>发言人   01:00:48<br>Anybody is that writing to the log and then the super block? No, the super block, right? No, that side, the log head, yeah. So just to look at the, yeah, you’ve got it right, you know, there’s looking at this picture again, correct?<br>有人在写入日志然后写入超级块吗？不，超级街区，对吧？不，那一边是木头，是的。所以只是看看，是的，你做对了，你知道，又在看这张照片了，对吗？</p>
+<p>发言人   01:01:02<br>The block structure’s a 2, so that’s probably the header block, the commit record, if you will. And then freeze the first data block for the second data block files, the third data block, right? So going back, you know, this is the first, right, the second right, the third right. They’re all going into the log and they’re written to disk in the lock part of the disk, and then this is the commit record, the header. And then presumably, what is this face?<br>块结构是一个2，所以这可能是标题块，提交记录，如果你愿意的话。然后冻结第二个数据块文件的第一个数据块，第三个数据块，对吗？所以往回走，你知道，这是第一个，对，第二个，第三个。它们都将进入日志，并被写入磁盘的锁定部分，然后这是提交记录，即标头。然后大概是这张脸是什么？</p>
+<p>发言人   01:01:41<br>What is this part? Is that the bitmap setting? No, so what do we think actually stored in this? Be right free? Here you creating the file, the inode for x, updating the directory, and then also actually making the file itself. Yeah, so we didn’t do it here, correct? Because in these b, right, that didn’t happen, but now we’re doing it. So what, what phase is this is the transaction? Installing the changes. Yes, installing the changes, correct. What we did here is we logged the right, then we committed the file system operation to create operation, and now we’re installing it. So now we’re putting the blocks in their home location. And now what does this be right to then?<br>这是什么部分？这是位图设置吗？不，那么我们认为实际上存储在里面的是什么？自由吗？在这里，您创建了文件，x的inode，更新了目录，然后还实际创建了文件本身。是的，所以我们不是在这里做的，对吗？因为在这些b中，对，这并没有发生，但现在我们正在这样做。那么，这是交易的哪个阶段？安装更改。是的，安装更改，正确。我们在这里做的是记录权限，然后提交文件系统操作以创建操作，现在我们正在安装它。所以现在我们要把这些区块放在他们的家位置。那么现在这是什么权利呢？</p>
+<p>发言人   01:02:44<br>It’s clearing the log. Yeah, it’s clear the log, exactly. So basically this, this, this, the system call was writing 3, 3, 46 and 32. And to actually do that using the logging system that basically turns into this setup, this rights where the first party is installing the law. First party is actually logging the rights and the second part is installing the lock. And these are the two rights due to commit records. Does it make sense?<br>它正在清除日志。是的，日志很清楚，确切地说。所以基本上这个，这个，系统调用正在写3，3，46和32。实际上，要做到这一点，使用日志系统基本上变成了这种设置，这是第一方安装法律的权利。第一方实际上是记录权限，第二部分是安装锁。这是提交记录的两项权利。它有感知吗？</p>
+<p>发言人   01:03:15<br>Is it possible to infer where begin up and end up would run from the trace? Well, so we sort of know, correct? So where did we don’t really know what begin off stock, but is at the beginning any file system call start with the begin up and it must be the case that the commit record correct is written in end up. So we know that this is the end up of some file system operation. Does that all make sense?<br>是否有可能推断出从跟踪开始到结束的位置？嗯，所以我们有点知道，对吗？所以，我们实际上不知道什么是从库存开始的，但是在开始时，任何文件系统调用都是从 “开始” 开始的，并且必须在提交记录正确写入的情况下结束。所以我们知道这是某些文件系统操作的结束。这一切都感知吗？</p>
+<p>发言人   01:03:53<br>Like I said, that was basically x 56 logging and logging in action. And I want to talk about a couple complications. Even this good, simple, naive logging scheme actually has complications. One thing to immediately note, of course, is, you know, is this a very performant implementation just by looking at the trace?<br>就像我说的，这基本上是x 56日志记录和日志操作。我想谈谈一些并发症。即使这种良好、简单、朴素的伐木方案实际上也有复杂性。当然，需要立即注意的一件事是，你知道，仅通过查看跟踪，这是一个非常高性能的实现吗？</p>
+<p>发言人   01:04:27<br>No, why not? I know this is basically too simple question, but it’s important to ask like. You’re writing the stuff twice, right? Yeah, you’re writing your stuff twice. You’re writing a file F or big file F? I’m going to write that big file F twice, and so certainly not particularly high performance correctly. Basically, we’re cutting the performance immediately by a factor of 2 just to get crash safety, and so we’ll see on, you know, when you’re reading the ext 3 paper for one, you know, 1 thing you should keep in your head is while reading is get a help. How do they get around sort of this factor of 2?<br>不，为什么不呢？我知道这个问题基本上太简单了，但问这样的问题很重要。这段话你写了两次吧？是的，你写了两次你的东西。你在写一个文件还是大文件？我打算将那个大文件F写两次，所以肯定不是特别高性能。基本上，我们会立即将性能降低2倍，以确保碰撞安全，因此我们会看到，当你阅读ext 3的论文时，你应该记住的一件事是在阅读时寻求帮助。他们如何绕过这个2的因素？</p>
+<p>发言人   01:05:15<br>Okay, so is it the case that you write the H and the I separately? Yeah, I think so I’ll. Show you in a second why, what is happening there? Or maybe? Well, let me not commit too much for that answer, but I’ll come back to it. Sorry, am I having the M line? Not the H, but yeah, the new line is a separate, right? The H line is one, right, and the new line is a separate right? Okay, thank you, you’re welcome. Okay, there’s complications. And I want to talk a little bit about these complications.<br>好的，那么你是把H和I分开写的吗？是的，我想我会的。马上告诉你为什么，那里发生了什么？或者也许？好吧，让我不要为那个答案做出太多承诺，但我会回来讨论的。抱歉，我在使用M线吗？不是H，但是，新行是一个单独的，对吧？H线是一条，对吗？而新线是一条单独的线，对吗？好的，谢谢，不用客气。好吧，有并发症。我想稍微谈谈这些并发症。</p>
+<p>发言人   01:06:05<br>So, okay, here’s our basic schema, basic data structures. And there’s a free complication that I want to talk about. Or maybe I will call them challenges, whatever you want to call them. The first is eviction.<br>所以，好的，这是我们的基本模式，基本数据结构。还有一个免费的并发症，我想谈谈。或者我可以称它们为挑战，不管你怎么称呼它们。第一个是驱逐。</p>
+<p>发言人   01:06:29<br>And the issue is as follows. Let’s say we go back to this picture here and the whole bcache is full. So the interject digit in progress, let’s say we just updated 45. It’s now done with block 45. So it’s going to write the next block and the cash is full and the, and let’s say, you know, we don’t have a solution for this yet, but the cash to sites it wants to eviction 45, correct? And if it wants to invict 45, but it will mean that will mean we have to write it to its own location, right? How bad would it be to write the block evictions 45 and right 45 to home location?<br>问题如下。假设我们回到这张图片，整个bcache已经满了。所以插话数字正在进行中，假设我们刚刚更新了45。现在已经完成了45个区块。所以它将要写下一个区块，现金已经满了，比如说，你知道，我们还没有解决这个问题的方法，但是它想要驱逐45个网站的现金，对吗？如果它想要邀请45，那就意味着我们必须把它写到它自己的位置，对吧？将街区驱逐45号和右45号写入家庭位置会有多糟糕？</p>
+<p>发言人   01:07:28<br>Is that good or bad?<br>这是好还是坏？</p>
+<p>发言人   01:07:44<br>Would any rule be broken if we did? That, I guess, if a crash happens before the other writes in the same transaction occurs, then basically atomicity is broken. Yeah, so this is that correct? That is basically violates this right ahead rule that I talked about. You have to write all the blocks to the lock before you write any block through which home, home location.<br>如果我们这样做，会有任何规则被打破吗？我想，如果在同一事务中的其他写入发生之前发生崩溃，则基本上原子性被破坏了。是的，那么这是正确的吗？这基本上违反了我所谈到的提前权利规则。在您写入任何家庭位置的块之前，您必须将所有块写入锁中。</p>
+<p>发言人   01:08:25<br>So it has to be the case, correct, that the cache does not eviction any block that sits in the log, does that make sense? So the solution is don’t eviction. Blocks that are in the block.<br>所以必须是这样，正确的，缓存不会驱逐日志中的任何块，这感知吗？所以解决办法是不要驱逐。块中的块。</p>
+<p>发言人   01:08:49<br>And this is exactly, you know, what it was showing a little bit earlier and said I didn’t want to talk about. So if you go to log right again, just to see for a second there. Log right. Here’s log right again. And here we see just called the B pin. And what do you think? BP dot. The name sort of indicates it. It pins the block in the in the cache. And how does it do it?<br>而这正是，你知道，它之前展示过的，并说我不想谈论。所以如果你再次登录，只是想看一下。记录正确。这又是日志。在这里，我们看到的只是所谓的B引脚。你觉得呢？BP点。这个名字有点暗示着它。它将块固定在缓存中。它是如何做到的？</p>
+<p>发言人   01:09:23<br>Since you’ve been looking at this for your current lab extensively, but you think it does so without you, we can look up the implementation with BP, but we can also guess what it does. Doesn’t it essentially just make it so that it doesn’t get evictions by increasing the ref count? Yeah, exactly this. The only thing that do B painters increases the ref count. And we know from the bcap code corrected would if the any blocks we have a re count higher than 0 and so presumably somewhere later in logging code, when once actually everything is logged, we can actually unpin the clock, right?<br>由于您一直在为当前的实验室广泛研究这个，但是您认为如果没有您，它确实会这样做，因此我们可以使用BP查找实现，但我们也可以猜测它的作用。它不是基本上只是通过增加参考计数来使其不会被驱逐吗？是的，就是这个。做B画家的唯一方法是增加参考计数。我们从bcap代码中得知，如果任何块的重新计数高于0，那么大概在日志代码的某个地方，一旦实际记录了所有内容，我们实际上可以取消固定时钟，对吗？</p>
+<p>发言人   01:10:06<br>Okay, so that’s one complication. So we have this pinning and unpinning going on. Let’s look at the other complication.<br>好吧，这是一个并发症。所以我们有这种牵制和解除牵制的情况。让我们看看另一个复杂之处。</p>
+<p>发言人   01:10:30<br>The file system operations must fit in log.<br>文件系统操作必须符合日志。</p>
+<p>发言人   01:10:41<br>You know, it seems to go back to our picture here, or actually maybe this is the better picture. How big is the log in XV 6?<br>你知道，这似乎回到了我们这里的情况，或者实际上这可能是更好的情况。XV 6中的日志有多大？</p>
+<p>发言人   01:10:53<br>And you get blocks. Yeah, 30 blocks, 42 -2. So you know, the max size, max lock size is for. Of course, we could bump it up. And, you know, real file system runs with a much bigger log, but it doesn’t really matter. No matter what.<br>你会得到块。是的，30个街区，42 -2。所以你知道，最大大小，最大锁大小是。当然，我们可以把它提高。而且，你知道，真正的文件系统运行时日志要大得多，但这并不重要。无论如何。</p>
+<p>发言人   01:11:10<br>It has to be decays, Greg, that the file system operation must fit in 30 blocks because if a file system operation would try to write more defer to blocks, that means we would have to spill something on disk location. And we’re not allowed to do that because that would violate the right ahead rule again. So it has to be the case that every file system operation fits into the log. Does that make sense? And in fact, you know, how do you think we got to 32 or 30.<br>它必须是衰减的，Greg，文件系统操作必须适合30个块，因为如果文件系统操作尝试向块写入更多的defer，这意味着我们将不得不在磁盘位置上泄漏一些内容。我们不被允许这样做，因为这将再次违反提前权规则。因此，必须确保每个文件系统操作都符合日志。感知了吗？事实上，你知道，你认为我们是如何得到32或30的。</p>
+<p>发言人   01:11:50<br>Does it have to do anything with how many blocks actually fit? Auto, because basically, how many blocks, what is the maximum number of blocks, correct, that the file system operation could write? And that is really what this number 30 has to be, definitely bigger than any the max number of blocks. The file system operation. All right?<br>它与实际适合的区块数有什么关系吗？自动，因为基本上，文件系统操作可以写入多少个块，最大块数是多少，正确吗？这就是这个数字30必须达到的程度，绝对比任何最大的区块数量都要大。文件系统操作。一切都好吗？</p>
+<p>发言人   01:12:26<br>And so, in fact, Robert and I did, because we went through all the file system operations, looked at them, and decided what sort of the maximum number is. And it turns out the maximum number is much lower than the 30. But, you know, we’ll see in a second. There’s a couple interesting complications. Like, for example, the operation that we’ve looked so far, like creating a file, correct? There’s only a handful of blocks. You know, the file system operation is like five blocks. And in fact, most operations are, you know, a handful of blocks, not that many. Can you think of any operations that I might write? Many, many, many blocks?<br>事实上，罗伯特和我这样做了，因为我们检查了所有文件系统操作，查看了它们，并决定了最大数量是多少。结果发现最大数量远低于30。但是，你知道的，我们马上就会看到。有几个有趣的并发症。例如，我们目前看到的操作，比如创建一个文件，对吗？只有几个街区。你知道，文件系统操作就像五个块一样。事实上，大多数操作都是几个区块，不是很多。你能想到我可能写的任何操作吗？很多很多街区？</p>
+<p>发言人   01:13:13<br>Right on a huge file. Yeah, write a huge file, right? So what what if we, you know, called the right system call and we pass the buffer, We have like a megabyte of data, like 1000 blocks. It seems like we would be in serious, there’s trouble, right? And it would violate, you know, these maximum and so let’s look at, right?<br>就在一个巨大的文件上。是的，写一个很大的文件，对吧？那么，如果我们，你知道，调用正确的系统调用并传递缓冲区，我们有大约1MB的数据，大约1000个块。看起来我们会很认真，有麻烦，对吧？它会违反，你知道，这些最大值，所以让我们来看看，对吧？</p>
+<p>发言人   01:13:43<br>It’s just right. Next up. So it’s right equals file, right? So let’s see, puts a file, right? So here’s file, right? Okay, so here’s is an inode file descriptor, inode, and where you can see my code or the code that I have on the display. And notice that what does this code do?<br>它是正确的。接下来。所以等于文件是正确的，对吗？所以让我们看看，放一个文件，对吗？这是档案，对吧？好的，这是一个inode文件描述符，inode，您可以在其中看到我的代码或我在显示器上的代码。请注意这段代码的作用是什么？</p>
+<p>发言人   01:14:09<br>You can read the comment right in top, you know, here, and it basically explains it. But basically what happens right at the right is split in many numerous smaller rights. So what really was going on here, correct, is we’re ensuring that the whole right as a whole is not atomic, but that’s okay.<br>你可以在顶部阅读评论，你知道，在这里，它基本上解释了它。但基本上右边发生的事情会分成许多较小的权利。所以，这里真正发生的是，正确的是，我们确保整个权利作为一个整体不是原子的，但这没关系。</p>
+<p>发言人   01:14:29<br>The right UN system called semantics don’t require that actually all the thousand blocks, you know, of our megabyte are actually written atomically and just requires that we don’t corrupt the file system, you know, between don’t corrupt the file system while doing it. And so basically we XV 6 splits a big right in a number of smaller writes and writes them as individual transactions. And this is basically ensures that in our example, if a transaction allocates a block number, because when we need a new block, for us, an intermediate block, because we need a new block because we’re going to write to it, at least that part is completely atomic. And the file system will be never left in an incorrect state, violating any of the file system invariants. And so the right is split in many, many. Many systems in many smaller rights or many transactions, okay? In fact, that’s main one that actually is, right FS split in many, many transactions.<br>正确的一个称为语义的系统并不需要实际上所有的一千个块，你知道，我们的兆字节实际上是原子地编写的，只需要我们不破坏文件系统，你知道，在这样做的同时不要破坏文件系统。因此，基本上我们XV 6将一个大的权利分割为许多较小的写入，并将它们作为单独的事务写入。这基本上可以确保在我们的例子中，如果一个事务分配了一个块编号，因为当我们需要一个新的块时，对于我们来说，一个中间块，因为我们需要一个新的块，因为我们要写入它，至少这部分是完全原子的。并且文件系统将永远不会处于不正确的状态，违反任何文件系统不变量。因此，权利在许多方面分裂。许多系统在许多较小的权利或许多交易中，好吗？事实上，这是主要的一个，实际上是，FS在许多交易中分裂。</p>
+<p>发言人   01:15:37<br>Any questions about this? And note, because the things are paint correct in cache, that means also that the block cache with me bigger and then bigger repeater due to lock size. Okay, so now the final challenge that I want to talk about. Is concurrent file system calls?<br>对此有什么问题吗？请注意，因为缓存中的内容是正确的，这也意味着由于锁定大小，块缓存越大，中继器越大。好的，现在我想谈论的最后一个挑战。是并发文件系统调用吗？</p>
+<p>发言人   01:16:18<br>And the issue is, it follows. We first try to explain what the problem is, and then we’ll see what the solution is. So let’s say we have our log. And we’re writing. And maybe they’re two transactions executing concurrently. And just imagine for a second that, you know, they write a lot of blocks. So basically t 0 is executing, t 0 is executing, you know, they’re all false. So here’s the beginning of the log, here’s end of the log, and you know Te 1 executes you some blocks and etc., etc.. And by the time we run to the end of the log, neither one is complete yet, you know, so both have still more rights to do.<br>问题是，它随之而来。我们首先尝试解释问题是什么，然后再看看解决方案是什么。那么假设我们有日志。我们正在写作。也许它们是两个同时执行的交易。想象一下，你知道，他们写了很多块。基本上，t 0正在执行，t 0正在执行，你知道，它们都是假的。所以这是日志的开头，这是日志的结尾，你知道Te 1会执行一些块等。当我们运行到日志的末尾时，还没有一个完成，你知道的，所以两个都有更多的权利去做。</p>
+<p>发言人   01:17:07<br>At this point, can we commit any of the two transactions? No, we can’t correct because we would commit a transaction that is partially done. Then we violate the right ahead rule again. And the whole part part actually login doesn’t work out. So it has to be the case that basically a number of concurrent transactions must fit in the lock. In fact, all concurrent operations. Oops.<br>在这一点上，我们可以提交这两个交易中的任何一个吗？不，我们无法更正，因为我们将提交一个部分完成的交易。然后我们再次违反了正确的前进规则。整个部分实际上登录不起作用。因此，基本上必须有锁容纳多个并发事务。事实上，所有并发操作。哎呀。</p>
+<p>发言人   01:17:54<br>What fit? And so in the way? So this is sort of a challenge, correct? We a file system called starting and you know, we got a sort of arrange that basically the that we basically do a sort of an entrance check, you know, before we actually let the file system operation go, we must check whether there actually is enough block still. You know, if we have like a in file system operations or any in progress, we have to make sure that if we allow one more guide to start that actually the total number of blocks that right they could write together actually fits in the log and the way you basically XX sort of gets around this is it basically limits the number of concurrent file system calls.<br>什么合适？这样的方式？这是一种挑战，对吗？我们有一个叫做 “开始” 的文件系统，你知道，我们有一种安排，基本上我们基本上做了一种入口检查，你知道，在我们真正让文件系统操作开始之前，我们必须检查是否还有足够的块。你知道，如果我们在文件系统中有类似的操作或任何正在进行的操作，我们必须确保，如果我们允许更多的指南开始，实际上它们可以一起写入的总块数实际上适合在日志中，而您基本上解决这个问题的方法是它基本上限制了并发文件系统调用的数量。</p>
+<p>发言人   01:18:49<br>And the way it basically works is that. In begin up, you know, would you see how many outstanding concurrent files with arations are in progress? If there are too many in progress, would just stop the currents and file system operation as you go through sleep and it will wait until all the other guys are done and have committed and all the other guys will commit together. In fact, like, you know, at some .212 2, they’re basically done. You maybe t freeze in two, they finish and then basically in all these transactions in a single time in a single, basically act committed together.<br>它的基本工作方式就是这样。在开始阶段，你会看到有多少未完成的并发文件正在进行中吗？如果有太多正在进行的操作，在您经历睡眠时只会停止电流和文件系统操作，它将等待所有其他人完成并提交，所有其他人将一起提交。事实上，就像你知道的那样，大约21.2，它们基本上已经完成了。你可能不会在两次冻结，它们完成，然后基本上在所有这些交易中，在单次中，基本上一起承诺行动。</p>
+<p>发言人   01:19:28<br>This is sometimes called group commit because you’re committing multiple system calls. You know, all the ones that were concurrent in action, you committed together as a sort of a single big transaction so that that all their updates are visible. So all these all play all so that all the updates all take place or none of them take. Place. Okay? And we can see that, you know, if you can, a quick question is that is the group commit?<br>这有时称为组提交，因为您正在提交多个系统调用。你知道的，所有在行动中同时进行的交易，你都作为一种单一的大交易一起提交，这样它们的所有最新进展都是可见的。所以所有这些都发挥了作用，所有的最新进展都发生了，或者没有任何一个发生。地点。好吗？我们可以看到，你知道，如果可以的话，一个快速的问题是，这是小组提交吗？</p>
+<p>发言人   01:20:02<br>Is grouping the commits necessary? Like, could you say if one system calls finished first’s just commit it, it’s transaction and then commit do once later? Or is it like a necessary property?<br>有必要对提交进行分组吗？比如，你能说如果一个系统调用先完成，那就提交它，它就是交易，然后再提交一次吗？还是它像是必要财产？</p>
+<p>发言人   01:20:17<br>You got to be very, very careful. Because remember one thing I didn’t, it explicitly has a goal early on is that we basically execute the system call still in the right order, right? If a right, if a read observes a right and then does a right, then it has to be the case that a second right happens later than the first, right? And the reason this is a log correctly is because that basically reflects the order in which the rights haven’t happened. And so you can’t really will nearly change the order of the rights in the law because that may actually result into bi bizarre behavior observable by user programs. And so it has to be the case that basically you commit, you know, the operations and transactions in the order they happened and also performed the rights in the order that happened. And so in general, you know. It’s, you know, it’s safe to basically commit them all together.<br>你必须非常小心。因为记得一件我没有做的事情，它在早期就明确有一个目标，就是我们基本上仍然按照正确的顺序执行系统调用，对吗？如果一个权利，如果一个阅读观察到一个权利，然后做了一个权利，那么第二个权利发生的时间必须晚于第一个，对吗？这是一个正确的日志的原因是因为这基本上反映了权利未发生的顺序。所以你几乎不能真正地改变法律中权利的顺序，因为这可能会导致用户程序观察到的双奇怪行为。因此，基本上你必须按照它们发生的顺序提交操作和交易，并按照发生的顺序执行权利。所以总的来说，你知道的。你知道，基本上将它们全部提交是安全的。</p>
+<p>发言人   01:21:16<br>You’re always in a good shape. Okay, good question Doug. Okay, I just want to go back to one more thing and look at the beginning of that. I talked a little bit because I said like, oh, nothing. I don’t even want to talk about it right now. But there we can see. So here’s the game off.<br>你的状态总是很好。好的，道格的问题很好。好的，我只想回到另一件事，看看它的开头。我说了一点点，因为我说，哦，没什么。我现在甚至不想谈论它。但在那里我们可以看到。所以游戏结束了。</p>
+<p>发言人   01:21:43<br>First of all, if we’re ready in committing the log, we’re just going to wait until the log has committed because, you know, we can’t right through the log while the walk actually being installed. If we the and concurrent operation that basically makes us go across that lock size, we could just go to sleep and wait until basically all the preceding co-current transactions are done. And if we’re allowed to proceed, you know, basically our entrance is allowed, we increase lock outstanding by one because reflect r thing, and then we basically proceed and start doing file system operations. And if you look at end up again just to see, you see the end up basically decreases lock outstanding by one because one transaction that’s finished this. Certainly would be in we were in grading states with panic in that case. And we actually are the last one from that set of co-current transactions, then actually in lockouts then goes to 0, we immediately start committing.<br>首先，如果我们已经准备好提交日志，我们只需要等到日志已经提交，因为你知道，在实际安装walk时，我们无法直接查看日志。如果我们执行并发操作基本上使我们跨越了那个锁大小，我们可以直接进入睡眠状态并等待，直到基本上所有前面的并发事务都完成。如果我们被允许继续，基本上我们的进入是被允许的，我们将未处理的锁定增加一，因为反映了事情，然后我们基本上继续并开始进行文件系统操作。如果你再看看end up，你会发现，end up基本上会将未处理的锁定减少一，因为有一个交易完成了这个。在这种情况下，我们肯定会处于恐慌状态。而我们实际上是那组并发交易中的最后一个，然后实际上处于锁定状态，然后变为0，我们立即开始提交。</p>
+<p>发言人   01:22:46<br>And then when we’re done, when actually we’re not, yeah. Yeah, we could. And if there’s space, you know, left, you know, we wake up a guy so that they can actually start running.<br>然后当我们完成时，实际上我们没有，是的。是的，我们可以。如果有空间，你知道，剩下的，你知道，我们叫醒一个人，这样他们就可以开始跑步了。</p>
+<p>发言人   01:23:06<br>Okay? So even you have this dit simple file system that or this dirt simple logging system, that XV 6 actually has a bunch of complications. So I’m starting to run out of time. So let me wrap up here. So in summary.<br>好吗？所以即使你有这个dit简单的文件系统或者这个肮脏简单的日志系统，XV 6实际上也有很多复杂性。所以我开始没时间了。让我在这里总结一下。总之。</p>
+<p>发言人   01:23:26<br>You know, what we, what we talked about is basically logging as a solution for crash safety or really for multi step. File system operations. And, you know, you’ve seen so far, you know, it works great for crash safety, but, you know, performance. And that’s going to be the topic for Monday. And as you read that HD free file system paper for Monday, that’s the thing you should be thinking about.<br>你知道，我们所谈论的基本上是将日志作为碰撞安全或多步骤的解决方案。文件系统操作。而且，你知道，到目前为止，你已经看到，它对碰撞安全非常有效，但是，你知道，性能。这将是下个单日的主题。当您阅读那高清免费的单日文件系统文件时，这就是您应该考虑的事情。</p>
+<p>发言人   01:24:01<br>Okay, any more final questions? And in fact, anybody who has to leave, please feel free to leave. But if you want to hang around and ask more questions, please do so.<br>好的，还有最后的问题吗？事实上，任何必须离开的人，请随意离开。但如果你想闲逛并提出更多问题，请这样做。</p>
+<p>发言人   01:24:14<br>I have a question regarding cache size and the log size. So you said that the cache size has to be at least as big as the log size, but they seem to be the same size for this case. So would that mean that if the log pins, 3 buffers and then some other operation tries to do something, it just fails because it runs out of free spots in the buffer?<br>我有一个关于缓存大小和日志大小的问题。所以你说缓存大小必须至少和日志大小一样大，但是在这种情况下它们的大小似乎是一样的。那么这是否意味着如果日志引脚、3个缓冲区以及其他一些操作尝试做某事，它只是失败了，因为它耗尽了缓冲区中的空闲点？</p>
+<p>发言人   01:24:47<br>No, maybe let’s look at the. Okay, so? Let me first actually check one thing. Okay, let’s go to bio. Okay? Let’s actually first check if involved is bigger than. Okay, since we much more excited than the ball cache. Okay, so it’s set up to something big. So what happens actually, if we can’t find be and find a buffer and after there’s penic?<br>不，也许我们来看看。好吧，所以呢？让我先检查一件事。好的，让我们去看看生物。好吗？让我们首先检查一下所涉及的规模是否大于。好的，因为我们比球团更兴奋。好的，所以它被设置成一些大的东西。那么，如果我们找不到并找到一个缓冲区，那么在出现penic之后，实际上会发生什么呢？</p>
+<p>发言人   01:25:32<br>So we, if there’s no free slot in the buffer cash, you know, X spending, this is not particularly ideal. The fact that we, it’s terrible. And so you hope never to be in this situation. And hopefully we picked our numbers correctly that basically this is unlikely to happen. But why can’t we return an error? Because that seems like the obvious thing to do.<br>因此，如果缓冲区中没有空闲槽现金X的支出，这并不是特别理想。事实上，我们，这很糟糕。所以你希望永远不要陷入这种情况。希望我们选择的数字正确，这基本上不太可能发生。但是为什么我们不能返回错误呢？因为这似乎是显而易见的事情。</p>
+<p>发言人   01:26:05<br>Just return an error to the caller, and then the caller maybe returns back up to the file system interface and just returns -1, saying like, oh, this operation failed. Why is that a problem? So really to think about this is that many file system operations are multi step operations, right? As we have seen now in this lecture and in the previous lecture.<br>只需将错误返回给调用者，然后调用者可能会返回到文件系统接口并仅返回-1，说，哦，此操作失败。为什么会有问题？所以真正需要考虑的是，许多文件系统操作是多步骤操作，对吧？就像我们现在在这堂课和上一堂课中所看到的一样。</p>
+<p>发言人   01:26:32<br>And let’s say we did two rights, and then the third, right? We run into this case where we can’t actually do the right because now there’s no place in the block cache. But we have done two rights, right? Can we just bail out of the file system call? Okay, I see.<br>假设我们做了两项权利，然后是第三项，对吧？我们遇到了这种情况，我们实际上无法做正确的事情，因为现在块缓存中没有位置了。但我们已经做了两项权利，对吗？我们可以摆脱文件系统调用吗？好的，我明白了。</p>
+<p>发言人   01:26:54<br>Right, We can correct because we might have updated in the directory, you know, a directory block of some file or we might have updated directory block of some directory. And if we wanted to make this work, what we would have to do is basically undo those changes like any rice that we did before as part of that system called we have to undo. And you know, that is painful. That’s what we don’t do.<br>正确的，我们可以更正，因为我们可能已经更新了目录，你知道，某些文件的目录块，或者我们可能已经更新了某些目录的目录块。如果我们想要使这项工作成功，我们所要做的基本上就是撤销这些更改，就像我们之前作为我们必须撤销的系统的一部分所做的任何大米一样。你知道，这很痛苦。这就是我们不做的。</p>
+<p>发言人   01:27:23<br>It, does that make sense? Okay, so it’s not a problem if the log, the log pins, everything and there’s no more space for cache, but it will just panic, okay? Yeah, of course this penetrate that really happens like there’s only a corner cases where this hopefully happens, right?<br>这很感知吗？好的，所以如果日志、日志引脚、所有东西都没有问题，而且没有更多的缓存空间，但它只会恐慌，好吗？是的，当然，这种渗透确实会发生，就像只有一个角落的情况，这种情况有希望发生，对吧？</p>
+<p>发言人   01:27:45<br>I guess if you just okay, yeah, that makes sense. Okay, thank you, you’re welcome. Any more questions?<br>我想如果你还好的话，是的，那很感知。好的，谢谢，不用客气。还有什么问题吗？</p>
+<p>发言人   01:27:54<br>I have a question about, I guess following up what I really wanted about the group commits I was trying to think of like I think I kind of understand it at AIO, what I was trying to make sure like I understand like a concrete example of why commits is is important and is this an example that kind of demonstrates it? It’s like, I guess I was thinking of like a situation where you have say this might be convoluted like one process generating a stream of like numbers like one through N and then two processes consuming that Maybe they’re listening on the same pipe and say and stops on. Even number one process is consuming and printing out the odd numbers. One process is consuming and print the even numbers. And if you didn’t have group commits so like the correct behaviors and say they’re they’re printing or like they’re they’re writing these to the same file, and so the correct behavior would be at the end of, at the end of all this, you would expect the file to have like an even number, like the last number. But if you didn’t have group commits, it’s possible that the second to the last process actually gets committed after the last one and see actually see 9 is this like a correct example of why this is important? I think I have to think a little bit more carefully about it, but that is definitely the flavor of the problem that you might run into if you reorder system calls.<br>我有一个问题，我想跟进我真正想要的关于小组提交的内容，我试图想到我认为我在AIO有点理解它，我试图确保我理解一个具体的例子，为什么提交很重要，这是一个演示它的例子吗？这就像，我猜我在考虑这样一种情况，你说这可能会像一个进程生成类似1到N的数字流一样复杂，然后两个进程消耗，也许它们正在同一个管道上进行监听并停止。偶数第一个进程正在消耗和打印奇数。一个进程正在消耗和打印偶数。如果您没有分组提交，那么就像正确的行为一样，并说他们正在打印或正在将这些内容写入同一文件，因此正确的行为将在所有这些内容的末尾，你会期望这个文件有一个偶数，就像最后一个数字。但是，如果您没有组提交，则第二个到最后一个进程可能实际上在最后一个进程之后提交，并且实际上看到了9，这是否是一个正确的示例，说明为什么这很重要？我认为我必须更仔细地考虑这个问题，但这绝对是如果重新排序系统调用可能会遇到的问题的味道。</p>
+<p>发言人   01:29:28<br>Okay, okay, I have great example in the lecture notes and like, you know, you know, a shell command that really, you know, behave weirdly if you didn’t commit to this is not really an issue of some sense from group committed. It is really an issue that like transactions need to be committed in order. I see. And if you didn’t have group commit, then yeah, some people might think like, well, I should. If you didn’t have Rumi, then there’s a temptation to basically, you know, commit some later transaction because it’s already finished. But the first one isn’t finished yet and to create space. But that’s not a solution. Okay, that makes sense.<br>好的，好的，我在课堂笔记中有一个很好的例子，比如，你知道，一个shell命令，如果你不承诺，它会表现得很奇怪，这并不是来自团队承诺的一些感知的问题。这确实是一个问题，像交易需要按顺序提交。我明白了。如果你没有团体提交，那么是的，有些人可能会认为，好吧，我应该这样做。如果你没有Rumi，那么基本上有一种诱惑，你知道，提交一些后续事务，因为它已经完成了。但第一个还没有完成，要创造空间。但这不是解决办法。好吧，那很感知。</p>
+<p>发言人   01:30:09<br>Where in the lecture notes was this example where sort of illustrate do ordering is important? Okay, doesn’t tie it directly to group commit, but usually basically makes the point that ordering a system calls is important. I see, is this in like the text, like on the website?<br>在课堂笔记中，这个例子说明了排序是否重要？好的，它并不直接与组提交绑定，但通常基本上表明系统调用的顺序很重要。我明白了，这和网站上的文字一样吗？</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 014-Crash Recovery</div>
+      <div>http://example.com/2025/10/18/6S081-014/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-015/" title="操作系统工程 015-FileSystem Performance and Fast Crash Recovery">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 015-FileSystem Performance and Fast Crash Recovery</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-013/" title="操作系统工程 013-FileSystems">
+                        <span class="hidden-mobile">操作系统工程 013-FileSystems</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

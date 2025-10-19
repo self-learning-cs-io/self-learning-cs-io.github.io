@@ -1,0 +1,751 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:07Yeah, loud and clear. Okay, great, so good afternoon or good evening, or good morning or good night, wherever you are.是的，响亮而清晰。好的，太好了，无论你在哪里，下午好或晚上好，或者早上好或晚安。 发言人   00:18Let’s get started o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 002-OS Organization and SystemCalls">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-002/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:07Yeah, loud and clear. Okay, great, so good afternoon or good evening, or good morning or good night, wherever you are.是的，响亮而清晰。好的，太好了，无论你在哪里，下午好或晚上好，或者早上好或晚安。 发言人   00:18Let’s get started o">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:02.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.140Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 002-OS Organization and SystemCalls - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 002-OS Organization and SystemCalls"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          20k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          165 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 002-OS Organization and SystemCalls</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:07<br>Yeah, loud and clear. Okay, great, so good afternoon or good evening, or good morning or good night, wherever you are.<br>是的，响亮而清晰。好的，太好了，无论你在哪里，下午好或晚上好，或者早上好或晚安。</p>
+<p>发言人   00:18<br>Let’s get started on the, like I said, the third lecture in SOA 1, which is going to be about Oi as an organization and the topics for today are. Four things that I’m to touch on. One is isolation, which I’ll see is the A driving design goal for OS organization. I talk a little bit about kernel and user mode. That’s a way of isolating the kernel from or the operating system from user applications. Then we’ll talk about system calls, which is a way for user applications to basically transition into the kernel so they can ask for surfaces. And we’ll look at a little bit how this all is instantiated in a simple form inside of x 6. So just the point for today.<br>让我们开始吧，就像我说的，SOA 1的第三个讲座，它将是关于作为一个组织的Oi，今天的主题是。我要谈到的四件事。一个是孤立，我将看到这是操作系统组织的一个驱动设计目标。我稍微谈一下内核和用户模式。这是一种将内核与用户应用程序或操作系统隔离的方法。然后我们将讨论系统调用，它是用户应用程序基本上过渡到内核的一种方式，以便他们可以请求表面。我们会稍微看一下这一切是如何在x 6中以简单的形式实例化的。所以只是今天的重点。</p>
+<p>发言人   01:13<br>And just to sort of remind you where we were after the first lecture, the picture sort of in your head, you should have in your head is, you know, there are processes like the shell, like echo. Or, you know, whatever find or whatever. Some of the utilities that you implemented, they’re running on top of an operating system. And of the operating system of straps, you know, some of the hardware resources, you know, like a disk CPU, and basically the interface between the operating systems and the shell difficulty referred to as a system call interface interface that we’ve been looking at is the Unix interface. And here what we see. Is so that was roughly, you know, actually with that Unix interface you’ve been playing around in lab one where in YouTube app where you used the system called interface or the Unix API to actually implement different sets of applications. And so lot one user lab was mostly focused on sort of using this part of the design picture here.<br>只是为了提醒你，在第一节课之后我们在哪里，你的脑海里应该有这样的画面，你知道，有像外壳一样的过程，就像回声一样。或者，你知道的，无论找到什么。你实现的一些实用程序，它们运行在操作系统之上。在strap的操作系统中，你知道一些硬件资源，比如磁盘CPU，以及基本上操作系统和shell之间的接口困难，称为系统调用接口，我们一直在研究的是Unix接口。这就是我们所看到的。这大概就是你知道的，实际上你在第一实验室里玩过的Unix接口，在YouTube的应用程序中，你使用了一个叫做interface的系统或者Unix API来实现不同的应用程序。所以很多用户实验室主要专注于使用这里的设计图片的这一部分。</p>
+<p>发言人   02:28<br>And what we’re going to be doing now in this first lecture or in this lecture, in many subsequent lectures, we’re going to really look actually how the interface is actually implemented. And in fact, almost all the semester, we’re going to be spending time on figuring out actually how to implement interface. And so this is going to be the first lecture of that kind of style. And fortunately, a lot of you ask really great questions over email or submit great questions to the website.<br>以及我们现在要做的事情，在这第一堂课或这堂课中，在许多随后的讲座中，我们将真正了解接口实际上是如何实现的。事实上，几乎整个学期，我们都将花时间研究如何实现接口。因此，这将是这种风格的第一次讲座。幸运的是，你们中的很多人通过电子邮件提出了非常好的问题，或者向网站提交了非常好的问题。</p>
+<p>发言人   02:58<br>And we won’t be able to go into great amount of detail immediately in the sort of first lecture that takes an inside look at the operating system. We’re going to touch on lot of different things, but many things will become more clear in subsequent lectures where we’re going to explore them in more depth. But nevertheless, if there’s something unclear, feel free to interrupt and ask a question. And maybe just to start off, before actually going any further, let me ask you a question and sort of get the question and answering, hopefully going and ask you like, what is the sort of most interesting thing that you learn from the beauty lab? And I’ll start by answering that question myself.<br>而且我们无法在第一次深入了解操作系统的讲座中立即深入讨论大量的细节。我们将触及很多不同的事情，但在随后的讲座中，许多事情将变得更加清晰，我们将更深入地探讨它们。但是，如果有不清楚的事情，请随时打断并提出问题。也许只是为了开始，在进一步讨论之前，让我问你一个问题，然后得到问题的回答，希望能够问你喜欢的，你从美容实验室学到的最有趣的事情是什么？我先自己回答这个问题。</p>
+<p>发言人   03:41<br>One of the things that actually surprised me after writing and doing the YouTube lab is that I use Exarchs a lot more frequently than I used to do. I had another way of doing basically the same thing as Exarchs set of commands. And after they’re actually doing the X La’s like, oh, it’s much more convenient actually to use it in that way. And so since then I’ve been a much more aggressive user of xargs. I’m just wondering what the experience has been for some of you. And so maybe I’ll call out a few names and maybe you can unmute your microphone in and say a little bit about like your experience with YouTube Lab. So let me pick some people. Andrew, you?<br>在写作和做了YouTube实验室之后，让我感到惊讶的一件事情是我比以前更频繁地使用Exarchs。我有另一种方法来做基本上与Exarchs命令集相同的事情。在他们实际做了X La之后，就像，哦，那样使用它实际上要方便得多。因此，从那时起，我就成为了xargs的更具侵略性的用户。我只是想知道你们中的一些人有什么经历。所以也许我会说出几个名字，也许你可以取消麦克风的静音，说一些关于你在YouTube实验室的经验。那么让我挑选一些人。安德鲁，你呢？</p>
+<p>发言人   04:33<br>And are you online or listening? The most interesting thing for me was just the pipes, how to write concurrent programs. Have you done any sort of pipe programming before? If it’s the first, no, I haven’t. I’ve seen the old concurrent stuff, but I haven’t seen like OS level pipes before. However, Elizabeth Wickers. Yeah I’d agree with that. I also thought that the like OS pipes were super interesting and like the primes example specifically was cool to kind of figure out and realize that like I needed to close certain pipes and just like, are they kind of related to each other?<br>你是在线还是在听？对我来说，最有趣的事情就是管道，如何编写并发程序。你以前做过管道编程吗？如果是第一个，不，我没有。我见过旧的并发的东西，但我以前没有见过像OS级别的管道。然而，伊丽莎白·威克斯。是的，我同意这一点。我也认为像操作系统管道一样非常有趣，就像质数的例子特别酷，我需要弄清楚并意识到我需要关闭某些管道，就像它们是否彼此相关？</p>
+<p>发言人   05:11<br>Yeah I’m you did find the of crimes were a little bit harder than you might have fought it. It surprise me every time a little bit tricky to get it right.<br>是的，我是说，你确实发现犯罪比你可能对抗的要难一些。每次做正确的事情都有点棘手，这让我感到惊讶。</p>
+<p>发言人   05:23<br>Jessica, she? I also thought the Primes exercise was the most interesting. Did it take you a lot of time or it not too bad? It took me more time after I realized my initial implementation wasn’t actually concurrent. So it was interesting to think about like what the differences are there, how about Robert gfy? Yeah, I think that the my experience was really just, I found it really challenging to program in the original way that was set up. So I actually created a bunch of helper functions that wrapped around things. So that’s, I guess, what I did. Any anybody else who has sort of any piece of wisdom?<br>杰西卡，她？我也认为质数练习是最有趣的。这花了你很多时间还是不太糟糕？在我意识到我的初始实现实际上并不是并发的之后，我花了更多的时间。所以思考一下有哪些不同之处是很有趣的，罗伯特·格菲怎么样？是的，我认为我的经历真的很公正，我发现以最初的设置方式编程真的很有挑战性。所以我实际上创建了一堆辅助函数来包裹事物。所以，我猜这就是我所做的。还有谁有某种智慧吗？</p>
+<p>发言人   06:18<br>Amanda, go ahead. Hi, I kind of liked it and found it surprising slash cool that St 2D and Std out are just file descriptors themselves, 0 and 1. Yeah, good. Yeah, and Xb 6 doesn’t hide that from you at all, at least in the normal. See, you write library does a little bit wrapped up in a. In an interface. But XV 6 doesn’t hide the field, but in the end it boils down in to you just file descriptor 0, 1, and 2. I guess for standard error. Good, good.<br>阿曼达，继续。嗨，我有点喜欢它，发现St 2D和Std本身只是文件描述符，0和1令人惊讶。对，很好。是的，Xb 6并没有对你隐藏这一点，至少在正常情况下是这样的。看，你编写的库确实有点包裹在a中。在一个界面中。但是XV 6并没有隐藏该字段，但最终它只会归结为文件描述符0、1和2。我想这是标准误差。很好，很好。</p>
+<p>发言人   06:51<br>Alexandra, I guess one thing I was surprised about was also from the prime problem. I had this bug that I spent hours on. And the thing was that I didn’t realize that actually there were whenever you are. Opening a pipe and then like calling fork. Then basically there would be 4, ends to the pipe because that pipe, it’s kind of goes both to the child process and the parent process. And but I was only closing two of those. So yeah, that was a common, common problem. It made sense, but for some reason, because especially the textbook says that when you fork, all of the open file descriptors get copied. But I didn’t think about it then.<br>亚历山德拉，我猜我感到惊讶的一件事也是从主要问题开始。我有一个花了数小时研究的bug。问题是我没有意识到无论何时你都存在。打开管道，然后像调用分叉一样。那么基本上管道会有4个端点，因为该管道既流向子进程，也流向父进程。但我只关闭了其中的两个。所以，是的，这是一个常见的问题。它做了感知，但出于某种原因，特别是教科书上说，当你分叉时，所有打开的文件描述符都会被复制。但我当时并没有想过。</p>
+<p>发言人   07:49<br>Yeah, no, it’s hard to. I mean, there’s a lot of details in that interface. And the only way to get actually really familiar with it, actually is to program with it, experience it.<br>是的，不，这很难。我的意思是，那个界面中有很多细节。唯一真正熟悉它的方法，实际上就是用它编程，体验它。</p>
+<p>发言人   07:59<br>Good, good, Well, I hope you enjoyed the lot. And you know, of course, I hope you enjoyed the subsequent laps too. So the lecture for today, in some sense is really, you know, partially to help you to get going on the Cisco lab if you haven’t already started. And so again, you feel free to interrupt and ask questions. Okay, so the first thing I want to do, he talk a little bit about isolation and why it’s important and why we might care.<br>好的，我希望你喜欢这个地段。当然，我希望你也喜欢接下来的几圈。因此，如果你还没有开始，今天的讲座在某些感知真的可以帮助你进入思科实验室。因此，你可以随意打断别人并提出问题。好的，我想做的第一件事，他谈了一些关于隔离的事情，以及为什么它很重要以及我们可能会在意。</p>
+<p>发言人   08:29<br>The basic story, a reasonable simple, we have multiple applications here. We got the shell, we got echo, we find it would be great, correct? That if you had a bug in the shell or for example, in your primes program, that it actually didn’t affect any of the other applications? You know, particularly it would be bad, for example, if it affected the shell, because probably the shell you’re using to actually, you know, kill the program if something goes back. And so you want sort of strong isolation between these different applications. And similarly, you know, the OS is sort of the servant you for all the applications, patients and what’s like it to be the caseys that, you know, if again, if you’re making a bargaining and one of your util programs that actually the operating system doesn’t crash, you know, example, you pass some strange argument to the operating system. Again, it should be the case that the operating system handles that well. And so again, you would like to be there sort strong isolation between the.<br>基本的故事，一个合理简单的，我们在这里有多个应用程序。我们得到了外壳，我们得到了回声，我们发现它会很棒，对吗？如果你的shell或素数程序中有错误，它实际上不会影响任何其他应用程序？你知道的，特别是如果它影响了shell，那将是不好的，因为可能你正在使用的shell实际上，你知道，如果出现问题，就杀死程序。因此，您希望在这些不同的应用程序之间实现强隔离。同样，你知道，操作系统有点像仆人，为所有应用程序、患者和情况提供服务，你知道，如果你再次讨价还价，并且其中一个实用程序实际上操作系统不会崩溃，你知道的，例如，你向操作系统传递了一些奇怪的参数。再说一遍，操作系统应该处理得很好。所以，你希望在彼此之间保持强烈的隔离。</p>
+<p>发言人   09:21<br>The applications and the operating system itself. And one way to think about this a little bit is to say is ask ourselves the question, what would happen if there’s actually no operating system?<br>应用程序和操作系统本身。稍微思考一下这个问题的一个方法是问自己一个问题，如果实际上没有操作系统会发生什么？</p>
+<p>发言人   09:32<br>So like, consider some straw in design design. Where there’s no operating system? Or you can think about it as operating system just being a library, sort of thinking of in terms of Python, maybe just import OS. And import OS basically loads the whole operating system inside of your application. And that’s, you know, then the programming interface you use. So if you think about that sort of way of thinking, so let’s say we have to shell here, you know, maybe it includes the, you know, the library for the OS, and maybe we already have some other application echo.<br>就像在设计设计中考虑一些稻草一样。哪里没有操作系统？或者你可以把它想象成一个操作系统，只是一个库，有点像Python，也许只是导入操作系统。和import OS基本上是将整个操作系统加载到您的应用程序中。那就是你使用的编程接口。所以如果你考虑这种思维方式，假设我们必须在这里shell，你知道，也许它包括，你知道，操作系统库，也许我们已经有一些其他应用程序的回声。</p>
+<p>发言人   10:15<br>And then basically, you know, these applications, if there’s no operating system, really would directly interact with the hardware. For example, you know, it would actually see, you know, there’s a CPU core, you, there’s another CPU core, and you know, maybe there’s a disk. And then when you’re directly with the disc locks, and maybe there’s memory and then were directly interact with the memory of the machine. And so there’s no layer, no attraction layer between basically the applications and the hardware.<br>然后基本上，你知道，如果没有操作系统，这些应用程序真的会直接与硬件交互。例如，你知道，它实际上会看到，你知道，有一个CPU核心，你，还有另一个CPU核心，你知道，也许有一个磁盘。然后当你直接使用光盘锁时，可能会有内存，然后直接与机器的内存交互。因此，基本上应用程序和硬件之间没有层，没有吸引力层。</p>
+<p>发言人   10:44<br>And it turns out that it is just not such a great design for isolation.<br>事实证明，这并不是一个很好的隔离设计。</p>
+<p>发言人   10:51<br>And you can see how isolation might be broken. Let’s assume, for example, that one of the goals for the operating system is run multiple applications. And so that has to be the case that once in a while, it will switch from one application to another application. Let’s say the hardware has only 1 CPU, and so we’re running the shell, say, on that 1 CPU, but periodically in other application should be able to run too. Well, we have no operating system to do for us. Then the shale basically has to sort of give up CPU once in a while and sort of be a nice person and say like, well, again I’ve run for a little while now you get the chance to run. And this sometimes it’s called cooperative scheduling, but that’s not so great for isolation.<br>你可以看到孤立是如何被打破的。让我们假设，例如，操作系统的目标之一是运行多个应用程序。因此，必须偶尔会从一个应用程序切换到另一个应用程序。假设硬件只有1个CPU，所以我们正在运行shell，比如说在那个1个CPU上，但定期在其他应用程序中也应该能够运行。好吧，我们没有操作系统可以为我们做。那么页岩基本上必须偶尔放弃CPU，做一个不错的人，然后说，好吧，我又跑了一会儿，现在你有机会跑了。这有时被称为合作调度，但这对于隔离来说并不是很好。</p>
+<p>发言人   11:34<br>You know, for example, what what if, you know, some function in the shell has an infinite loop and therefore it will never actually give up to CPU and then no other, you know, applications could run including maybe the application that would like stop or kill the shell. And so we basically don’t get any sort of form of enforced multiplexing. And that’s something that we’d like to have no matter what the application does. And it will be forced to give up the CPU once in a while so that other applications can run.<br>你知道，例如，如果shell中的某些功能有一个无限循环，因此它永远不会真正放弃给CPU，然后没有其他应用程序可以运行，包括可能想要停止或杀死shell的应用程序。因此，我们基本上没有得到任何形式的强制复用。这是我们希望拥有的东西，无论应用程序做什么。并且它将被迫偶尔放弃CPU，以便其他应用程序可以运行。</p>
+<p>发言人   12:04<br>Similarly, if you think about the stra and design you we have, there’s like physical memory and all. I drew the picture here as the application sitting on the top of the hardware, but you know, there’s physical memory and basically the text and the code and the data for these applications actually sits in physical memory, right? So here memory and here’s, you know, the part of the physical memory that’s used by the shell, and here’s maybe the part of the physical memory that’s used by echo application. And so you’re going, you know, and again, what we see here, if you would like simply simplistically like this, there’s sort of no boundary between these two guys. For example, if you know Echo Store, store location, that example belongs to the shell like location of thousands and writes a value there, you know, whatever x, then it will just overwrite the physical memory of the shell memory and so that you be pretty undesirable, right? Because then a bug, an echo could actually percolated into the shell and you know, it’s going to be very tricky to do back in that kind of stuff. And so this basically, again, gives us like no strong isolation.<br>同样，如果你想想我们拥有的战略和设计，就会发现就像物理记忆一样。我在这里画的图片是应用程序位于硬件顶部，但你知道，这里有物理内存，基本上这些应用程序的文本、代码和数据实际上都位于物理内存中，对吧？这里是内存，这里是shell使用的物理内存部分，这里可能是echo应用程序使用的物理内存部分。所以你要走了，你知道，再一次，我们在这里看到的，如果你想简单地像这样，这两个人之间没有界限。例如，如果你知道Echo存储位置，这个例子属于千个shell位置并在那里写入一个值，你知道，无论x是什么，那么它只会覆盖shell内存的物理内存，所以你是非常不希望的，对吧？因为这样一个虫子，一个回声实际上可能会渗透到外壳中，你知道，要在那种东西中做回是非常棘手的。因此，这基本上再次给我们带来了强烈的孤立。</p>
+<p>发言人   13:15<br>What we like is to have memory isolation so that one application can not overwrite the memory of another. And you, the one reason, probably the main reason to actually have an operating system is basically to enforce both the multiplexing and to enforce you strong memory isolation.<br>我们喜欢的是内存隔离，这样一个应用程序就不能覆盖另一个应用程序的内存。而你，一个原因，可能实际上拥有操作系统的主要原因基本上是强制执行多路复用和强制执行强内存隔离。</p>
+<p>发言人   13:41<br>And if you didn’t have an operating system and the applications were directly interacting with the hardware, it would be very hard to achieve that. So this design of basically, you know, operating system as a library is not a very common design. Or you may see it in some real time systems where basically the applications trust each other. But in most other operating systems, you know, there’s an operating system that really enforces that kind of isolation.<br>如果你没有操作系统，并且应用程序直接与硬件交互，那么实现这一点将非常困难。所以这种基本上，你知道，操作系统作为一个库的设计并不是很常见的设计。或者你可能会在一些实时系统中看到它，其中基本上应用程序相互信任。但在大多数其他操作系统中，你知道，有一个操作系统真正加强了这种隔离。</p>
+<p>发言人   14:05<br>So if we look a little bit now at the Unix interface from this perspective. Then we see that the interface actually is carefully designed so that it actually is feasible to implement that enforced isolation in terms of multiplexing, in terms of physical memory. And the way that it sort of done is that the interface basically extracts the hardware. Hardware resources. In a way that then it makes it easy to actually do or not easier. That makes it possible not to provide this strong isation and maybe give you some examples.<br>所以，如果我们现在从这个角度看一下Unix接口。然后我们看到接口实际上是经过精心设计的，以便在多路复用和物理内存方面实现强制隔离实际上是可行的。它的完成方式是接口基本上提取硬件。硬件资源。在某种程度上，它使实际做或不容易变得容易。这使得我们有可能不提供这种强有力的说明，也许可以给你一些例子。</p>
+<p>发言人   14:54<br>So processes we’ve seen that like the things that are created by fork, you know, they’re not, you know, literally a CPU, right? I mean, sort, but they correspond to like what a CPU is. And it allows you to run computation. But because the application can not directly interact with the CPU, but only through this process of traction, the kernel sort of behind the scenes can switch between processes. So instead of having direct Cpu’s to manipulate or given to the application, operating system provides processes that extract away to the CPU itself so that actually the operating system can multiplex and one the CPU or multiple Cpu’s among multiple applications.<br>所以我们看到的过程就像fork创建的东西一样，你知道，它们不是字面上的CPU，对吧？我的意思是，排序，但它们对应于CPU是什么。它允许您运行计算。但由于应用程序不能直接与CPU交互，而只能通过这种牵引过程，内核在后台可以在进程之间切换。因此，操作系统提供了提取到Cpu本身的进程，而不是直接让CPU操作或提供给应用程序，这样操作系统实际上可以在多个应用程序之间进行复用和一个或多个CPU。</p>
+<p>发言人   15:37<br>Similarly, if you think about exec, exec provides a memory image. And armanda, yeah, go ahead, ask your question, one question about like processes, sort of like obstructing the CPU. Is it that one process uses part of the CPU and another process uses a different, like more a different part of that CPU or a different CPU? If it’s like a multicore or like, yeah, what do you mean by processes instead of a CPU? Yeah, okay, so I would really mean 1 CPU abstracted away into a process. So, okay, so the way to think about it is the risk five core risk 5 processor that we’re using in the La, that’s 4 cores. And so you can run 4 processes concurrently or in parallel, you 1 process on each core.<br>同样地，如果你想到exec，它提供了一个内存映像。和armanda，是的，继续，问你的问题，一个关于进程的问题，有点像阻碍CPU。是一个进程使用CPU的一部分，而另一个进程使用另一个CPU的不同部分还是不同的CPU？如果它像一个多核，或者像，你所说的进程而不是CPU是什么意思？是的，好的，所以我真的是指将1个CPU抽象成一个进程。所以，好的，所以思考它的方式是我们在La中使用的风险五核心风险5处理器，即4核心。因此，您可以同时或并行运行4个进程，每个核心上有1个进程。</p>
+<p>发言人   16:29<br>And what the operating system does is, let’s say you have 8 applications or 7 applications, It will take some core and multiplexes, time multiplexes between different processes. So for example, it will run, you know, 1 process for 100 milliseconds, then stop, unload you that process out of the CPU or out of the core, loading the next application in the next process, and runs down for 100 milliseconds. And it just enforces that no application can run or no process can run longer than 100 milliseconds. And we’ll see exactly how this can be done in a couple lectures, but that’s sort of the basic idea, okay? But multiple processes can not use the same CPU at the same time. Time multi, you run for a long for a while, then you run the next one for a while, thank you. Okay, so one way to think about exec is that it is a abstracts memory.<br>操作系统的作用是，假设你有8个应用程序或7个应用程序，它将需要一些核心和复用，不同进程之间的时间复用。例如，它将运行一个进程100毫秒，然后停止，将该进程从CPU或核心卸载出去，在下一个进程中加载下一个应用程序，然后运行100毫秒。它只是强制执行任何应用程序或进程都不能运行超过100毫秒。我们将在几次讲座中看到如何实现这一点，但这是基本思想，好吗？但是多个进程不能同时使用同一个CPU。时间多，你跑一段时间，然后你跑下一个，谢谢。好的，那么思考exec的一种方式是认为它是一个抽象内存。</p>
+<p>发言人   17:28<br>So for example, if you think about the exit system call, it takes a file name. In that file is basically the memory image of a program stored. It’s text, so it’s global data. And that forms the memory of the application. Now the application can grow its memory and for example, by calling S break and there extending its data segment.<br>例如，如果考虑退出系统调用，它需要一个文件名。该文件基本上是存储程序的内存图像。它是文本，因此是全局数据。这构成了应用程序的内存。现在应用程序可以增加内存，例如通过调用S break扩展其数据段。</p>
+<p>发言人   17:55<br>But it doesn’t really have a direct aspects to physical memory. You know, you can just ask or no, I want addresses, physical memory, 1K to 2K, there’s no way of getting at that. And again, the reason that there’s no way that you can get at that is because the operating system wants to provide memory isolation. And therefore, what’s it being controlled or intermediate and intermediate between the applications and the physical hardware?<br>但它实际上与物理记忆没有直接的方面。你知道，你可以问或者不，我想要地址，物理内存，1k到2k，没有办法得到那个。再一次，你无法做到这一点的原因是因为操作系统想要提供内存隔离。因此，在应用程序和物理硬件之间控制或中间和中间的是什么？</p>
+<p>发言人   18:20<br>An exec is sort of a system call that capture or shows that there’s sort of no direct access to the memory. Another example of this is like files. The file is basically abstract the way disk blocks.<br>exec是一种系统调用，它捕获或显示无法直接访问内存。另一个例子是文件。该文件基本上是像磁盘块一样抽象的。</p>
+<p>发言人   18:41<br>So instead of reading and writing, the disk blocks off the disk that sits attached to your computer. That is actually just not allowed in Unix. You the only way to interact with the storage system is through files. And you can read and write files to provide a convenient abstraction. You can name files, etc., etc.. But then the operating system in itself can actually decide how to map the files to this blocks and make sure that, for example, this block only shows up in one file. And then, you know, user A can not actually you manipulate or read or write the files of user B, and again, you know this, you know that sort of interface that the file abstraction allows that sort of strong isolation between even different users and, you know, two different processes of the same user. And so you can see that in some ways, the system called interface or the Unix interface that you’ve been programming with in the util lab seems to be sort of carefully designed to abstract the research in way so that the operating system, the implementation of the interface, can actually multiplex, you know, the resource or multiple applications and provide strong, strong isolation.<br>因此，不是读取和写入，而是将连接到计算机的磁盘块放在磁盘上。这实际上在Unix中是不允许的。您与存储系统交互的唯一方式是通过文件。您可以读写文件以提供方便的抽象。你可以给文件命名，等等。但是操作系统本身可以实际决定如何将文件映射到此块，并确保例如此块仅显示在一个文件中。然后，你知道，用户A实际上无法操作或读取或写入用户B的文件，而且，你知道这种接口，文件抽象允许甚至不同用户之间的强隔离，同一用户的两个不同进程。因此，您可以看到，在某些方面，您在util实验室中使用的称为接口的系统或Unix接口似乎是经过精心设计的，以抽象的方式进行研究，以便操作系统，接口的实现实际上可以多路复用，您知道，资源或多个应用程序，并提供强大的隔离。</p>
+<p>发言人   19:54<br>Any questions about that?<br>有什么问题吗？</p>
+<p>发言人   19:55<br>We have a question in the chat that says, do more complex kernels try to reschedule processes on the same core to reduce cash misses? Oh, yeah, there’s something called cash affinity. You know, the schedulers in modern operating system sort very sophisticated and indeed, you know, trying to avoid cache misses and things like that to optimize the performance. And, you know, we’ll see some of that much later in the semester when we’re going to be talking about it’s like high performance networking. I will show up there.<br>我们在聊天中提出了一个问题，即更复杂的内核是否会尝试在同一核心上重新安排进程以减少现金失误？哦，是的，有一种叫做现金亲和力的东西。你知道，现代操作系统中的调度程序非常复杂，实际上，你知道，试图避免缓存未命中等优化性能。而且，你知道，在本学期晚些时候，当我们谈论高性能网络时，我们会看到其中的一些。我会在那里出现。</p>
+<p>发言人   20:26<br>Another question from chat, where in XV 6 can we see how the OS multiplexes processes we’re going to, there’s a couple pile of files that are relevant, but proc DOC is probably the most relevant one. This will be a topic of a lecture in like two or three weeks and we’re going to go in great amount of detail and show exactly how the multiplexing happens. So one way to think about these lectures is a little bit of an introduction to a lot of different pieces you because we’ve got to start somewhere, Okay? So, so we go back into this picture here that I showed a little a while ago. We have this, the shell running, the echo running or not that picture. I want this picture here on this site, we’ve got the operating system, we have the applications running, and one thing we should be worried about this queries that the operating system should be. Oh, that should be defensive. This is sort of an important mindset that you have to get used to when you are doing kernel development.<br>聊天中的另一个问题是，在XV 6中，我们可以看到操作系统多路复用如何处理我们将要处理的情况，有几堆相关的文件，但proc DOC可能是最相关的文件。这将在大约两三周后成为讲座的主题，我们将详细介绍多路复用是如何发生的。因此，思考这些讲座的一种方法是稍微介绍一下许多不同的部分，因为我们必须从某个地方开始，好吗？所以，我们回到我刚才展示的这张照片。我们有这个，shell在运行，回声是否在运行，那张图片。我想在这个网站上看到这张照片，我们有操作系统，我们有正在运行的应用程序，有一件事我们应该担心操作系统应该是这样的查询。那应该是防御性的。这是一种重要的心态，当你进行内核开发时，你必须习惯这种心态。</p>
+<p>发言人   21:30<br>The operating system has to ensure that everything, everything works out. And so it has to set up things up so that an app can not crash the operating system. It would be too bad if an application that either by accident or maliciously passes a tricky bad argument to the operating system and the Ox system would crash. That basically means sort of denial of service for every other application. So the operating system has to be written in a way that it can deal and handle malicious applications in particular. Another concern is an application should not be able, can not break out of its isolation.<br>操作系统必须确保一切顺利。因此，它必须进行设置，以使应用程序不会使操作系统崩溃。如果一个应用程序意外或恶意地向操作系统和Ox系统传递了棘手的坏论点，那将是太糟糕了。这基本上意味着对其他所有应用程序进行某种程度的拒绝服务。因此，操作系统必须以能够处理特别是恶意应用程序的方式编写。另一个问题是应用程序不应该能够，不能打破它的隔离。</p>
+<p>发言人   22:21<br>In the application might be definitely malicious, maybe written by an attacker, and attacker probably would like to break out of the application, for example, and take control over the kernel. And once you have control over the kernel, then you can do anything because the kernel is in control of all the hardware resources. And so the operating system has to be, or the kernel has to be written defensively to avoid those kinds of things, like it turns out to be very tricky to actually get right. You, in fact, even in Linux, they’re still periodic bugs, you know, kernel bugs or bugs that actually allow an application to exploit or to break out of his isolation domain and take control. But it is a continuous concern. And we’d like to do as good job as possible. And this is sort the mindset you have to have when you’re developing a kernel that actually implications are perhaps malicious. Now, this means that means there has to be strong isolation.<br>应用程序中的内容可能是恶意的，可能是由攻击者编写的，攻击者可能想要突破应用程序，例如控制内核。一旦你控制了内核，你就可以做任何事情，因为内核控制着所有的硬件资源。所以操作系统必须是防御性的，或者内核必须是防御性的，以避免这些事情，事实证明，要做到正确是非常棘手的。实际上，即使在Linux中，它们仍然是周期性的错误，你知道，内核错误或实际上允许应用程序利用或突破其隔离域并控制的错误。但这是一个持续的问题。我们希望尽可能做好工作。这是你在开发一个实际上可能是恶意的内核时必须具备的心态。现在，这意味着必须有强烈的孤立。</p>
+<p>发言人   23:26<br>Between the apps. And the OS? If the OS needs to be defensive and needs to be in a position that it can be defensive, there has to be sort of a strong wall between the application so that the operating system can actually enforce whatever policies it wants to enforce.<br>在应用程序之间。操作系统？如果操作系统需要进行防御，并且需要处于可以防御的位置，则必须在应用程序之间建立一堵坚固的墙，以便操作系统可以实际执行任何它想要执行的策略。</p>
+<p>发言人   23:47<br>And this is typically done A typical approach to achieving this strong isolation is using hardware support. And we’ll give a little bit of flavor of that in this lecture, but we’ll come back to it in much more detail in subsequent lecture. And there’s sort of two parts of this hardware support. One is something that’s called user kernel mode slash kernel mode. In risk 5, it’s called supervisor mode, but it’s the same thing. And then page tables or virtual memory.<br>这通常是使用硬件支持来实现这种强隔离的典型方法。我们将在本次讲座中给出一些细节，但我们将在接下来的讲座中更详细地回到它。这种硬件支持有两部分。一种是称为用户内核模式&#x2F;斜线内核模式的东西。在风险5中，它被称为监督模式，但它是一回事。然后分页表或虚拟内存。</p>
+<p>发言人   24:24<br>So all processors, sort of all sort of series processors that are intended to run an operating system for multiple applications, half support either for user kernel mode and virtual memory. You know, it might be men have stated that were implemented in slightly different ways, but basically all processors have it. And our risk 5 processor that we’re using in this class has that support too. So let me talk a little bit. I’ll talk a little bit about user mode, kernel mode first, and then I’ll talk a little bit about virtual memory, mostly at the highest level possible, because there’s a lot of important details, but I won’t be able to cover those in this lecture. So let’s first talk about user kernel mode.<br>因此，所有处理器，各种系列处理器，旨在为多个应用程序运行操作系统，一半支持用户内核模式和虚拟内存。你知道，可能有人说过以稍微不同的方式实现，但基本上所有处理器都有它。我们在这个班级中使用的风险5处理器也有这种支持。所以让我说一点。我将先谈一下用户模式，内核模式，然后我将谈一点虚拟内存，主要是在尽可能高的级别上，因为有很多重要的细节，但在本讲座中我无法涵盖这些。让我们先谈谈用户内核模式。</p>
+<p>发言人   25:14<br>And basically what it means is that the processor has two modes of operation in one is usual mode, and the other one is kernel mode. And when running in kernel mode, the CPU can execute pre flex instructions.<br>基本上它的意思是处理器有两种操作模式，一种是普通模式，另一种是内核模式。当在内核模式下运行时，CPU可以执行preflex指令。</p>
+<p>发言人   25:35<br>I’ll come back to in second two days when running in user mode, the CPU can only execute unprivileged instructions.<br>我会在第二天回到用户模式运行时，CPU只能执行未授权的指令。</p>
+<p>发言人   25:49<br>And in purpose, instructions are the instructions you’re well familiar with. You know, think about like add sub, adding two registers together, you know, subtracting two registers. So basic, you know, you know, procedure calls, you know, tar, all that kind of stuff. Branches, you know, those are all earn prefix instructions that any user application is allowed to execute.<br>在目的方面，说明是你非常熟悉的说明。你知道，想想像加法，将两个寄存器加在一起，你知道，减去两个寄存器。非常基本，你知道，你知道，过程调用，你知道，焦油，所有这些东西。分支，你知道，这些都是任何用户应用程序都可以执行的前缀指令。</p>
+<p>发言人   26:12<br>Privileged instructions, instructions that basically are involved in manipulating the hardware directly or setting up protections and things like that. So for example, setting up a page table or register, Which we’ll talk about later, or? You know, the disabling clocking erupts. And so there’s all kinds of sort of state on the processor that the operating system tend to use. And manipulating that state is completely is done for prefix instructions. And so, for example, when a user application tries to actually execute a privileged instruction, then the prose will won’t execute it. Because if a privilege instruction in usual digital out, and basically that will result in the transfer control from user space, from user mode to kernel mode, so that then the operating system can actually take control and maybe kill the application because it’s misbehaving.<br>特权指令，基本上涉及直接操纵硬件或设置保护等操作的指令。因此，例如，设置一个页表或寄存器，我们将在后面讨论，或者？你知道，禁用时钟爆发。因此，处理器上有操作系统倾向于使用的各种状态。并且对状态的操作完全是针对前缀指令完成的。因此，例如，当用户应用程序试图实际执行特权指令时，散文将不会执行它。因为如果特权指令在通常情况下数字化，基本上这将导致控制权从用户空间转移，从用户模式转移到内核模式，这样操作系统就可以实际控制并可能杀死应用程序，因为它行为不当。</p>
+<p>发言人   27:13<br>To get a little bit of a sense, the difference between the two in the pre-listing impres instructions, let me switch display for a second. And here on the right side, you have the display is a document. You know the risk five peer architecture document, and that document contains all the preference instructions and is linked from the website under the references page. And in the next couple of weeks, almost months, you know, you will be playing around, you know, all these privileged instructions that, you know, are shown here. And in fact, many of them will, you know, show up in, some of them will actually show up in the next lecture in a great amount of detail. But users think about this as there are prefix instructions that user applications should not be able to execute. And those can only be executed in kernel mode. So that’s one aspect of, you know, this sort of hardware support for strong isolation.<br>为了得到一点感知，在预先列出的impres指令中，让我切换显示一秒钟。在右侧，您可以看到显示的是一份文件。您知道风险五等体系结构文档，该文档包含所有首选项说明，并从参考页面下的网站链接。在接下来的几周里，几乎几个月里，你知道，你将会玩弄，你知道，所有这些特权指令，你知道，都在这里展示。事实上，他们中的许多人会，你知道，出现在，其中一些人实际上会在下一节课中以大量的细节出现。但是用户会考虑到这一点，因为有些前缀指令用户应用程序不应该能够执行。而这些只能在内核模式下执行。这是这种对强隔离的硬件支持的一个方面。</p>
+<p>发言人   28:13<br>Just a quick question, like the what I’m imagining in my head is something like if kernel mode allow else don’t like what? Who is running that code and checking if it’s kernel mode? And how do they know if it’s in kernel mode? Is it like a flag or something? Yeah, basically you flag in the processor.<br>只是一个快速的问题，就像我在脑海中想象的是如果内核模式允许其他人不喜欢什么？谁在运行代码并检查它是否处于内核模式？他们如何知道它是否处于内核模式？它像一面旗帜还是什么？是的，基本上你在处理器中标记。</p>
+<p>发言人   28:32<br>You literally, there’s a bit in the processor that, you know, user mode. You know, one is say typically one is usual mode, 0 is kernel mode. And so when the processor decodes an instruction, looks at the opcode, if the opcode is a preflexion instruction and the bid is set to one and will deny executing that instruction. By zero, you know, you’re not allowed to do that, okay? But if that is, and so you were just able to over write that bit, then that’s the only controlling. So what do you think? What instruction that over write a bit? Is that a pre pre instruction?<br>你真的，在处理器中有一点，你知道，用户模式。你知道，一个是通常说一个是普通模式，0是内核模式。因此，当处理器解码一条指令时，查看操作码，如果操作码是预弯曲指令并且bid设置为1，则会拒绝执行该指令。你知道，零，你不被允许这样做，好吗？但如果是这样，那么你就能够覆盖那个位，那么这是唯一的控制。你觉得呢？什么指令改写了一点？那是预先指示吗？</p>
+<p>发言人   29:19<br>Is a question? Clearly, you know the instruction that sets it a bit must be preflexion, because a user application should not be able to set the bit to kernel modes, correct? And then you be able to actually run all kinds of prefixes, instructions, and so that bit is protected. Does that make sense? Okay yeah. Okay, good. So, so that’s use kernel mode, or at least, you know, the top view, lose the kernel mode.<br>是一个问题？显然，你知道将其设置为位的指令必须是预先调整的，因为用户应用程序不应该能够将位设置为内核模式，对吗？然后您就能够实际运行各种前缀、指令，从而使该位受到保护。感知了吗？好的，是的。好的，好的。所以，那就是使用内核模式，或者至少，你知道的，顶视图，失去了内核模式。</p>
+<p>发言人   29:50<br>It turns out the risk 5 has a, as a number of you asked about, has a third mode called machine mode. We’re mostly gonna ignore that, so I’m not going much say about it. Basically, there’s one more level because basically three levels of privileges instead of two level of privileges a year go out.<br>事实证明，风险5有一个，正如你们中许多人所询问的那样，有一个称为机器模式的第三种模式。我们大多会忽略这一点，所以我不会多说。基本上，还有一个级别，因为基本上每年有三个级别的特权，而不是两个级别的特权。</p>
+<p>发言人   30:07<br>Alright, so I’m wondering with respect to security, if all user code does go through the kernel, the intent is that things are secure, but is there a way for a user of the computer to completely go around the operating system? No, not really, at least, you know, done carefully, not. And if possible, like, you know, that might be the case, that some programs have additional privileges that the operating will respect, but those privileges are not given to every user. You know, example only the root user has certain privileges that allow you to do security sensitive operations that bias. Does bias happen before us or after yeah Bi, the piece of software that basically comes with the computer and that’s booted first and the device basically boots the operating system. So the bias is a trusted piece of code that be correct and better be not malicious.<br>好的，所以我想知道关于安全性，如果所有用户代码都通过内核，目的是确保事物是安全的，但是是否有办法让计算机用户完全绕过操作系统？不，不是真的，至少你知道，做得很仔细，没有。如果可能的话，就像，你知道，可能是这样的，某些程序有操作系统会尊重的额外特权，但这些特权并不是每个用户都有。你知道，例如，只有根用户具有某些权限，允许您执行具有偏见的安全敏感操作。偏见是在我们之前还是在yeah Bi之后发生的，yeah Bi是计算机基本上附带的软件，它首先启动，设备基本上启动操作系统。所以偏见是一个值得信赖的代码，它是正确的，最好不是恶意的。</p>
+<p>发言人   31:17<br>Noah, go ahead. Yeah, so you mentioned that the, you know, the instruction to set the kernel mode bit is a privileged instruction. How would a user program ever then be able to, you know, get like, like know essentially have the kernel execute any kernel instructions if like the very instruction to access kernel mode is itself a privileged instruction? I guess it seems like there’s immediately a barrier for a user program ever changing that fit. Yeah, that’s correct. And that’s exactly the way we want it, correct? So one way to think about it, and this is not exactly how it works in on risk life, but like if you execute a prefix instruction in user space or try to execute prefix instruction in.<br>诺亚，继续。是的，所以你提到，设置内核模式位的指令是特权指令。如果访问内核模式的指令本身就是特权指令，那么用户程序如何能够，你知道，就像知道基本上让内核执行任何内核指令一样？我猜似乎立即就会出现一个障碍，让用户程序永远改变适应方式。是的，没错。这正是我们想要的，对吗？所以有一种思考方式，这并不是它在风险生活中的工作方式，但是就像如果你在用户空间执行前缀指令或尝试执行前缀指令一样。</p>
+<p>发言人   33:08<br>I’m back, sorry about that. Looked like my Zoom client crashed on me. I apologize for that. I don’t really know why, but it did, Can everybody hear me again? Yep, you’re good. All good? All right, well, there’s somewhere about. Okay, so back to. Back to the second piece of Hartford’s, which almost all Cpu’s provide. Which Cpu’s provide virtual memory?<br>我回来了，很抱歉。看起来我的Zoom客户端崩溃了。我为此道歉。我真的不知道为什么，但它确实存在，每个人都能再听到我说话吗？是的，你很好。都很好？好吧，好吧，有个地方。好吧，那就回去吧。回到哈特福德的第二部分，几乎所有的Cpu都提供了。哪个Cpu提供虚拟内存？</p>
+<p>发言人   34:02<br>And I’m going to talk about this on Wednesday in much, much more detail. But basically, the processors have something you what is called the page table.<br>我将在星期三更详细地谈论这个问题。但基本上，处理器有一个叫做页表的东西。</p>
+<p>发言人   34:12<br>And you I’ve seen this a little bit and I think in 0 0 4 and the page BA basically maps virtual addresses. To physical addresses? And the basic idea is to give every process its own page table. And in this way? The process can actually only use where it only allowed to access that piece of physical memory that actually shows up in its page table. And so if you set up, if the operating system sets the page tables up in a way that every process has disjoined physical memory, then a process can’t even access, you know, somebody else’s physical memory because there’s not even in its page tables. So there’s no, like no way to create an address where write down and address that will allow a process to access somebody else’s physical memory. And so this gives us strong memory isolation.<br>而你我已经看到了一点，我认为在0 0 4中，页面BA基本上映射了虚拟地址。物理地址？基本思想是为每个进程提供自己的页表。以这种方式？该进程实际上只能使用只允许访问其页表中实际显示的物理内存的部分。因此，如果你设置了，如果操作系统以一种每个进程都脱离物理内存的方式设置页表，那么一个进程甚至无法访问其他人的物理内存，因为它的页表中甚至没有。所以没有办法创建一个地址，写下和地址，允许一个进程访问其他人的物理内存。因此，这为我们提供了强大的记忆隔离。</p>
+<p>发言人   35:10<br>Basically, page table defines view on memory, and every application and every user process has to its own view of memory independent of each other. And this gives us very strong memory isolation.<br>基本上，页表定义内存视图，每个应用程序和每个用户进程都有自己独立的内存视图。这给了我们非常强的记忆隔离。</p>
+<p>发言人   35:24<br>And so now what we can do, if we can think a little bit in this way, then we can redraw the picture a little bit earlier. And because we think about this as follows, you know, we have a box and LS sits in that box, and we have another box and Echo sits in that box. And that box basically has an address, virtual address range starting from 0 to like whatever, some number to the power or whatever number is in risk 5, which we’ll talk about on Wednesday. Similarly, you know the dress range for echoes, you know, something whatever to the Psh x, and so LS has a memory location, 0. Echo has a location with like a 0, and user is completely separated. And if the operating system maps those virtual addresses zero to different piece of physical addresses, then basically LS can not access echoes memory, and Echo can not access els’s memory.<br>所以现在我们能做的是，如果我们能以这种方式思考一点，那么我们就可以更早一点地重新绘制图像。因为我们这样思考，你知道，我们有一个盒子，LS坐在那个盒子里，而我们还有另一个盒子，Echo坐在那个盒子里。这个盒子基本上有一个地址，虚拟地址范围从0开始，某个数字的幂或任何有风险的数字5，我们将在周三讨论。同样地，你知道回声的着装范围，你知道，与Psh x有关的东西，所以LS有一个内存位置0。Echo的位置类似于0，而用户完全分离。如果操作系统将这些虚拟地址零映射到不同的物理地址段，则基本上LS无法访问Echo内存，并且Echo也无法访问els的内存。</p>
+<p>发言人   36:19<br>And similarly, you know, the kernel actually, you know, it says blow it, you know, also has its own, at least in XV 6 has its own address range independent of the applications. And we can think about the user kernel mode as sort of sitting in between, you know, the boundary, you know, things that actually run in user space, run in user mode. And things that sit in the kernel, running kernel mode. And that’s sort of the picture, you know, that you should in like the OS you sits there, you know, sitting in kernel mode. And so these are the pictures that you shoot have in your head.<br>同样，你知道，内核实际上，它说 “爆炸”，你知道，也有自己的，至少在XV 6中有自己的地址范围，独立于应用程序。我们可以将用户内核模式视为介于两者之间的一种模式，你知道，边界，你知道，实际上在用户空间中运行的东西，在用户模式下运行。和位于内核中的事物，运行内核模式。这就是那种情况，你知道，你应该在像操作系统一样坐在那里，你知道，坐在内核模式下。所以这些是你拍摄的照片放在你的脑海里。</p>
+<p>发言人   36:56<br>Now, as described so far, this picture is a little bit too strict. You know, we may basically put everything in a box, but there’s no way for one box to transfer control to another box. And clearly what needs to happen, because for example LS, you probably wants to call, you know, re re system call or rank system call or maybe, you know, whatever the shell wants to call fork or an exec. And so there has to be way for an application or user application to transfer control in a coordinated manner to the kernel so that the kernel can actually provide services. And so there’s a plan basically, in addition to these two pieces of hartfords report that I talked before, talked about so far, is a way of a controlled way of entering the kernel.<br>现在，正如目前所描述的，这张图片有点太严格了。你知道，我们基本上可以把所有东西都放在一个盒子里，但是一个盒子不可能把控制权转移到另一个盒子里。并且清楚地知道需要发生什么，因为例如LS，你可能想要调用，你知道，re系统调用或排名系统调用，或者，你知道，无论shell想要调用fork或exec。因此，应用程序或用户应用程序必须有办法以协调的方式将控制权转移到内核，以便内核可以实际提供服务。所以基本上有一个计划，除了我之前谈到的这两个哈特福德报告，到目前为止，是一种受控的进入内核的方式。</p>
+<p>发言人   37:49<br>And it turns out actually at risk 5. There is an instruction for this. It’s called the E call instruction.<br>事实证明，它实际上面临着5的风险。这是有说明的。这叫做E呼叫指令。</p>
+<p>发言人   37:58<br>An E instruction takes one argument, a number. And so when a user application that wants to transfer control into the kernel basically can call the E instruction with a number like 2 or three or 4 or 5. And that number basically is the system call number that the application wants to invoke. And that basically what that does, it actually enters the kernel at a particular point or particular location in the kernel that’s controlled by the kernel. And as we’ll see in XV 6 in some later lectures, there’s basically a single system call entry point. And every time an application calls E call, you know, an application enters the kernel at that particular point.<br>一条E指令有一个参数和一个数字。因此，当用户应用程序想要将控制转移到内核时，基本上可以调用数字为2或3或4或5的E指令。这个数字基本上是应用程序想要调用的系统调用号码。这基本上是这样做的，它实际上是在内核控制的特定点或特定位置进入内核。正如我们将在XV 6后面的一些讲座中看到的那样，基本上只有一个系统调用入口点。每当一个应用程序调用E call时，你知道，一个应用程序在那个特定的点进入内核。</p>
+<p>发言人   38:48<br>So one way to think about this is that if you have fork, you know the fork, you know, call in user space or for example, the shell or your Ps program called fork. Well, whatever calls fork, it doesn’t really call the operating system directly the corresponding function in the kernel step. What it does, it actually calls eCall with know the number for fork which know, and then that actually jumps into the kernel. So this is the kernel transition.<br>因此，有一种思考方式是，如果你有fork，你知道这个fork，你知道它在用户空间中调用，或者例如shell或你的Ps程序fork。嗯，无论调用fork的是什么，它并不会直接调用操作系统内核步骤中相应的函数。它所做的，实际上是调用eCall，知道fork的数字，然后这实际上跳到内核中。所以这是内核转换。</p>
+<p>发言人   39:22<br>And here’s the user site, here’s the kernel site, and then the kernel site, you know, there’s a function called syscall s-scam DOC, and that basically every system call will end up at that particular system call function. And then the system call will look at the number and then the site and the numbers actually passed in the register. I think it’s 1 zero, and it is called can look at that register, look at a 0, see what the number is, and then for example, called the forex system call. And so is like, just to make a little clear, so this is this hard boundary between the user and kernel. So the user can not call this directly. The only way, usually application can actually invoke the system called for fork, it’s through this eccolo instruction. So we have another.<br>这里是用户网站，这里是内核网站，然后是内核网站，你知道，有一个叫做syscall s-scam DOC的函数，基本上每个系统调用都会在那个特定的系统调用函数上结束。然后系统调用将查看号码，然后查看站点和实际在寄存器中传递的号码。我认为它是1零，它被称为可以查看该寄存器，查看0，看看数字是多少，然后例如，称为外汇系统调用。所以就像是，只是稍微澄清一下，这就是用户和内核之间的硬边界。所以用户不能直接调用它。通常应用程序实际上可以调用fork系统的唯一方法是通过此eccolo指令。所以我们有了另一个。</p>
+<p>发言人   40:18<br>If I have? Another system called, let’s say, write. It does something similar. You know, the right system called can not call, you know, the right, you know, code directly into the kernel. Instead, what it does, it calls what these little rappers are called system called stops. It will call eco a function called right that actually executes equal instruction, you know, with the argument, you know, says right to indicate the right system, call and add again transcoder control to syscall. And then syscall can actually de multiple-leg it to the right system call for two questions, but please go ahead.<br>如果我有？另一个系统叫做，比方说，写。它做了类似的事情。你知道，正确的系统调用不能直接将代码调用到内核中。相反，它所做的是将这些小说唱歌手称为停止系统。它将调用一个名为right的函数，该函数实际上执行相等的指令，您知道，使用参数，您知道，表示正确的系统，调用并再次添加转码器控制到syscall。然后syscall实际上可以将多个分支转到正确的系统，要求两个问题，但请继续。</p>
+<p>发言人   41:10<br>I think my was okay. I can go ahead. The question I had was how does or where does the kernel check for example, fork or right if it is allowed or not? Right now you’re just passing in like, you know, you’re just calling a call and the system call number, but where does the kernel basically decide whether this application should be able to invoke this particular, kernel Sysco? Yeah, so a great question. So in principle, the on the kernel side, correct? When we actually just fork call runs, it can implement any security check at once, you know, can look at the arguments, you know, if the system call and decide whether actually the application should be allowed to execute the system call fork.<br>我觉得我还好。我可以继续。我的问题是内核如何或在哪里检查例如fork或right是否允许？现在你只是传入一个呼叫和系统呼叫号码，但是内核在哪里基本上决定这个应用程序是否应该能够调用这个特定的内核Sysco？是的，这是个很好的问题。所以原则上，在内核方面，对吗？当我们实际上只是fork调用运行时，它可以同时实现任何安全检查，你知道，可以查看参数，你知道，如果系统调用并决定是否应该允许应用程序执行系统调用fork。</p>
+<p>发言人   41:58<br>Now in user in Unix, any application can actually call FARC. But let’s say take write, write needs to check whether the implementation of right needs to check whether the address that is actually passed into right actually is part of the user applications and so that, you know, the kernel is not tricked to writing data from somewhere else. It actually doesn’t belong to the application. There are more hints, you know, please ask.<br>现在在Unix的user中，任何应用程序都可以实际调用FARC。但是假设使用写入，写入需要检查right的实现是否需要检查实际传递到right的地址实际上是否属于用户应用程序的一部分，这样内核就不会被欺骗从其他地方写入数据。它实际上不属于应用程序。还有更多的提示，你知道的，请询问。</p>
+<p>发言人   42:30<br>Yeah, I had a quick question. So how does the kernel seize back control from a user application? In the case where these are application is acting maliciously or in an infinite loop? Yeah, so the way the plan for that, and again, we’re gonna talk about in much more detail in a couple weeks, is that the kernel actually programs the hardware to set a timer. And after the timer goes off, that will cause a transfer from use space to kernel mode. So at that point, the kernel is back in control and then the kernel can reschedule the CPU to another process. Okay, makes sense, thank you. Yeah, and we’ll see that exact details, you know, we’ll see in a little while.<br>是的，我有一个快速的问题。那么，内核如何从用户应用程序中夺回控制权？在这些应用程序恶意行为或无限循环的情况下？是的，所以计划的方式，再次，我们将在几周后更详细地讨论，是内核实际上对硬件进行编程以设置计时器。并且在计时器关闭后，这将导致从使用空间到内核模式的转换。因此，在那个时候，内核重新控制，然后内核可以将CPU重新调度到另一个进程。好的，感知，谢谢。是的，我们会看到确切的细节，你知道，我们一会儿就会看到。</p>
+<p>发言人   43:15<br>We have one more questions. Yeah, so this is more of a high level question, but what drives the designers of an operating systems implementation to use a language like C? Okay, so great question. She gives you a lot of control over hardware. And so chip. So for example, you know, you need to program the timer chip in C, that is actually easy to do because you get a lot of low level control over any hardware resource, partly because you can cast anything to anything. And so C is basically very convenient programming language if you have to do very low level programming, particularly interacting with hardware.<br>我们还有一个问题。是的，所以这更像是一个高层次的问题，但是是什么驱使操作系统实现的设计者使用像C这样的语言？好的，很好的问题。她给了你很多对硬件的控制。所以芯片。例如，你知道，你需要用C语言对定时器芯片进行编程，这实际上很容易做到，因为你可以对任何硬件资源进行很多低级控制，部分原因是你可以将任何东西投射到任何东西上。因此，如果你必须进行非常低级的编程，特别是与硬件交互，C基本上是非常方便的编程语言。</p>
+<p>发言人   44:06<br>You, it doesn’t mean you can’t do it in other languages, but is is historically the reason why C has been so successful? I see, thanks.<br>你，这并不意味着你不能在其他语言中做到这一点，但历史上这就是C语言如此成功的原因吗？我知道了，谢谢。</p>
+<p>发言人   44:15<br>Why is C so much more popular than C++? Only for historic reasons in like these kinds of applications? Or is there any other reason that like, no, like most OS don’t haven’t adopted C++? Yeah, so most operating system, you know, there are, I think operating systems written in C++ totally impossible. Probably the most ones that, you know, you know, are not written in C++ and the various reasons for it, you know Linux is mostly C or no C++ and I partially because Linus just doesn’t like C++.<br>为什么C比C ++ 更受欢迎？仅出于历史原因，在这类应用中？还是有其他原因导致大多数操作系统没有采用C ++？是的，所以大多数操作系统，你知道，有一些，我认为用C ++ 编写的操作系统是完全不可能的。可能大多数不是用C ++ 编写的，而且有各种原因，你知道Linux主要是使用C ++ 或没有C ++，而我部分原因是因为Linus不喜欢C ++。</p>
+<p>发言人   44:54<br>Any other questions?<br>还有什么问题吗？</p>
+<p>发言人   45:04<br>Okay, so, so in this view of the world, Greg, where we have a way of transfer of control into the operating system using system calls or these Ecole instruction. And so the kernel is not responsible for implementing actually the actual functions and ensuring, you know, checking arguments and things like that to make sure that, you know, the it’s not being tricked into something, doing something badly. And so in this view of the world, the kernel is sometimes called. You know, it’s the trusted computing based.<br>好的，所以在这种世界观中，格雷格，我们有一种使用系统调用或这些Ecole指令将控制权转移到操作系统的方法。因此内核不负责实际实现实际的功能，也不负责确保检查参数和类似的事情，以确保它没有被骗做坏事。因此，在这种世界观中，内核有时被称为。你知道，这是基于可信计算的。</p>
+<p>发言人   45:47<br>Sometimes called in security terms, the TCB. And, you know, basically, what does it mean for to be the trusted computing base? Well, it must be correct. Kernel must have no bugs.<br>有时在安全术语中被称为TCB。而且，你知道，基本上，成为可信计算基础意味着什么？嗯，一定是正确的。内核必须没有错误。</p>
+<p>发言人   46:05<br>Because if there’s a bug in the kernel, you know, the way to think about it is that maybe an attack oner is able sort of to tickle that bug and turn the bug into an exploit. And, you know, that exploit may maybe allow that particular attacker to break out of isolation or maybe take some control over the kernel. And so it’s really important that, you know, the kernel really, you know, has to have as few bugs as possible. And basically the kernel you must creed.<br>因为如果内核中有一个bug，你知道，考虑它的方法是，也许攻击者能够挠那个bug，并将这个bug变成一个漏洞。而且，你知道，这个利用可能会让特定的攻击者突破孤立，或者对内核进行一些控制。因此，非常重要的是，内核必须尽可能少的错误。基本上你必须信仰内核。</p>
+<p>发言人   46:35<br>Request treated user apps, applications, or processes. Malicious. And basically, as I said before, you know, basically the gerdel designer, should they have sort of a security mindset, you know, when writing and implementing kernel code and in the heart to achieve this goal or having no bugs, if you are operating system gigantic itly big is not that straightforward. And almost every operating system your users will used once in a while, he has a security bug, and they get fixed over time. But basically, no matter what, there’s always a new exploit at some point down the line. And, you know, we’ll see later why it’s so tricky to get it all right.<br>请求处理的用户应用程序、应用程序或进程。恶意的。基本上，正如我之前所说，你知道，基本上是gerdel设计师，如果他们有某种安全思维，你知道，在编写和实现内核代码时，为了实现这个目标，或者没有错误，如果你的操作系统非常庞大，那就不是那么简单了。而且几乎你的用户偶尔会使用的每个操作系统都有一个安全漏洞，并且会随着时间的推移得到修复。但基本上，无论如何，在未来的某个时刻总会有一个新的漏洞利用。而且，你知道的，我们稍后会看到为什么把它做好是如此棘手。</p>
+<p>发言人   47:25<br>But, you know, you sort of understandable, like the kernel has to do tricky stuff. It has to manipulate hardware. It has to be very careful and checking and very easy to make a small slip up and, you know, have a buck. And so?<br>但是，你知道，你有点可以理解，就像内核必须做棘手的事情一样。它必须操纵硬件。它必须非常小心和检查，很容易犯一个小错误，你知道的，要有一个钱。所以呢？</p>
+<p>发言人   47:47<br>An interesting question, correct is then what should run in kernel mode? Because it’s really the kernel code that actually is in kernel mode. That is the sensitive code that is the trusted computing base. And one answer, you know, to that question is like, well, you know, we have our user kernel boundaries. So users use kernel and use our applications running. And here he is, the program running in kernel mode.<br>一个有趣的问题，正确的是什么应该在内核模式下运行？因为实际上处于内核模式的是内核代码。这是敏感代码，是可信计算基础。而对于这个问题的一个答案，你知道，就像，嗯，你知道，我们有我们的用户内核边界。所以用户使用内核并使用我们运行的应用程序。他在这里，程序在内核模式下运行。</p>
+<p>发言人   48:16<br>One option is to stick the whole operating system in kernel mode. So for example, in most Unix operating systems, the whole Unix implementation runs inside of kernel mode. So in XV 6, all the operating system services are basically in kernel mode, and this is called monolithic. Ke design?<br>一种选择是将整个操作系统粘贴在内核模式下。例如，在大多数Unix操作系统中，整个Unix实现在内核模式下运行。所以在XV 6中，所有的操作系统服务基本上都处于内核模式，这被称为单体模式。柯设计？</p>
+<p>发言人   48:47<br>And, you know, there’s a couple things in the way to think about it. One, you know, it’s probably not so good for bucks, right? Because any book you know that you might have in a monolitten design, you might actually turn into an exploit, and that would be bad. So we have a large operating system running inside of the kernel. It’s likely that there are going to be more books, like any statistics that can look up, it says like every few thousand lines of code will have some small number of bucks. And so if you have many, many more lines of code and are running in a kernel block, the probability of the chance that you have and huge block goes up a little bit. And so downside from the melino kernel design from his security perspective is there’s a lot of code in the kernel.<br>而且，你知道，有几件事情需要考虑。有一件事，你知道的，对钱来说可能不太好，对吧？因为你所拥有的任何一本单卷设计的书，都可能会变成一个漏洞，那将是不好的。所以我们有一个在内核内部运行的大型操作系统。很可能会有更多的书，就像任何可以查找的统计数据一样，它说每几千行代码就会有一些少量的美元。因此，如果您有很多、很多行代码并且在内核块中运行，那么您拥有大块代码的概率会稍微增加。从他的安全角度来看，melino内核设计的缺点是内核中有很多代码。</p>
+<p>发言人   49:35<br>The plush do is, you know, typically if you think about an operating system contains of all kinds of different pieces, you know, you might have the file system piece, you might have the virtual memory piece, you might have, you know, processes, you know, And so there are all kinds of sort of sub modules inside of the operating system that implement particular functionality. And the plus side of that is there’s going be tight integration possible between these different submodules if they’re all sitting in the same program and that can actually lead to great performance.<br>毛绒做的是，你知道，通常如果你想到一个操作系统包含各种不同的部分，你知道，你可能有文件系统部分，你可能有虚拟内存部分，你可能有进程，你知道，因此，操作系统内有各种类型的子模块来实现特定的功能。而这样做的好处是，如果这些不同的子模块都在同一个程序中，它们之间将有可能紧密集成，这实际上可以带来出色的性能。</p>
+<p>发言人   50:11<br>And for example, if you look at an operating system, the Linux, it actually you achieve very impressive performance. And so it isn’t one sort of one design, another design, which basically focuses on reducing the amount of code in the kernel is what is called micro kernel design.<br>例如，如果你观察一个操作系统，Linux，它实际上可以实现非常令人印象深刻的性能。因此，它不是一种设计，另一种设计，基本上侧重于减少内核中的代码量，这就是所谓的微内核设计。</p>
+<p>发言人   50:35<br>And in this design, the goal is actually to run as few lights as possible in kernel mode. And so for example, there is something of kernel, but the kernel has very few components to it. So for example, it typically has some form of IPC or message passing, a little bit of VM support, very minimal. Basically only the thing necessary for page tables and something to multiplex different Cpu’s, some multiplexing code. But generally, the goal is to run the bulk of the operating system outside of the kernel. And so example, again, as we have our boundary here, what we’ll do is actually we’ll run other parts of the kernel as normal user applications. For example, we might have an oops.<br>在此设计中，目标实际上是在内核模式下运行尽可能少的灯光。例如，有一些内核的东西，但内核只有很少的组件。例如，它通常具有某种形式的IPC或消息传递，一点点的VM支持，非常小。基本上只有页表和多路复用不同Cpu所需的东西，一些多路复用代码。但通常，目标是在内核之外运行大部分操作系统。因此，再次举例说明，由于我们在这里有自己的边界，我们要做的实际上是将内核的其他部分作为普通用户应用程序运行。例如，我们可能有一个哎呀。</p>
+<p>发言人   51:34<br>You might have a usual process It still, it’s not intended, but doesn’t really matter. You know that the file server and so, and the file server is just a regular user space, so user space kernel. So even though I drew by accidentally read and tend to drive block, the thousands are mine running like a usury application, like the Echo, you know, the shell and all run the user space. And we might have other, you know, user applications like the parts of the VM system might actually run the regular user application in user mode. So this is sort of a nice design, correct? Because you know, the amount of code that presumably that’s in the kernel a small. And small and small means hopefully fewer bucks.<br>你可能有一个通常的过程，它仍然不是有意的，但并不重要。你知道文件服务器和so，而文件服务器只是一个普通的用户空间，所以用户空间是内核。所以即使我不小心读了并倾向于驱动块，成千上万的都是像高利贷应用程序一样运行的，就像回声，你知道，shell和所有运行的用户空间。我们可能还有其他的用户应用程序，比如VM系统的某些部分，实际上可能会在用户模式下运行常规用户应用程序。这是一个不错的设计，对吗？因为你知道，内核中可能存在的代码量很小。而小和小意味着希望更少的钱。</p>
+<p>发言人   52:28<br>One issue, of course, is like, you know, we have to arrange that the shell can talk to the file system example. You know, the shell calls exec and there has to be a way of getting getting to the file system. And so the typically the way that works is that the shell will send a message through the IPC system, through the kernel. The kernel will look at it and say like, oh, you know, this is intended for the file system, so the file system, and sends it to the file system. The file system doesn’t work, you know, sends a message back saying like, you know, here’s the results of your exec system call, and then, you know, send it back to the future shell. And so these are typically implemented using messages. And so for any interaction with the file server, now you have to jump once into the kernel, once out of the kernel, once into the kernel, once out of the kernel, if you compare that with the previous design, like if this guy wants to talk to the file system, it’s one system to call in and one basically call back out. And so you double the numer off system Paul entries.<br>当然，有一个问题是，你知道，我们必须安排shell可以与文件系统示例进行通信。你知道，shell调用exec，必须有办法进入文件系统。因此，通常的工作方式是shell将通过IPC系统通过内核发送消息。内核会看着它，然后说，哦，你知道，这是为文件系统准备的，所以是文件系统，然后把它发送到文件系统。文件系统不起作用，你知道，会发送一条消息回来说，比如，这是你的exec系统调用的结果，然后，你知道，将其发送回未来的shell。因此，这些通常使用消息实现。因此，对于与文件服务器的任何交互，现在您必须跳入内核一次，离开内核一次，进入内核一次，离开内核一次，如果您将其与以前的设计进行比较，例如如果这个人想要与文件系统交谈，这是一个呼叫和一个基本上呼叫回来的系统。因此，您将系统Paul条目中的数字加倍。</p>
+<p>发言人   53:28<br>And so one typical problem or challenge, we thought the microcornea approach is, is actually how to achieve good performance and it has sort of two components to it, one, you know, just jumping back and forth you between user mode and kernel mode to actually get something done. And the second part is because the different pieces are really well isolated from each other, a tight integration is less more complicated to range than, for example, in the monolith kernel, where basically everybody can, for example, the file system and the virtual memory system can easily share a page cache, which a little bit harder to achieve in the microkernel design. And therefore, it’s sometimes more difficult to get high performance.<br>所以一个典型的问题或挑战，我们认为微角膜的方法是，实际上是如何实现良好的性能，它有两个组成部分，一个，你知道，只是在用户模式和内核模式之间来回跳跃，以实际完成任务。第二部分是因为不同的部分之间真的很好地隔离了，紧密的集成比在单体内核中更复杂，例如，在单体内核中，基本上每个人都可以，例如文件系统和虚拟内存系统，可以轻松共享一个页面缓存。这在微核设计中有点难实现。因此，有时更难以获得高性能。</p>
+<p>发言人   54:12<br>Now, these distinctions, you know, between Micron Mono are very high level. So in practice, both types of kernel designs that show up, most desktop operating systems are typically monolitten systems, mostly for historical reasons, a lot of the if you run very intense OS, intense applications, for example, in a data center, they typically run on a monolithic kernel, mostly because for example Linux provides great performance, but many again in embedding settings like minimix or cell 4, those all tend to be microcrith designs. And so both designs are popular.<br>现在，这些区别，你知道，在微米单声道之间是非常高水平的。因此，在实践中，两种类型的内核设计都会出现，大多数桌面操作系统通常都是单系统，主要是由于历史原因，很多如果你运行非常密集的操作系统，密集的应用程序，例如在数据中心，它们通常运行在一个单一的内核上，这主要是因为例如Linux提供了出色的性能，但在嵌入设置 (如minimix或单元格4) 中，它们都倾向于微处理器设计。所以这两种设计都很受欢迎。</p>
+<p>发言人   54:53<br>You probably start a new operating system from scratch. You probably start with you may, you know, you may start with a microkernel design. And once you have a monolithic design, like for example Linux, you know it’s gonna be would be a ton of work to rewrite it into a micro kernel design and that maybe, you know, just not conducive to the incentives, You know, people probably want to spend rather time implementing new features then actually. You know, restructuring their kernel. And so these are the two main designs. As you know Xb 6, it falls into monolithic design, as most classic Unix systems do. But later in the semester, we’ll talk a lot more in detail about some of the micro kernel designs.<br>你可能会从头开始一个新的操作系统。你可能会从一个微核设计开始。一旦你有一个单体设计，例如Linux，你知道将它重写成微内核设计将是一个吨的工作，也许，你知道，只是不利于激励，你知道，人们可能更愿意花时间实施新功能。你知道，重组他们的内核。所以这是两个主要的设计。如你所知，Xb 6属于单体设计，就像大多数经典的Unix系统一样。但在本学期晚些时候，我们将更详细地讨论一些微内核设计。</p>
+<p>发言人   55:40<br>Any questions about this? Because this was a hot topic in the in the email of questions.<br>对此有什么问题吗？因为这是问题电子邮件中的热门话题。</p>
+<p>发言人   55:54<br>Okay, okay, so let me switch a little bit. I’m going to show to some code and sort of see how this plays out in XV 6. So here’s two windows. And you have an EEC, we know with like the proc structure. And the first thing I’ll to do is look a little bit at the code base. You’ve probably already done this. You see that the code is sort of organized along in three parts, 1, the kernel, and you can kernel that basically includes old kernel files.<br>好的，好的，让我稍微转换一下。我将展示一些代码，看看这在XV 6中是如何发挥作用的。这里有两个窗口。并且你有一个EEC，我们知道它具有类似的proc结构。我要做的第一件事是查看一下代码库。你可能已经这样做了。你可以看到代码被分成三个部分，第一，内核，你可以看到内核基本上包括旧的内核文件。</p>
+<p>发言人   56:32<br>And so X 3, 6 being a Monodical kernel, basically all these programs are compile things, do single binary called the kernel. And that’s actually what we run in kernel mode. And then, you know, there’s us. And those are the basically the programs that run user mode. And this is why the one is called kernel and the other called user. And then there’s one more program called Mafs, which actually builds an empty file system image that we have stored on this so that we can get off the ground with an empty file system.<br>所以x3, 6是一个单声道内核，基本上所有这些程序都是编译的东西，做一个叫做内核的二进制文件。这实际上就是我们在内核模式下运行的。然后，你知道，还有我们。这些基本上是运行用户模式的程序。这就是为什么一个被称为内核，另一个被称为用户。然后还有一个名为Mafs的程序，它实际上构建了一个空的文件系统映像，我们将其存储在其中，以便我们可以使用空的文件系统开始工作。</p>
+<p>发言人   57:09<br>Okay, so before, so I switch back again to, I want to say a little bit about how the kernel was compiled because you probably have seen this and might not really have realized it. And it’s sort of important to understand. So when the kernel, the construction of the kernel, the make file basically takes on one of the CS files like propx DOC, you know, invokes, you know, the GCC, the C compiler that generates a file called proc DOS that goes through disse. And this is basically a risk five assembly. And that actually produces a file called proc .0. And basically that’s, you know, the binary version of the sembler. And you know, the make file those this were all part 1000 to kernels.<br>好的，之前，所以我再次切换回，我想说一点关于内核是如何编译的，因为你可能已经看到了这一点，可能没有真正意识到这一点。理解这一点很重要。所以当内核，内核的构造，生成文件基本上采用了一个CS文件，比如propx DOC，你知道，调用GCC，这个C编译器生成一个名为proc DOS的文件，该文件经过disse。这基本上是一个风险五组装。这实际上产生了一个名为proc .0的文件。基本上，这就是sembler的二进制版本。你知道，这些都是内核的第1000部分的生成文件。</p>
+<p>发言人   58:01<br>So for example, pipe another one, you know, same story. GCC compiles it to pipe DOS and you know, go to fruit assembler and we got a pipe .0. And basically then the loader takes all these point 0 files from all the different files, links them together, and produces the and produces the kernel. And that was actually then what we to run.<br>例如，管道另一个，你知道，同样的故事。GCC将它编译为管道，然后转到水果汇编程序，我们得到了一个管道。0。基本上，加载程序从所有不同的文件中获取所有这些点0文件，将它们链接在一起，然后生成内核。那实际上就是我们当时要做的事情。</p>
+<p>发言人   58:31<br>And, you know, for your convenience, you know, the make file also produces a file called kernel do a. That have the complete kernel disassembled and you can just look at it and you know, that helps later on when you have kernel bugs and it’s easy to see which instruction was executed at the point you got the book, for example. Here, kernel a.m., we see that here’s the kernel file, the assembly instructions. And one thing you note, for example, is not the first instruction is located at this address 8 0 0 0 0 0, and that is in whatever aupc instruction, the risk life instruction. And anybody knows what this is, 0 0 8 1 1 7 or 8 3 1 0 3 or 6505?<br>而且，你知道，为了方便起见，生成文件还会生成一个名为kernel do的文件。它有完整的内核分解，你可以看看它，你知道，这有助于以后当你有内核错误时，很容易看出你得到这本书时执行了哪个指令。在这里，内核上午，我们看到这是内核文件，汇编指令。例如，你要注意的一件事是，第一个指令不是位于这个地址8 0，那是在任何aupc指令中，风险寿命指令。有人知道这是什么吗，0 0 8 1 1 7或8 3 1 0 3或6505？</p>
+<p>发言人   59:34<br>Anyone who wants to answer that question, that’s the hex version of the assembly instructions on the right. Yeah exactly. So what here on the 0 0 8 1 1 7 is exactly the same thing as the symbolic, you know, the textual version of that, 1 UPC. And so basically this is the binary encoding of the actual instruction. And every instruction has a binary encoding. And you, the kernel data in file actually shows those binary encodings. And this sometimes compet when you look at the Gdb and you want to know what actually is going on, you know, you can see actually what the binary encoding is.<br>任何想要回答这个问题的人，这就是右边汇编指令的十六进制版本。没错。所以这里的008 1 1 7与象征性的文本版本1 upc完全相同。因此，基本上这是实际指令的二进制编码。每条指令都有二进制编码。而文件中的内核数据实际上显示了这些二进制编码。当你查看Gdb时，这有时会发生，你想知道实际发生了什么，你知道，你可以看到实际上二进制编码是什么。</p>
+<p>发言人   01:00:12<br>Okay, okay, so then when we run XV 6 I’m going to run the inside effect. Let me first run it without gdb. You know, we’ll compile a bunch of stuff and then invokes QM. And this is a basically C program that simulates or emulates a risk 5 processor. And you can see here in the dash kernel block, and it actually passes the kernel.<br>好的，好的，那么当我们运行XV 6时，我将运行内部效应。让我先在没有gdb的情况下运行它。你知道，我们会编译一堆东西，然后调用QM。这基本上是一个模拟风险处理器的C程序。你可以在这里看到dash内核块，它实际上传递了内核。</p>
+<p>发言人   01:00:38<br>The program to be run inside of qmu and qmu and the kernel agreed that basically the starting place for any program is to address 8000 0. And we see that we passed a couple other flex units, you know, and that’s amount of memory that the machine, this virtual machine, has, this virtual risk fight machine. It passes in how many of coarse there are passes in machine, the disk drive, which contains to the file FSN image. And so basically a bunch of things are sort of set up to make a new behave like a real computer.<br>要在qmu和qmu内部运行的程序以及内核一致认为，基本上任何程序的起点都是地址8000。我们看到我们通过了几个其他的flex单位，你知道，这就是这个虚拟机拥有的内存量，这个虚拟风险对抗机器。它传入有多少粗糙的通道在机器中，磁盘驱动器，其中包含到文件FSN镜像。因此，基本上有很多东西被设置成使新的行为像真正的计算机一样。</p>
+<p>发言人   01:01:14<br>And so one way, when you think about qmu really, you should not think about it as a CE program. Really, the way you should think about it is as follows. You should think about it as. As this, namely in real board, so for example, on the left you, this is risk five board, actually is a risk five board that sits in my office and you know, they can boot, more or less XV 6. And so when you’re running, you qmu with your kernel, you should think about it that actually you’re running it on this board. And you know, the board has an on off button.<br>因此，有一种方式，当你真的想到qmu时，你不应该把它看作是一个欧洲合格认证计划。实际上，你应该这样思考。你应该考虑一下。就像这样，即在真实的董事会中，例如在左边，这是风险五板，实际上是一个风险五板，坐落在我的办公室里，你知道，他们可以启动，或多或少XV 6。所以当你运行qmu和你的内核时，你应该考虑一下，实际上你是在这个板上运行它的。你知道，这个板有一个开关按钮。</p>
+<p>发言人   01:01:57<br>Here’s actually the risk 5 processor. You know, there’s room for peripherals. So for example, one of these connectors is a connector for ethernet, 1 is the tcie slots, there are some Ram chips on the board, I don’t exactly know where they are, but there are. And so this is sort of, that’s the physical hardware, the computer, actually the actual You programming. So XV 6 manages this board, and that’s the picture you should have in your head. And in fact, if you sort of zoom in, you know, you can find all the documentation of like what actually sits inside of this and inside of this, inside of this risk 5 processor, the schema for the risk life processor is shown in this picture here.<br>这里实际上是风险5处理器。你知道，有外设的空间。例如，其中一个连接器是以太网连接器，1个是tcie插槽，板上有一些Ram芯片，我不确切知道它们在哪里，但有。因此，这有点，那是物理硬件，计算机，实际上是实际的编程。所以XV 6管理这个板，这就是你应该在脑海中的画面。事实上，如果你放大一下，你知道的，你可以找到所有文档，比如这个风险5处理器内部的实际情况，这张图片展示了风险生命处理器的架构。</p>
+<p>发言人   01:02:46<br>And you know, we see here, for example, there are multiple cores. And in fact, the four core, there’s an L 2 cache, there’s a connector to DRAM, you know, there’s a bunch of ways to connect to the outside world. So for example, here, view work 0. And your work 0 is actually connected from one end, you know, to the keyboard and to the other end to the display. And, you know, there’s some ways to actually get clocks going, which I will will talk about in much more detail later. But those are all the components that basically know the X 3, 6, and things that you will be modifying to interact effective the real hardware and in fact, the computer system or the computer board that actually is emulated by q.u..<br>你知道，我们在这里看到，例如，有多个核心。实际上，四个核心有一个L2缓存，有一个到DRAM的连接器，你知道，有很多方法可以连接到外部世界。例如，在这里，查看工作0。你的作品0实际上是从一端连接到键盘，另一端连接到显示器。而且，你知道，有一些方法可以让时钟真正运行起来，我稍后会更详细地讨论这些方法。但这些都是基本上知道X 3、6的组件，你将修改这些组件以有效地与真正的硬件进行交互，事实上，q.u模拟的计算机系统或计算机板 ..</p>
+<p>发言人   01:03:32<br>It’s pretty close mining small details to this particular computer board, which is made by Sci Fifi. And unfortunately, I can’t show you the real thing. As I said, sit in my office, you know, and I haven’t been in my office since March, probably collecting a lot of dust, but it’s important to keeping your head when you’re running q.u. you’re running basically Unreal hardware and just happens to be able to software.<br>它非常接近于挖掘这个由科幻制作的特定电脑板的小细节。不幸的是，我无法向您展示真实的东西。就像我说的，坐在我的办公室里，你知道的，自从三月份以来我就没有来过我的办公室，可能会积灰很多，但是当你跑步时，保持头脑很重要。 你基本上在运行虚幻的硬件，只是碰巧能够使用软件。</p>
+<p>发言人   01:04:02<br>Does that make sense, pause for a second to you.<br>这样做感知吗，暂停一下。</p>
+<p>发言人   01:04:11<br>So let me say a little bit more about this. So what does it mean for Q mu emulate? The Risk 5 processor. Well, literally, you know, if you think about it as you, as I said, premium is AC program. It’s an open source C program. It’s a big program. You can actually just download it or get Clo it, but internally into, there’s basically a for loop, an infinite for loop that basically does nothing else than read instruction.<br>那么让我再多说一点。那么Q mu的模拟是什么意思？风险5处理器。从字面上看，你知道，如果你像我说的那样思考，premium是交流计划。这是一个开源的C程序。这是一个大项目。你实际上可以下载或获取它，但在内部，基本上有一个for循环，一个无限的for循环，基本上除了读取指令之外什么也不做。</p>
+<p>发言人   01:04:48<br>The risk 5 instruction, you know, basically reads, you know, 4 B or 8 B, and you basically looks at the bits in that instruction and decodes them and figures out what the Op code is. And we saw for some of the instructions, the binary version of those instructions in the dot AZ file, and so decodes the instruction. So for example, maybe it will decide this is an add instruction, or it’s a sub instruction, the risk five sub constructions. And then basically, it executes the instruction.<br>风险5指令，你知道，基本上读取，你知道，4 B或8 B，你基本上查看指令中的位并对其进行解码，找出操作代码。我们在点AZ文件中看到了一些指令的二进制版本，因此对指令进行解码。例如，也许它会决定这是一个添加指令，或者它是一个子指令，风险五个子结构。然后基本上，它执行指令。</p>
+<p>发言人   01:05:22<br>In software? And, you know, that basically is all what it does. You know, for every core, you know, it runs this particular loop. And in addition, sort of doing this little, it has to maintain some state. So maintain state for all the registers. So it has AC decoration for like x 0 register 0x 1, etc..<br>在软件？而且，你知道，这基本上就是它所做的一切。你知道，对于每个核心，你知道，它运行这个特定的循环。此外，做这一点，它必须保持一些状态。所以维护所有寄存器的状态。因此它有交流修饰，如x0寄存器0x1等。</p>
+<p>发言人   01:05:44<br>And so basically, when it executes instruction, for example, the instruction is like whatever, you know, a zero, you know, 1 through 7 is stored in a 0. And basically it takes a constant 7 and 1 adds them up and sticks it in a 0. So example starts the seven year and then execute, gets the next instruction and keeps going, keeps going. And in addition to basically emulating or correctly all the unprivileged instructions, it also emulates all the privileged instructions. So that’s in essence, what q.u. does and what the best picture for you to have in your head is that basically you’re running on a real physical risk 5 procession, like the ones we have probably, you know, many of you implemented one F in double 0 4.<br>基本上，当它执行指令时，例如，指令就像任何东西一样，你知道，零，你知道，1到7存储在0中。基本上，它需要一个常数7和1将它们相加并将其粘在一个0中。所以示例开始七年，然后执行，获取下一个指令并继续运行，继续运行。除了基本模拟或正确地模拟所有非特权指令之外，它还模拟所有特权指令。这本质上就是q.u.的意思。 你脑海中最好的画面是，基本上你正在进行一次真正的身体风险5的游行，就像我们可能有的那样，你知道，你们中的许多人在双0 4中实施了一个F。</p>
+<p>发言人   01:06:30<br>Any questions about this? Hi, yeah. I was wondering if it does any hardware tricks, so like overlapping instructions or anything? No, it runs on a real processor below it, correct? So when you run qmu, it runs probably on an x 86 processor, that x 86 processor does all kinds of tricks to pipeline instructions and things like that. The way to think about qmu, it’s just a cheap program. Makes sense, thank you.<br>对此有什么问题吗？嗨，是的。我想知道它是否有任何硬件技巧，比如指令重叠之类的？不，它在它下面的真实处理器上运行，对吗？所以当你运行qmu时，它可能在x86处理器上运行，x86处理器会执行各种技巧来实现流水线指令和类似的操作。思考qmu的方式，它只是一个廉价的程序。让感知，谢谢。</p>
+<p>发言人   01:07:08<br>What about multi thread aing? So if that the CMU supports you said 4 core or does it only support one? And if it, if that case does it have actually multiple threads running it? Yeah, so actually the key you that we use on, Athena and we probably want to get free download, they will use multiple threads internally. So Kim internally use it to get parallelism. So in fact, these 4 cores that are being emulated are sort of being emulated in parallel. And we’ll see that in one of the labs later how that plays out. So definitely there’s a real parallelism going on between the different courses.<br>多线程aing怎么样？那么，如果CMU支持你所说的4个核心还是只支持一个？如果它，如果这种情况下它实际上有多个线程运行吗？是的，实际上我们使用的密钥是Athena，我们可能希望获得免费下载，他们将在内部使用多个线程。所以Kim在内部使用它来获得并行。事实上，这4个被模拟的核心在某种程度上是并行模拟的。稍后我们将在其中一个实验室中看到它是如何发展的。所以不同的路线之间肯定存在真正的平行。</p>
+<p>发言人   01:07:54<br>Okay, so I’m going to do a little bit of. Walking through XV 6 to get a little bit of sense what the layout of the land is in late lecture, again, we’re going to go in much more detail.<br>好的，我要做一点。在晚些时候的讲座中，我们将通过XV 6来感知土地的布局，再次详细介绍。</p>
+<p>发言人   01:08:09<br>So I’m going to fire up q.u. under. We have gdb support. So basically qmu has inside of a Gdb server, and so it starts it up, and then just wait, you know, for Gdb to connect to that. So I’m going to start here on my computer. And this is a risk 64 Linux, no Gdb, some of your machines might be multi arch or something else, but basically the Gdb compiled for risk 64 verse 564.<br>所以我要启动q.u。 在下面。我们有gdb支持。基本上，qmu在Gdb服务器内部，因此它启动了它，然后等待Gdb连接到它。所以我要从我的电脑开始。这是一个风险64 Linux，没有Gdb，你的一些机器可能是multi arch或其他东西，但基本上Gdb编译为风险64诗句564。</p>
+<p>发言人   01:08:39<br>And I’m going to say the breakpoint entry, because that’s the first. We know that roughly the first instruction that actually where Kim is going to jump to. So I set the breakpoint, I run, and basically it doesn’t actually break exactly at 8 0 0 0, but at 0 A, and if we look here on the right, we see the 0 a reading the control system register m harg ID and loading that value into a one. And so basically, q.u. simulates that instruction, and we can execute that instruction. And then we go to the next instruction. And basically this address, 8 0 0 0 is just basically something that was agreed on by q.u. or q.u. to, you know, basically CS, like you want to use q.u..<br>我要说的是断点入口，因为这是第一个。我们知道，大约第一个指令实际上是金要跳转到的地方。所以我设置了断点，我运行，基本上它实际上并没有在8 0处断开，而是在0 A处断开，如果我们在右边看这里，我们可以看到0 a读取控制系统寄存器m harg账号并将该值加载到一个1中。所以基本上，q.u。 模拟该指令，我们可以执行该指令。然后我们进入下一个指令。基本上这个地址，8 0只是q.u同意的基本内容。 或者q.u. 你知道，基本上是CS，就像你想使用q.u ..</p>
+<p>发言人   01:09:29<br>The first instruction we’re going to jump to is at that particular location. And we basically arranged for the kernel loader to load the kernel of that program. So there’s a file kernel LD that basically specifies how the kernel should be loaded. And you see here that basically the first address that the kernel is going to use is actually that particular address, that basic p.u. specified. And this is how we get off the ground. Make that, does that make sense?<br>我们要跳转到的第一条指令位于该特定位置。我们基本上安排了内核加载器来加载该程序的内核。所以有一个文件kernel LD，基本上指定了如何加载内核。这里你可以看到，基本上内核要使用的第一个地址实际上是那个特定的地址，即基本的p.u。 具体说明。这就是我们离开地面的方式。做到了，感知了吗？</p>
+<p>发言人   01:10:04<br>Okay, and we see also that either actually Gdb shows the binary encoding of the instructions. And so we see that basically, I guess, the csrr is. 4 B instruction and AI is a 2 B instruction.<br>好的，我们还看到实际上Gdb显示指令的二进制编码。因此，我们基本上看到，我猜，csrr是。4 B指令，AI是2 B指令。</p>
+<p>发言人   01:10:22<br>Okay, so I’m going to see, you know, basically, so actually 6 basically starts at entry DOS. We have no paging with no isolation. And in fact, we start to end both execute jumps as quickly as possible to kernel mode or supervisor mode as called in risk life.<br>好的，我将会看到，你知道，基本上，实际上6基本上从入门DOS开始。我们没有分页，没有隔离。实际上，我们开始尽可能快地结束两个执行跳跃到内核模式或管理模式，就像风险生活中所说的那样。</p>
+<p>发言人   01:10:40<br>I’m just going to set a breakpoint and main, which actually runs in supervisor mode. I’m going to run there. And then I get to the first instruction of main. Let me show this here’s main, and I’d like to run Gdb in this layout split mode. And so you can see in Gdb, actually, and I want the next instruction is being executed.<br>我只是要设置一个断点和main，它实际上在主管模式下运行。我要在那里跑步。然后我得到main的第一个指令。让我在这里展示这个main，我想在这种布局拆分模式下运行Gdb。所以你可以在Gdb中看到，实际上，我想要执行下一条指令。</p>
+<p>发言人   01:11:06<br>So you see there’s a break point at that particular instruction. Since this is a ren q.u. with 1 CPU, this makes the GDP a little bit easier. So there’s not only one core active, so emulates only one single core. And I can step through that, can go to the next instruction, and calls a function called console in it, which does exactly what you imagine it does. It actually sets up the console. And so once we set up the gazole, we can actually print to it. And so you’ll see in a second, we’ll get a new line and we get actually 6 booty, okay? So, and there’s a whole bunch of additional, code to setting things up.<br>所以你可以看到在那个特定的指令上有一个断点。因为这是一个人的q.u。 使用1个CPU，这使得国内生产总值（GDP） 更容易一些。这样不仅有一个核心处于活动状态，因此只模拟一个单一核心。我可以逐步执行，可以转到下一条指令，并在其中调用一个名为console的函数，该函数可以完全按照您的想象进行操作。它实际上设置了控制台。因此，一旦我们设置了gazole，我们实际上就可以对其进行打印。所以你马上就会看到，我们会得到一个新的线路，实际上我们会得到6个战利品，好吗？所以，还有一大堆额外的代码来设置事情。</p>
+<p>发言人   01:11:47<br>You know, there’s a setting up the page allocator, you know, setting up, virtual memory, which I’ll talk about on Wednesday, loading, actually starting, turning paging on, which we’re also talking about on Wednesday, setting up the initial process, we’re setting the process table, setting up code to do the usual to kernel transition, setting up the interrupt control, the click we’ll talk about when we talk about interrupts, but this is one like thing that we’re going to be using to basically talk to the disk or talk to the console using interrupts sets up the file system buffer cache, initializes the inode cache, initializes the file system, initializes the disk, and then basically once all sort of things are shut up, you know, when the operating system is running, it’s going to start running the first process and this is the user in it.<br>你知道，有一个设置页面分配器，你知道，设置，虚拟内存，我将在星期三讨论，加载，实际开始，打开分页，我们也在星期三讨论，设置初始进程，我们正在设置进程表，设置代码以进行通常的内核转换，设置中断控制，当我们谈论中断时我们将讨论的点击，但这是我们将使用的一个类似的东西，基本上是与磁盘或控制台通信，使用中断设置文件系统缓冲区缓存，初始化inode缓存，初始化文件系统，初始化磁盘，然后基本上一旦所有类型的东西都关闭了，你知道，当操作系统运行时，它将开始运行第一个进程，这是其中的用户。</p>
+<p>发言人   01:12:37<br>So this is a little bit of interesting, so I’m going to go to user in it for a second and I’m going to single step there. Before continuing, any questions about this?<br>所以这有点有趣，所以我将在其中转到用户，然后我将单步执行。在继续之前，有什么问题吗？</p>
+<p>发言人   01:12:54<br>Is there a specific order in which the setup functions need to be called? Some function once we run after other functions, and in particular in some of them, doesn’t matter. But for you of them, it’s important that they run after other ones.<br>调用设置函数有特定的顺序吗？一些函数一旦我们在其他函数之后运行，特别是在其中一些函数中，并不重要。但对于他们中的你们来说，追逐其他人是很重要的。</p>
+<p>发言人   01:13:12<br>Okay, let me go to so here are in it. And basically usually in if there’s a little bit of gloom code or immunization code to sort of take advantage of all the general infrastructure that X 6 have, basically get the first process of the ground.<br>好的，让我继续，所以这里就在里面。通常情况下，如果有一点点悲观代码或免疫代码，以利用x6所拥有的所有通用基础设施，基本上就是地面的第一个进程。</p>
+<p>发言人   01:13:29<br>You know, a 6 needs some image, right? We can’t run the file system really yet or do exec. And so X 360 sort of a small little program to sort of get off the ground. And that small little program is init code. The binary version of that program is actually linked or declared statically into the kernel. And in fact, that code corresponds. To this particular user program. It’s a little program written assembly. And basically it does loads the address of init into a 0. It is the address of RV into a one, and then it lowers the number for this exec system call into 87. And then look at the year it calls e call.<br>你知道，6需要一些形象，对吧？我们还不能真正运行文件系统或执行exec。所以X 360有点小程序来启动。那个小程序就是init代码。该程序的二进制版本实际上被静态地链接或声明到内核中。事实上，这个代码是对应的。这个特定的用户程序。这是一个编写汇编的小程序。基本上，它确实将init的地址加载到0中。它是将RV的地址转换为1，然后它将此exec系统调用的数量降低到87。然后看看它称之为e call的年份。</p>
+<p>发言人   01:14:18<br>So basically what Ina does is like running free instructions and then running the force instruction to basically transfer back control to the. Back control to the operating system.<br>基本上，Ina所做的就像运行免费指令，然后运行强制指令，基本上将控制权转移回给。将控制权还给操作系统。</p>
+<p>发言人   01:14:31<br>So for example, if I said a break point and Sysco and I keep running, then basically usually in it, you know, we’ll create the initial process, return the user space, run these free instructions or 4 instructions, and basically come back into kernel space. And so basically, this is the first system call that any user application in XV 6 runs.<br>因此，例如，如果我说了一个断点和Sysco，然后我继续运行，那么基本上通常在其中，你知道，我们将创建初始进程，返回用户空间，运行这些免费指令或4条指令，然后基本上回到内核空间。因此，基本上，这是XV 6中任何用户应用程序运行的第一个系统调用。</p>
+<p>发言人   01:14:53<br>So let’s see what happens if I’m right. So we’re going to continue, and we actually got to sys call so. So if we can Cisco it, we can look at it. It’s a function at the bottom. And so we’re back into kernel space now. And we can sort of walk through and see actually what happens exactly in Sysco.<br>所以让我们看看如果我是对的会发生什么。所以我们将继续，我们实际上得系统调用So。所以如果我们能思科它，我们就能查看它。它是底部的一个函数。所以我们现在回到内核空间。我们可以走过去，看看Sysco中到底发生了什么。</p>
+<p>发言人   01:15:16<br>So I’m going to single step a little bit, check out the current, the processes that’s in it, that pulls out the system called number that’s used. So we can now print none, and we’ll see that’s 7. And if we look at oops. User or a kernel is called Doh that declares all the system call numbers and we see 7. That is indeed system called exite. And so basically this tells the kernel that you some user application called the eco instruction and with the intention of calling the system, call for. With the intention of running the XX system call. And so again, we can single step a little bit further.<br>所以我将稍微单步检查一下当前的过程，其中的进程，它会取出使用的名为number的系统。所以我们现在可以不打印任何内容，我们将看到这是7。如果我们看一下哎呀。用户或内核被称为Doh，它声明了所有的系统调用号码，我们看到7。这确实是一个叫做exite的系统。基本上，这告诉内核你某个用户应用程序，称为生态指令，并且为了调用系统，请调用。旨在运行XX系统调用。因此，我们可以再进一步。</p>
+<p>发言人   01:16:03<br>We go through the next thing. This is the line that executes a system call. So let’s go there. And you see that basically the number is used into index, into an array and arrays, there’s a bunch of function pointers. And G, the S entry, you know, points to the S exacta function. So we’re going to single step into this. And we see that we’re actually at the sys exec. So this is in S file. We can move in a little bit more in a bigger window.<br>我们将进行下一件事。这是执行系统调用的行。那么我们去那里吧。你会看到，这个数字基本上被用于索引，到一个数组中，数组中有很多函数指针。和G，S条目，你知道，指向S exacta函数。所以我们将单步进入这个领域。我们看到我们实际上是在sys exec。所以这是在S文件中。我们可以在更大的窗口中多走一点。</p>
+<p>发言人   01:16:36<br>And we basically see here the system call. And the first thing that you see is actually it actually gets arguments from user space. So it gets the path name. So we can jump a little bit further mindset, boom, boom. Basically allocates space for arguments. Cop all the arguments from user space to kernel space.<br>我们基本上在这里看到了系统调用。你看到的第一件事实际上是它从用户空间获取参数。所以它获取路径名。所以我们可以更进一步地思考，砰，砰。基本上是为参数分配空间。将所有参数从用户空间传递到内核空间。</p>
+<p>发言人   01:17:02<br>We’ll look down in great amount of detail in a couple weeks, so don’t worry about it too much yet. But basically, there’s some code to move arguments from space to kernel space, from the kernel, from the user address space to the kernel address space. And if we now look at path, we can print a path, hopefully. And we’ll see actually that now that is a string.<br>我们会在几周后深入了解大量的细节，所以现在不要太担心。但基本上，有一些代码用于将参数从空间移动到内核空间，从内核，从用户地址空间移动到内核地址空间。如果我们现在查看路径，我们可以打印一条路径，希望如此。现在我们会看到这是一个字符串。</p>
+<p>发言人   01:17:21<br>And we’ll see that basically what the little inner-core program does is trying to ex the init program, which is yet another, you know, program. So let’s look at that for seconds just to see what that is. So here we have in it. And in it basically sets up a couple things just for user space. You know, it opens the console, the file descriptor for the console, adopts it, you know, a couple times, calls fork.<br>我们将会看到，这个小内核程序的基本作用是尝试将init程序进行exit，这是另一个你知道的程序。让我们看一下几秒钟，看看那是什么。所以这里我们有它。它基本上只为用户空间设置了一些东西。你知道，它打开了控制台，控制台的文件描述符，采用了它，你知道，几次调用fork。</p>
+<p>发言人   01:17:49<br>And basically the first thing it does, actually, it tries to create a new process, and we’ll exit the shell shell. And so this will, in the end, result the shell being so, for example, if I would continue, I probably break again and says exec. And if I would look at the arguments, I will see that actually the exit system calls being called to exit the shell.<br>基本上，它做的第一件事实际上是尝试创建一个新进程，然后我们将退出shell。所以这最终会导致shell变成这样，例如，如果我继续，我可能会再次崩溃并说exec。如果我看一下参数，我将看到实际上退出系统调用被调用以退出shell。</p>
+<p>发言人   01:18:11<br>And once you exit the shell, you know, to do that, then we’ll do a couple more system calls. And at some point, we’ll see the. It continued. And basically the shell starts running. And so it gives you a little bit of a sense, you know, actually how X 6 gets off the ground, how the first shell actually gets to run. And we saw the sort of a little bit of an overview about how the first, you know, when the first system call actually happened.<br>一旦你退出了shell，你知道的，要做到这一点，那么我们将进行更多的系统调用。在某个时候，我们会看到。它继续着。基本上shell开始运行。所以它给你一点感知，你知道X 6是如何起飞的，第一个shell是如何运行的。我们看到了关于第一次系统调用实际发生的概述。</p>
+<p>发言人   01:18:38<br>We haven’t really looked at the machinery for these system calls.<br>我们还没有真正研究过这些系统调用的机制。</p>
+<p>发言人   01:18:41<br>Now, how to get in and out of the kernel. We’re going to talk about that in a couple weeks or two weeks in lecture in greater amount of detail. But this is sort of enough for you to understand actually how to do the Cisco lab that we assigned for this week. And so these are the pieces that you will be interacting with. Any questions before I wrap up? Because we’re almost out of time.<br>现在，如何进入和退出内核。我们将在几周或两周的讲座中更详细地谈论这个问题。但这已经足够让你真正了解如何进行我们本周分配的思科实验室。所以这些是你将与之互动的部分。在我结束之前，有问题吗？因为我们几乎没有时间了。</p>
+<p>发言人   01:19:08<br>Feel free to fire away.<br>随时可以开火。</p>
+<p>发言人   01:19:15<br>Are we going to do anything? And networks or like networking and labs? Yes, the last lap is you will implement a network driver. And so you will write the code that interacts with the hardware and you have to manipulate the registers from the network driver for the network cart that basically connects, you know, to this rich five board. You saw that with a plug, basically to plug in an Ethernet control cable. And so there’s an Ethernet card. And so you’re going to be programming that car and you’re going to actually send some packets across the internet. Great, thanks. Yeah, that the last lap. Any other questions?<br>我们要做点什么吗？和网络还是像网络和实验室？是的，最后一圈是您将实施网络驱动程序。因此，您将编写与硬件交互的代码，并且必须操作网络车的网络驱动程序中的寄存器，该网络车基本上连接到这个丰富的五板。你看到了插头，基本上是插入以太网控制电缆。所以有一个以太网卡。因此，你将为这辆车编程，并实际通过互联网发送一些数据包。很好，谢谢。是的，那是最后一圈。还有什么问题吗？</p>
+<p>发言人   01:20:04<br>Okay, let me wrap up here. I think the system called La itself because we’re really going great amount of detail, hopefully shouldn’t be too bad, might be easier than the util lab labs, next lab, however, it might be more difficult. So it’s always hard to get to all these labs, right? But this is called Lab. Hopefully shouldn’t be too difficult, but please don’t start. Don’t wait until the night before you get going early so that if you’re so much fewer book that we can actually help you out and make sure that the your program works in it. With that I’ll sign off and I’ll see you in Wednesday.<br>好的，让我总结一下。我认为这个系统本身就是La，因为我们真的要详细介绍很多细节，希望不会太糟糕，可能比使用实验室更容易，下一个实验室可能会更难。所以去所有这些实验室总是很困难，对吧？但这被称为实验室。希望不应该太难，但请不要开始。不要等到晚上才早起，这样如果你的书少得多，我们就可以帮助你并确保你的程序在其中工作。有了这个，我会签字，然后在周三再见。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 002-OS Organization and SystemCalls</div>
+      <div>http://example.com/2025/10/18/6S081-002/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-003/" title="操作系统工程 003-PageTables">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 003-PageTables</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-001/" title="操作系统工程 001-Introductionan">
+                        <span class="hidden-mobile">操作系统工程 001-Introductionan</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

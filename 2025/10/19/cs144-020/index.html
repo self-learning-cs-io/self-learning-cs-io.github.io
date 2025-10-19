@@ -1,0 +1,645 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:01Networks aren’t perfect, and neither are the hosts that run on them. They can introduce errors, and for a network to be able to run properly, it needs to be able to detect these errors. For">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 020 Error detection">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-020/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:01Networks aren’t perfect, and neither are the hosts that run on them. They can introduce errors, and for a network to be able to run properly, it needs to be able to detect these errors. For">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:19.000Z">
+<meta property="article:modified_time" content="2025-10-19T12:45:44.169Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 020 Error detection - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 020 Error detection"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          37 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 020 Error detection</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:01<br>Networks aren’t perfect, and neither are the hosts that run on them. They can introduce errors, and for a network to be able to run properly, it needs to be able to detect these errors. For example, let’s say that a router along our path has a bad memory cell such that sometimes it flips a bit in a packet. Imagine, for example, if the bit is, if the bit flipped is the most significant bit of the amount. To charge a credit card. We need to be able to detect that error occurred so we don’t accept the corrupted data as correct. Data.<br>网络并不完美，运行在网络上的主机也不完美。它们可能会引入错误，网络要能够正常运行，就需要能够检测到这些错误。例如，假设沿着我们路径的路由器有一个错误的内存单元，使得它有时会在数据包中翻转一点。想象一下，例如，如果位是，如果翻转的位是金额中最重要的位。向信用卡收费。我们需要能够检测到发生的错误，这样我们就不会接受损坏的数据作为正确的数据。数据。</p>
+<p>发言人   00:29<br>Networks today usually use three different error detection algorithms, check sums, cycling redundancy codes, or Crcs, and message authentication code, or Max. Each of them has very different characteristics. Understanding their differences is important. I’ve actually been meetings in the IETF where a few people weren’t aware of differences. If you don’t know, you might make a bad protocol decision or protocol analysis.<br>如今的网络通常使用三种不同的错误检测算法: 校验和、循环冗余代码或Crcs以及消息认证码或Max。他们每个人都有非常不同的特点。理解他们的差异很重要。我实际上在IETF参加过一些会议，其中一些人没有意识到差异。如果您不知道，您可能会做出错误的协议决策或协议分析。</p>
+<p>发言人   01:16<br>At a high level, error detection looks like this. We have a payload of data. We calculate some error detection base over that data and either append or prepend it to the payload. For example, ethernet appends a cycling redundancy code or CRC, while transport layer security TLS appends a message authentication code. Now IP pre pens a checksum which places in the IP header. TLS and Ethernet have a footer prot information which follows the payload, which is where they put the CRC in Mac.<br>在高层次上，错误检测看起来像这样。我们有大量的数据。我们在该数据上计算一些错误检测基，并将其附加或附加到有效负载。例如，以太网附加循环冗余代码或CRC，而传输层安全TLS附加消息身份验证代码。现在IP会预先设置一个校验和，该校验和将放在IP标头中。TLS和以太网有一个页脚prot信息，它遵循有效负载，这是他们在Mac中放置CRC的地方。</p>
+<p>发言人   02:18<br>The first of the three commonly used error detection algorithms is a checksum. You just add up all the data in the packet, it’s what TCP and IP use.<br>三种常用的错误检测算法中的第一种是校验和。你只需将数据包中的所有数据相加，这就是TCP和IP所使用的。</p>
+<p>发言人   02:26<br>Checksums are nice because they are very fast and cheap to compute, even in software. Back when the internet started and everything was in software, this was valuable. Their major drawback is that they have pretty weak error detection guarantees. While they can catch a lot of random errors, it’s easy to fool check some of those few as 2 b errors. If the 2 b errors cancel each other out. For example, if 1 b error adds 32 and another bit error subtracts 32, the check sum won’t catch the error. So checksum can catch a lot of errors, but it turns out to have very weak guarantees on what errors it will catch.<br>校验和很好，因为即使在软件中，它们计算速度非常快且便宜。当互联网开始并且一切都在软件中时，这是有价值的。它们的主要缺点是它们的错误检测保证相当弱。虽然它们可以捕捉到很多随机错误，但欺骗检查其中一些2 b错误是很容易的。如果两个b的错误互相抵消。例如，如果1 b错误加32，另一个位错误减去32，则校验和将无法捕获错误。因此，校验和可以捕获很多错误，但事实证明，它对捕获哪些错误的保证非常弱。</p>
+<p>发言人   02:56<br>The second of the three commonly used error detection algorithms is a cycling redundancy coder CRC. A CRC is much more computationally intensive, expensive than a checksum, but also much more robust. It computes the remainder of a polynomial. I’ll show what this means and how it works in a few minutes. With today’s processors, it’s easy to do, and it’s really easy to do on hardware. It’s what Ethernet many link layers use.<br>三种常用的错误检测算法中的第二种是循环冗余编码器CRC。CRC比校验和更加计算密集、昂贵，但也更加健壮。它计算多项式的余数。我会在几分钟内展示这意味着什么以及它是如何工作的。使用今天的处理器，这很容易做到，而且在硬件上非常容易做到。这是许多链接层使用的以太网。</p>
+<p>发言人   03:17<br>In some ways TCP and IP can get away with checksums because link layers use Crcs. If you have CRC, that’s C bits long, a CRC can detect any 1 b error, any 2 b error, and any single burst of error less than or equal to C bits long, as well as any odd number of errors. So you can detect a lot of errors, much stronger guarantees than a checksum.<br>在某些方面，TCP和IP可以逃脱校验和，因为链路层使用Crcs。如果您有CRC，即C位长，CRC可以检测任何1 b错误，任何2 b错误，任何小于或等于面向消费者位长的单个错误突发，以及任何奇数个错误。所以你可以检测到很多错误，比校验和强得多的保证。</p>
+<p>发言人   03:42<br>The final algorithm is something called a message authentication code, or Mac. A message authentication code combined the packet with some secret information to generate a value. In theory, someone can only generate or check the Mac if they have the secret. So if you receive a packet and the Mac is correct, then you’re pretty sure the computer, the computer, the Mac has the secret. Unless I have the secret, it’s amazingly difficult to generate the correct Mac for a packet. So a bad guy can’t easily generate a new packet. In fact, if you have a strong Mac algorithm, then given one packet and its Mac, I have zero information what the Mac will look like if I flip a single bit. Message authentication codes are therefore robust to malicious modifications.<br>最后的算法是一种消息验证码，或Mac。消息认证码将数据包与一些秘密信息结合起来生成一个值。理论上，只有在有人拥有秘密的情况下，他们才能生成或检查Mac。因此，如果您收到一个数据包，并且Mac是正确的，那么您非常确定计算机，计算机，Mac有秘密。除非我有秘密，否则为数据包生成正确的Mac非常困难。所以一个坏人不能轻易地生成新的数据包。事实上，如果你有一个强大的Mac算法，那么给定一个数据包和它的Mac，我没有任何信息，如果我翻转一个位，Mac看起来会是什么样子。因此，消息认证码对恶意修改非常强大。</p>
+<p>发言人   04:20<br>Message authentication codes are used in transport layer security tl’s, which is what you use when you browse web pages securely Https, but they’re actually not great for catching errors.<br>消息认证码用于传输层安全tl，这是您在安全地浏览网页时使用的Https，但它们实际上并不适合捕获错误。</p>
+<p>发言人   04:31<br>If I flip a single bit in a packet, there’s a one and 2 to the C chance that the changed packet will have the same Mac. I’ve seen people make this mistake with to about error correction. Thinking of Mac is just as good as a CRC. It’s not if I have a 16 b CRC I’m assured that I’ll detect a burst of errors that is 16 b long or shorter if I have a 16 b Mac I’m only assured that I’ll detect bid errors with very high probability 99.98% or 1 in 65530. That’s high. But think about how many packets you watched just receiving this video.<br>如果我在一个数据包中翻转了一个位，则有1和2的机会，更改后的数据包将具有相同的Mac。我见过有人在错误更正方面犯过这个错误。考虑Mac和CRC一样好。如果我有一个16 b的CRC，我不会放心，如果我有一个16 b的Mac，我将检测到长16 b或更短的错误突发，我只确信我将以非常高的概率检测到投标错误99.98% 或1在65530中。这太高了。但是想想你刚刚观看了多少个数据包接收这个视频。</p>
+<p>发言人   05:05<br>I’ll now go into each of these algorithms in greater detail.<br>现在我将更详细地介绍这些算法中的每一个。</p>
+<p>发言人   05:09<br>Let’s start with the checksum IP UDP and TCP use one’s complement checksums, this means they add up the packet using one’s complement arithmetic, a version of binary arithmetics, and older computers used most today use two’s complement arithmetic. The algorithm is pretty simple, You start by setting the checksum field with a packet to 0, then you add every 16 b word in the packet anytime you have to carry, because the sum is greater than 2 to the 16 or 65535, you carry back the bit back in. So 60000 plus 8000 is 68000 -65535 plus 1 or 2466.<br>让我们从校验和IP开始，而TCP使用1的补码校验和，这意味着他们使用1的补码算术 (一种二进制算术版本) 将数据包相加，而今天使用最多的旧计算机使用2的补码算术。算法非常简单，首先将数据包的校验和字段设置为0，然后在需要携带的任何时间将数据包中的每个16 b字相加，因为总和大于2到16或65535，然后将位带回。所以60000加8000等于68000-65535加1或2466。</p>
+<p>发言人   05:48<br>Once you’ve added up the complete packet, flip the bits in your sum and make this the checksum of the packet. Then if you add up the complete packet, including this checksum value, you should get zero xf f all one. There’s one edge case. If the computer checksum is all one, you don’t make the checksum feel zero, you make it all. Once an IP, UDP and TCP, a checksum field of zero means there’s no checksum, that’s it, you can write this in just a few lines of C code. It’s fast, easy to compute, and easy to check. All you need to do is add the bytes of a packet and check for that the checksum is all ones given that most internet internet implementations were in software, this is really helpful.<br>一旦您添加了完整的数据包，翻转总和中的位并使其成为数据包的校验和。然后，如果将完整的数据包相加，包括此校验和值，您应该得到零xf全部为1。有一个边缘案例。如果计算机的校验和都是一个，你不会让校验和感觉为零，而是让它变成全部。一旦使用IP，UDP和TCP，校验字段为零意味着没有校验，就是这样，你可以用几行C代码编写这个。它速度快，易于计算，易于检查。您所需要做的就是添加数据包的字节并检查校验和是否全部为，因为大多数互联网实现都在软件中，这非常有帮助。</p>
+<p>发言人   06:29<br>The drawback is that it’s not really that robust, while it definitely detects a lot of random errors, the guarantees it can give on what errors it detects are really weak. In practice, it can only promise to catch single bit errors, but it works pretty well, and link layers do a lot of the heavy lifting for us. Link layers do their heavy lifting with something called a cycling redundancy check or CRC.<br>缺点是它并不是很强大，虽然它肯定能检测到很多随机错误，但它对检测到的错误的保证真的很弱。在实践中，它只能承诺捕获单个比特错误，但它工作得很好，链路层为我们做了很多繁重的工作。链接层使用称为循环冗余检查或CRC的东西来完成繁重的工作。</p>
+<p>发言人   06:50<br>The idea of a CRC is that I want to take the end bits of source data and some would distill them down to see bits of error detection data where C is much smaller than n, for example, I might have a 100 B ethernet frame with a 4 B 32 b CRC. USB and Bluetooth use 16 b Crcs. Of course we can’t detect all errors. Given some other random packet. The chances the CRC matches is 2 to the minus c, or 1 and 2 to the c, for example, if I use an 8 b CRC, then out of the space of all packets, one in 256 or 0.4% had the same CRC as my packet.<br>CRC的想法是，我想取源数据的结尾位，有些人会提炼它们以查看错误检测数据的位，其中C比n小得多，例如，我可能有一个100 B的以太网帧和一个4 B的32 b CRC。USB和蓝牙使用16 b的Crcs。当然，我们无法检测出所有的错误。给出了一些其他的随机数据包。CRC匹配的机会是负c的2次方，或c的1和2，例如，如果我使用8 b CRC，则在所有数据包的空间中，256分之一或0.4% 与我的数据包具有相同的CRC。</p>
+<p>发言人   07:27<br>But Crcs are stronger than checksums. They can detect there’s an error in any packet with an odd number of errors, 2 b errors, or any single burst of errors equal to or less than C bits long. They can’t guarantee detecting errors besides these, but they do a good job at it. For example, a 16 b CRC can’t guarantee you’ll detect two bursts of 3 b errors spaced far apart to pack it, but it’s likely it will detect it.<br>但Crcs比校验和强。它们可以检测到任何具有奇数错误、2 b错误或任何单个错误突发等于或小于C位长的错误数据包中的错误。他们不能保证检测除此之外的错误，但他们在这方面做得很好。例如，一个16 b的CRC不能保证你能检测到两个间隔很远的3 b错误爆发，但它很可能会检测到它。</p>
+<p>发言人   07:52<br>Link layers typically use Crcs. They’re pretty robust, and as many link layers are vulnerable to bursts of errors. The burst detection capabilities of CR 2 uses useful, it’s not hard to make, it’s not hard to make hardware, compute them quickly, and you can compute them incrementally as your reader write the packet.<br>链接层通常使用Crcs。它们非常健壮，并且许多链路层都容易受到错误爆发的影响。CR 2的突发检测功能非常有用，不难制造，制造硬件并不难，快速计算它们，并且您可以在读取器写入数据包时增量计算它们。</p>
+<p>发言人   08:10<br>So how does the CRC work? It distills these n bits into C bits using something called polynomial long division. You take the bits of a message and use them to describe a polynomial m, each bit in a packet is the coefficient of one term of the polynomial, if the bit is 0, the term is absent. If the bit is one, the term is present. So for example, a message of 1, 0 0 1 1 1 0 1 it the polynomial x to the 7th plus x to the fourth plus x to the third plus x squared plus one, which is x to the zero, this is because the 7th, fourth, 3rd, second, and zeroth bits are set in the message. When we calculate a CRC, we have something called a generator polynomial. This is defined by the CRC algorithm, for example, the CRC 16 algorithm used by USB has a generator polynomial of x to the 16th plus x to the 15th plus x squared plus one for frustrating historical reasons that generate a polynomial is one term longer than this number of bits. The first term is always one, so the CRC 16 generator polynomial is written as 0x 8 0 0 5, even though it has an x to the 16th term.<br>那么CRC是如何工作的呢？它使用称为多项式长除法的方法将这些n位提取为C位。你拿一条信息的比特来描述一个多项式m，包中的每个比特都是这个多项式的一个项的系数，如果这个位是0，这个项就不存在了。如果比特是1，则该术语存在。例如，一条消息为1，0，0，1，1，0，它是多项式x到第7个加x到第4个加x的平方加1，也就是x到零，这是因为第7，第四，第三，第二，在消息中设置了零位。当我们计算CRC时，我们有一个称为生成器多项式的东西。这由CRC算法定义，例如，USB使用的CRC 16算法具有x到16的生成器多项式加上x到15的加x的平方，这是由于令人沮丧的历史原因，生成多项式的时间比这个位数长一个项。第一项始终为1，因此CRC 16生成器多项式写作为0 x8 0 0 5，即使它的第16项有一个x。</p>
+<p>发言人   09:21<br>To compute a CRC, you take the message M pad, it with 0 is equal to the CRC length and divide this padded value by GE the remainder is the CRC, which you append to the message. To check a CRC, you divide the message plus CRC by the generator polynomial g, If the remainder is 0, then the CRC passes. I won’t go into the details of how this works mathematically, but it turns out it can be implemented very quickly and efficiently in hardware. The strength of your CRC algorithm depends on what generative polynomial G you pick is, but a lot of study of this and so many good options which have the error detection properties I mentioned earlier, but you might not get the same error detection strength if you pick your own generator polynomial.<br>要计算CRC，请使用消息M pad，0等于CRC长度，并将此填充值除以GE，余数是CRC，将其附加到消息中。要检查CRC，请将消息加CRC除以生成器多项式g，如果余数为0，则CRC通过。我不会详细说明这在数学上是如何工作的，但事实证明它可以在硬件上快速高效地实现。你的CRC算法的强度取决于你选择的生成多项式G，但是对此进行了大量的研究，还有很多好的选择，这些选择具有我之前提到的错误检测属性，但是如果你选择自己的生成器多项式，你可能无法获得相同的错误检测强度。</p>
+<p>发言人   10:03<br>The third and final kind of error detection algorithm you commonly see in networks is a message authentication code, or Mac. Like Crcs. There’s a deep and rich mathematical background on how message authentication codes work. There are good ones and bad ones, so you generally want to use an existing scheme rather than inven own. Thankfully, standards usually specify what Mac to use, and though there are some mistakes in the late 9 or standards picked per algorithms, nowadays, security is important enough that everyone relies on a small number of really well studied ined approaches.<br>网络中常见的第三种也是最后一种错误检测算法是消息认证代码，或Mac。就像Crcs。关于消息认证代码如何工作有深入而丰富的数学背景。有好的和坏的，所以你通常希望使用现有的方案，而不是发明自己的方案。值得庆幸的是，标准通常指定使用哪种Mac，尽管在后期9或每个算法选择的标准中有一些错误，但如今，安全性足够重要，每个人都依赖于少数真正深入研究的方法。</p>
+<p>发言人   10:30<br>Message authentication codes use cryptography branch of mathematics that deals with secrets.<br>消息认证代码使用数学的密码学分支来处理机密。</p>
+<p>发言人   10:34<br>The idea behind most message authentication codes is that the two parties share a secret S, the secret is just a set of randomly generated bits random, so it’s hard to guess to calculate a message authentication code C, you apply the Mac algorithm to the message M and the secret S Mac algorithm to the property that if you don’t have S, then it’s really hard to generate the correct C for a message M, furthermore, it’s very hard to create a message M whose message authentication code is C, by hard, I mean, is that the best case, You just have to exhaustively try having M and C gives you almost no information on what S is This means that if you receive a message M with the correct message authentication code, this means the computer that generated the message probably has the secret, or someone replayed a message generated by that computer, because the goal is to keep S, a secret cryptographically strong message authentication because of an interesting property, if you change a single bit in M, then this results in a completely new CRC where the probability any bit in C is 0, 1 is seemingly random independent of the earlier C, if this weren’t the case, then someone could take a message flip a single bid, say change a dollar value, and it wouldn’t be that difficult to generate the correct C, this means that technically message authentication codes have no error detection guarantees, if you flip a single bit, you could end up with a exact same Mac message authentication codes are very useful, but they’re first and foremost a security mechanism being able to get both error detection and security with one mechanism is efficient and nice, but their security properties mean that their error detection isn’t as good as other approaches, let’s go over the answers, both checksums can detect a single bit error.<br>大多数消息认证码背后的想法是，双方共享一个秘密，这个秘密只是一组随机生成的位，因此很难猜测计算消息认证码C，你可以将Mac算法应用于消息M，将secret S Mac算法应用于属性，即如果你没有S，那么很难为消息M生成正确的C，此外，很难创建消息认证代码为C的消息M。通过努力，我的意思是，最好的情况是，你只需要穷尽地尝试使用M，而C几乎没有给你关于什么是S的信息，这意味着如果你收到一条带有正确消息认证码的消息，这意味着生成消息的计算机可能有秘密，或者有人重播了该计算机生成的消息，因为目标是保持S，这是一种秘密的加密强消息身份验证，因为它具有有趣的属性，如果您更改M中的单个位，则会导致一个全新的CRC，其中C中任何位的概率为0，1似乎是随机的，独立于早期的C，如果不是这样，那么有人可以将一条消息翻转单个出价，例如更改美元价值，并且生成正确的C并不难，这意味着从技术上讲，消息认证码没有错误检测保证。如果你翻转一个位，你可能会得到一个完全相同的Mac消息认证码非常有用，但它们首先是一种安全机制，能够通过一种机制同时获得错误检测和安全性，这是高效且好的，但是它们的安全属性意味着它们的错误检测不如其他方法好，让我们检查一下答案，这两种校验和都可以检测到单个比特错误。</p>
+<p>发言人   12:23<br>Remember this is one of the errors that checksum guarantees detecting both Crcs can also detect a single bit error, a Mac can’t guarantee that it’ll detect a single bit error for security reasons. It could be that the new Mac is the same as the old one, so it can’t guarantee detecting it. In fact, a Mac can’t guarantee detecting any errors, so you can mark no for all the columns for the message authentication code. So how about 2 b errors, checksums can’t guarantee dissecting 2 b errors, so no for both of them Crcs, though, can detect guaranteeing bit errors runs less than or equal to the length of the CRC, since 2 b is shorter than both 8 b and 16 b, both Crcs can detect a run of 2 b errors. Correspondingly, an 8 b CRC can’t guarantee detecting a run of 9 b errors, but a 16 b CRC can, so no for the 8 b CRC and yes for the 16 b CRC for 9 b error runs. How about 2 b errors 100 b apart? It turns out none of these algorithms can guarantee detecting this error, so no, for all of them, looking at this matrix, you might think error detection is a waste.<br>请记住，这是校验和保证检测到两个Crcs的错误之一，也可以检测到单个比特错误，出于安全原因，Mac无法保证它会检测到单个比特错误。新的Mac可能与旧的相同，因此无法保证检测到它。实际上，Mac无法保证检测到任何错误，因此您可以为消息身份验证代码的所有列标记 “否”。那么2 b错误怎么样，校验和不能保证解剖2 b错误，所以对于他们两个Crcs来说都没有，但是，可以检测保证位错误运行小于或等于CRC的长度，因为2 b比8 b和16 b都短，两个Crcs都可以检测到2 b错误的运行。相应地，8 b的CRC不能保证检测到9 b错误的运行，但16 b的CRC可以，因此对于8 b的CRC没有，对于9 b的错误运行，16 b的CRC是。2 b错误相距100 b怎么样？事实证明，这些算法都不能保证检测到这个错误，所以对于所有算法来说，看着这个矩阵，你可能会认为错误检测是一种浪费。</p>
+<p>发言人   13:30<br>The algorithms promise very little, but guarantee is a very strong statement, while an 8 b checksum can’t guarantee it will catch a run of 9 b errors, there’s a high probability it will. Similarly, a 16 b CRC has a very high probability of detecting 2 b errors 100 b apart, and in practice, high probability is often good enough.<br>算法承诺很少，但保证是一个非常强的陈述，而一个8 b的校验和不能保证它会捕获9 b的错误，它会有很高的概率。类似地，一个16 b的CRC检测2 b错误的概率非常高，相距100 b，在实践中，高概率通常足够了。</p>
+<p>发言人   13:49<br>If failures are rare, then you only sometimes have to do something more expensive to recover. But it means in practice, you tend to have multiple layers of error detection. The link layer detects them, the Crcs IP detects them, the chers Sus check sums TCP detects them with checksums, and then often the application has its own error detection. So all put together, the chances of errors creeping through is very, very low. So we’ve seen three error detection schemes, check some Crcs and message authentication codes.<br>如果故障很少，那么您只需要有时做一些更昂贵的事情来恢复。但这意味着在实践中，您往往需要多层错误检测。链路层检测它们，Crcs IP检测它们，chers Sus检查和TCP使用校验和检测它们，然后应用程序通常有自己的错误检测。所以把所有的东西放在一起，错误慢慢出现的可能性非常非常低。所以我们已经看到了三种错误检测方案，检查一些Crcs和消息认证码。</p>
+<p>发言人   14:16<br>Data error detection is a great example of the end to end principle. It’s actually what originally motivated the principle.<br>数据错误检测是端到端原则的一个很好的例子。这实际上是最初激励这个原则的原因。</p>
+<p>发言人   14:23<br>The only way a layer can be sure that it communicates data correctly is to perform an end to end check. Ethernet needs to be sure that its frames don’t have errors so it can parse them correctly, so it has a CRC. IP needs to be sure that its packets don’t have error so it can parse them correctly. IP can’t depend on what Ethernet is doing to check for its own check, the Ethernet card or driver might introduce an error that after the driver checks the packet, so IP has to do its own end to end check at the network layer. TLS using message authentication codes is another example. It’s especially interesting because TLS has very different error detection requirements. I ethernet, it wants security, so it has to provide provide its own end to end error detection scheme as it’s the only way, it’s sure that it, that’s the only way it can be sure its requirements are met.<br>确保层正确通信数据的唯一方法是执行端到端检查。以太网需要确保其帧没有错误，以便能够正确解析它们，因此它有一个CRC。IP需要确保其数据包没有错误，以便正确解析它们。IP不能依赖以太网进行检查，以太网卡或驱动程序可能会在驱动程序检查数据包后引入错误，因此IP必须在网络层进行自己的端到端检查。另一个例子是使用消息认证码的TLS。这特别有趣，因为TLS有非常不同的错误检测要求。在以太网中，它想要安全，因此它必须提供自己的端到端错误检测方案，因为这是唯一的方法，它确信这一点，这是确保其要求得到满足的唯一方法。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 020 Error detection</div>
+      <div>http://example.com/2025/10/19/cs144-020/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-021/" title="计算机网络 021 FSM">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 021 FSM</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-019/" title="计算机网络 019 The End-to-End Principle">
+                        <span class="hidden-mobile">计算机网络 019 The End-to-End Principle</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

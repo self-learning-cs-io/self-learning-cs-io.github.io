@@ -1,0 +1,778 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00Sound check. Can everybody hear me?声音检查。大家都能听到我说话吗？ 发言人   00:07Okay, so welcome to the next lecture in So 8, 1, wherever you are. Particularly, I hope that the folks on the West Coast or in">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 003-PageTables">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-003/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00Sound check. Can everybody hear me?声音检查。大家都能听到我说话吗？ 发言人   00:07Okay, so welcome to the next lecture in So 8, 1, wherever you are. Particularly, I hope that the folks on the West Coast or in">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:03.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.140Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 003-PageTables - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 003-PageTables"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          22k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          182 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 003-PageTables</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>Sound check. Can everybody hear me?<br>声音检查。大家都能听到我说话吗？</p>
+<p>发言人   00:07<br>Okay, so welcome to the next lecture in So 8, 1, wherever you are. Particularly, I hope that the folks on the West Coast or in Florida and Alabama do okay, given all the terrible circumstances there. So the topic for today, where is virtual memory? Particularly we’re going to talk about page tables. We will return to this topic a few times.<br>好的，欢迎来到8、1的下一节课，无论你在哪里。特别是，我希望西海岸或佛罗里达州和阿拉巴马州的人们在所有可怕的情况下都能做得很好。今天的主题是，虚拟内存在哪里？特别地，我们将讨论页表。我们会多次回到这个话题。</p>
+<p>发言人   00:33<br>There will be multiple fial memory lectures, and maybe just to start off and get our question and answer going again, I would like to ask you a little bit, what do you remember from about virtual memory from 0 0 4 maybe or and or 643 if you had taken that?<br>将会有多个关于记忆的讲座，也许只是为了让我们的问题和答案再次开始，我想问你一点，你还记得00.4的虚拟记忆吗？或者如果你已经参加了643？</p>
+<p>发言人   00:52<br>I’ll tell you my own sort of view on virtual memory, which is, you know, when I took it to first or heard about it or learn about it as a student, I thought, you know, it’s pretty straightforward, you know, hard can it be? It’s a table that maps virtual addresses, the physical addresses, maybe a little bit more complicated, but you not that complicated. Only when you start programming them with it. I should really learn that for members. Tricky and fascinating. Very powerful. And so hopefully in the next, a couple lectures, in the next couple labs, you know, you’ll we appreciate a virtual memory from that perspective, but will last a couple people here that are online, you know, what do you remember from about virtual memory from either 0 0 4 or 650 if you take it? And again I’m just going to call out some names and you know, share your memories about Adela Yang.<br>我会告诉你我自己对虚拟内存的看法，你知道的，当我第一次带它或听到它或作为一名学生了解它时，我想，你知道，这非常简单，你知道，难吗？这是一个映射虚拟地址、物理地址的表，可能稍微复杂一些，但你没那么复杂。只有当你开始用它编程时。我真的应该为会员学习。棘手而迷人。非常强大。希望在下一次几次讲座中，在接下来的几个实验室中，你知道，我们会从这个角度欣赏虚拟记忆，但会持续几个在线的人，你知道，如果你接受了0 0 4或650的虚拟内存，你还记得什么？我再一次只是点出一些名字，分享你对阿德拉·杨的回忆。</p>
+<p>发言人   01:53<br>Sorry, what was the question? What do you remember about virtual memory from a 0 0 4 or 633? If you have taken that? It uses like offset to save on like remembering virtual address to physical address mappings. How about Abrams condere?<br>抱歉，问题是什么？你还记得0 0 4或633的虚拟内存吗？如果你已经接受了？它使用类似偏移量来节省记忆虚拟地址到物理地址映射的成本。Abrams condere怎么样？</p>
+<p>发言人   02:20<br>Abram are you going live? I’ve ever said uses like it’s a way of one protecting the physical hardware by kind of us representation of it. And then, yeah, you just have like some virtual address. I think like at least in double for like all bits that maps some physical address, that’s usually I think 16 b or 64 b. Okay, I will be expanded. What I remember was you can have each process has a separate address space and the memory management unit, or I mean, some other technique can be used to map the virtual addresses of the address space of each of the processes to the physical physical address and the virtual address. The lower bits are kind of the same, so that the mapping is in blocks, which helps with performance.<br>亚伯兰，你会活着吗？我曾经说过，使用它是一种保护物理硬件的方式，通过我们的代表来实现。然后，是的，你只有一些虚拟地址。我认为至少对于映射某些物理地址的所有位，至少要加倍，通常我认为是16 b或64 b。好的，我会被扩展。我记得的是，你可以让每个进程拥有一个单独的地址空间和内存管理单元，或者我的意思是，可以使用一些其他技术将每个进程的地址空间的虚拟地址映射到物理物理地址和虚拟地址。较低的位有点相同，因此映射以块为单位，这有助于提高性能。</p>
+<p>发言人   03:34<br>Wesley W? Yeah, I guess what I remember most is that virtual addressing allows us to, yeah, protect physical addresses from from each process. And we can use some like clever manipulation so that the bits that correspond to the physical address can be used somehow in the virtual addresses as well.<br>韦斯利·W？是的，我想我最记得的是虚拟寻址允许我们，是的，保护每个进程的物理地址。我们可以使用一些聪明的操作，使得与物理地址相对应的位也可以在虚拟地址中使用。</p>
+<p>发言人   04:03<br>Spear spearman. Yeah, I remember it’s really fundamental to isolation because every process can basically pretend that it has its own set of memory to use. Well, so clear, that’s awesome.<br>矛。是的，我记得这是隔离的基础，因为每个进程基本上都可以假装它有自己的一组内存使用。那么清晰，太棒了。</p>
+<p>发言人   04:25<br>Clear two themes a year, correct? One is, you know, there’s some form of mapping, and that mapping is helpful in sort of achieving isolation. And this is exactly the reason we’re talking about virtual memory, you know, isolation. So what we’ll see is that in the next couple of lectures, in particular, when we start programming your virtual memory, really get an indep understanding what its power is. And so to get a sense of that, you know, this is the first lecturing, mostly focusing on the mechanisms for virtual memory. And then later, we can see how we can use these mechanisms to achieve, you know, cool tricks.<br>一年有两个主题，对吗？一个是，你知道，有某种形式的映射，这种映射有助于实现隔离。这正是我们谈论虚拟内存的原因，你知道，隔离。因此，我们将看到，在接下来的几节课中，特别是当我们开始对虚拟内存进行编程时，真正了解它的强大功能。因此，为了感知这一点，你知道，这是第一次讲座，主要关注虚拟内存的机制。然后，我们可以看到如何使用这些机制来实现，你知道，很酷的技巧。</p>
+<p>发言人   05:05<br>So the topic for today or the agenda for today and the plan is sort of free fault.<br>因此，今天的主题或议程和计划都是免费的。</p>
+<p>发言人   05:11<br>First I’m going to talk about the dress spaces. As some of you mentioned in your just. Briefly mentioned in response to this question, and I’m going to talk about the paging hardware or paging hardware. And I’m going to focus, of course, on the paging hardware of the risk 5. But basically every processor, modern processor, has some form of paging hardware, sort of D, if you will, the default mechanism for actually supporting virtual memory. And then the last part of the lecture is going to walk through some Xq 6 virtual memory code and layout of of the kernel address space and user address basis. So that’s the main point.<br>首先，我要谈谈着装空间。正如你们中的一些人在刚才提到的。简要回答了这个问题，我将讨论分页硬件或分页硬件。当然，我将重点关注风险5的寻呼硬件。但基本上每个处理器，现代处理器，都有某种形式的分页硬件，如果你愿意的话，实际上支持虚拟内存的默认机制。然后讲座的最后一部分将介绍一些xq6虚拟内存代码以及内核地址空间和用户地址基础的布局。这就是主要的观点。</p>
+<p>发言人   06:08<br>Okay, so, so I guess, you know, a number of you mentioned in the response to this question, you know, one driving reason to have virtual memory is because you can use it to achieve isolation. If you set up the page tables correctly and program them correctly, then you can in principle, achieve strong isolation. And so let’s just remind us again, you know, what we want with from isolation.<br>好的，所以我猜你们中的一些人在回答这个问题时提到了，你知道，拥有虚拟内存的一个驱动原因是因为你可以使用它来实现隔离。如果你正确地设置了页表并正确地编程，那么原则上你就可以实现强隔离。因此，让我们再次提醒我们，你知道，我们想要从孤立中得到什么。</p>
+<p>发言人   06:33<br>Let’s say, you know, stand a picture. We have some user applications, the shell, you know, cat, all the u feel things that you’ve built in lot one. And you know, we have the kernel or, you know, the kernel sitting below through the operating system. We’re sitting in kernel space. And you know, what we like to do is sort of have, you know, boxes around these applications so that they can really affect each other. And similarly, you know, we want them to be completely sort of independent if the criminal in the operating system, so that like if an application does something either accidentally bad or maliciously bad, that it doesn’t really affect the operating system. And so that’s our goal.<br>假设，你知道的，站在一张照片上。我们有一些用户应用程序，外壳，你知道的，猫，所有你在第一个内置的感觉的东西。而且你知道，我们有内核，或者说，你知道，在操作系统下面有内核。我们坐在内核空间中。你知道，我们喜欢做的是在这些应用程序周围设置一些盒子，这样它们就可以真正地相互影响。同样，你知道，如果操作系统中的犯罪分子，我们希望它们完全独立，这样就像应用程序做了一些意外或恶意的事情一样，它不会真正影响操作系统。这就是我们的目标。</p>
+<p>发言人   07:18<br>And the particular aspect of the problem that we want to focus on today is the memory side of things. So we really want to focus on memory isolation. And by default, if we don’t do anything, we don’t really have memory isolation, right? If you think about it, there’s going to be one of there is 5 boards that I showed you last week that has like a memory, a bunch of DRAM chips. And in the DRM chips, the code for these applications is stored.<br>而我们今天想要关注的问题的特定方面是事物的记忆方面。所以我们真的想专注于内存隔离。默认情况下，如果我们什么都不做，我们就没有真正的内存隔离，对吧？如果你仔细想想，上周我向你展示的5个板子中，会有一个像内存一样的板子，一堆DRAM芯片。在DRM芯片中，这些应用程序的代码被存储。</p>
+<p>发言人   07:51<br>And so for example, somewhere in the memory is the kernel, you know, text and data stack, everything somewhere in memory is to shell. If the shell is running, so memory, the cap program. And so there’s one sort of physical memory, you know, starting from somewhere there, zero to, you know, so, you know, bigger. They could dress, you know, depending how much memory we have we have in our machine. And in that physical memory, all these programs must be present. And otherwise, the processor can’t even execute their instructions.<br>例如，在内存中的某个地方是内核，你知道，文本和数据堆栈，在内存的某个地方，一切都是外壳。如果shell正在运行，那么内存，cap程序。所以有一种物理记忆，你知道，从零开始，你知道，所以，你知道，更大。他们可以穿衣服，你知道的，这取决于我们机器上有多少内存。在那个物理内存中，所有这些程序都必须存在。否则，处理器甚至无法执行他们的指令。</p>
+<p>发言人   08:22<br>And so, but the risk clearly here is that, let’s say, let’s make it a little bit simplistic, but let’s say the shell, you know, shifts from address 0 to address 200 or 2000, from 1000 to 2000. And let’s say, you know, you know what? A cat has a programing error. It loads, you know, in a register, a zero, let’s say, loads 1000, the address basically corresponding to the start of the shell. And then, you know, by accident, you know, executes the instruction, you know, dollar Chef and a 0, correct, which it has the effect of the basically, it writes the value 7 to the address of 1000.<br>所以，但这里的风险显然是，让我们把它简单化一点，但假设外壳，你知道，从地址0到地址200或2000，从1000到2000。让我们说，你知道，你知道吗？猫有编程错误。它加载，你知道，在寄存器中，一个零，假设加载1000，这个地址基本上对应于shell的开始。然后，你知道，偶然地，你知道，执行指令，你知道，美元厨师和一个0，正确，它具有基本的效果，它将值7写入1000的地址。</p>
+<p>发言人   09:08<br>And so in end, we’re going to be scribbling over basically the memory image that belongs to the shell. So that would certainly not, that certainly would break isolation and quite undesirable. And so we want something that basically really separates these memories from the different programs from each other so that things like that just can not happen. So one way to do that is an idea of what’s typically called address basis.<br>因此，最后，我们将基本上在属于shell的内存映像上涂鸦。所以这肯定不会，肯定会打破孤立和非常不可取的。所以我们想要的东西基本上能够真正地将这些记忆与不同的程序分开，这样这样的事情就不会发生了。因此，实现这一点的一种方法是通常被称为地址基的想法。</p>
+<p>发言人   09:44<br>And the basic idea is I want to sort straightforward. What we want to do is basically give every application, including the kernel, its own address space.<br>基本的想法是我想简单地分类。我们想要做的基本上是为每个应用程序 (包括内核) 提供自己的地址空间。</p>
+<p>发言人   09:55<br>And so we can think about this like example, we use cat running. You know, it has an address base starting at zero, you know, to whatever some maximum value. You know, there’s a shell housing address base, its own address base also starting at address 0. And you go through some value. You know, the kernel has zone address base, as has its own address phase.<br>因此，我们可以考虑这个类似的例子，我们使用猫跑。你知道，它有一个从零开始的地址库，可以达到最大值。你知道，有一个外壳包含地址库，它自己的地址库也从地址0开始。你会经历一些价值。你知道，内核有区域地址库，就像它自己的地址阶段一样。</p>
+<p>发言人   10:18<br>And so one example when Ket, you know, refers to really, we go back to our, you know, the example of the previous slide, where are we did whatever store 7, 2, you know, a 0. And let’s say in a 0, there’s the value of 1000. If Kent executes an instruction, it will writes to the address 1000, but it’s its own address 1000. It’s not, you know, the address of the 1000 at the shell. So basically every program runs with its own address space that its own value.<br>因此，当Ket提到真正的例子时，我们回到上一张幻灯片的例子，我们在哪里做了任何存储7，2，你知道的，a 0。假设在一个0中，有1000的值。如果Kent执行一条指令，它将写入地址1000，但它是它自己的地址1000。这不是，你知道的，shell中1000的地址。因此，基本上每个程序都使用自己的地址空间来运行，该地址空间具有自己的值。</p>
+<p>发言人   10:51<br>And those address space are completely independent.<br>这些地址空间是完全独立的。</p>
+<p>发言人   10:54<br>You in this notion, in different address spaces. Catt doesn’t really have an ability to even refer to an address that actually belongs to the shell. And so that’s sort of the game that we, the end goal that we’d like to achieve because this is going to imply a strong isolation. And it’s just not possible for you cant to refer to any other memory that is not, you know, its own. And so our goal now is to basically sort of figure out how to multiplex, if you will, all these different address basis on a single physical memory. Because in the end, we only have like the DRAM chips, you know Ram chips where the memory is located and so. I plan.<br>你在这个概念中，在不同的地址空间中。Catt实际上甚至没有能力引用实际属于shell的地址。这就是我们想要实现的最终目标，因为这意味着强烈的孤立。而且你不可能不能引用任何其他不属于自己的记忆。因此，我们现在的目标基本上是弄清楚如何在单个物理内存上复用所有这些不同的地址。因为最终，我们只有像DRAM芯片一样，你知道内存芯片存放内存等等。我计划。</p>
+<p>发言人   11:41<br>Okay, Yeah, Amir, you have a question, go ahead. Yeah, so I’m wondering, in the configuration of the physical hardware, there’s only so much space. And in the virtual memory layout, there’s also a max virtual address by design. Is the virtual dress made to be small enough that it no, not necessarily, you know, the virtual address page could be bigger than the physical memory. The physical memory could be bigger than the virtual address space. And we’ll see in a second how that all can happen.<br>好的，是的，阿米尔，你有问题，继续吧。是的，所以我想知道，在物理硬件的配置中，只有这么多空间。在虚拟内存布局中，也有设计上的最大虚拟地址。虚拟衣服是否足够小，以至于它不一定，你知道，虚拟地址页面可能比物理内存大。物理内存可能大于虚拟地址空间。我们马上就会看到这一切是如何发生的。</p>
+<p>发言人   12:15<br>And it’s actually one of the cool parts about, as we will see with page tables, that’s extremely flexible. So is it, is it possible that like the physical memory gets exhausted because so many processes use up all their virtual space? Yeah, that’s certainly possible. And we’ll see in a second how, for example, you have a bunch big applications, they each have big page tables and they allocate a lot of memory at some point run out of memory. I see, thanks. And so where does it show up in x 6, anybody? You sort of touched on it a little bit in the cisko, a lab that you’re currently doing. Where are pages allocated?<br>这实际上是一个很酷的部分，正如我们将在页表中看到的那样，它非常灵活。那么，是否有可能像物理内存一样被耗尽，因为如此多的进程耗尽了所有的虚拟空间？是的，这当然是可能的。我们马上就会看到，例如，你有一堆大型应用程序，它们每个都有大页表，并且它们在内存耗尽时分配大量内存。我知道了，谢谢。那么它在x6中出现的地方，有人吗？你在cisko (你目前正在进行的一个实验室) 中稍微触及了一点。页面分配在哪里？</p>
+<p>发言人   13:09<br>If you do the Cisco Live and you finish it, you one part of the fiscal La’s printing how much free meme there is. K Alec, yeah, k AC, right for K Ale has a list of free pages. If that list of free pages empty or runs out at some point, then, you know, chaotic, it is going to return a no pointer and hopefully the operating system does something sensible and that basically propagates back to the user application saying like, well, you know, no more memory for you or no more memory in total for nobody. Okay, and just a jar from the OS to handle those cases gracefully, where gracefully generally means propagating an error message to the user application.<br>如果你进行思科直播并完成它，你就是财政La印刷中有多少免费模因的一部分。K Alec，是的，k交流，对于K Ale，有一个免费页面的列表。如果空闲页面列表为空或在某个时候耗尽，那么，你知道，混乱的，它将返回一个无指针，希望操作系统做一些明智的事情，基本上会传播回用户应用程序，说，嗯，你知道，没有更多的记忆给你，或者总共没有人有更多的记忆。好的，只需操作系统中的一个jar来优雅地处理这些情况，而优雅通常意味着将错误消息传播给用户应用程序。</p>
+<p>发言人   13:57<br>Okay, good. So how do you implement these address spaces? You know how to basically multiplex all these address spaces across a single physical memory. And the most common approach and the very flexible approach is to use page tables. And the idea is, and this is a hardware support, so this is implemented in hardware by the processor or by unit called the memory management unit.<br>好的，好的。那么你如何实现这些地址空间呢？你知道如何在单个物理内存上复用所有这些地址空间。最常见且非常灵活的方法是使用页表。这个想法是，这是一种硬件支持，因此这是由处理器或称为内存管理单元的单元在硬件中实现的。</p>
+<p>发言人   14:27<br>And so the picture that you should have in your head is no, the CPU that executes instructions know whatever are you know. Our store instruction was, you know, putting dollar 7 into a 0 indis. So it executes those kind of instructions. And in when it executes one of the storage instruction, load instruction, whatever, anything that actually has an address, know that address.<br>因此，你应该在脑海中想象的画面是不，执行指令的CPU知道你所知道的一切。我们商店的指示是，你知道，将7美元放入0 indis。所以它执行这些类型的指令。当它执行存储指令、加载指令之一时，无论实际具有地址的任何东西，都知道该地址。</p>
+<p>发言人   14:57<br>We’re going to think about it a virtual address. So it’s not a physical address, it’s a virtual address. And so for example, the value in a 0 that we’re using here. 1000 or X, you know, 1000. That is a virtual address. And a virtual address is basically routed through something what’s called the memory management unit. And the minimum management unit translates it into a physical address. And that physical dress then was actually used to index into memory and load whatever value or store whatever value needs to be written there. And so the CPU, from the CPU point of view, it always issues every instruction that it issues ones.<br>我们将把它看作一个虚拟地址。所以它不是物理地址，而是虚拟地址。例如，我们在这里使用的0中的值。1000或X，你知道的，1000。这是一个虚拟地址。虚拟地址基本上是通过所谓的内存管理单元路由的。最小管理单元将其转换为物理地址。然后，这种物理服装实际上被用于索引到内存中，并加载任何值或存储需要在那里写入的任何值。因此，从CPU的角度来看，它总是发出它发出的每一个指令。</p>
+<p>发言人   15:45<br>The MMU is enabled our virtual addresses and to translate these virtual addresses to physical addresses, basically the MMU has a table. Virtual address on one side, physical address on one side, on the other side. And for example, here is, you know, our entry for 1000th. And maybe that maps to whatever, you know, 0x, whatever, making something up with like some big value, you know, somewhere in physical memory.<br>MMU启用了我们的虚拟地址，并将这些虚拟地址转换为物理地址，基本上MMU有一个表。虚拟地址在一侧，物理地址在一侧，在另一侧。例如，你知道，这是我们第1000个的条目。也许这映射到任何东西，你知道的，0x，任何东西，组成一些有很大价值的东西，你知道，在物理内存中的某个地方。</p>
+<p>发言人   16:14<br>And so there’s mapping between virtual and physical. It’s quite flexible. So on one side, we have the virtual address of the other side of the physical addresses. Typically you this mapping itself is also stored in memory. And so the CPU has some register that basically points to that contains the physical address, well, where the page table is stored. So somewhere in basically the page table or just map somewhere stored in physical memory, let’s say, you know, whatever, you know, address 10. And basically this registered, which is called on the risk 5 satp you know, stores they’re dressed in. And so that the CPU can tell the memory managed units where to find basically the map to actually translate virtual to physical addresses.<br>因此，虚拟和物理之间存在映射。这相当灵活。因此，在一侧，我们有物理地址的另一侧的虚拟地址。通常，这个映射本身也存储在内存中。因此，CPU有一些寄存器，基本上指向包含物理地址的寄存器，即存储页表的位置。所以基本上在页表的某个地方，或者只是映射存储在物理内存中的某个地方，比如说，你知道的，无论是什么，你知道的，地址10。基本上，这个注册的，被称为风险5个satp，你知道，他们穿着的商店。这样CPU就可以告诉内存管理单元在哪里可以找到基本的地图，从而将虚拟地址转换为物理地址。</p>
+<p>发言人   17:10<br>And then the basic idea is to give every application its own map. So you know, cab is going to have its map. So every map it’s own, oops. Yeah, feedback, go ahead.<br>然后基本思想是为每个应用程序提供自己的地图。所以你知道，出租车将有它的地图。所以每张地图都是自己的，哎呀。是的，反馈意见，请继续。</p>
+<p>发言人   17:30<br>So the MMU, you said it doesn’t necessarily store the mapping. So does it just just just do the translation like it will read the memory and do the translation, but not necessarily store the mappings? That’s, that’s exactly the right picture that you should have in your head? And every map, okay, so the map itself is stored in memory, the N just basically walks or looks up into the map. And we’ll see in the second that, you know, this map is slightly more complicated than we’re just drawing here. So every app has its. Its own map. And that map basically defines its address base.<br>所以MMU，你说它不一定会存储映射。那么，它是否只是像读取内存并进行翻译那样进行翻译，而不必存储映射呢？这就是你应该在脑海中想象的正确画面？每个地图，好的，所以地图本身存储在内存中，N基本上只是遍历或查找地图。我们马上就会看到，你知道，这张地图比我们刚才在这里绘制的要稍微复杂一些。所以每个应用程序都有它。自己的地图。该地图基本上定义了它的地址基础。</p>
+<p>发言人   18:16<br>And so when the CPU or when the operating system switches just the CPU from 1 process or from one application to another application, it also switches the content of this s.p. register to store the route of the map, a few appropriate process. And so that way, basically, you know, multiple applications can run on the CPU every time you switch between from one application to the next application. We also switch the satp register to point to the appropriate map for that application. And in that way, basically, the virtual dresses for CAD are translated differently than the virtual dresses for the shell because, you know, each one of them has their own map. That makes sense?<br>因此，当CPU或操作系统仅将CPU从一个进程或从一个应用程序切换到另一个应用程序时，它也会切换此s.p的内容。 注册以存储地图的路线，有几个适当的过程。这样一来，基本上你知道，每次从一个应用程序切换到下一个应用程序时，多个应用程序都可以在CPU上运行。我们还切换satp寄存器以指向该应用程序的适当映射。这样，基本上，用于CAD的虚拟连衣裙的翻译与用于外壳的虚拟连衣裙的翻译不同，因为你知道，它们每个人都有自己的地图。这就是感知？</p>
+<p>发言人   19:06<br>Okay, so the, this is sort of the basic plan and the way I’ve drawn or you explained it so far, it’s pretty naive and unreasonable. Yeah, VI, go ahead, am sorry. So you said the satp register gets modified for the process? I am guessing the value of for the STP register for each process is stored by the kernel? Yes, yes, the colonel was writing the s.p. editor, in fact, writing or reading the particularly writing the satp register is a privileged instruction, so a user application can not just update the page map register and say like, oh, I want to run with this page map now because that would violate isolation. So only the kernel only code in kernel mode can actually update it, I see.<br>好的，所以，这是基本计划和我所绘制的方式，或者你到目前为止所解释的，它非常天真和不合理。是的，VI，继续吧，对不起。所以你说satp寄存器为进程被修改了？我猜每个进程的STP寄存器的值是由内核存储的？是的，是的，上校正在写s.p。 事实上，编写或读取特定的satp寄存器是特权指令，因此用户应用程序不仅可以更新页面映射寄存器并说，哦，我现在想使用这个页面映射运行，因为这会违反隔离。所以只有在内核模式下的内核代码才能真正更新它，我看到了。</p>
+<p>发言人   20:03<br>Okay, so as I said, this picture is pretty naive. You know, one thing, I haven’t really said anything about how this actually map works. And you the way sort of drawn out seems to indicate that, you know, basically for every virtual address, you have an entry in the map. And if you do that, how big can that be? On risk 5.<br>好的，就像我说的，这张照片很天真。你知道，有一件事，我还没有真正说过这张地图是如何工作的。而你这种画出来的方式似乎表明，你知道，基本上对于每个虚拟地址，你在地图中都有一个条目。如果你这样做，那会有多大？风险5。</p>
+<p>发言人   20:32<br>Anybody? How many addresses are there on the risk? Five in principle, or how big? How many addresses could a register store? Registers are 64 b wide. So how many addresses? Anybody I know? I’m insulting your intelligence by asking these questions. We have some answers in the chat, like 2 to the 64. So, yeah, I didn’t see the chat, sorry. Yeah, 2 to the 64. See if I can actually pop up the chat so I can see it. Yeah, 2, 3 64, thank you.<br>有人吗？有多少地址存在风险？五是原则上，还是有多大？一个寄存器可以存储多少个地址？寄存器宽度为64 b。那么有多少地址？我有认识的人吗？我问这些问题是在侮辱你的智商。我们在聊天中有一些答案，比如2到64。所以，是的，我没看到聊天，抱歉。是的，2到64。看看我是否真的可以弹出聊天，这样我就可以看到它了。是的，2，3，64，谢谢。</p>
+<p>发言人   21:16<br>Right, so this table would be gigantic. In fact, we know all memory would be consumed by just having that table. So that’s in reasonable. And so in fact, you know, that’s not how things work. In fact I’m going to go in two steps to actually how it actually works in a race 5.<br>对，所以这张桌子会很巨大。事实上，我们知道只要有那个表，所有的内存都会被消耗掉。所以这是合理的。事实上，你知道，事情不是这样运作的。事实上，我将分两个步骤来了解它在第五场比赛中的实际工作原理。</p>
+<p>发言人   21:34<br>So step 1 is, you know, don’t play the game per address, but do it per page. So you translate a page at a time. And a page on the risk 5 is 4 kB. And which is 4, 4096 B. And this is pretty common. Almost all processors, you know, use roughly 8004 kB or support a page size of 4 kB. And so now again, translation works slightly differently.<br>所以第一步是，你知道的，不要按地址玩游戏，而是按页玩游戏。所以你一次翻译一页。关于风险5的页面是4 kB。并且它是4，4096 B。这很常见。几乎所有的处理器，你知道，使用大约8004 kB或支持4 kB的页面大小。所以现在，翻译的工作方式略有不同。</p>
+<p>发言人   22:06<br>So if here we have our virtual address, and basically we split it in two pieces, an index and an offset. And so the offset is basically the byte within the page. And so when we do, when the MMU does the translation, it takes the index indexes into the map. That gives you some physical page number in memory, in the physical page in a.m.r.a. that points to show physical page of 4096 B. And then the offset part basically indexes into that physical page. So for example, the offset is you 12, then, the 12th entry of that page is actually used.<br>所以如果这里有我们的虚拟地址，基本上我们将它分成两部分，一个索引和一个偏移量。因此，偏移量基本上是页面内的字节。当我们这样做时，当MMU进行翻译时，它会将索引纳入地图。它会在内存中给你一些物理页码，在a.m.r.a的物理页面中。 指向显示4096 B的物理页面。然后偏移量部分基本上索引到该物理页面。例如，偏移量是你12，那么，实际使用的是该页面的第12个条目。</p>
+<p>发言人   22:54<br>A lot of you people, a lot of you answered this, mentioned this in response to the question. There’s always some scheme of like taking an offset and adding that to the base of the page to obtain the actual memory, physical memory location where the value is stored or where value will be loaded.<br>很多人，很多人回答了这个问题，在回答这个问题时提到了这一点。总会有一些方案，比如取一个偏移量并将其添加到页面底部以获得实际的内存，物理内存位置，存储值的位置或将加载值的位置。</p>
+<p>发言人   23:15<br>2. And one of the interesting things about the risk 5 is, and in response to some of the questions that somebody asked earlier, Liger, the physical or the virtual dresses are 64 b, which makes totally sense, correct? Because the risk 5 to 64 did register. But in fact, on the risk 5 processor that we’re using, not all of the 64 b actually are used, namely the top 25 are actually not used at all. And so that limits the size of a virtual address, right? That limits the size of a virtual address space to 2 to the power 39. Which is roughly 5 in the 12 GB.<br>2.关于风险5的一个有趣的事情是，为了回应之前有人提出的一些问题，利格，物理或虚拟礼服是64 b，这完全感知，对吗？因为风险5到64确实记录到了。但实际上，在我们使用的风险5处理器上，并不是所有的64 b都被使用了，也就是说，前25个处理器实际上根本没有被使用。这就限制了虚拟地址的大小，对吗？这将虚拟地址空间的大小限制为2的39次幂。这大约是12个GB中的5个。</p>
+<p>发言人   24:04<br>And so, of course, you know, later versions of the processor might support bigger address spaces. If that isn’t necessary, it could then be done. And so, for example, some of those 25 b that are you basically unused, you know, could be used to build bigger virtual address spaces.<br>因此，当然，你知道，处理器的后续版本可能会支持更大的地址空间。如果这不是必要的，那么就可以这样做。因此，例如，那些基本上未使用的25 b中的一些可以用于构建更大的虚拟地址空间。</p>
+<p>发言人   24:22<br>And so and so in the index and that, you know, with 39 b left, you know, that’s the virtual address, 27 b are indexed. And we’ll see in the second y, they’re 27, our index, and then the 12 are offset. And you know, they have to be 12 because two to the pi 12 is, you know, 4, 5 and 96.<br>等等，在索引中，你知道，剩下的39 b是虚拟地址，27 b是索引的。我们将在第二个y中看到，它们是27，我们的指数，然后12是偏移量。你知道，它们必须是12，因为2的 π 12代表4、5和96。</p>
+<p>发言人   24:45<br>Alright, so that’s virtual addresses on the risk, five physical addresses, as you can see here, are actually 56 b wide. So the physical memory can be bigger than the single virtual address space, but it is limited to two power up to 56. And most boards probably, you know, the don’t support two to the power of 56 physical memory because it’s gigantic amount of the physical memory. But in principle, the board could, you know, if you could manufacture it, support 2 to the power of 56 statistic memory. And so in this scheme, then if you 56 b for the physical address, 44 are basically the physical page number, the PPN, and 12 again are the offset that are inherited directly from the virtual dress.<br>好的，这就是风险中的虚拟地址，正如你在这里看到的，五个物理地址实际上是56 b宽。因此，物理内存可以比单个虚拟地址空间更大，但它被限制为两个电源，最多56个。而且大多数主板可能不支持2的56的物理内存的幂，因为它是巨大的物理内存量。但原则上，如果你能制造它，这个板可以支持2的56统计内存的幂。所以在这个方案中，如果物理地址为56 b，则44基本上是物理页码，PPN是12，再次是直接从虚拟衣服继承的偏移量。</p>
+<p>发言人   25:36<br>Does that one make sense? So I’m going to stop for a second here. You collect your thoughts. The other thing point I wanted to make here is that this material is important. So just ask questions. The details matter and it will be a large part. You really need to understand all this stuff to be able to basically do a lab.<br>那个有感知吗？所以我要在这里停一下。你收集你的想法。我想在这里提出的另一个观点是，这种材料很重要。所以就问问题。细节很重要，这将是很大的一部分。你真的需要了解所有这些东西才能基本上做一个实验室。</p>
+<p>发言人   25:59<br>The next lab, the page table lab. Yeah, Amir, go ahead, please. If you could go back 1 slide, the screen is unclear which one. Page table flight, yeah.<br>下一个实验，页表实验。是的，阿米尔，请继续。如果您可以返回1张幻灯片，屏幕不清楚是哪一张。页面表飞行，是的。</p>
+<p>发言人   26:20<br>This one, no, the most recent one, right, also doesn’t really matter. Yeah, that this is perfect, thank you. So I’m wondering, this 4096 B range, which we’ve called a page, is that assigned is a continuous chunk in memory, continuous physical, continuous range of 4096 B in memory, I see. And then the map had a granularity of 4, 5, and 96 fives, okay? And then 12, the offset, like 2 to the 12 is 40, 96. So that’s sufficient to cover each of the chunks.<br>这一个，不，最近的一个，对吧，也不重要。是的，这太完美了，谢谢。所以我想知道，这个4096 B的范围，我们称之为一个页面，是指在内存中分配的是一个连续的块，连续的物理，在内存中连续的范围为4096 B，我看到了。然后地图的粒度为4、5和96五，好吗？然后是12，偏移量，如2到12是40，96。这足以覆盖每个块。</p>
+<p>发言人   27:02<br>And where does the 56 come from in the diagram I could follow up until then, but I didn’t get where that came from. Designers who could do so, the hardware designers decide how big, you know, a physical address is basically for whatever board they want to design. And so the risk five designers decided that 56 b physical addresses were a good idea. And presumably the way they come up with these numbers is they look at technology trends and say like, well, we want to be able for the next sort of five years, you know, we don’t want to predict that physical memory will be ever bigger than 2 to the power 56. And probably they’re thinking it won’t be bigger than something much smaller. But then give them some V way in case their prediction is wrong. They slightly bigger number, does that make sense? Yeah, thanks.<br>在我可以跟踪的图表中，56个是从哪里来的，但我没有得到它是从哪里来的。能够这样做的设计师，硬件设计师决定物理地址的大小，你知道，基本上是为他们想要设计的任何电路板设计的。因此，风险五设计师决定56个b的物理地址是一个好主意。大概他们得出这些数字的方式是他们着眼于技术趋势并说，好吧，我们希望在接下来的五年里能够做到，你知道，我们不想预测物理内存将超过2的幂56。可能他们认为它不会比小得多的东西更大。但是如果他们的预测是错误的，请给他们一些V路。他们稍微大一点，感知吗？是的，谢谢。</p>
+<p>发言人   27:59<br>Yeah, a lot of people ask about this. Anybody else who raised their hand? I think there’s a bunch of people asking questions. And unfortunately, my Zoom doesn’t show. It’s more than two people raised hands. It’s just multiple people are raising their hands. So please jump in if you have a question. Okay, if not, I have a question. Yeah, go ahead.<br>是的，很多人都问这个问题。还有谁举手了？我认为有一群人在问问题。不幸的是，我的缩放无法显示。不止两个人举手了。只是很多人都在举手。所以如果你有问题，请加入进来。好的，如果没有，我有一个问题。是的，继续。</p>
+<p>发言人   28:26<br>The virtual memory is up to 2 to the power of 27, and the physical memory is up to the power due to the 56. So could have like we could have multiple processes that could exhaust all their virtual memories without using up all the physical memory. Right, that’s great.<br>虚拟内存最高为27的2次幂，物理内存最高为56的功率。因此，我们可能会有多个进程，可以耗尽所有的虚拟内存而不耗尽所有的物理内存。好的，那太好了。</p>
+<p>发言人   28:52<br>That’s absolutely correct. Okay, I have a too. Yeah, it so this 50 five-six for the physical address, is that the number of possible memory locations? I don’t think it’s the number of bits, right? Because this, the 64 b machine that 56 could go up to 64, but they just chose it to have just 56. That’s correct, that’s correct. And one way to think about it, and they only have to run 56 wire wires on the board as opposed to 64. I see, I see.<br>这是完全正确的。好的，我也有。是的，这50个5-6是物理地址，这可能是内存位置的数量吗？我不认为这是位数的问题，对吧？因为这个，64 b机器，56可以上升到64，但他们只是选择只有56。这是正确的，这是正确的。一种思考方式是，他们只需要在板上运行56根电线，而不是64根。我明白了，我明白了。</p>
+<p>发言人   29:30<br>Okay, I also have a question. So kind of, could you go back 1 slide maybe? So from the CPU, we go through the MMU and then to the memory.<br>好的，我还有一个问题。那么，你可以回到原来的一张幻灯片吗？所以从CPU开始，我们经过MMU，然后再到内存。</p>
+<p>发言人   29:47<br>Where, where, where is the distinction for different processes? Because like each process, like process, like the shell process has something at address like 0x, 1 0 0 0. And then the LS process also has something at address 0x 1 0 0 0. So we need to translate those two different physical. So the s.p. register contains, the register contains the address of which map to use. So LS runs with its own map, you know, cat runs with its own map, okay? So, so each process will have its completely own map. Yeah, makes sense, thank you. And in fact, there’s a group leeway to the next point.<br>在哪里，在哪里，不同过程的区别在哪里？因为就像每个进程一样，就像shell进程一样，在地址上有类似0x，1 0 0的东西。然后LS进程在地址0 x1 0 0也有一些东西。所以我们需要翻译这两种不同的物理情况。所以，s.p. 寄存器包含，则寄存器包含要使用的地图的地址。所以LS用自己的地图奔跑，你知道，猫用自己的地图奔跑，好吗？因此，每个进程都有完全自己的地图。是的，很感知，谢谢。事实上，在下一个问题上有一个集体回旋余地。</p>
+<p>发言人   30:34<br>So if every process has its own map, you know, how big is this map like that I drawn here? Well, that map is 2 to the power of 47 entries, correct? And that’s pretty big. And I would feel physical memory reasonable quickly if every process exactly had a complete, you know, populated map, then there gigantic, you know, means that every process is very big.<br>如果每个进程都有自己的地图，你知道，我在这里画的这张地图有多大？那张地图是47个条目的2次方，对吗？这是相当大的。如果每个进程都有一张完整的填充地图，那么我会很快感到物理内存是合理的，那么就会有巨大的，你知道，这意味着每个进程都非常大。</p>
+<p>发言人   31:00<br>And so, in fact, this is not the way the hardware actually stores page tables. You know, you can think about it conceptually as an array, you know, going from 0 to 2 to the power of 27. But actually, it’s not what happens in practice. In practice, it’s a multi level of structure. And here’s actually the real risk 5. Page table. Structure and what the hardware implements.<br>因此，实际上，这不是硬件存储页表的方式。你知道，你可以把它看作一个概念上的数组，从0到2到27的幂。但实际上，这并不是实践中发生的事情。在实践中，它是一个多层次的结构。这实际上是真正的风险5。页表。结构和硬件实现的内容。</p>
+<p>发言人   31:26<br>And so what happens with the 27 b that we saw earlier, the index, it’s actually split in free, 9 b numbers. And the first, the top 9 b are used to index into the top level page table directory, as they’re called. And so in one directory, you know, one of these guys, you know, it’s hundred 96 bis 4096 B, just like a page size, a Pte entry. One of these entries in that thing is 64 B, 64 b. I mean, sorry, like the register, so 8 B. And so it’s going to mean that if you do 496 divided by age means there are 5 that are 12 entries in one of those directory pages. So basically what happens is the satp points to the top root directory.<br>所以我们之前看到的27个b发生了什么，这个指数实际上被分成了免费的9个b数字。第一个，前9个b用于索引到顶级页表目录中，因为它们被称为。因此在一个目录中，你知道，其中一个，你知道，它是一百个96 bis 4096 B，就像一个页面大小，一个Pte条目。其中一个条目是64 B，64 b。我的意思是，抱歉，就像注册那样，所以是8 B。因此，这意味着如果你做496除以年龄，意味着在这些目录页面中有5个是12个条目。所以基本上发生的事情是satp指向顶级根目录。</p>
+<p>发言人   32:24<br>We take the top level 9 b index into the page directory, and that gives us a new physical page number. And that physical page number is the page directory for the next level. So we then we use the next level index to index into that page directory. And then, you know, answer for, you know, we like the final one. You know, we get the bottom level page directory and that basically gives us the entry that maps the virtual address to a physical address. So in some sense, it’s very similar to what I showed you in the previous slide, except the index happens in three steps instead of one step. And this is an advantage.<br>我们将顶级的9 b索引放入page目录，这给了我们一个新的物理页码。这个物理页码是下一级别的页目录。所以我们使用下一级索引来索引到该页面目录。然后，你知道，回答，你知道，我们喜欢最后一个。你知道，我们得到底层页面目录，这基本上给了我们一个将虚拟地址映射到物理地址的条目。因此，在某些感知上，它与我在上一张幻灯片中向您展示的非常相似，除了索引分三个步骤而不是一步进行。这是一个优势。</p>
+<p>发言人   33:03<br>The main advantage of the scheme is that then if large parts of the address phase are not being used, you don’t have to have any page table entries for them. For example, let’s say you have an address space. It has only one page, like the bottom page, so 4096, and no other pages already in the address page. So only the addresses zero to 4095 6 are actually mapped.<br>这个方案的主要优点是，如果大部分地址阶段没有被使用，你不需要为它们设置任何页表条目。例如，假设您有一个地址空间。它只有one page，像底部页面一样，所以是4096，地址页面中没有其他页面。所以只有地址0到4095 6被实际映射。</p>
+<p>发言人   33:29<br>How many page table entry or page table directors do you need to map that particular page? Well, you need one at the top, correct? And you need basically value in that entry for 0, the top level 9 b, you know, of zero over 0. So you need an entry for 0. So that means you need one middle level entry, you know, that basically corresponds to the next, you know, 9 0 b, and then one entry for the next 9 0 b. And so basically, we get away with free page directories.<br>您需要多少个页表条目或页表控制器来映射特定页面？你需要一个在顶部，对吗？并且你基本上需要在该条目中为0，顶级9 b的值，你知道，零比0。所以你需要一个0的条目。这意味着你需要一个中等级别的条目，你知道，这基本上对应于下一个，你知道，9 b，然后是下一个9 b的一个条目。因此，基本上，我们可以使用免费的页面目录。</p>
+<p>发言人   34:11<br>And in our previous scheme, on the previous slide, correct, we have two to the power of 27 entries. And now we basically have to have three times, whatever, 512 entries, and we’re done. And that the main reason why the actual hardware has this sort of hierarchical or multiply Itl 3 scheme.<br>在我们之前的方案中，在上一张幻灯片中，正确的是，我们有两个27次幂的条目。现在我们基本上必须有三次，或者512个条目，我们就完成了。这就是实际硬件具有这种分层或乘法itl3方案的主要原因。</p>
+<p>发言人   34:32<br>Any questions about this? Because it’s pretty important. Samir, go ahead. So my question is, since the PPN number from each page table is 44 b and the second say the middle table resides on the virtual memory, where do we get the missing 2 b from the final 12 b?<br>对此有什么问题吗？因为这相当重要。萨米尔，继续。所以我的问题是，由于每个页表的PPN编号是44 b，第二个说中间表驻留在虚拟内存中，我们从最后的12 b中得到缺失的2 b呢？</p>
+<p>发言人   34:58<br>Okay, so good, good, so you’re saying these 44, correct? Yes, what is going on with that? Well, all page, all page directories are the page lines. And so basically their physical page number is 44 plus the 1212 0 b. And so what actually happens if we look at these Pte entries, you know, they’re all have the same sort of form, right?<br>好的，很好，你说的是这44个，对吗？是的，这是怎么回事？所有页面，所有页面目录都是页面行。因此，基本上他们的物理页码是44加上1212 0 b。那么，如果我们查看这些Pte条目，实际上会发生什么，你知道，它们都具有相同的形式，对吧？</p>
+<p>发言人   35:24<br>If you look at one of these guys, there are 44 b, there are 12 b, zeros. So that gives us a 44 plus 12, it’s 56, so that gives us a physical address. And so that means, and there’s 60 two-four bits, there’s actually some bits left. They’re not being used. And in fact, bottom 12 b will basically, or the bottom 10 definitely you, the bottom bits are not not used at all. And in fact, paging hardware stores or stores that are a bunch of flags that control the translation. And we’ll talk about those flags in a second. And but they’re there to control the translation, and they’re stored basically in the bottom 10 b.<br>如果你看这些家伙中的一个，有44个b，有12个b，零。所以这给我们一个44加12，它是56，这给了我们一个物理地址。这意味着，还有60个2-4位，实际上还剩下一些位。它们没有被使用。事实上，底部的12 b基本上会，或者底部的10个肯定是你，底部的部分根本没有使用。实际上，分页硬件存储区或存储区是一堆控制翻译的标志。我们马上就会谈论那些旗帜。但是它们是为了控制翻译而存在的，它们基本上存储在底部的10 b中。</p>
+<p>发言人   36:04<br>And it also means correct that, you know, if you add these two up, that’s 54 b. Basically, there’s 10 b left that are unused. And those 10 b are, again, you know, for future growth. So at some point, we might have a new type of phase 5 processor that will have a slightly different structure, page tables, and it might actually have bigger and then 44 b for the physical page number.<br>这也意味着正确，你知道，如果你把这两个加起来，那就是54 b。基本上，还有10个b没有使用。而这10个b，你知道，是为了未来的增长。所以在某个时候，我们可能会有一种新型的第五阶段处理器，其结构略有不同，即页表，实际上它可能会更大，然后物理页码为44 b。</p>
+<p>发言人   36:29<br>Okay, and in fact, you can see it here. Like if you look at a single entry, correct? That’s drawn here, you know, there are basically 10 b left that are not being used.<br>好的，实际上，你可以在这里看到它。就像你只看一个条目一样，对吗？这里画的，你知道，基本上还有10个b没有被使用。</p>
+<p>发言人   36:42<br>Okay, so let’s look at the flags for a second because that’s sort of important. So every translation in the bottom 10 b, there are a bunch of flags stored. And the first flag is valid.<br>好的，让我们看一下旗帜，因为这很重要。因此，底部10 b中的每个翻译，都存储了一堆标志。并且第一个标志是有效的。</p>
+<p>发言人   36:56<br>If the valid bit is set, that means this is a valid Pte and you can use it for translation. And so, so for a little example that I used here, free page directories where only entry 0 is used, then only enter 0 will have the valid bit set. And then the other 5 and 11 entries will not have the valid bit set. And that basically tells the MMU, well, you don’t have to change down this Pt. This Pt just contains no valid information. Then our means, you know, you’re allowed to read from the page, write means you’re allowed to write to the page, execute means you’re allowed to execute instruction from it. And user means this page is also accessible by a process running in user space. And then the other bits, not that important, that will show up at some point, but those are sort of the five important bits.<br>如果设置了有效位，则意味着这是一个有效的Pte，您可以将其用于翻译。因此，对于我在这里使用的一个小例子，仅使用条目0的免费页面目录，则仅输入0将设置有效位。然后其他5和11个条目将没有有效位设置。这基本上告诉MMU，好吧，你不必更改这个Pt。此Pt不包含有效信息。那么我们的意思是，你知道，你被允许从页面中读取，写入意味着你被允许写入页面，执行意味着你被允许从页面中执行指令。和用户意味着该页面也可以由用户空间中运行的进程访问。然后其他不那么重要的部分会在某个时候出现，但这些部分是五个重要的部分。</p>
+<p>发言人   37:56<br>Does it all make sense? Yeah, if you I’m probably mispronounce your name, I apologize for this. That’s, that’s the representation, thank you.<br>这一切都有感知吗？是的，如果你我可能念错了你的名字，我为此道歉。就是那个代表，谢谢。</p>
+<p>发言人   38:09<br>I had a quick question about the three page tables. So how are the addresses or like the PPN values combined to form the final physical address? I may have missed that, Well, may have not said that, said it very explicitly. So the first PPN correct in the top page of the first PPN in the top level page directory contains the physical address of the next level down, right? And that one contains the one next level down. And then in the final one, we still have our fewer 44 b that contains then the actual physical draft off the page that we’re actually trying to translate to.<br>我有一个关于三页表格的快速问题。那么地址或类似的PPN值是如何组合形成最终的物理地址的呢？我可能错过了那个，可能没有说，说得非常明确。所以在顶层页面目录中，第一个PPN的首页正确的第一个PPN包含了下一层的物理地址，对吗？那个包含下一个级别。然后在最后一个页面中，我们仍然有较少的44 b，其中包含我们实际上要翻译的页面的实际物理草稿。</p>
+<p>发言人   38:50<br>Okay, that makes sense. You okay? And one, an interesting question, just as a side note before, let me answer this my own question before answering the two raised hands here. If you look back at this picture, why are the physical page numbers stored in these page directories? Why not a virtual drift? Because we need to look it up in memory, like look up the next directory in memory. We could not have our translation scheme depend on yet another translation scheme because occurs to be F look, so it just doesn’t make sense. So this is exactly the right answer, it has to be physical number.<br>好吧，那很感知。你还好吗？一个有趣的问题，就像之前的注释一样，在回答这里举手的两个人之前，让我回答一下我自己的问题。如果您回头看这张图片，为什么物理页码被存储在这些页面目录中？为什么不虚拟漂移呢？因为我们需要在内存中查找它，就像在内存中查找下一个目录一样。我们不能让我们的翻译方案依赖于另一个翻译方案，因为它恰好是F方案，所以它就是不感知。所以这正是正确的答案，它必须是物理数字。</p>
+<p>发言人   39:27<br>How about the satp, what do you, the satp, what does it store? Does it store a physical address or a virtual address?<br>那个satp怎么样，你呢，satp，它储存什么？它是存储物理地址还是虚拟地址？</p>
+<p>发言人   39:39<br>Also physical, assuming that the first page director results in memory, right? Yeah, exactly. It has to be a physical number because we’re actually trying to use it for translation. And so you, the satp, you need to know what the physical page number is of the route of the page directory. Okay, there were two other questions or two people who raised their hands. Repeat your question if if hasn’t been answered yet.<br>物理的，假设第一页董事导致内存，对吧？是的，没错。它必须是一个物理数字，因为我们实际上正在尝试将它用于翻译。所以你，satp，你需要知道页面目录路径的物理页码是多少。好的，还有两个问题或两个举手的人。如果还没有回答，请重复你的问题。</p>
+<p>发言人   40:10<br>So there’s a hierarchy of three tables, and each of them is indexed by a part of the virtual address, each 9 b long. So I’m not sure I understand how chaining between them happens and what it’s meant to accomplish. Like, shouldn’t it be sufficient to just use those 3 9 b addresses to index into each of them? That’s correct, so the first, the top level 9 dates are used for the index in the first top page del directory, the second in the next one, and the third and the third one. So maybe I’m just not understanding this correctly. So when a process requests a certain like virtual address to be looked up, it loads into the satp register, or the CPU does, and that gets the corresponding correct highest level page table. And then that page table will, will we’ll use then the top level 9 b from the 27 induction, that page directory. And then what is, what is the result of that?<br>因此，有一个由三个表组成的层次结构，每个表都按虚拟地址的一部分建立索引，每个表长9 b。所以我不确定我理解它们之间的链接是如何发生的以及它的目的是什么。就像，使用这3个9 b的地址索引到每个地址中不是就足够了吗？这是正确的，所以第一个顶级9日期用于第一个顶级页面del目录的索引，第二个用于下一个页面，第三个和第三个。也许我只是没有正确理解这一点。因此，当一个进程请求查找某个虚拟地址时，它会加载到satp寄存器中，或者CPU加载，并获取相应的正确最高级别页表。然后那个页表将，我们将使用27个归纳中的顶层9 b，那个页面目录。那么结果是什么？</p>
+<p>发言人   41:20<br>Like if the result is there’s nothing there, does the MMU create a page table? No, no, the m.u. basically tells the operating system or tells the processor, sorry, I couldn’t translate that address and basically turns into a page fault, which we’ll talk about a little bit later. But just you can’t translate address or it doesn’t translate it.<br>如果结果是什么都没有，那么MMU会创建一个页表吗？不，不，是m.u。 基本上是告诉操作系统或告诉处理器，抱歉，我无法翻译该地址，基本上变成了一个页面错误，稍后我们将讨论这个问题。但是你不能翻译地址，或者地址不能翻译。</p>
+<p>发言人   41:42<br>It’s like, you know, you can’t divide by zero. You know, if you try to do that, the problem just refuses you to do it. I see, okay. B, about you B So I just wanted to make sure I understand how I think maybe we have, I want to understand how the kind of intermediate page tables, how we calculate the physical address of those.<br>这就像，你知道，你不能被零除。你知道，如果你试图这样做，问题就是拒绝你这样做。我明白了，好的。B，关于你，所以我只是想确保我理解我的想法，也许我们有，我想了解中间页表的种类，我们如何计算这些表的物理地址。</p>
+<p>发言人   42:10<br>So is it correct that, say, if we were trying to find a second level page shape, physical address, we would take the PPN from the first level page table, that’s 44 b, and then we add the 12 b offset from the original virtual address to get the full 56 b? Just glad this we don’t have the offset from the virtual address, we just take 12 0 bills. So we take the p.p.m., that’s 44 b, 12 0 b in the bottom, and that gives us a 56 b physical dress. And that’s where the next page directory is. And this requires that basically every page directory is page aligned.<br>那么，假设我们试图找到一个二级页面形状、物理地址，我们会从一级页表中取出PPN，即44 b，然后加上原始虚拟地址的12 b偏移量来获得完整的56 b，这是正确的吗？很高兴我们没有与虚拟地址的偏移量，我们只拿了12张钞票。所以我们选择p.m.，即44 b，底部为12 0 b，这给我们提供了56 b的物理着装。这就是下一页目录的位置。这需要基本上每个页面目录都是页面对齐的。</p>
+<p>发言人   42:45<br>I see, okay, that makes sense. So these are all great questions, and these are all things you’re going to be struggling with in the page Table Lab. So it’s very good to ask them right now. Okay, let me see. Yes, let me hold on for a second and collect my thoughts, see where I am. Good, okay.<br>我明白了，那很感知。所以这些都是很好的问题，这些都是你在页表实验中将要努力解决的所有问题。所以现在问他们很好。好的，让我看看。是的，让我暂停一下，整理一下我的思绪，看看我现在在哪里。好的，好的。</p>
+<p>发言人   43:18<br>One sort of one other thing that I want to mention, if you will see that, is that if you think about this, the scheme that I just showed, what really seems to be going on is that we load or store a value to memory or the pressure loads of storage value to memory. We basically have to do free memory lookups, one in the top level page directory, 1 in the intermediate page directory directory, and then one in the bottom level of page directory. It looks like that any memory reference to a virtual address basically requires free memory read, and so that seems expensive. And so what happens in practice where almost every processor does this, there is a cache sitting on the site that contains recently used translations. And this is called the translation leukocyte buffer. And you’ll see that term quite often. It’s called the TLB. Basically, it’s nothing else than a cache.<br>还有一件事情我想提一下，如果你能看到的话，就是如果你仔细想想，我刚才展示的方案，似乎真正发生的是我们将一个值加载或存储到内存中，或者将存储值的压力加载到内存中。我们基本上必须进行空闲内存查找，一个在顶级页面目录，一个在中间页面目录，然后一个在页面目录的底层。它看起来像任何对虚拟地址的内存引用基本上都需要空闲内存读取，因此看起来很昂贵。因此，在实践中发生的情况是，几乎每个处理器都这样做，网站上有一个包含最近使用的翻译的缓存。这就是所谓的翻译白细胞缓冲液。你会经常看到这个术语。它被称为TLB。基本上，它只是一个缓存。</p>
+<p>发言人   44:22<br>Entry page? Table entries? PTA entries? So when the processor has, you know, the first time the processor loads up a virtual address, you know, it walks this and the hardware walks this page, the free level page tables that will come out with, you know, the final physical page or the final PPN for that particular virtual address. And then basically the Tob store that Vn p, Pn or PA mapping on the site. And so then when the next time you refer to that particular virtual address, I can just look at the straight up in the Tob. And the Tob will respond instead of having to the page table walk.<br>进入页面？表条目？PTA条目？因此，当处理器第一次加载一个虚拟地址时，处理器会遍历这个页面，而硬件会遍历这个页面，自由级别页表将会出现，你知道，最终的物理页面或该虚拟地址的最终PPN。然后基本上是在站点上存储Vn p，Pn或PA映射的Tob。因此，当您下次引用该特定虚拟地址时，我可以直接在Tob中查看。并且Tob将做出响应，而不是必须进行页表遍历。</p>
+<p>发言人   45:06<br>Yep I’m here. So the TLB maps virtual addresses to the physical address of the page that the virtual address, along with the offset, right? Wouldn’t it be more efficient to like cash at the page table level?<br>是的，我在这里。所以TLB将虚拟地址映射到该虚拟地址以及偏移量页面的物理地址，对吗？在页表级别上喜欢现金不是更高效吗？</p>
+<p>发言人   45:28<br>Okay, so let me take a step back here. There’s many ways of implementing the Tob. The most important thing that you need to know is that there is a Tob and the exact details of actually how the Tov is implemented is sort of, you know, now the topic that we’re going to talk about in a great amount of detail, In fact, not at all. And so this is really something that sort of sits inside of the processor and is mostly hidden from the operating system. The operating system doesn’t really know how the TB operates.<br>好的，让我在这里退后一步。有很多方法可以实现这个Tob。你需要知道的最重要的事情是有一个tobb，实际如何实施Tov的确切细节有点像，你知道，现在我们要谈论的话题非常详细，事实上，根本不是。因此，这实际上是一种位于处理器内部的东西，大部分是隐藏在操作系统之外的。操作系统并不真正知道TB如何运行。</p>
+<p>发言人   45:57<br>The only thing, the reason you need to know that the QB exist is that if you switch page tables, then typically the operating system needs to tell the processor that it’s switching page tables and the tube needs to be flushed. Because basically, you can do stale entries If you switch to a new page table, the entries in the Tob may not be valid anymore. And so they need to be removed, because otherwise, you know, the translation would be incorrect. And so the operating system is typically where it’s aware that there is a Tob only basically to tell the hardware once in a while saying like, okay, well, don’t use them anymore because I’m going to switch page tables.<br>唯一需要知道QB存在的原因是，如果你切换页表，通常操作系统需要告诉处理器它正在切换页表，并且需要刷新管子。因为基本上，如果切换到新的页表，你可以做过时的条目，Tob中的条目可能不再有效。所以它们需要被删除，否则，你知道，翻译将是不正确的。因此，操作系统通常会意识到有一个Tob，基本上只是偶尔告诉硬件说，好吧，不要再使用它们了，因为我要切换页表。</p>
+<p>发言人   46:44<br>In fact, on, you know, the. On the risk 5, the instruction to flux toe is called S fence underscore VMA. That will actually.<br>事实上，你知道的。在风险5上，flux toe的指令称为S栅栏下划线VMA。这实际上会。</p>
+<p>发言人   47:04<br>So I have a question like not regarding TLB, but that brought kind of this question, the three level support that the three level paging that we have, is it implemented by the operating system or the hardware itself? Implemented by the hardware. So, you know, this all happens in hardware. The MMU is a block of hardware not in the operating system.<br>所以我有一个问题，不是关于TLB，但这带来了这样的问题，我们所拥有的三级分页支持，是由操作系统还是硬件本身实现的？由硬件实施。所以，你知道，这一切都发生在硬件上。MMU是不在操作系统中的硬件块。</p>
+<p>发言人   47:30<br>We’ll see in a second When we look at XP 6 XV 6 has a function that models the page table walk because once in a while SV 6 basically has to do what the hardware does. And so it also doesn’t have a function called walk that basically does exactly the same thing, but in software.<br>当我们看XP 6 XV 6时，我们马上会看到它有一个模拟页表行走的功能，因为有时候SV 6基本上必须做硬件所做的事情。因此它也没有一个名为walk的函数，它基本上做同样的事情，只是在软件中。</p>
+<p>发言人   47:51<br>So can I ask a question? And so where in this scheme does the processor cache for? Does it happen before the address translation or after? Because yeah, a little bit couple.<br>所以我能问一个问题吗？那么在此方案中，处理器高速缓存的位置是什么？它是在地址翻译之前还是之后发生的？因为是的，一对夫妇。</p>
+<p>发言人   48:13<br>Okay, usually MMU, the really the way to think about it is that all this stuff, you know, this whole block, it’s inside of the processor silicon. So there’s a risk 5 chip, and inside of it, it’s the CPU. In fact, there’s CPU corrector 4 core, and there’s an m.u..<br>好的，通常是MMU，真正思考它的方式是所有这些东西，你知道，整个块，它在处理器硅的内部。所以有一个风险5芯片，里面是CPU。实际上，有CPU校正器4核心，还有一个m.u…</p>
+<p>发言人   48:32<br>And you can think about that either this on the CPU site, there’s a TLB. Okay? That makes sense, but I guess my question was about the like cash in terms of not the TLB, but just normal cash. Like, because sometimes we don’t actually go all the way to access the memory. Yeah, good, good point. So like I showed like the scheme of last week correctively Monday of the risk five crash year, it has now one cash, it has now two cash.<br>你可以在CPU网站上考虑这个问题，有一个TLB。好吗？这很感知，但我想我的问题是关于类似的现金，不是关于TLB，而是普通现金。喜欢，因为有时我们实际上并不去访问内存。是啊，很好，观点很好。就像我上周展示的计划一样，它是风险五年崩溃年的正确星期一，它现在有一个现金，它现在有两个现金。</p>
+<p>发言人   49:06<br>Some capers are indexed by physical dress, some capers are indexed by virtual dress. So the cashers that are indexed by virtual dress before the m.u. and caches their index by physical addresses after the MNU. An example, Can I also ask a question? My question is, you said that the TLB, it walks so like to put stuff into TLB. The hardware walks through the page tables. Why do we write walk function if hardware can do that? Very good question. One reason, there’s a couple of reasons why we do it or why XV 6 needs it. One is when it actually sets up the initial page tables, you it needs to program the three levels. And so it needs to basically emulate the three levels.<br>一些刺山柑被物理衣着索引，一些刺山柑被虚拟衣着索引。所以在m.u之前按虚拟服装索引的收银员。 并在MNU之后按物理地址缓存其索引。举个例子，我可以问一个问题吗？我的问题是，你说TLB，它走得很像把东西放进TLB。硬件通过页表进行引导。如果硬件可以做到这一点，我们为什么要写步行函数？很好的问题。有一个原因，我们为什么这样做或者为什么XV 6需要它有几个原因。一个是当它实际设置初始页表时，您需要对三个级别进行编程。因此，它需要基本上模拟这三个级别。</p>
+<p>发言人   50:03<br>Other example that you actually sort of ran into or are running into in the Cisco lab is that when you copy in XV 6, the kernel has its own page table and every user address base has its own page table. And but once in a while, for example, in C info like the pointed to the C in know that lives in user space, the kernel needs to be translated to an address that it can use to read and write it. And so for example, if you look in copy in or copy out, basically the kernel translates the usual virtual address the. Page table to get out a physical address. To get an address out that then the colonel can use to read and write that memory. So there’s a bunch of places where it shows up, and I’ll talk about it hopefully in, you know, whatever, 10 minutes or 15 minutes.<br>你在思科实验室中实际遇到或正在遇到的另一个例子是，当你在xv6中复制时，内核有它自己的页表，每个用户地址库都有它自己的页表。但偶尔，例如，在C信息中，就像指向C的那样，知道它存在于用户空间中，内核需要被翻译成一个可以用来读取和写入它的地址。因此，例如，如果您查看复制或复制，基本上内核会将通常的虚拟地址转换为。页表以获取物理地址。要找出一个地址，然后上校可以用它来读写那个记忆。所以它出现的地方很多，我希望能在10分钟或15分钟内谈论它。</p>
+<p>发言人   51:00<br>I have a question, why doesn’t the hardware like expose that walk function so we don’t have to write our own and like potentially have bugs in it? Why isn’t there like a, you know, maybe a privileged instruction that you can pass the virtual address and it’ll give back the physical address? Well, this is just like just store to the virtual dressing. You get back and we’ll do it right for you. So, and we’ll see later on in the next lab, the page table app. In fact, this is exactly what you will do. You will actually set up the page table slightly differently so that you can avoid the walk in, copying and copy and string.<br>我有一个问题，为什么硬件不公开walk函数，这样我们就不必编写自己的函数，并且其中可能有错误？为什么没有像你知道的，也许是一个特权指令，你可以传递虚拟地址，它会返回物理地址？这就像存储到虚拟敷料一样。你回去吧，我们会为你做好的。所以，我们将在下一个实验中看到页表的应用程序。事实上，这正是你将要做的。实际上，您将稍微改变页表的设置，以避免进入、复制和字符串。</p>
+<p>发言人   51:42<br>I think this will become clear in a second that when we talk about, we look at the X 3, 6, okay? Okay, good. One more. Basically, before jumping into XO 6, I want to sort of make 1.1 way to think.<br>我认为这将在一秒钟内变得清晰，当我们谈论时，我们要看X 3，6，好吗？好的，好的。还有一个。基本上，在跳进XO 6之前，我想先用1.1的方式来思考。</p>
+<p>发言人   52:02<br>About Page Tables A popular way to phrase this is the page tables provide a level of indirection. And. And that, and so basically this indirection group, what I’m talking about, you know, this mapping from virtual dress to physical address. And this mapping is completely under the control of the operating system.<br>关于页表，一种流行的说法是页表提供了一定程度的间接信息。而且。基本上就是这个间接组，我所说的是从虚拟服装到物理地址的映射。而且这个映射完全在操作系统的控制之下。</p>
+<p>发言人   52:38<br>As what we’ve seen, you know, in the last a couple of slides that we talked, and that means that the operating system, because it has so much control over, has control over complete control of that translation, it can do all kinds of interesting tricks. And so for example, like one trick, you know, we talked a little bit about this. Like if a page pay entry is invalid and we’ll really return to the hardware will raise page fault in response to the page fault, the operating system could update the page tables and then maybe restructuring structure. And so there’s all kinds of things that they can do at runtime by manipulating the page tables. And we’re not going to talk about today, but in two weeks, we’ll have a lecture exactly sort of about this topic, about what cool things can you do once you have page tables and page faults. But it’s important to keep in mind that this is an incredibly powerful mechanism that will provide the operating system with a tremendous amount of flexibility. And there’s one reason why page tables are so popular.<br>正如我们所看到的那样，你知道，在我们谈论的最后几张幻灯片中，这意味着操作系统，因为它对那个翻译有很大的控制权，完全可以控制，它可以做各种有趣的技巧。例如，就像一个技巧，你知道，我们谈了一点关于这个。就像如果一个页面支付条目无效，我们将真正返回到硬件会引发页面错误以响应页面错误，操作系统可以更新页表，然后可能重新构建结构。因此，通过操作页表，他们可以在运行时做各种各样的事情。今天我们不打算谈论这个话题，但两周后，我们将有一场讲座，确切地说是关于这个主题的，关于一旦你有页表和页面错误，你可以做哪些很酷的事情。但重要的是要记住，这是一个非常强大的机制，将为操作系统提供巨大的灵活性。页表如此受欢迎有一个原因。</p>
+<p>发言人   53:49<br>Okay, so what I want to do next is actually talk about XV 6 and sort of see how this all plays out in XV 6. So the first thing I’m going to do is I’m going to look at the kernel page layout, if you will. And the mapping is on this slide. So you’re the virtual address space.<br>好的，我接下来想做的是实际谈论XV 6，看看这一切在XV 6中是如何发挥作用的。所以我要做的第一件事就是看看内核页面布局，如果你愿意的话。并且映射在这张幻灯片上。所以你就是虚拟地址空间。</p>
+<p>发言人   54:21<br>Of the kernel? And here, actually, the physical memory. So this is what basically, whatever you can think about this as DRM. And in fact, it is not. Let me take that back immediately. One part is DRM and one part is actually IO devices.<br>关于内核？这里，实际上是物理记忆。所以这就是基本上，无论你能将其视为DRM。事实上，它并不是。让我立即收回。一部分是DRM，一部分实际上是IO设备。</p>
+<p>发言人   54:46<br>And so sort of maybe I’m going to talk about the physical, the right side of the slide a little bit first, and then we’ll talk about the left side in the second. So the left side of the slide is completely fered by the hardware. The hardware designers basically determine the layout of that thing. And, you know, as you said before, last week, when the kernel starts, it starts at this address 0 8 9 0. And that’s just determined by the hardware designers. And so be more explicit.<br>所以也许我会先谈谈身体，幻灯片的右侧，然后我们会在第二部分谈论左侧。因此，幻灯片的左侧完全由硬件提供。硬件设计师基本上决定了那个东西的布局。而且，你知道，正如你之前所说，上周内核启动时，它开始于这个地址0 8 9 0。这只是由硬件设计师决定的。因此要更加明确。</p>
+<p>发言人   55:19<br>So if you look at the board, this is the same picture of the board that I showed on the Monday, but is hopefully a little bit better picture. It’s easier to see. Use our risk 5 processor. And we now know, correct that in the Risk 5 processor, the four core, but there’s also an MMU and there’s also a Tob or multiple TB. Every core has his own MMU and every core has his own Tob. And here are the VM chips. And so basically the designers of the board have decided that when, you know, after, you know, the translation from virtual to physical address, basically physical addresses, that’s starting, you know, at 0 8, you know, one to zeros, I could go to the DRAM chips and dresses below 0 8 8 may go through different IO devices.<br>所以如果你看看板子，这是我周一展示的板子的图片，但希望是更好一点的图片。更容易看到。使用我们的风险5处理器。我们现在知道，在风险5处理器中，有四个核心，但也有一个MMU，还有一个Tob或多个TB。每个核心都有自己的MMU，每个核心都有自己的tobs。这里是VM芯片。因此，基本上电路板的设计者已经决定，当从虚拟地址翻译到物理地址 (基本上是物理地址) 时，从0 8开始，你知道，一到零，我可以去DRAM芯片，低于0 8 8的衣服可能会通过不同的IO设备。</p>
+<p>发言人   56:06<br>Platform The sites, basically the designers of this board have decided exactly with the physical layout. And in fact, you can loop that up, the physical layout if you want to.<br>将站点平台化，基本上这个板的设计师已经完全根据物理布局做出了决定。事实上，如果你想的话，你可以把物理布局循环起来。</p>
+<p>发言人   56:16<br>Just let me show you. So here’s the same manual that I showed you on. On. On Monday. And if you go to actually escape, you go to page 31, I believe. Here is the page on. And if you go down there says, what is the memory? It will spell out what the memory map is of the board. And it will say like at address 0, 0 is reserved. Nothing is there.<br>让我给你看看。所以这是我给你看的同一本手册。继续。在周一。如果你真的想逃脱，你会去第31页，我相信。这是上面的一页。如果你下去问，记忆是什么？它将阐明主板的内存映射是什么。它会说像在地址0，0被保留。那里什么也没有。</p>
+<p>发言人   56:47<br>If you go scroll down in this memory map, you know, you’ll see some information about all the different things that are mapped. For example, the ethernet board is mapped at O, you know, or something. If you go further down, oops, too much down here, you see the entry for 0x 8 0 0 0, correct? And that actually is DDR memory, the off chip volatile memory. And so those are the DM chips that I just showed you on the previous slide. And so just good to keep your head correct, even though we’re not talking to keep you in your own overseas C software.<br>如果你在这个内存地图中向下滚动，你会看到一些关于映射的不同事物的信息。例如，以太网板被映射在O，你知道的，或者其他什么地方。如果你再往下走，哎呀，这里太多了，你会看到0 x8 0 0的条目，对吗？那实际上是DDR内存，片外易失性内存。所以这些是我在上一张幻灯片上刚刚向您展示的DM芯片。所以最好保持头脑正确，即使我们不是在谈论让你在自己的海外c软件中。</p>
+<p>发言人   57:24<br>In the end, everything is determined, by, you know, the actual board.<br>最终，一切都由实际董事会决定。</p>
+<p>发言人   57:30<br>Okay, so go back to my slides. So let’s look at the layout. Yeah, Noah, go ahead. Yeah, when you say that this, this layout is determined by the hardware, do you specifically mean like the CPU itself or the board on which the CPU resides? The board in which the CPU resides, correct? Because the board, you know, the CPU is that great thing in the middle, that square thing saying whatever risk 5, the DRAM chips are sitting off of the processor. And it’s the board designers who put the chip, the DRAM, the many IO devices all.<br>好的，回到我的幻灯片。那么让我们来看看布局。是的，诺亚，继续吧。是的，当你说这个布局是由硬件决定的，你是指CPU本身还是CPU所在的主板？CPU所在的主板，对吗？因为主板，你知道，CPU是中间的那个伟大的东西，那个正方形的东西说任何风险5，DRAM芯片都坐在处理器上。并且是电路板设计师将芯片、DRAM和许多IO设备都放置在电路板上。</p>
+<p>发言人   58:11<br>The large part of an operating system is actually, you know, the CPU is one part, but the IO devices are at least as important, right? And so when you’re running an operating system, you both have to deal with the CPU as well as, you know, with the IO devices know. And if you want to send a packet over the internet, well, somebody has to take all of the network drive or the nick cart to actually do that. And that’s the operating system.<br>操作系统的很大一部分实际上是，你知道，CPU是其中的一部分，但IO设备至少同样重要，对吗？因此，当您运行操作系统时，您既要处理CPU，也要处理IO设备。如果你想通过互联网发送一个数据包，那么有人必须拿走所有的网络驱动器或昵称车才能真正做到这一点。这就是操作系统。</p>
+<p>发言人   58:35<br>So going back to the right side of this picture, correct, which is the physical dress layout, you will see basically the bottom was unused. As I showed you on that document. It turns out that, oh, 110, that physical address, that’s where the good Rom is. So when you turn on, you know, that board, the first thing that happens is actually code in the boot Ro runs. And when the boot drum is done, it actually will jump to this 0 0 0 0 and then just drop of the operating system.<br>所以回到这张图片的右侧，正确的，也就是实体服装布局，你会看到底部基本上是未使用的。正如我在那份文件上给你看的。原来，哦，110，那个物理地址，那就是好的Rom所在。所以当你打开那个板子时，首先发生的事情实际上是在引导程序中运行代码。当引导鼓完成后，它实际上会跳到这个0，然后只需放下操作系统即可。</p>
+<p>发言人   59:02<br>Make sure that there’s some of some data there, and then there’s a bunch of other devices that we’ll talk about. An internet controller. We’ll talk about it next week.<br>确保那里有一些数据，然后还有一堆其他设备我们将讨论。一个互联网控制器。我们下周再讨论这个问题。</p>
+<p>发言人   59:13<br>There’s a Clint, another part of the interrupt story, that we’ll talk about next week. So basically multiple devices can generate interrupts. There needs to be a plan to route those interrupts to the and the two, the appropriate request level, and that’s all implemented by those interrupt controllers. And let me finish for a second this slide before answering a question. Then there’s a UART that was at the device that was actually the thing that actually the device, that actually UART device that actually interacts with the console and the display and then’s the, there’s the disc and that’s the device, there’s where the device sits that actually interacts with the Dis. And so when you write the location to unrest, let’s say 0x 200, then that physical dress corresponds to the Clint. And so when you do store instruction or load instruction, you’re reading and writing to the ship that implements the Clint, and we’ll see later what that exactly means, but basically you can think about this as interacting directly with the device and not reading and writing physical memory.<br>有一个克林特，中断故事的另一部分，我们将在下周谈论。所以基本上多个设备可以产生中断。需要有一个计划将这些中断路由到适当的请求级别，这一切都由这些中断控制器实现。在回答问题之前，让我先完成这张幻灯片。然后在设备上有一个UART，它实际上是设备，实际上是与控制台和显示器交互的UART设备，然后是光盘，这就是设备。这就是设备实际与数据交互的位置。因此，当你写下不稳定的位置时，假设是0x200，那么那件衣服对应于Clint。因此，当您执行存储指令或加载指令时，您正在读取和写入实现Clint的船舶，我们稍后会看到这究竟意味着什么，但基本上您可以将其视为直接与设备交互，而不是读写物理内存。</p>
+<p>发言人   01:00:21<br>Yeah, there was a question. So just trying to make sure the addresses below 0, 800, they don’t really exist in DRAM. If when we mention those addresses, we directly go to the other hardware is yeah. Yeah, so like if you go back to this picture, anything above 0, 0, correct? That’s these DRAM chips. And you know, I can’t draw, I can’t point you to the Clint, but like, for example, here’s it even Att and so that’s it’s a particular physical address and we can write, you know, we load and store instructions. These are called memory mapped IO. We can do load and store instructions, we can program the e-net controller.<br>是的，有一个问题。所以只是尝试确保低于0，800的地址，它们实际上并不存在于DRAM中。如果我们提到这些地址，我们就直接去其他硬件。是的，所以如果你回到这张图片，任何高于0，0的东西，对吗？这就是这些DRAM芯片。你知道，我不能画，我不能指向你的Clint，但例如，这里是它的甚至Att，所以这是一个特定的物理地址，我们可以写，你知道，我们加载和存储指令。这些被称为内存映射IO。我们可以进行加载和存储指令，我们可以对e-net控制器进行编程。</p>
+<p>发言人   01:01:09<br>I also have a question. Why was this big trunk at the top? Says usedst, why is it not used? Oh, okay. So remember, not every machine, not every, so there’s two through the power 56 B physical address space, but you don’t have to plug in that much memory into the board if you don’t want to. And so some parts of it may be unused, depending on how much, you know, DRM chips are sitting on the board. And in fact, like in XV 6, we, I think, limit ourselves to 128 MB. I know more.<br>我也有一个问题。为什么顶部有这个大树干？usedst说，为什么它没有被使用？哦，好的。所以请记住，不是每台机器，不是每台机器，所以有两个通过56 b的幂物理地址空间，但如果你不想的话，你不必在主板上插入那么多内存。因此，它的某些部分可能未使用，这取决于板上有多少DRM芯片。事实上，就像在XV 6中一样，我认为我们将自己限制在128个MB。我知道更多。</p>
+<p>发言人   01:01:55<br>So when when load or store and goes out of the CPU, does that go like, where does it get routed to the correct IO? Like already from the CPU? So kind of like if the CPU before it sends it out, it says, okay, if it’s lower than 0x 8 and all the zeros, then I’m going to send it to like the correct IO device. And then otherwise I’m going to send it to the to the memory like the DRAM chip you can think about as a de multiplexer sitting on inside of the risk five, you know, blob. Oh, so it’s inside of that block, Okay, there’s a memory controller and doesn’t go routing. Because very important to have that sort of all clear in your head.<br>那么，当加载或存储并从CPU输出时，它是否会像在哪里路由到正确的IO？像已经从CPU？有点像CPU在发送之前说，好的，如果它低于0 x8和所有零，那么我将把它发送到正确的IO设备。否则我将把它发送到像DRAM芯片一样的内存中，你可以把它想象成一个位于风险五内部的去多路复用器，你知道的，blob。所以它在那个块里面，好的，有一个内存控制器，不会进行路由。因为在你的脑海中清晰地表达这一点非常重要。</p>
+<p>发言人   01:02:51<br>We okay? So now I want to switch to the right side of this picture. And this is basically what XV 6 sets up to the virtual dress space that XV 6 sets up. So when the machine boots, no aging enabler yet.<br>我们还好吗？所以现在我想切换到这张图片的右侧。这基本上就是XV 6为XV 6设置的虚拟着装空间所做的设置。因此，当计算机引导时，还没有老化启用程序。</p>
+<p>发言人   01:03:07<br>XV 6 sets up the page tables, the first virtual address space, and that’s actually the virtual address space that the kernel uses. And we’ll look at it in a second. And the code, but, and this is the layout, and it turns out, you know, because we want to keep x 6 as simple as possible, it’s easy for you to understand the mapping from virtual to physical is mostly in identity mapping.<br>XV 6设置页表，第一个虚拟地址空间，这实际上是内核使用的虚拟地址空间。我们一会儿再来看。和代码，但是，这就是布局，结果，你知道，因为我们希望保持x6尽可能简单，所以你很容易理解从虚拟到物理的映射主要是身份映射。</p>
+<p>发言人   01:03:38<br>So basically what that means is that the virtual address 0x 2 0 0 maps to physical address 0x 2 0 0 0. The kernel will set up the page tables exactly in that way. And so that means basically the, you know, sort of all virtual addresses below face top, which is the top of physical memory, are identical to the physical addresses that are actually being used on the right side. And so this is like why all the arrows are straight? Because it’s identity mapping.<br>基本上，这意味着虚拟地址0x2 0 0映射到物理地址0x2 0。内核将以这种方式完全设置页表。这基本上意味着，你知道，在物理内存顶部下方的虚拟地址，与右侧实际使用的物理地址完全相同。所以这就是为什么所有的箭头都是直的？因为这是身份映射。</p>
+<p>发言人   01:04:09<br>Okay, there’s small changes to this. There are two important things to mention. Amir, hold on second while I’ll try to first mention the two important things to mention.<br>好的，这里有一些小的改动。有两件重要的事情要提。Amir，请稍等，我先尝试提及两件重要的事情。</p>
+<p>发言人   01:04:24<br>First of all, there’s some pages, some mappings very high up in memory. Yeah, pull the. For some pages very high up in memory, for example, the stack kernel stack actually sits up. It is also mapped high up in memory. And the reason it’s high up in memory is because we have a garage below that is not mapped. So the Pte entry below the kernel stack of one of the kernel stack does have not have its valid bit set. And so if you know, the kernel runs off its stack and will result in a page fault, which is better than basically, you know, scribbling over some other memory that the kernel has, you get an immediate panic and you know that something’s bad to stack.<br>首先，内存中有一些页面和一些映射非常高。是的，拉。例如，对于一些内存中非常高的页面，堆栈内核堆栈实际上是向上的。它也被映射在内存的高处。它在内存中很高的原因是因为我们下面有一个没有映射的车库。因此，其中一个内核堆栈下的Pte条目没有设置其有效位。因此，如果你知道内核脱离堆栈运行并会导致页面错误，这比基本上在内核拥有的其他内存上乱涂乱画要好，你会立即得到恐慌，你知道堆栈有问题。</p>
+<p>发言人   01:05:10<br>And of course, we don’t want to waste physical memory. So we do that by basically putting the stack high in a Guard page, an empty Guard Pte entry below it, and the Garth P page documents to consume any physical memory records sitting high up in the virtual address space. Nothing is being consumed. But that means that they’re showing this case stack page, for example, is mapped twice. It’s mapped at a high address, and it’s mapped directly, you know, by one of the addresses that below this top. And so you can do this is one example of all the sort of cool things you can do with page tables. You can map a physical address twice. You can not map a physical address, you know, it can be one to 1 mapping, 1 to manyu mapping, menu to one mapping, all that kind of stuff is possible.<br>当然，我们不想浪费物理内存。因此，我们基本上通过将堆栈放置在一个保护页中，在其下方放置一个空的保护Pte条目，并且Garth P页文档来消耗位于虚拟地址空间中的任何物理内存记录。没有什么被消费了。但这意味着它们显示的这个案例堆栈页面，例如，被映射了两次。它被映射在一个较高的地址上，并且它直接被映射，你知道，被这个顶部下面的一个地址所映射。所以你可以这样做，这是你可以用页表做的所有酷事情的一个例子。您可以将物理地址映射两次。您无法映射物理地址，您知道，它可以是一对一映射，一对manyu映射，菜单对一映射，所有这些都是可能的。</p>
+<p>发言人   01:05:59<br>Actually, see I’ve done really use many of them, but there’s been a couple places we use those tricks and the stacking the guard page is one example of one of the cool trick, the X 6 users mostly to track down bugs.<br>实际上，我确实使用了很多技巧，但有几个地方我们使用了这些技巧，堆叠保护页面是一个很酷的技巧之一，x6用户主要是为了追踪错误。</p>
+<p>发言人   01:06:12<br>The second thing I wanted to mention is that the permissions, so for example, the kernel text pages for the kernel text are mapped, read, and X, meaning you can read it and execute it, but you cannot write the kernel text. And again, this is basically the void box so that we kept them earlier. Kernel data, of course, needs to be able to be written to, and so it has is mapped read, right? But you can not execute out of kernel data pages instructions, so the exit date is not set. It makes sense, I skipped one or two questions. So if the questions are still not answered, you know, please ask them.<br>我想提到的第二件事是权限，例如，内核文本的内核文本页面被映射、读取和X，这意味着你可以读取并执行它，但你不能编写内核文本。再次强调，这基本上是空盒子，以便我们更早地保存它们。当然，内核数据需要能够写入，因此它被映射为读取，对吗？但您无法执行内核数据页面指令，因此未设置退出日期。这很感知，我跳过了一两个问题。所以如果问题仍然没有得到回答，你知道，请问他们。</p>
+<p>发言人   01:06:55<br>We have a question in the chat. Do we have multiple kernel stacks for different processes? Like will we have NK stacks for n processes? Yes, so every process, every user process has a corresponding kernel stack. And we’ll see that in a little bit later.<br>我们在聊天中有一个问题。我们有多个内核堆栈用于不同的进程吗？我们将为n个进程拥有NK堆栈吗？是的，因此每个进程，每个用户进程都有相应的内核堆栈。我们稍后会看到。</p>
+<p>发言人   01:07:17<br>Okay, okay, so let me shar, go ahead. So what the virtual memory of another application mapped to somewhere in the physical memory in the unused space? Or yes, very good point.<br>好的，好的，那么让我沙尔，继续吧。那么，另一个应用程序的虚拟内存映射到未使用空间中的物理内存中的某处呢？或者是的，非常好的观点。</p>
+<p>发言人   01:07:34<br>So there’s a bunch of physical memory, correct? Here’s free memory, and that’s free memory here too. And we use that, actually use that free memory to basically store pages of page tables of user processes, as well as the text and data of user level processes. And if we run many, many, many usual level processes, at some point, we’ll run out of free memory and then basically fork or exec will return an error. But that means that the virtual space for processes are much smaller than the virtual space for the well. The virtual stages is the same as the same size in principle, but it will be less populated.<br>所以有一堆物理记忆，对吗？这是空闲内存，这也是空闲内存。我们使用它，实际上使用空闲内存来基本上存储用户进程的页表页面，以及用户级别进程的文本和数据。如果我们运行许多、许多普通级别的进程，在某个时候，我们将耗尽可用内存，然后基本上fork或exec将返回错误。但这意味着过程的虚拟空间比井的虚拟空间小得多。虚拟舞台原则上与相同的大小相同，但人口较少。</p>
+<p>发言人   01:08:22<br>Let me, let’s look at some code. And I think now all the stuff become a little bit more clear. Just one small thing is, so given that a lot of the like, each process has a big part of the memory mapped the same location, is that optimized by like consolidating in that into one place that mapping or no? XP 6 does not do that, but like one of the challenge exercises in the page table app is to actually implement that. I see the real operating system will do that. Yeah, very good question.<br>让我，让我们看一些代码。我想现在所有的东西都变得更清晰了。只有一件小事，所以考虑到很多类似的事情，每个进程都有很大一部分内存映射到同一位置，是否通过将其整合到一个映射或不映射的地方来优化？XP 6不会这样做，但就像页表应用程序中的挑战练习一样，实际实现它。我看到真正的操作系统会做到这一点。是的，很好的问题。</p>
+<p>发言人   01:09:02<br>I think you get a sense of like what all kinds of things are possible once you have page tables. Okay, so let’s do the usual thing. Boot XV 6 again and again, you know, qmu is just basically implementing the board and, you know, let’s.<br>我认为一旦你有了页表，你就会得到各种可能性的感知。好吧，那我们照常做吧。一次又一次地启动XV 6，你知道，qmu只是基本上实现了这个板，你知道，让我们。</p>
+<p>发言人   01:09:29<br>So last time we looked at how the booting happens, correct? And then we got to main. And then basically one of the things that the kernel, one of the function is called, it’s called Kva minute. And that actually sets up the address phase for the kernel. And so we saw in the picture where in the previous slide what that, you know, looks like. And here we’re going to see code how it actually is being set up.<br>所以上次我们看了启动是如何发生的，对吗？然后我们进入了main。然后基本上内核之一，其中一个函数被称为Kva minute。这实际上为内核设置了地址阶段。因此，我们在上一张幻灯片中的图片中看到了它的样子。在这里，我们将看到它实际上是如何设置的代码。</p>
+<p>发言人   01:09:58<br>And why hold on? Something’s not going as I want. To am I in the right directory? Hold on a second here while I’m trying to sort out my problems. That is good. In the right, the directory. Yeah. GDP? You send a break from the main just to make sure, good, and then set a breakpoint at okay the in it. Actually, I can just step to it now. Next control in it, green dev it, we shot it before physical memory allocator. And. Something happens that I’m not expecting. What is going on? Which, I ran this right before lecture here, that’s what’s going on. That actually is printing, okay? Interesting, okay. One more time, see if I can get lucky. More than what?<br>为什么要坚持下去？有些事情没有按照我的意愿进行。我在正确的目录中吗？在我试图解决我的问题时，请稍等一下。这很好。右边的是目录。是的。国内生产总值（GDP）？你从主服务器发送一个中断只是为了确保好的，然后在它里面设置一个断点。实际上，我现在可以直接去做了。接下来的控制，green开发它，我们在物理内存分配器之前拍摄它。而且。发生了一些我没有预料到的事情。这是怎么回事？我在讲座之前就在这里运行了这个，这就是正在发生的事情。这实际上是打印，好吗？有趣，好的。再一次，看看我是否幸运。比什么更重要？</p>
+<p>发言人   01:11:29<br>Continue and hopefully it will get there. I was going wait a little bit. Okay, great, we’re at the KVM in. So basically we’re now at this functions here on the right side in the Emax buffer. You can see it. I think I mod if I could function slightly. I hope I did. I think I did Well, we’ll see. And what we’re going to do is we’re going to walk, step into that function, give me the layout split, which is easier to see.<br>继续，希望它会到达那里。我打算等一会儿。好的，很好，我们现在在KVM。所以基本上我们现在在Emax缓冲区的右侧看到这个函数。你可以看到它。我想如果我能稍微发挥作用，我就应该相信。我希望我做到了。我觉得我做得很好，我们会看到的。我们要做的是走进去，进入这个函数，给我布局分割，这样更容易看到。</p>
+<p>发言人   01:12:03<br>And actually, the first thing that you can see is actually the Kern allocates a physical page for the top level page directory, then it zeros it out so that all the Pte entries are 0. And then basically it starts mapping in every device IO device 1 by one. And so for example, the U R 0, it basically starts mapping maps that into kernel address base.<br>实际上，您可以看到的第一件事实际上是Kern为顶级页面目录分配了一个物理页面，然后将其归零，使所有Pte条目均为0。然后基本上它开始在每个设备IO设备中逐一映射。例如，U R 0，它基本上开始将映射映射到内核地址基中。</p>
+<p>发言人   01:12:28<br>And so we can look at a file called lamb layout is basically translate a page 41 that I showed you from the document into a bunch of constants that we’re using. And so for example, here, test what the address of you of 1000 0 is. Over the U ideas. And so, you know, we can basically map it into the address space by calling this function kav and map, which I’ll look in a second.<br>因此，我们可以查看一个名为lamb layout的文件，它基本上是将我展示给您的第41页从文档翻译成我们正在使用的一堆常量。因此，例如，在这里测试您1000 0的地址是什么。关于你的想法。所以，你知道，我们基本上可以通过调用这个函数kav和map将其映射到地址空间，我稍后会查看。</p>
+<p>发言人   01:12:56<br>And then in the first exercise of the page table app, you are asked to implement a function called VM print. And I implemented a 2, And we’re going to step over it. And we’ll see basically the page tables, the kernel page table asset is set up after they have one call to Pvm map. So I’m going to do that, and we’re going to print out something. And so we’re going to look at a little bit of the output here.<br>然后在页表应用程序的第一个练习中，要求您实现一个名为VM print的函数。我实现了一个2，我们将越过它。我们将基本上看到页表，内核页表资产是在他们调用Pvm map之后设置的。所以我打算这样做，然后打印一些东西。因此，我们将在这里查看一点点输出。</p>
+<p>发言人   01:13:22<br>So here’s the page table, that is the physical address of the top level. Page directory. So the thing that actually sits in satp or will sit in satp, and then, you know, we have entry 0 off the top level patriotically has one Pte entry in it, and that contains a physical address for the middle level page table directory. The middle page table directory has one entry, namely 128, and that points to the bottom page table directory. And the bottom page table directory has the entry then for the physical page.<br>所以这是页表，这是顶层的物理地址。页面目录。因此，实际上位于satp或将要位于satp中的事物，然后，你知道，我们在顶层有条目0，其中有一个Pte条目，其中包含中层页表目录的物理地址。中间的页表目录有一个条目，即128，它指向底部的页表目录。底部页表目录中有物理页面的条目。</p>
+<p>发言人   01:13:59<br>And you can see indeed, that the physical address, you know, for that the bottom level is 0x 1 0 0 0 corresponding to UN 0. So basically virtual dress 1 0 0 translates to physical dress 1 1 1, 0 0. And we can sort of double check that this is indeed all legit, right? By let’s take that address.<br>你可以确实看到物理地址，你知道的，因为底层是0 x1 00，对应于un0。因此，基本上虚拟着装1 0 0转化为物理着装1，0 0。我们可以再次检查这是否确实是合法的，对吧？让我们以那个地址为基础。</p>
+<p>发言人   01:14:26<br>On the of 100 L, and we’re going to shift to 12. And that should be that gives us the top level 20 27 b shifted 9. So I’m going to take 0 1 0 0 1 0 0 0 1 0 1 more. And we’re going to shift at 9 and print that. And that is 0, 0. And actually, if we print 0, 0 as a decimal number, it’s going to be 128. Okay, so we see actually sort of, you know, it all sort of makes sense. We also see I printed out the flags year and, you know, the bottom level has read write. And that because valid is one. Any questions about this?<br>在100升的时候，我们将转移到12升。那应该是这样，这给了我们顶级20 27 b移位9。所以我要多拿0 1 0 0 1。我们将在9点移动并打印它。那就是0，0。实际上，如果我们打印0，0作为一个十进制数字，它将是128。好的，所以我们实际上看到了，你知道，这一切都让感知。我们还看到我打印出了旗帜年份，你知道，底层有读写。因为有效是一。对此有什么问题吗？</p>
+<p>发言人   01:15:24<br>Okay, so the colonel basically proceeds doing setting up the whole address phase in this way. And so we’ve called KVM map for verge IO for the plan for the Pck. It maps the kernel text, maps the kernel memory or kernel data, and then the trampoline page that we’ll talk about next week. And so in fact, we can sort of single step through this and then see what the final page directory looks like.<br>好的，上校基本上是这样设置整个地址阶段的。因此，我们为verge IO调用了KVM map来制定Pck的计划。它映射内核文本，映射内核内存或内核数据，然后是我们下周将要讨论的蹦床页面。实际上，我们可以一步步地完成这个步骤，然后看看最终的页面目录是什么样子的。</p>
+<p>发言人   01:15:55<br>So next, next, next, next. Basically, you know, we’re set the trampoline. And so now we’re going to print the complete page table directory. And, you know, we see basically a lot of Pte is actually being set up. I’m not going to really talk about it in any detail, but basically fills out the Patriot to actually create that virtual mapping, mapping that we basically saw in the previous slide. In fact, what I’m to do next is actually much more interesting. Yeah, when I go here, actually, like I said, maybe I already did this where 21, no I’m 21. Okay, so single step, not okay, that’s too bad. I got past that, but basically. Me, let me restart this.<br>所以下一个，下一个，下一个。基本上，你知道的，我们正在设置蹦床。所以现在我们要打印完整的页表目录。而且，你知道，我们基本上看到很多Pte实际上正在建立。我不打算详细谈论它，但基本上填写了爱国者，以实际创建虚拟地图，我们基本上在上一张幻灯片中看到的地图。事实上，我接下来要做的事情实际上要有趣得多。是的，当我去这里的时候，实际上，就像我说的，也许我已经在21岁的时候做了这件事，不，我21岁。好的，所以单步，不行，那太糟糕了。我已经过去了，但基本上。我，让我重新开始。</p>
+<p>发言人   01:16:53<br>I want to breakpoint at KVM in at heart. And continue. Boom I’m now here at KVM in at heart, and you see here basically that we’re writing the Sat ATP register. So basically the kernel is going to enable the page table or the MMU to basically start using the page table that we just set up. And one interesting question I split again, so somewhere here, correct is going to be here’s the instruction. And so once something really dramatic happens after executing this instruction, once I can see the assembly instruction exactly, but there is this extent, once this instruction is executed, what will happen with the next address that’s being translated?<br>我想在内心深处突破KVM。并继续。我现在在这里KVM的核心，你可以看到我们基本上在写Sat ATP寄存器。基本上，内核将启用页表或MMU，以便基本上开始使用我们刚刚设置的页表。还有一个有趣的问题，我又分开了，所以在这里，正确的将是这里的指示。一旦执行这条指令后发生了一些非常戏剧性的事情，一旦我可以确切地看到汇编指令，但是有这个程度，一旦这条指令被执行，下一个被翻译的地址会发生什么？</p>
+<p>发言人   01:17:58<br>Well, at the point that we executed this instruction, before any executing this instruction, there’s no page tables enabled yet, so no translation happens. But the next, and then the program counter is updated by 4, and then the next instruction is executed, and the program counter will be translated using the virtual page peace stable memory. And so this is a, you know, we can think about this, this is a dramatic moment because basically the whole address of installation is starting to enable and every address needs to know maybe be potentially something different, right?<br>好的，在我们执行这条指令的时候，在执行这条指令之前，还没有启用任何页表，所以不会发生翻译。然后程序计数器被更新为4，然后执行下一条指令，程序计数器将使用虚拟页面和平稳定内存进行翻译。所以这是一个，你知道，我们可以考虑一下，这是一个戏剧性的时刻，因为基本上整个安装地址都开始启用，每个地址需要知道可能是不同的，对吧？</p>
+<p>发言人   01:18:30<br>Because before we were running your like the physical addresses and then the page table, Henry said down and whatever is in the mapping now, there’s now the new meaning of a virtual dress. And this works out, you know, the fact that this actually works out is sort of remarkable because like the next instruction, the next value is a virtual dress and not a physical dress. Next instruction is going to be there’s whatever, 0x 1, 1, 1, 0, and why does this work out well? The reason it works out is because the kernel is set up. We have an identity page mapping. After we enabled the virtual paging hardware, we actually, you know, this will translate again to the same physical address. And so indeed, we’ll actually end up now executing the right instruction because that’s actually exactly the instruction that the memory location that the virtual hardware is programmed for. So does this make sense?<br>因为在我们运行您的物理地址和页表之前，亨利说了下来，现在映射中的任何东西，现在虚拟衣服有了新的含义。而这行得通，你知道的，实际上行得通的事实有点了不起，因为就像下一个指令一样，下一个值是一个虚拟的衣服，而不是一个物理衣服。下一个指令将会有什么，0 x1，1，1，0，为什么这样做效果很好？它成功的原因是因为内核已经设置好了。我们有一个身份页面映射。在我们启用虚拟寻呼硬件之后，实际上，你知道，这将再次转换为相同的物理地址。所以实际上，我们现在最终将执行正确的指令，因为这实际上正是虚拟硬件编程的内存位置所针对的指令。这有感知吗？</p>
+<p>发言人   01:19:22<br>Again, one reason why programming reversal memory is difficult is because once you execute one of these satp instructions, you load a page table in the satp you register, your world completely changes, and every address is now translated with the page table that you set up. And so what happens if the page table is set up incorrectly? You what might happen?<br>再说一遍，编写反转内存很困难的一个原因是，一旦你执行了这些satp指令之一，你就会在注册的satp中加载一个页表，你的世界完全改变了，每个地址现在都被你设置的页表翻译了。那么如果页表设置不正确会发生什么？你会发生什么？</p>
+<p>发言人   01:19:53<br>Anybody who wants to say to answer it or answer it in the chat, either way.<br>任何想在聊天中回答或回答它的人，无论哪种方式。</p>
+<p>发言人   01:20:00<br>You could override kernel data. Yeah, you could override kernel data. What else could happen? Yeah, page 12, you know, basically you do that, the mapping may be incorrect and basically the dress can be translated at all. And so the kernel can, you know, the project heart rate won’t do it, and the kernel just stops and panics. Does that make sense, so if you get a bug in your page tables, you know you’re going to see bizarre errors or crashes. And so one reason that example, the next live the page table app that we’ll hand out or release tonight is going to be hard because those kind of bugs will show up.<br>您可以覆盖内核数据。是的，你可以覆盖内核数据。还会发生什么？是的，第12页，你知道，基本上你这样做，映射可能不正确，基本上衣服可以翻译。所以内核可以，你知道，这个项目的心率无法做到，内核就会停止并出现恐慌。这是否会造成感知，因此如果您的页表中出现错误，您就会看到奇怪的错误或崩溃。因此，这个例子的一个原因是，我们将在今晚发布或发布的下一个页表应用程序将会很困难，因为这些错误会出现。</p>
+<p>发言人   01:20:38<br>You’re going to be not careful enough or you haven’t fully internalized some aspect yet. And you’re basically going to get a kernel crash, and you’re going to have a hard time where you will take a little bit of time and energy and detective work to basically track down why that happened. And that’s the that’s just part of like programming virtual memory because it’s such a powerful primitive, you know, if you get it wrong, you’re also going to have powerful consequences. Yet the other hand is great amount of fun. So I don’t want to end on a negative note, but it will. That will give you sort of a real understanding of actually what really virtual memory is and what it can do.<br>你会不够小心，或者你还没有完全内化某些方面。而且你基本上会得到一个内核崩溃，你将会经历一段艰难的时期，你需要一些时间、精力和侦探工作来基本上追踪为什么会发生这种情况。这只是虚拟内存编程的一部分，因为它是如此强大的原语，你知道，如果你弄错了，你也会产生强大的后果。然而另一方面是很有趣的。所以我不想以负面的音符结束，但它会的。这将让你真正了解虚拟内存是什么以及它可以做什么。</p>
+<p>发言人   01:21:20<br>Okay, I think I’m running out of time, so I’m going to stop here so people have time to go through to the next class or next activity. But if you have any questions left, you know, please hang on and ask them and we’ll see you on Monday. And good luck with finishing the Cisco Lab.<br>好的，我想我的时间不多了，所以我要在这里停下来，这样人们就有时间进入下一个班级或下一个活动。但是如果您还有任何问题，请稍等，问问他们，我们会在周一见到您。祝你好运，完成思科实验室。</p>
+<p>发言人   01:21:41<br>Hi, I have a question about walk. So it says, and in the code, it returns the like the first tables Pte, right? But but how does it work then like the other functions when they expect the actual p.t. that like the physical address, like yeah, basically this returns the p.t. entry in the page table, right? And the kernel can read and write page table entries. And so now you can stick values into the P2 e. And so maybe I can draw a picture if that is helpful, let’s see.<br>嗨，我有个关于步行的问题。它说，在代码中，它返回与第一个表Pte一样的内容，对吗？但是当他们期望实际的p.t时，它是如何工作的，就像其他功能一样。 就像物理地址一样，就像是的，基本上这会返回p.t. 在页表中的条目，对吗？内核可以读取和写入页表条目。所以现在你可以将值粘贴到P2 e中。如果有用的话，也许我可以画一幅画，让我们看看。</p>
+<p>发言人   01:22:35<br>So basically, we have a page directory.<br>基本上，我们有一个页面目录。</p>
+<p>发言人   01:22:45<br>And you know, this walk code. So the page directory has 512 Ptes in it. And we 0 here 511. And basically what the function does, it returns a pointer to one of these Pks. And so that’s just a virtual address. And it just points to that particular Pt and the kernel can, you know, manipulate that Pte by like whatever writing values to it, like some physical address, maybe with some permissions or into it for the top bottom 10 b. And then that basically updates the page table directory. And then later on when you load that into satp, now that effect that, that change will go into effect. Does that make sense? Yeah, that makes sense.<br>你知道，这个步行代码。所以页面目录中有512个Ptes。我们在这里0，511。基本上，该函数所做的就是返回指向这些Pks之一的指针。所以这只是一个虚拟地址。它只是指向那个特定的Pt，内核可以通过向它写入值的任何方式来操作这个Pte，比如一些物理地址，可能有一些权限或者进入顶部底部10 b。然后基本上最新进展页表目录。然后，当您将其加载到satp中时，现在效果是，该更改将生效。感知了吗？是的，这很感知。</p>
+<p>发言人   01:23:38<br>I guess I would just confuse like, why does it do the work of going all the way to the third page table and then only return the first Pte? No, the return is actually the bottom one actually.<br>我猜我会感到困惑，为什么它要一直工作到第三页，然后只返回第一个Pte？不，回报实际上是底部的。</p>
+<p>发言人   01:23:52<br>Welcome, let be careful. If you know, go through the end levels. So it starts at level 2, and then it goes to level 1. Then as to level 0, if the Al bit is set and level doesn’t exist, and we will create the intermediate page table directory and 0 it out, and then keep going in the loop. So Alex said you always end up on the bottom Pte if Alex, not that you stop at the first Pte that doesn’t have value. Okay, that sense. So this is the last one, the actual one that gon na have. Okay, okay, thank you. Any other questions?<br>欢迎，我们要小心。如果你知道的话，就通过最后的关卡。所以它从2级开始，然后进入1级。然后，对于0级，如果Al位已设置但级别不存在，我们将创建中间页表目录并将其输出为0，然后继续循环。所以，Alex说如果是Alex，你最终总是排在Pte的底部，而不是你停在第一个没有价值的Pte。好的，那感知。这是最后一个，是gon na实际拥有的。好的，好的，谢谢。还有什么问题吗？</p>
+<p>发言人   01:24:41<br>So I have a question. Basically, everything made sense until we mapped the virtual addresses to of the kernel, to the physical addresses. So my understanding is that each process will have its own page table, which is also a 3 level tree which maps its virtual addresses to physical addresses. But then when we map the kernel addresses, the kernel virtual addresses, the physical addresses, I don’t think we accounted for the actual tree of the virtual addresses of the kernel or where other processes will have their virtual addresses. And I’m sorry, virtual addresses. I’m sorry, like the page of table trees and whatever the page table tree points at in the physical memory. Yeah, so, so, so you, here’s back.<br>所以我有一个问题。基本上，一切都变得感知，直到我们将虚拟地址映射到内核的物理地址。所以我的理解是每个进程都有自己的页表，它也是一个三级树，将其虚拟地址映射到物理地址。但是当我们映射内核地址、内核虚拟地址、物理地址时，我不认为我们考虑内核虚拟地址的实际树或其他进程的虚拟地址所在的位置。对不起，虚拟地址。我很抱歉，就像表格树的页面以及物理内存中表格树所指向的任何页面。是的，所以，所以，所以你，这里回来了。</p>
+<p>发言人   01:25:32<br>So there’s slide with the kernel a dress space, the vertical kernel address space, and so when the kernel allocates a proc and the page tables for that particular process, they’re going to be allocated out of memory here. You know, memory that’s not being used yet. And the kernel is going to program. We’ll probably allocate a couple pages for the page table of the user level process, and we’ll fill in the Pte. And at some point, when the kernel runs that process, it will load the root. Physical address for those pages that it allocated for that page table, or basically for the page table that built into the satp register. And at that point, the processor will run with the virtual address space that the kernel constructed for that particular process. So the kernel will give up some of its memory for processes.<br>所以内核有一个slide，一个着装空间，垂直内核地址空间，所以当内核为那个特定的进程分配一个proc和页表时，它们将在这里被分配到内存之外。你知道，还没有被使用的记忆。并且内核正在编程。我们可能会为用户级进程的页表分配几页，并填写Pte。在某个时候，当内核运行该进程时，它将加载根。它为该页表分配的那些页的物理地址，或者基本上是为内置在satp寄存器中的页表分配的地址。此时，处理器将使用内核为该特定进程构建的虚拟地址空间运行。所以内核会为进程放弃一些内存。</p>
+<p>发言人   01:26:32<br>And then, but then the virtual space, in theory, is as big for the process as the current, but in reality, it’s really not. Yeah, for example, usually the picture with the layout of a virtual address space with the usual level process. And again, it goes from 0 to max VA 8. In the same way as the kernel dress space does. And it basically has its own set of page tables to map those due to installation that the kernel set up. But we can’t actually use all of the max VA virtually. We can not because we run out of memory. So many of the processes are much, much smaller, correct? Then all of the virtual address space.<br>然后，但是虚拟空间在理论上对于过程来说和当前一样大，但实际上并不是这样。是的，例如，通常是带有虚拟地址空间布局的图片，采用通常的级别处理。再次，它从0到最大VA 8。与内核着装空间的方式相同。它基本上有自己的一组页表，用于映射由于内核设置的安装而产生的页表。但是我们实际上不能虚拟地使用所有的max VA。我们不能这样做，因为我们的记忆已经耗尽了。这么多的过程都非常小，对吗？那么所有的虚拟地址空间。</p>
+<p>发言人   01:27:19<br>I see, thank you. I’ve got a quick question. Yeah, could you go back to the walk code? Yeah, absolutely. Only one of my favorite functions. So I guess I think one thing I’m confused about is after you write to the satp register, can the kernel even access physical addresses directly? So it looks like in the code that it’s converting, you know, like page share is being set to a physical address. But if Sat P is set, won’t that be interpreted as a virtual address? Yeah, so, okay, so let’s look at whatever heart in it.<br>我明白了，谢谢。我有一个快速的问题。是的，你能回到步行代码吗？是的，绝对的。这只是我最喜欢的功能之一。所以我想我认为我很困惑的一件事是，在你写入satp寄存器后，内核甚至可以直接访问物理地址吗？所以在代码中看起来它正在转换，你知道，就像页面共享被设置为物理地址一样。但是如果设置了Sat P，那不会被解释为虚拟地址吗？是的，所以，好吧，让我们看看里面的核心。</p>
+<p>发言人   01:28:09<br>So it’s KVM, so built in the Kern address space, the current page table initially is an address, is translated to physical address, and that’s actually written into the satp register. And at that point, you know, we’re running with the address space that we constructed like right before here in this KVM unit. And KVM map is basically nothing else than calling. Walk for every address or every page in that range. And so what was your question?<br>所以它是KVM，因此在Kern地址空间中内置，当前页表最初是一个地址，被转换为物理地址，并且实际上被写入satp寄存器。在那个时候，你知道，我们正在使用我们之前在这个KVM单元中构建的地址空间运行。而KVM地图基本上就是调用。对该范围内的每个地址或每一页进行遍历。那你的问题是什么？</p>
+<p>发言人   01:28:54<br>I guess it’s does Wa still work the same way if you call it after SPIs, Yeah, why? Why will work out? The reason it will work out is because the kernel set up an identity mapping. Okay, right, right. Very important. Very good question. Like a lot of things just happened to work out because actually the identity mapping is set up. I see. Okay, I think that makes sense, yeah.<br>我猜如果你在SPIs之后调用它，它仍然以相同的方式工作，是啊，为什么？为什么会成功？它会成功的原因是因为内核设置了一个身份映射。好的，对的，对的。非常重要。很好的问题。就像很多事情刚刚发生一样，因为实际上身份映射已经建立。我明白了。好的，我认为这很感知，是的。</p>
+<p>发言人   01:29:31<br>I have a good question. Where are the satp registers stored for all of the processes? There’s only one satp per core, but in every proc structure. You’re looking pro at age there is. Pointed to the page table, makes sense.<br>我有一个好问题。所有进程的satp寄存器都存储在哪里？每个内核只有一个satp，但在每个进程结构中。你正在寻找专业人士的年龄。指向页表，使感知。</p>
+<p>发言人   01:29:58<br>And also with regards to the three page tables or like the three tables that can complete the full address and help you get a full address for given something does, how does that better, I guess, than having one giant page table? I didn’t really fully understand that. There’s a great question. The reason is is because in the free level page table, you can leave a lot of entries empty. So for example, if you leave the An entry in the top level page table directory empty, you don’t have to create middle level page tables or bottom level page tables at all for those entries, okay? And so like this means like a big swath of the whole virtual address page doesn’t have to have any mappings at all, okay?<br>而且关于三页表或像可以完成完整地址并帮助您获取给定内容的完整地址的三个表，我想这比一个巨大的页表更好吗？我并没有完全理解。有一个很好的问题。原因是因为在可用级别页表中，您可以将许多条目保留为空。所以，例如，如果你把顶级页表目录中的条目留空，你就不需要为这些条目创建中层或底层页表，好吗？这样就意味着整个虚拟地址页面的一大部分都不需要有任何映射，好吗？</p>
+<p>发言人   01:30:45<br>Okay, you don’t have the table there, It just doesn’t exist. So basically allocating these chunks on demand as opposed to having the entire thing. Okay, that makes sense. Yeah, you start out basically with three page, 3 pages, namely one for the top level, 1 for the one intermediate, and one free and one bottom level. And then as you go, you create more page table directories.<br>好的，你没有桌子，它根本不存在。所以基本上按需分配这些块，而不是拥有整个东西。好吧，那很感知。是的，你基本上从三个页面开始，三个页面，即一个用于顶层，一个用于中间层，一个用于自由层，一个用于底层。然后随着操作的进行，创建更多的页表目录。</p>
+<p>发言人   01:31:06<br>Okay, okay, cool, cool, thank you so much. Are you welcome? Any more questions?<br>好的，好的，很酷，非常感谢。欢迎你吗？还有什么问题吗？</p>
+<p>发言人   01:31:14<br>Sorry, I have another one. It’s really, really small. But in the VM DOC online 43, or sorry, 41, 40, Yeah, it says that no, never mind 43, my bad, it says physical stop minus UN 64 e text, but wouldn’t that, wouldn’t that go over the, I guess the memory that we shouldn’t talk touch?<br>抱歉，我有另一个。它真的很小。但在VM文档在线43中，或者抱歉，41，40，是的，它说不，没关系43，我的坏，它说物理停止减去联合国64 e文本，但不是这样吗，我猜我们不应该说话的记忆是什么？</p>
+<p>发言人   01:31:45<br>I don’t know if that makes sense, but wouldn’t that go? I guess I don’t, I don’t understand, wouldn’t that go over free memory? No, I don’t think so. So current base is 0x 8 8 0 0 0 0, right? So that’s the beginning of memory.<br>我不知道这是否感知，但那不会成功吗？我想我不，我不明白，这不会超过可用内存吗？不，我不这么认为。所以当前的基数是0 x8 8 0，对吗？这就是记忆的开始。</p>
+<p>发言人   01:32:07<br>And Colonel sits there, and basically this thing is a size, right? So etex is the last address of the kernel subtract Kern base that basically gives you the size of the kernel in bytes. And you know, I don’t know how much it is is, but it’s like, you know, 60 or 90 pages or something like that. And so this map is just basically the text part of the kernel. And there’s enough space, there’s enough DRAM to map that the Kern text. I’m not sure I’m answering your question, but oh, oh, I think I think I understand. I thought that a text starts somewhere else. Okay, I think I understand that a text is basically the last instruction, the dress of the last instruction of the kernel, okay, okay?<br>上校坐在那里，基本上这个东西是一个尺寸，对吧？因此，etex是内核的最后一个地址，减去Kern的基数，基本上可以提供内核的字节大小。你知道，我不知道它有多少，但它就像，你知道，60或90页或类似的东西。因此，这张地图基本上只是内核的文本部分。并且有足够的空间，有足够的DRAM来映射Kern文本。我不确定我在回答你的问题，但是哦，哦，我想我明白了。我以为文本是从别的地方开始的。好的，我想我理解文本基本上是最后一个指令，内核的最后一个指令的着装，好吗，好吗？</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 003-PageTables</div>
+      <div>http://example.com/2025/10/18/6S081-003/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-004/" title="操作系统工程 004-RISC-V Calling Conventionand StackFrames">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 004-RISC-V Calling Conventionand StackFrames</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-002/" title="操作系统工程 002-OS Organization and SystemCalls">
+                        <span class="hidden-mobile">操作系统工程 002-OS Organization and SystemCalls</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

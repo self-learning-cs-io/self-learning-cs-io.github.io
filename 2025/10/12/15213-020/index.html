@@ -1,0 +1,721 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:02All right, good afternoon, everybody. Welcome, good to see you all. And welcome also to our viewers on video. So last week, we looked at this virtual memory mechanism. And how it provides s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-020/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:02All right, good afternoon, everybody. Welcome, good to see you all. And welcome also to our viewers on video. So last week, we looked at this virtual memory mechanism. And how it provides s">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:19.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.138Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          14k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          115 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:02<br>All right, good afternoon, everybody. Welcome, good to see you all. And welcome also to our viewers on video. So last week, we looked at this virtual memory mechanism. And how it provides so many different useful functionalities to the system along with this sort of abstraction of having this large contiguous array of bytes. Now, once we’re given that large array of bytes, now we have to manage it. And we have to, we have to have some mechanism to manage and use that resource.<br>好的，大家下午好。欢迎，很高兴见到大家。欢迎来到我们的视频观众。上周，我们研究了这个虚拟内存机制。以及它如何为系统提供许多不同的有用功能，以及这种具有大量连续字节数组的抽象。现在，一旦我们得到了那么大的字节数组，现在我们必须管理它。我们必须有一些机制来管理和使用这些资源。</p>
+<p>发言人   00:48<br>The topic of our lectures this week is storage allocation and how storage allocators work and how you use them to manage the virtual memory in your system.<br>本周我们讲座的主题是存储分配和存储分配器的工作原理，以及如何使用它们来管理系统中的虚拟内存。</p>
+<p>发言人   01:06<br>So the basic idea of a dynamic memory allocator is that applications use it to manipulate virtual memory to create, to allocate and free chunks of virtual memory that you need in your program. And it’s this memory is maintained in an area of virtual memory called the heap. And almost all languages have some mechanism it for acquiring and manipulating this. This dynamic memory. So in C, it’s the malloc package. Languages like Java have the new method. Now the allocator maintains the heap as a contiguous collection of blocks, where and blocks can be allocated or free allocated, meaning that they’re being used by some program application, free meaning that they’re available to be for use by an application. And there’s two types of allocators.<br>动态内存分配器的基本思想是应用程序使用它来操作虚拟内存，以创建、分配和释放程序中需要的虚拟内存块。并且这个内存被维护在一个称为堆的虚拟内存区域中。几乎所有的语言都有一些机制来获取和操纵它。这个动态记忆。所以在C中，它是malloc包。像Java这样的语言有新的方法。现在分配器将堆维护为连续的块集合，其中和块可以被分配或自由分配，这意味着它们正在被某些程序应用程序使用，自由意味着它们可供应用程序使用。有两种类型的分配器。</p>
+<p>发言人   02:21<br>The kind of allocator that you find in C, such as the malloc package, it’s up to the application to both explicitly allocate the memory and explicitly free it. When the application is finished with it, the system won’t won’t free up any memory that you allocate unless you do it explicitly by calling the, by calling the free function. But there’s other languages that support implicit allocators. In these implicit allocators, the programmer explicitly allocates memory, but then the system takes care of freeing the memory so that the burden of freeing the memory is shifted from the application program to the system, and it frees this memory implicitly sort of behind the scenes using a process called garbage collection. So languages like Java ML Lisp, they all do implicit. They all support implicit allocators. Now, today, we’re going to discuss implicit memory allocators. On Thursday, we’ll get into implicit allocators and how they work.<br>在C中找到的分配器类型，例如malloc包，由应用程序来显式分配内存并显式释放它。当应用程序完成使用它时，系统不会释放您分配的任何内存，除非您通过调用free函数显式地执行此操作。但还有其他语言支持隐式分配器。在这些隐式分配器中，程序员显式地分配内存，但随后系统负责释放内存，以便将释放内存的负担从应用程序转移到系统，并且它使用称为垃圾回收的过程在后台隐式地释放内存。所以像Java ML Lisp这样的语言，它们都做隐式的。它们都支持隐式分配器。现在，今天，我们将讨论隐式内存分配器。在星期四，我们将讨论隐式分配器及其工作方式。</p>
+<p>发言人   03:37<br>Now, the allocator in C is provided by the standard C library in a set of functions called Mali package.<br>现在，C中的分配器由标准C库在一组名为Mali包的函数中提供。</p>
+<p>发言人   03:47<br>The malloc function is used to allocate memory, and it takes as input a size argument, which is in bytes, and then it returns a pointer to a memory block that contains at least size bytes, and that block is aligned on x 86 systems to 8 B on x 86, 64 systems to 16 B. If size is 0, it returns null, and then it returns -1. Like most typical system calls, the programmer freeze memory by calling the free function. It takes as an argument a pointer that was returned from some prior invocation of Malik, and it returns nothing. And it frees that given this pointer that was returned by the prior invocation of Malik, it frees the block at that address and then returns that block to the pool of available memory.<br>malloc函数用于分配内存，它接受一个大小参数作为输入，该参数以字节为单位，然后返回一个指向包含至少大小字节的内存块的指针，并且该块在x86系统上对齐到x86上的8 B。64个系统到16个B。如果size为0，则返回null，然后返回-1。像大多数典型的系统调用一样，程序员通过调用free函数来冻结内存。它将先前调用Malik返回的指针作为参数，并且不返回任何内容。并且它释放了先前调用Malik返回的指针，它释放了该地址的块，然后将该块返回到可用内存池。</p>
+<p>发言人   04:55<br>Now, there’s some other functions. C AOC is a version of malloc that gives you an initialized block of memory that’s initialized to 0. And realloc, you can allocate a block and then call realloc to change the size of that previously allocated block. And then there’s a function called S brake, which is used internally by allocators to grow and shrink the heap. So when an allocator needs more memory, it calls S break to get that additional virtual memory that’s added to the heap, the portion that grows the heap. And then it adds it to the memory that the allocator is is manipulating.<br>现在，还有一些其他功能。AOC是malloc的一个版本，它给你一个初始化为0的内存块。和realloc，您可以分配一个块，然后调用realloc来更改先前分配的块的大小。然后有一个名为S刹车的函数，分配器在内部使用它来增长和收缩堆。因此，当分配器需要更多内存时，它调用S break以获取添加到堆中的额外虚拟内存，即增加堆的部分。然后将其添加到分配器正在操作的内存中。</p>
+<p>发言人   05:40<br>So here’s an example of how we would use malloc in a simple program. We have a pointer to an int p, and we call mall. And we want to allocate an array of nins So this is sort of the standard way you call it. We want n ins, and so we call it with n times the size of int. Because remember, the argument is in bytes.<br>所以这里有一个例子，说明我们如何在一个简单的程序中使用malloc。我们有一个指向int p的指针，我们称之为mall。我们想要分配一个nins数组，所以这是你称之为标准的方式。我们想要n个整数，所以我们用整数大小的n倍来称呼它。因为请记住，参数以字节为单位。</p>
+<p>发言人   06:08<br>Malloc returns a pointer. It returns a generic pointer Vo star pointer. We cast it to a pointer to an end to keep the compiler happy, and then assign it to P? We check for, we check for a null return value. So I should point out the it returns zero on error. So we check for this null, the snow pointer, which is 0. In printed error, if it’s no, now once we’ve got that pointer, now p, we can treat it just like an array. So we can, so inside the loop, if we want to initialize it, we loop across the elements of the array, initializing each one to some value.<br>Malloc返回一个指针。它通过星形指针返回一个通用指针。我们将其强制转换为指向结束的指针以使编译器满意，然后将其分配给P？我们检查，我们检查一个null返回值。所以我应该指出它在出错时返回零。所以我们检查这个null，即雪指针，它是0。在打印错误中，如果它是否，现在一旦我们有了那个指针，现在p，我们就可以把它当作一个数组。所以我们可以，所以在循环中，如果我们想初始化它，我们会遍历数组的元素，将每个元素初始化为某个值。</p>
+<p>发言人   07:01<br>Now when we’re finished, when we’re finished with this chunk of memory that we’ve allocated, then we free it by calling free with a pointer p? Now, so we’re going to look today at how functions like Mali and free are implemented.<br>现在，当我们完成后，当我们完成分配的这块内存时，我们通过使用指针p调用free来释放它？现在，我们今天将看看像Mali和free这样的功能是如何实现的。</p>
+<p>发言人   07:20<br>So we’re going to make a few simplifying assumptions. Memory is quite addressed, we know that. But for the purposes of this lecture, we’re going to assume that it’s word addressed. So we’re just going to look at word size units. And I’m going to assume that words are 4 B. So basically the size of an int. So this isn’t actually, this isn’t true. I need to fix that. So basically, we’re going to think of words as 4 B qua sort of integer size quantities.<br>所以我们要做一些简化的假设。记忆是相当重要的，我们知道。但出于本次讲座的目的，我们将假设它是单词寻址的。所以我们只要看单词大小单位。我假设单词是4 b。所以基本上就是一个int的大小。所以这不是真的，这不是真的。我需要解决这个问题。基本上，我们将单词视为4 B qua整数大小的数量。</p>
+<p>发言人   08:05<br>And then our blocks are contiguous chunks of those words that can be either allocated or free. So here we have a portion of the heap which consists of a four word allocated block followed by a two word free block, followed by another four allocated block, followed by a three word free blocking. And we’ll indicate these three blocks by white. And we’ll indicate allocated blocks with some shade of of color.<br>然后我们的块是那些可以分配或自由的单词的连续块。这里我们有一部分堆，它由一个四个字的分配块组成，后跟一个两个字的空闲块，后跟另一个四个分配块，后跟一个三个字的空闲块。我们会用白色表示这三个街区。我们将用一些颜色的阴影来指示分配的块。</p>
+<p>发言人   08:36<br>So let’s look now how a sequence of allocations and freeze would work. And now notice I’m calling Malik with the size of in words, not bytes, just to keep, just to keep things, keep these pictures simpler. So in this first we call mall and allocate a four word block. And that gives us a pointer P1. Then we call malloc again to get a five word block. So it just takes a one of the free words and allocates it.<br>现在让我们看看一系列的分配和冻结是如何工作的。现在请注意，我用单词大小而不是字节来调用Malik，只是为了保存，只是为了让这些图片更简单。因此，首先我们调用mall并分配一个四个字的块。这给了我们一个指针p1。然后我们再次调用malloc以获得一个五个单词的块。所以它只需要一个自由单词并分配它。</p>
+<p>发言人   09:16<br>We call Malik again to get a six word block, and then we free the block that’s pointed by P2, this purple block. So now that frees up that block. And then we do another allocation for a two word block. And so the allocator looks to see if it can find a free block that has enough enough room and it that it finds this free block here that has five free words. And then it allocates the requested block inside of that free block.<br>我们再次调用Malik以获取一个六个单词的块，然后我们释放由P2指向的块，这个紫色块。所以现在这释放了那个块。然后我们为两个词块进行另一次分配。因此，分配器会查看是否可以找到一个有足够空间的空闲块，并且它会在这里找到这个有五个空闲字的空闲块。然后它将请求的块分配到该空闲块中。</p>
+<p>发言人   09:56<br>Now, allocators work under a lot of different constraints. So it’s hard to write an allocator because of all these constraints. Applications can choose any combination of allocated and free blocks. So you can’t predict what what an application is going to request. And the application is required to free a block by when it frees a block to pass a pointer that was returned from a previous invoca of Mali. So the application has a few constraints, but really the only one that it has is the fact that when it frees something, it has to be a pointer from a previous invocation of mall.<br>现在，分配器在许多不同的限制下工作。所以由于所有这些限制，编写一个分配器是很困难的。应用程序可以选择分配和空闲块的任意组合。因此，您无法预测应用程序将请求什么。并且应用程序需要通过释放块以传递从先前的Mali调用返回的指针来释放块。因此应用程序有一些限制，但实际上它唯一的限制是当它释放某些东西时，它必须是之前mall调用的指针。</p>
+<p>发言人   10:40<br>Now the mall operates, or allocators like malloc operate under a lot of different constraints. They can’t control the size or the number of the allocated blocks because they’d have no control over what the application is doing.<br>现在商场在运营，或者像malloc这样的分配器在许多不同的约束下运行。他们无法控制已分配块的大小或数量，因为他们无法控制应用程序正在做什么。</p>
+<p>发言人   10:55<br>If an application calls Ma, Mali has to respond right away. You might be able to do a better, a more efficient version by batching up requests and then responding to all those requests at once, but the allocator can’t do it when it gets called. It has to process the request and then return right away. It, of course, it has to allocate blocks from free memory, so in general, it can’t touch any allocated block.<br>如果应用程序马某某调用，Mali必须立即响应。通过将请求成批处理，然后一次响应所有这些请求，您可能可以做得更好、更高效，但分配器在被调用时无法执行此操作。它必须处理请求，然后立即返回。当然，它必须从空闲内存中分配块，所以一般来说，它不能触及任何已分配的块。</p>
+<p>发言人   11:22<br>Once it allocates a block, that block belongs to the application and the malloc package can’t touch it. Now this has a number of implications, this means that the all or can it. Can’t move blocks around like it? Can’t compress blocks like an allocator? Might want to take allocated blocks and smush them all together to create larger free blocks, but it can’t do that. So in a language like C, once an allocator gives a block to a an application, it can’t touch it Now blocks like blocks, because blocks are holding data structures like structs.<br>一旦它分配了一个块，该块就属于应用程序，malloc包无法触及它。现在这有许多含义，这意味着一切都可能发生。不能像这样移动街区吗？不能像分配器一样压缩块吗？可能想要将分配的块全部smush在一起以创建更大的免费块，但它不能这样做。所以在像C这样的语言中，一旦分配器给应用程序一个块，它现在不能像块一样触摸它，因为块包含像结构一样的数据结构。</p>
+<p>发言人   12:07<br>Scalar object. It has to be aligned to the size of the largest object that can occur. And so for 64 b systems, that’s 16 B alignment, or 32 b systems, it’s 8 B alignment.<br>标量对象。它必须与可能出现的最大物体的大小对齐。对于64 b系统，即16 B对齐，或32 b系统，即8 B对齐。</p>
+<p>发言人   12:25<br>Now, allocators are really interesting objects because they combine a trade off of both sort running time, sort of speed and space. So it’s kind of a space and performance trade-off you’re trying to optimize both. You want it to run as quickly as possible, but you wanted to use the virtual memory in the heap as efficiently as possible. Now, we defined these sort of speed and.<br>现在，分配器是非常有趣的对象，因为它们结合了排序运行时间、速度和空间的权衡。所以这是一种空间和性能的权衡，你试图同时优化两者。你希望它尽可能快地运行，但你希望尽可能高效地使用堆中的虚拟内存。现在，我们定义了这种速度和。</p>
+<p>发言人   12:57<br>Efficiency, memory efficiency metrics. We have two metrics that we use. One is called throughput. So given some sequence of Mali and free requests R 0 through RN -1, so where R is either a Mali or a free, our goal is to maximize throughput and the peak memory utilization. And what makes Malik such a fascinating and interesting study is that these often conflict.<br>效率，内存效率指标。我们使用两个指标。一种叫做吞吐量。因此，给定一些Mali和免费请求序列从r0到RN -1，因此R要么是Mali要么是免费的，我们的目标是最大化吞吐量和峰值内存利用率。使马利克成为如此迷人和有趣的研究的原因是这些经常发生冲突。</p>
+<p>发言人   13:29<br>It’s very easy to make a really fast Mali that has terrible memory utilization. So throughput is just the number of completed requests per unit time. So if we have 5000 malloc calls and 5000 free calls in 10 seconds, then our throughput is 1000 operations per second. So it’s just measuring sort of how efficiently our malloc can process these requests from an application.<br>制作一个非常快速的Mali非常容易，它的内存利用率非常糟糕。因此，吞吐量只是单位时间内完成的请求数。因此，如果我们在10秒内有5000个malloc调用和5000个免费调用，那么我们的吞吐量是每秒1000个操作。所以它只是衡量我们的malloc处理来自应用程序的这些请求的效率。</p>
+<p>发言人   14:01<br>Now, peak memory utilization. Is a measure sort of how much useful space, sort of how it measures how efficiently the allocator uses the heat, sort of how much is wasted on sort of overheads in the data structures that the allocator has to uses in its implementation?<br>现在，内存利用率达到峰值。是一种度量，用于度量多少有用空间，如何度量分配器使用热量的效率，多少浪费在分配器在其实现中必须使用的数据结构中的开销上？</p>
+<p>发言人   14:26<br>So we’ll define a payload when malloc returns a block. I’m sorry, when an application makes a call to Mall’s requesting a certain size block, and that block is called the payload. So if we call mall with an argument of 10 B, we’re requesting a block that has a payload that’s at least size 10. And the 10 B that we request that are called the payload, everything else in that block is overhead, okay? So after we’ve run a sequence of requests, the aggregate payload is the sum of all the payloads in the currently allocated blocks. So in a perfect allocator, the aggregate payload would would equal the amount of memory, the total size of all the allocated blocks, because there’d be no overhead. It would just be every block would be pure payload.<br>所以当malloc返回一个块时，我们将定义一个负载。对不起，当应用程序调用Mall请求一定大小的块时，该块称为有效负载。因此，如果我们使用参数10 b调用mall，我们将请求一个负载至少为10的块。而我们请求的10 B被称为有效负载，该块中的其他所有内容都是开销，好吗？因此，在我们运行一系列请求之后，聚合负载是当前分配的块中所有负载的总和。因此，在一个完美的分配器中，聚合负载将等于内存量，即所有已分配块的总大小，因为没有开销。它只是每个块都是纯粹的有效负载。</p>
+<p>发言人   15:34<br>Now we’re going to assume that the heap is monotonically non decreasing, so it always gets bigger. So this is a simplifying assumption. It’s not true in a real malloc package, but we’ll just assume that the allocator never decreases the size of the heap. It only increases the size of the heap.<br>现在我们将假设堆是单调非递减的，因此它总是变得更大。所以这是一个简化的假设。在真正的malloc包中不是这样，但我们只假设分配器永远不会减小堆的大小。它只会增加堆的大小。</p>
+<p>发言人   15:57<br>So peak, given those notions of aggregate payload and heap size, the peak memory utilization after one requests is the sum of all the.<br>所以，考虑到聚合负载和堆大小的概念，峰值内存利用率在一个请求后是所有内存利用率的总和。</p>
+<p>发言人   16:14<br>Payloads divided by the total size of the heap. So in the best case, each block in the heap consists of pure payload. So the utilization would be one. That’s the best we can do. But in practice, each block, the allocator is going to place have data structures and padding inside of each block that. Keep it from getting a perfect utilization.<br>负载量除以堆的总大小。所以在最好的情况下，堆中的每个块都由纯负载组成。因此，利用将是一个。这是我们所能做的最好的了。但实际上，分配器将在每个块内放置具有数据结构和填充的数据结构。防止它得到完美的利用。</p>
+<p>发言人   16:47<br>Now, one obvious thing is that since blocks have to be aligned to some, if they’re 16 B aligned, then blocks have to start on 16 B boundaries and they have to be at least 16 B. So if you were to request a payload of 2 B, you’d have a lot of wasted bytes that would sort of decrease the utilization. So some of this, some of this overhead is unavoidable. But your job, a someone who writes, implements Malik, is to try to keep that as small as possible.<br>现在，一个显而易见的事情是，由于块必须与一些对齐，如果它们是16 B对齐，那么块必须从16 B边界开始，并且它们必须至少是16 B。因此，如果您请求2 B的负载，您将有许多浪费的字节，这会降低利用率。因此，其中一些开销是不可避免的。但你的工作，一个编写、实现Malik的人，就是尽可能地保持它的小。</p>
+<p>发言人   17:23<br>So poor memory utilization is this example that we just talked about is an example of what we call fragmentation. And there’s two types of fragmentation. Internal fragmentation occurs if the payload is smaller than the block size. So that’s just what we were we’re talking about. And this can be caused by either padding in the block or some kind of data structure in the block that the allocator needs. Sometimes, too, you might make a policy decision that if an application requests a small block, you might return a larger block just to keep so that blocks don’t get sort of splintered up into little chunks. You might want to keep blocks at some minimum size.<br>所以记忆力差利用是我们刚刚谈论的例子，是我们称之为碎片的一个例子。有两种类型的碎片化。如果负载小于块大小，则会发生内部碎片。所以这就是我们正在谈论的内容。这可能是由于块中的填充或分配器需要的块中的某种数据结构引起的。有时候，您也可能做出政策决定，如果应用程序请求一个小块，您可能会返回一个更大的块，只是为了保留，这样块就不会分裂成小块。您可能希望将块保持在最小大小。</p>
+<p>发言人   18:13<br>Now, internal fragmentation, given a series of requests, we can just stop and freeze the heat. And it’s very easy to sort of compute the amount of internal fragmentation at any point in time. We can just look at all the previous requests that we’ve made and look at the size of the payload for each one of those requests. And so we can. So we can determine the at any point in time, we can determine the level of internal fragmentation just by looking at the previous requests.<br>现在，内部碎裂，在一系列请求的情况下，我们可以停止并冻结热量。而且在任何时间点计算内部碎片的数量都非常容易。我们可以只查看我们之前发出的所有请求，并查看每个请求的有效负载大小。所以我们可以。因此，我们可以随时确定，我们可以通过查看之前的请求来确定内部碎片的级别。</p>
+<p>发言人   18:51<br>So there’s another form of fragmentation called external fragmentation, which is a little more difficult to deal with. So external fragmentation occurs when there’s enough memory in the heap, but there’s no single free block that can satisfy a particular request. So external fragmentation occurs.<br>因此，还有另一种形式的碎片，称为外部碎片，它有点难以处理。因此，当堆中有足够的内存，但没有单个可用块可以满足特定请求时，就会发生外部碎片。所以外部碎片发生了。</p>
+<p>发言人   19:14<br>The application makes a request for a block, but nowhere in the heap is there a free block that’s large enough to satisfy that request. So an example of this, like suppose here’s the previous example we looked at now where we have, after a series of Mali and free calls, we have two free blocks in the heap, 1 containing five words and the other containing two words. So the total number of free words in our heap is 7, 7 words. And now we get a request for six words. We have free blocks. We have enough free words in the heap, but we can’t satisfy that request. And it’s because of this phenomenon called external fragmentation, for example, if we’d have.<br>应用程序请求一个块，但堆中没有一个足够大的可用块来满足该请求。所以这是一个例子，假设这是我们之前的例子，在一系列Mali和free调用之后，我们在堆中有两个空闲块，一个包含五个单词，另一个包含两个单词。所以我们堆中的自由单词总数是7，7个单词。现在我们收到了一个要求六个单词的请求。我们有免费积木。我们在堆中有足够的自由单词，但我们无法满足这个要求。这是因为这种称为外部碎片化的现象，例如，如果我们有的话。</p>
+<p>发言人   20:11<br>Somehow allocated?<br>以某种方式分配？</p>
+<p>发言人   20:19<br>Yeah, I don’t know. In this case, I don’t think we could have avoided the external fragmentation. But nonetheless, there’s enough memory here, just the way that our blocks are configured in the heap, we can’t satisfy the request. So in this case, the allocator has to go and get more virtual memory would have to go. It would have to get more virtual memory and extend the heap out this way to get a large enough free block.<br>是的，我不知道。在这种情况下，我认为我们无法避免外部碎片化。但是尽管如此，这里有足够的内存，就像我们在堆中配置块的方式一样，我们无法满足请求。所以在这种情况下，分配器必须去获取更多的虚拟内存。它必须获得更多的虚拟内存并以这种方式扩展堆，以获得足够大的空闲块。</p>
+<p>发言人   20:48<br>So assessing and sort of understanding external fragmentation is difficult because unlike internal fragmentation, which depended on the previous requests, external fragmentation depends on future requests. So if we look back at this point, we say, is our heap externally fragmented? Well, it depends, right? We can’t say it turns out it is, because the next request is it’s for a block of size 6. But if all of the future future requests were for blocks of, say, small blocks, then we’d be able to satisfy those and we wouldn’t suffer from external fragmentation.<br>因此，评估和理解外部碎片很困难，因为与依赖于先前请求的内部碎片不同，外部碎片取决于未来的请求。所以，如果我们回头看这一点，我们会说，我们的堆是外部碎片化的吗？这要看情况，对吧？我们不能说结果是，因为下一个请求是针对大小为6的块。但是如果未来所有的请求都是针对小块的，那么我们就能够满足这些请求，而不会受到外部碎片的影响。</p>
+<p>发言人   21:35<br>Now, when we build an allocator, all kinds of issues come up. That I’ve glossed over with my simple examples?<br>现在，当我们构建一个分配器时，各种问题都会出现。我用简单的例子掩盖了这一点？</p>
+<p>发言人   21:47<br>How do we know if we call free? How does free know how much memory to free up? We don’t call free with a block size, we call it with a pointer. So how does free know how big that block is, how do we keep track of all the free blocks? We have, when we’re satisfying an allocation request, we’re going to look for a free block that is larger than the requested size. In that case, what do we do with the extra space in the block? Do we just keep it in the block and suffer some internal fragmentation? Do we split that block into a smaller block?<br>我们怎么知道我们叫免费？free如何知道要释放多少内存？我们不会用块大小来称呼free，我们用指针来称呼它。那么free是如何知道这个区块有多大的，我们如何跟踪所有的免费区块呢？当我们满足分配请求时，我们将寻找大于请求大小的可用块。在这种情况下，我们该如何处理区块中的额外空间？我们只是将它保留在块中并遭受一些内部碎片吗？我们要把那个街区分成更小的街区吗？</p>
+<p>发言人   22:35<br>There’s a lot of free blocks in the heap. How do we, when the allocator gets an allocation request, how does it pick among all of those different free blocks? There’s many choices. And then once when free tries to insert a free block, where in the heap, you know, where does it insert it when it’s freed? And how do we reinsert a free block, what does that mean?<br>在堆中有很多空闲块。当分配器收到分配请求时，它如何在所有这些不同的空闲块中进行选择？有很多选择。然后当free尝试插入一个空闲块时，在堆中的哪里，你知道，当它被释放时它在哪里插入它？我们如何重新插入免费区块，这是什么意思？</p>
+<p>发言人   23:04<br>So today we’re going to look at all of these issues, starting with knowing how much to free, so how big are our block sizes? So typical, the standard method is to keep sort of a word size quantity at the beginning of each block that gives the size of that block in some units. I’m showing them here in word size units.<br>所以今天我们要看看所有这些问题，首先要知道释放多少，我们的块大小有多大？典型的标准方法是在每个块的开头保持一个单词大小的数量，以便以某些单位给出该块的大小。我在这里以单词大小单位展示它们。</p>
+<p>发言人   23:34<br>If the application wants to mall a payload of size. Four, then the allocator needs to find a block of size 5, so consisting of four payload words, at least four payload words, and then a header block at a header word at the beginning that indicates the total size of that block. And then it returns a pointer p 0, in this case, to the beginning of the payload.<br>如果应用程序想要缩小一个大小的负载。四，然后分配器需要找到一个大小为5的块，因此由四个负载字组成，至少四个负载字，然后在开头的头字处有一个头块，指示该块的总大小。然后它返回一个指针p 0，在这种情况下，指向负载的开始。</p>
+<p>发言人   24:14<br>OK, so now we know how big each block is. That’s pretty simple. But how we keep track of the free blocks, and this is where it gets interesting.<br>好的，现在我们知道每个块有多大了。这非常简单。但是我们如何跟踪免费区块，这就是它变得有趣的地方。</p>
+<p>发言人   24:22<br>The simplest method is to use, we call an lists list an implicit. List of free blocks. And the idea here is to just put a header in the front of every block in the heap, whether allocated or free. And then we can use that.<br>最简单的方法是使用列表列表，我们称之为隐式列表。空闲块列表。这里的想法是在堆中的每个块的前面放置一个标头，无论是已分配的还是空闲的。然后我们可以使用它。</p>
+<p>发言人   24:41<br>Starting at the beginning of the heap, we can use that size to walk the heap. So here’s a block of size 5. So we can jump. We know that the next block starts at an offset of five. With the second block, we know the next block starts at an offset of four, and so on. So we call it an implicit free list because there’s no real list of free blocks. But we can traverse the of the free blocks in the heap by ver all of the blocks in the heap, and then just ignoring the allocated blocks so.<br>从堆的开头开始，我们可以使用该大小来遍历堆。这里是一个大小为5的块。所以我们可以跳跃。我们知道下一个区块从偏移5开始。对于第二个区块，我们知道下一个区块从4的偏移量开始，依此类推。所以我们称之为隐式空闲列表，因为没有真正的空闲块列表。但是我们可以通过遍历堆中的所有块来遍历堆中的空闲块，然后忽略分配的块。</p>
+<p>发言人   25:27<br>Now, another thing we could do is we could actually use some of some of the words in the block to create a link list of some kind, either single layer, doubly linked list. And in this case, it’s an explicit list of the free blocks. And we can just walk that list. So we here, we visit the first free block, and then there’s a pointer to the next free block, and so on. So you see, this might be a little more efficient because if we want to traverse the free list, in this case is it’s ordered the number of blocks in the list, okay? It’s going to be linear in the total number of blocks in the heap, which might be quite large. There could be lots allocated blocks, in this case with an explicit list. Any traversal will just be linear in the size of the free list question.<br>现在，我们可以做的另一件事是，我们实际上可以使用块中的一些单词来创建一种链接列表，无论是单层链接还是双向链接列表。在这种情况下，它是免费块的显式列表。我们可以沿着这个清单走下去。所以我们在这里，我们访问第一个免费块，然后有一个指向下一个免费块的指针，依此类推。所以你看，这可能更有效一些，因为如果我们想遍历空闲列表，在这种情况下，它是按列表中的块数排序的，好吗？它将与堆中的块总数呈线性关系，可能会非常大。可能有大量分配的块，在这种情况下使用显式列表。任何遍历都将与可用列表问题的大小成线性关系。</p>
+<p>发言人   26:31<br>Yeah, the question is, don’t we need a free bit? And we do and have? That’s the next question.<br>是的，问题是，我们不需要免费的一点吗？我们做了，并且有了？这是下一个问题。</p>
+<p>发言人   26:47<br>Now, another method, a more sophisticated method, instead of having one free list, we can have multiple free lists where each free list contains blocks of a certain size or a certain range of sizes. Or we can get really fancy and use some kind of some kind of a balanced tree to sort the blocks, to use the tree, to sort them by size order. Now, today we’re going to look at the implicit list, the simplest kind of free list. And this will identify a lot of basic concepts that are used in the more sophisticated free list.<br>现在，另一种方法，一种更复杂的方法，我们可以有一个自由列表，而不是有一个自由列表，每个自由列表包含特定大小或特定大小范围的块。或者我们可以变得非常花哨，使用某种平衡树来对块进行排序，使用树，按大小顺序对它们进行排序。现在，今天我们来看看隐式列表，这是一种最简单的空闲列表。这将确定在更复杂的免费列表中使用的许多基本概念。</p>
+<p>发言人   27:35<br>Okay, the question is, what do we mean by different free lists for different size classes? So what I mean is that you identify a range of sizes and you associate that range with each of these individual free lists. So one free list might hold blocks of size 0 to 8, and another free list might hold blocks of size 9 to 16, and another free list maybe 17 to 32. And so you’re guaranteed you now know when you’re traversing a certain list, you know the range of sizes of the blocks in that list. The reason you might want to do that, by the way, is that imagine you had an infinite number of these lists, one for each possible size. Then every time you allocated a block, you’d get a block of exactly the size you needed. So there’d be a minimum amount of fragmentation if you had an infinite number of of these size classes. Now, of course, we can’t have an infinite number, but the more of these size classes we have, the closer we get to that ideal.<br>好的，问题是，我们所说的不同大小的类的不同自由列表是什么意思？所以我的意思是你确定一个大小范围，并将该范围与这些单独的空闲列表相关联。因此，一个可用列表可能包含大小为0到8的块，另一个可用列表可能包含大小为9到16的块，另一个可用列表可能包含大小为17到32的块。所以你现在可以保证知道当你遍历某个列表时，你知道该列表中块的大小范围。顺便说一下，你可能想要这样做的原因是，想象一下你有无限数量的这些列表，每种可能的大小都有一个。那么每次你分配了一个块，你就会得到一个完全符合你需要大小的块。因此，如果您有无限数量的这些大小类，则会有最少的碎片。现在，当然，我们不能拥有无限的数量，但我们拥有的这些大小类越多，我们就越接近这个理想状态。</p>
+<p>发言人   28:57<br>All right, so let’s look at how we would build implicit free list. So as you correctly pointed out, for each each block, we need both size and the allocation status question.<br>好的，那么让我们来看看如何构建隐式空闲列表。因此，正如您正确指出的那样，对于每个块，我们需要同时回答大小和分配状态问题。</p>
+<p>发言人   29:19<br>Why can’t we map every size class?<br>为什么我们不能绘制每个大小等级的地图？</p>
+<p>发言人   29:34<br>Yeah, so why can’t we have an infinite number of size classes?<br>是啊，那么为什么我们不能有无限数量的大小类呢？</p>
+<p>发言人   29:45<br>I suppose that’d be an interesting strategy to think about. So you can’t have an infinite number of size classes, but you could create a new size class for every new size that you get. Depend that might work, but it just depends on the range of these size classes and the frequency. And one problem you might have is that you would get. If you only, it depends on the distribution of the sizes that you get. If you’re getting an equal number, if your distribution of sizes it’s fairly uniform, that would probably work pretty well.<br>我想这将是一个有趣的策略。所以你不能有无限数量的大小类，但你可以为每个新的大小创建一个新的大小类。这可能会起作用，但这只取决于这些大小类的范围和频率。你可能遇到的一个问题是你会得到。如果你是唯一的话，这取决于你得到的尺寸分布。如果你得到的数量相等，如果你的尺寸分布相当均匀，那可能会很好地工作。</p>
+<p>发言人   30:24<br>If you’re getting have requests, if you have a lot of requests for different size classes, you’d have a lot of sort of wasted free lists, I think. So it’s a good question. It depends on your workload and that, and that is a really useful strategy for So if you have really popular size classes in your request, then you could just make special case, special case free lists to handle those requests and then let the other free list sort of handle a wider range.<br>如果你有请求，如果你有很多不同大小的班级的请求，我认为你会有很多浪费的免费列表。所以这是一个好问题。这取决于您的工作量，这是一个非常有用的策略，因此如果您的请求中有非常流行的大小类，那么您可以制作特殊情况的免费列表来处理这些请求，然后让另一个免费列表处理更广泛的范围。</p>
+<p>发言人   31:06<br>And imagine if you had a free list where all the blocks were the same, it could be a lot more efficient, right? You only need like a bit vector, 1 b for each potential block to tell you whether it’s allocated or free, so it could be very efficient you wouldn’t need to walk any less or anything. That’s a good question, and that’s the kind of thing you’ll be thinking about when you do your Ma lab.<br>想象一下，如果你有一个免费列表，其中所有块都相同，那么它可能会更高效，对吧？你只需要像一个位向量，每个潜在块1 b，就可以告诉你它是分配的还是免费的，所以它可以非常高效，你不需要走更少的路或任何东西。这是个好问题，也是你在做马某某实验时会考虑的事情。</p>
+<p>发言人   31:36<br>There’s a huge design space implementing Mali functions. And we just explored 1 tiny part of it just now. So with this implicit list, we’re going to need both the size of the block and then it’s allocation status, whether it’s allocated or free. Now, we could do this in two words, right? But that would be wasteful.<br>有一个巨大的设计空间来实现Mali函数。我们刚刚探索了其中的一小部分。因此，通过这个隐式列表，我们将需要块的大小以及它的分配状态，无论它是已分配的还是空闲的。现在，我们可以用两个词来做到这一点，对吧？但那样会很浪费。</p>
+<p>发言人   32:00<br>So the standard trick is to take advantage of the fact that blocks have to be aligned. So this is actually, it’s kind of a pain in the neck to always have to align these blocks, but we can take advantage of it in this case. And the reason is that if a block is aligned to some, say, 8 B or 16 B boundary, then the low order bits are always going to be 0. So if it’s aligned to an 8 B boundary, the three low order bits will always be 0, right?<br>因此，标准技巧是利用块必须对齐的事实。所以实际上，总是要对齐这些块有点麻烦，但我们可以在这种情况下利用它。原因是如果一个块对齐到某个边界，比如8 B或16 B，那么低阶位总是为0。因此，如果它与8 B边界对齐，那么三个低位将始终为0，对吗？</p>
+<p>发言人   32:30<br>Eight is 1, 0, 0, 0, 16 1 with four zeros, 24, 1 1, 0 0 0. So any 8 B, any 8 B aligned block has to be size 8. And it has to start on a dress that’s a multiple of eight. So the size of that block will always have.<br>8是1，0，0，0，16 1与四个零，24，1 1，0。因此，任何8 b，任何8 b对齐的块必须是8的大小。而且它必须从一条是8的倍数的裙子开始。因此，该区块的大小将始终如此。</p>
+<p>发言人   33:01<br>The three or 4 low order bits set to 0. So we can take advantage of that. And we’ll just have, we’ll just have one. Header word. And we’ll use the low order bit to store the allocation status. And we can do that because we know it’s always 0. So when so we use that low order bit to store the allocation status, and then the remaining bits correspond to the size. And then whenever we want to extract the size, we just mask out this allocation status and always set it to zero because we know that it’s zero.<br>将三个或四个低阶位设置为0。所以我们可以利用这一点。我们只会有，我们只会有一个。标题词。我们将使用低位来存储分配状态。我们可以做到这一点，因为我们知道它总是0。因此，当这样做时，我们使用该低位来存储分配状态，然后剩余的位对应于大小。然后，每当我们想要提取大小时，我们只需掩盖此分配状态并始终将其设置为零，因为我们知道它是零。</p>
+<p>发言人   33:50<br>So let’s look in detail. Given this form of implicit list, how we might set things up. So in this case, we’re going to assume 4 B words, int sized words, and we’re going to align on 8 B boundaries. So remember, the payload of our blocks always has to start on an 8 B boundary. So the way we do that is we create this unused word at the beginning of the heap that’s aligned on this 8 B boundary. And then the first block in the heap starts at an offset of four from that, from the beginning of the heap. So we have the header, which is is not aligned. And then we have the payload, which follows.<br>让我们详细看看。考虑到这种形式的隐式列表，我们如何设置。所以在这种情况下，我们将假设4 b个单词，整数大小的单词，并且我们将在8 b边界上对齐。所以请记住，我们块的有效负载总是必须从8 B边界开始。所以我们的做法是在堆的开头创建一个未使用的单词，并对齐这个8 B的边界。然后堆中的第一个块从堆的开头开始，偏移量为4。所以我们有了标题，它没有对齐。然后我们有了有效负载，如下所示。</p>
+<p>发言人   34:44<br>In this case, it’s a payload of one word, and that starts on, that begins on this 8 word boundary, and then the next block. And here we’re indicating a free block consisting of 8 B, and then that’s followed by an allocated block, the one here of 16 B, or 4, 4 words. And now the payload is only two words. So we have to pad all of our blocks because we’re assuming that they’re aligned on 8 B boundary. All of our blocks have to be a multiple of size, multiple of 8. So here’s a case of internal fragmentation where we have this extra, this extra block in order to maintain the alignment requirement. So that ensures that the next block payload starts at a.<br>在这种情况下，它是一个单词的有效负载，从这个8个单词的边界开始，然后是下一个块。这里我们指示一个由8 B组成的空闲块，然后后跟一个分配的块，这里的16 B，或4，4个单词。现在负载只有两个单词。所以我们必须填充所有的块，因为我们假设它们在8 B边界上对齐。我们所有的区块必须是大小的倍数，是8的倍数。这是一个内部碎片化的情况，我们有这个额外的块，以保持对齐要求。这样可以确保下一个区块有效负载从a开始。</p>
+<p>发言人   35:42<br>An 8 B align boundary and so on. And so we can walk this heap by just following these headers, masking out the allocation bits. And then we have this special. Epilogue Block Which is a 0 it with a zero sized payload. It’s an allocated block of size 0. And this is a trick. This is a trick you should use too. So, and we’ll see when we look at coalescing, why this is why this helps, but this allocated block at the very end eliminates some sort of special cases.<br>8 b对齐边界等。因此，我们可以通过遵循这些标头，掩盖分配位来遍历这个堆。然后我们有这个特别的。尾声块，它是一个0，负载的大小为零。它是一个大小为0的分配块。这是个小把戏。这也是一个你应该使用的技巧。所以，当我们观察合并时，我们会看到为什么这会有所帮助，但这个分配的块在最后消除了某种特殊情况。</p>
+<p>发言人   36:21<br>When we start to coalesce free blocks. We’ll talk about that in just a moment. But you can finish your this allocated block of size 0 is also helpful in terminating. When you’re walking this list, you can check for a allocated block of size 0 to terminate your search. OK, so given this kind of structure, then, how do we find a free block?<br>当我们开始结合免费区块时。我们稍后会讨论这个问题。但是你可以完成这个分配的大小为0的块，这也有助于终止。当您遍历此列表时，您可以检查分配的大小为0的块以终止搜索。好的，那么在这种结构下，我们如何找到一个免费的区块呢？</p>
+<p>发言人   36:51<br>There’s a number of different ways. The way which is called first fit is to search the free list from the beginning and just look for the first block we can find that satisfies the request. So we were allocating, we were asking for a block of size 10. We start at the beginning of the heap and we walked the list. We walked the heap looking for a free block that’s at least size 10. And actually, it needs to be 10 plus the size of our header too. So once, so that’s a simple idea.<br>有许多不同的方式。所谓的fit方法是从一开始搜索空闲列表，然后只寻找我们可以找到的满足请求的第一个块。所以我们在分配时，要求一个大小为10的块。我们从堆的开头开始，并在列表中走动。我们走着寻找一个至少大小为10的空闲块。实际上，它需要是10加上我们标题的大小。所以有一次，这是一个简单的想法。</p>
+<p>发言人   37:36<br>Now, some people have proposed an alternative called Next Fit. So the idea here is that instead of starting over each time from the beginning of the heap to find a block that fits, we just pick up where we left off the last time. So we look, we scan the heap, and we find a block that’s big enough to satisfy the request. And then we remember where we left off. And the next time a request comes in, we pick up the search starting where we left off. Now, this seems like it would be a good idea, but studies, empirical studies that people have done have shown that this actually results in worse fragmentation. So you can consider it. It’s generally probably not the best thing to do.<br>现在，有些人提出了一种名为 “下一个适合” 的替代方案。所以这里的想法是，我们不是每次都从堆的开始重新查找适合的块，而是从上次中断的地方继续查找。所以我们查看，扫描堆，并找到一个足够大的块来满足请求。然后我们记得我们离开的地方。下一次有请求进来时，我们会从我们中断的地方开始搜索。现在，这似乎是一个好主意，但人们所做的研究和实证研究表明，这实际上会导致更严重的碎片化。所以你可以考虑一下。这通常可能不是最好的做法。</p>
+<p>发言人   38:25<br>Now, another alternative is to find the block in the heap, a free block in the heap that’s the best fit. So, so in general, look at all the blocks in the heap and find the block that fits the best. So if we ask for 10 B, try to scan the heap for the block that has the closest to 10 B in it. So that’s called best fit. And best fit. You can see it might be more.<br>现在，另一种替代方案是在堆中找到最适合的块，即堆中的空闲块。因此，一般来说，查看堆中的所有块，并找到最适合的块。因此，如果我们要求10 B，请尝试扫描堆以查找其中最接近10 B的块。这就是所谓的最佳匹配。最合适的。你可以看到它可能更多。</p>
+<p>发言人   38:57<br>It sounds like it would be a lot more expensive because you’d have to look instead of just looking until you find a fit, you’d have to scan all the free blocks and then pick the best 1. But it has a nice property that it improves memory utilization. So this is a classic example of spacetime trade off. So it’s slower, but it it improves our the efficiency of the way we use memory. And there?<br>这听起来好像会贵得多，因为你必须看看，而不是仅仅寻找，直到你找到合适的，你必须扫描所有的空闲块，然后选择最好的。但它有一个很好的特性，它提高了内存利用率。所以这是一个时空权衡的典型例子。所以它比较慢，但它提高了我们使用内存的效率。在那里？</p>
+<p>发言人   39:29<br>Now we mentioned an alternative way to organize the free list using multiple free list for different size classes. Now going back to that example again, if we had an infinite number of size classes, one for each size, that would implement best fit with a constant time search, we’d know exactly which free list to get the block from. The problem, of course, is how much memory such a organization would use. But the interesting thing about using multiple free lists is that the more of these free lists you have, the closer you get to a true best fit. So you can approach best fit, and then at some point you begin to get diminishing returns. So that’s another sort of design decision is how many of these multiple free lists do you need? And sort of what should be the size ranges associated with them?<br>现在我们提到了一种替代方法，可以使用不同大小类的多个自由列表来组织自由列表。现在再回到那个例子，如果我们有无限数量的大小类，每种大小一个，这将实现最适合恒定时间搜索，我们将确切地知道从哪个空闲列表中获取块。当然，问题是这样一个组织会使用多少内存。但是使用多个免费列表的有趣之处在于，您拥有的这些免费列表越多，您就越接近真正的最佳匹配。所以你可以接近最佳匹配，然后在某个时刻你开始得到递减的收益。所以这是另一种设计决策，你需要多少个这样的多个免费列表？以及与它们相关的大小范围应该是什么？</p>
+<p>发言人   40:28<br>Okay, another question. Now, once we’ve found a block, so the application has made a call to Mali. The Mali packages looked in the free list that somehow, using some policy, it’s identified in a free block in which the requested block will fit. So now what does it do it?<br>好的，再来一个问题。现在，一旦我们找到了一个区块，应用程序就调用了Mali。Mali软件包在空闲列表中查找，不知何故，使用某些策略，它被标识在一个空闲块中，请求的块将适合该空闲块。那么现在它有什么作用呢？</p>
+<p>发言人   40:50<br>The malloc package has to allocate. It has to sort of take that. So there’s a question, how does it it could allocate the whole block and return that back to the programmer? Or it could choose to split out just only the portion of block that’s needed and then create a smaller free block. So for example, if.<br>malloc包必须分配。它必须采取那种方式。所以有一个问题，它如何分配整个块并将其返回给程序员？或者它可以选择仅拆分所需的块部分，然后创建一个较小的空闲块。例如，如果。</p>
+<p>发言人   41:21<br>If our application has requested a block of size 4, or I’m sorry if the malloc package is determined that in order to satisfy the application request, it needs a block of size 4, including the header then, and it would try to find a free block of at least size 4. So let’s say it chooses this block for some reason, maybe because it was a next fit picked up here. So this free block is actually 6. Contains six words. So the allocator has to decide whether just to keep this block at size 6 and just return that back to the to the application, or whether to split that block into two blocks into an allocated block of size 4, which it then returns to the application, followed by a free block of size 2.<br>如果我们的应用程序请求了一个大小为4的块，或者抱歉，如果malloc包确定为了满足应用程序请求，它需要一个大小为4的块，包括标头，它将尝试找到一个至少大小为4的空闲块。所以让我们假设它出于某种原因选择了这个块，可能是因为它是这里挑选的下一个适合。所以这个免费区块实际上是6。包含六个单词。,因此分配器必须决定是否将此块的大小保持在6并将其返回给应用程序，或者是否将该块分成两个块，分成大小为4的分配块，然后将其返回给应用程序，后面是大小为2的空闲块。</p>
+<p>发言人   42:33<br>Now another question is how to free a block? So the application is called free, and it’s asked the allocator to free up a particular block. So this is pretty simple. So if we want to free up this block, you just clear the allocated flag. So if we want to free up the block we just created you just set the allocated bit to 0 and you’re done. It’s really simple. But the problem now is this creates external fragmentation.<br>现在另一个问题是如何释放一个块？因此该应用程序被称为free，并要求分配器释放特定的块。所以这非常简单。所以，如果我们想释放这个块，只需清除分配的标志即可。所以，如果我们想释放刚刚创建的块，只需将分配的位设置为0，就完成了。这真的很简单。但现在的问题是这会造成外部碎片。</p>
+<p>发言人   43:09<br>So now if we just free that block of size 4, what used to be a block of size 6 now consists of two contiguous smaller blocks, one of size 4 and one of size 2. And so now if that’s followed by a request for five blocks, now we’re stuck. But we’ve got plenty of memory. And it’s even worse in this case that memory is all contiguous just because, but just because we just cleared the free block, we didn’t really notice that it was contiguous. And so we ended up in.<br>所以现在如果我们只释放那个大小为4的块，以前大小为6的块现在由两个连续的较小的块组成，一个大小为4，另一个大小为2。所以现在，如果接着是五个街区的请求，现在我们就被卡住了。但我们有足够的记忆。更糟糕的是，在这种情况下，内存都是连续的，只是因为我们刚刚清除了可用块，我们没有注意到它是连续的。所以我们结束了。</p>
+<p>发言人   43:50<br>It was a situation where we have these two contiguous free blocks. So this suggests that when we free up locks that we somehow need to coalesce any neighboring blocks to keep blocks as big as possible. So we, one of the invariants of any decent allocator is that there are never contiguous free blocks like this. It’s always a free block followed by an allocated block. So the idea is that if we free a particular, so here we have this allocated block. And if we free that block and we somehow have to check and see if there’s any adjacent free blocks, either following either next in memory or previous in memory. And if there are, we need, as part of the freeing process, we need to coalesce those two blocks into a, into a larger block, the largest possible block possible.<br>这是一种情况，我们有这两个连续的空闲块。所以这表明当我们释放锁时，我们需要合并任何相邻的块以保持块尽可能大。所以我们，任何像样的分配器的不变条件之一是从来没有像这样连续的空闲块。它总是一个空闲块，后面跟着一个分配的块。所以这个想法是，如果我们释放一个特定的，那么在这里我们有这个分配的块。如果我们释放那个块，我们必须检查并查看是否有任何相邻的空闲块，无论是在内存中的下一个还是先前的内存中。如果有的话，作为释放过程的一部分，我们需要将这两个块合并成一个更大的块，尽可能大的块。</p>
+<p>发言人   44:57<br>Now, it’s pretty easy. If we’re asked to free this block, the screen block, it’s pretty easy to check the next block because you just, we have the size, we have this header. So we know that the next block starts at an offset of 4, So we just. And we know that the header for that block is at an offset of four. So we just check the allocated status of that next block, the using the size field in our header. But what about the previous block? What about this block? How do we check that?<br>现在很容易。如果我们被要求释放这个块，屏幕块，检查下一个块很容易，因为你知道大小，我们有这个标题。所以我们知道下一个区块从4的偏移量开始，所以我们就&hellip;&hellip;并且我们知道该区块的标题位于偏移4的位置。所以我们只需要使用标头中的大小字段来检查下一个块的分配状态。但是上一个街区呢？这个街区怎么样？我们如何检查？</p>
+<p>发言人   45:37<br>Well, given, given all that we’ve talked about now, the only thing, the only way we could do it would be to start at the beginning of the heap and now walk the free list until we get to this current block, remembering the previous block. So each time, each time we traverse, we remember the previous block. So, but that would be very inefficient, right? That would be that would make free linear in the size of the heat because we’d have, in order to check the previous block, we’d have to walk starting at the very beginning and walked the entire heap.<br>考虑到我们现在谈论的所有内容，唯一的方法是从堆的开始开始，现在遍历空闲列表，直到我们到达当前块，记住前一个块。所以每次我们穿越时，我们都会记住前一个区块。这样做效率很低，对吗？这将使热量的大小成为自由线性的，因为为了检查前一个块，我们必须从一开始就遍历整个堆。</p>
+<p>发言人   46:13<br>So the solution for that was proposed by a famous computer scientist Don Knuth in 1973. And it’s very clever, but very simple, like all really good ideas. It seems obvious that when you see it, but it turns out to be very clever in a very useful technique. And the idea is just to replicate for each block, replicate the header block at the end of the block. So each block now contains a header and a footer, identical header and footer. And then this creates sort of an implicit backwards, backwards length that we can use.<br>所以这个解决方案是由著名的计算机科学家Don Knuth在1973年提出的。它非常聪明，但非常简单，就像所有非常好的想法一样。当你看到它时，它似乎很明显，但事实证明它在一种非常有用的技巧上非常聪明。这个想法只是对每个块进行复制，在块的末尾复制标题块。所以每个块现在包含一个页眉和一个页脚，相同的页眉和页脚。然后这就创建了一种隐含的向后和向后长度，我们可以使用它。</p>
+<p>发言人   46:57<br>So now given some block that to some block that we want to. Free, we know that the size of that block will just be one word previous in memory. So we can just, and it’s always a fixed offset of one word. So given a pointer to the header of this block, we can look one word back to see the size and the allocation status of the previous block. So that allows us to do that in constant time. And so this footer is sometimes called the boundary tag. And Knuth called it a boundary tag, but we’ll just, or we can call it a footer to be sort of parallel with the notion of a header. But the key thing is that it’s just identical has the identical size and allocation status.<br>所以现在给我们想要的一些块提供一些块。免费的，我们知道那个块的大小在内存中只会是一个单词。所以我们可以，它总是一个单词的固定偏移量。因此，给定一个指向此块标题的指针，我们可以向后看一个单词以查看前一个块的大小和分配状态。这样我们就可以在恒定的时间内做到这一点。所以这个页脚有时被称为边界标记。并且Knuth称之为边界标记，但我们只称之为页脚，或者我们可以称之为与页眉的概念相似。但关键是，它只是具有相同的大小和分配状态。</p>
+<p>发言人   47:58<br>Okay, now, so given, yes, question?<br>好的，现在，所以，是的，问题？</p>
+<p>发言人   48:07<br>So the question is, if we want to have a boundary tag when we allocate a block, do we need to set aside space for it? The answer is yes. Most of the time. I’ll show you 1. I’ll show you 1 optimization in a bit. OK, so given this idea of the boundary tag. And given that we have some allocated block that we want to free, this yellow block. Yes, question?<br>所以问题是，如果我们在分配一个块时想要有一个边界标记，我们需要为它留出空间吗？答案是肯定的。大部分时间。我给你看1。我稍后会向您展示1个优化。好的，考虑到边界标签的想法。并且考虑到我们有一些想要释放的已分配块，这个黄色块。是的，有问题吗？</p>
+<p>发言人   48:55<br>Yeah, so, so just to summarize the question. You need to when you allocate, when you’re looking for blocks that fit, you have to include the size of the header and the boundary tag. It would then, then you’d have to insert padding to get a size, a total block size, a multiple that satisfies your alignment requirement, sorry. Yeah, I mean, it can. Yeah, if you have the question is, wouldn’t that use a lot of memory? And it can, again, it depends on the requests, the request pattern. If the application is requesting lots of small payloads, then it’s going to waste a lot of memory. If it’s requesting big payloads, not so bad.<br>是的，那么，我来总结一下这个问题。当您进行分配时，当您寻找适合的块时，您需要包括标题和边界标记的大小。那么，你必须插入填充来获得一个大小，一个总块大小，一个满足你对齐要求的倍数，抱歉。是的，我的意思是，它可以。是的，如果你有问题的话，那不会占用很多内存吗？而且它可以，再次，它取决于请求，请求模式。如果应用程序请求大量小负载，那么它将浪费大量内存。如果它请求大的有效载荷，也不错。</p>
+<p>发言人   49:55<br>Okay, so given that we have some block that we want to free, there’s four cases that we need to consider when coalescing the case where the next block is allocated and the previous block is free is allocated. The case where the next block is free and the previous block is allocated. Case where the previous block is free and the next block is allocated. In the case where both the previous and next block are free. So in case one, where we have our allocated block that we want to free surrounded by two allocated blocks, we don’t do anything because you only coalesce free memory. So in this case, we just the size of the header and footer stays the same. And we just set the allocation status to free.<br>好的，所以考虑到我们想要释放一些块，在合并分配下一个块和前一个块的情况时，我们需要考虑四种情况。下一个区块是免费的，而前一个区块被分配的情况。在这种情况下，前一个块是免费的，而下一个块被分配。如果前一个和下一个区块都是免费的。因此，在第一种情况下，当我们有分配的块并想要释放被两个分配的块包围时，我们不做任何事情，因为你只合并了空闲内存。所以在这种情况下，我们只是页眉和页脚的大小保持不变。我们只是将分配状态设置为 “免费”。</p>
+<p>发言人   50:53<br>Now, if the next block is free and the previous block is allocated, what we do is we check the boundary tag of the previous block, and we see that it’s allocated. So there’s nothing to do there. We use the size to check the allocation status of the next block. We use n to jump to the header of the next block. We see that its allocation status is free. So these two blocks need to be coalesced. So we do that by just add, adding the two sizes together to create this larger coales block and setting its allocation status to 0.<br>现在，如果下一个区块是空闲的，而前一个区块被分配了，我们要做的是检查前一个区块的边界标记，然后我们看到它被分配了。所以那里没什么可做的。我们使用大小来检查下一个块的分配状态。我们使用n跳转到下一个区块的标题。我们看到它的分配状态是免费的。所以这两个区块需要结合起来。因此，我们只需添加，将两个尺寸相加即可创建这个更大的煤块，并将其分配状态设置为0。</p>
+<p>发言人   51:38<br>Now, in the case where the previous block is free, again, we check the boundary tag footer, and we see that it’s free. So in this case, we create, we have to update the size of the old, the header of the old previous block to create this now new, larger coalesced block. And we update the header and the boundary tag footer accordingly. And then in the case where where both the previous and the next block are free. We create a single block. A single block, that’s the sum of all three of those sizes. So is that clear to everybody?<br>现在，在前一个块是免费的情况下，我们再次检查边界标记页脚，我们看到它是免费的。因此，在这种情况下，我们创建，我们必须更新旧的大小，旧的先前块的标题，以创建这个现在新的更大的合并块。我们会相应地更新页眉和边界标记页脚。然后，在前一个区块和下一个区块都是免费的情况下。我们创建一个单一的块。一个单一的区块，就是这三个大小的总和。那么每个人都清楚了吗？</p>
+<p>发言人   52:39<br>Now, as you pointed out, correctly pointed out, that boundary tags can create additional internal fragmentation because they’re not part of payload. So by definition, they’re overhead. And so you might ask yourself, are there any cases where you don’t need a boundary tag?<br>现在，正如你所指出的，正确地指出，边界标签可能会产生额外的内部碎片，因为它们不是有效负载的一部分。所以根据定义，它们在头顶上。所以你可能会问自己，有没有任何情况下你不需要边界标签？</p>
+<p>发言人   53:10<br>So blocks need. A boundary tag?<br>所以块需要。边界标记？</p>
+<p>发言人   53:32<br>Could you get away? Does an allocated block need 1?<br>你能逃脱吗？一个分配的块需要1吗？</p>
+<p>发言人   53:51<br>Yeah? If you don’t need to coalesce, then you don’t need that footer. And what kind of blocks don’t you coalesce? Allocated blocks? So? We can maybe we don’t need those. Boundary tech footers are allocated blocks just on free blocks. But then how are we going to determine that the previous block is allocated or free? If an allocated block doesn’t have a boundary tag footer? Yes, sorry. Well, yeah, you would give it one when you free it. But somehow when we’re doing coalescing, we need to check somehow that that previous block, whether it’s allocated or free. But how does it know whether it’s a boundary tag or not? Not sure, well, that’s ok’s.<br>是吗？如果你不需要联合，那么你就不需要那个页脚。你不结合什么样的区块？分配区块？所以呢？我们可以，也许我们不需要那些。边界技术页脚仅在空闲块上分配块。但是我们如何确定前一个块是分配的还是免费的？如果分配的块没有边界标记页脚？是的，对不起。嗯，是的，当你释放它时，你会给它一个。但是当我们进行合并时，我们需要以某种方式检查之前的块，无论它是已分配的还是免费的。但它怎么知道它是否是边界标签？不确定，好吧，没关系。</p>
+<p>发言人   55:09<br>Bingo, you got it. So remember this, Remember, because of our alignment, we’ve got multiple, at least 3 b, 3 or 4 b that are always 0. We’re only using one of them, so why not use another one to contain the allocation status of the previous block? Okay, so very good.<br>宾果，你明白了。所以记住这一点，记住，因为我们的对齐，我们有多个，至少3 b，3或4 b总是0。我们只使用其中一个，那么为什么不使用另一个来包含前一个块的分配状态呢？好的，非常好。</p>
+<p>发言人   55:43<br>So the idea. So here’s the block that we want to free, and here’s its header. And we’ve passed AP to it, and we want to free it. And we’ve got 1 b. We know if have 8 B alignment, we know that these are all implicitly 0. So we’re using this is an allocated block that we want to free. So it has an allocation status of one. And let’s use one of these spare bits to indicate the allocation status of the previous block. Okay, so far if the previous block is allocated. And this would be a one. And when we’re checking to see whether we need to coalesce, we just checked. We just checked that.<br>所以这个想法。这是我们想要释放的区块，这是它的标题。我们已经将AP传递给它，并且我们想要释放它。我们有1个b。我们知道如果有8个B的对齐，我们知道这些都是隐含的0。所以我们使用的是一个分配的块，我们想释放它。因此它的分配状态为1。让我们使用这些备用位之一来指示前一个块的分配状态。好的，到目前为止，如果前一个块被分配了。这将是一个。当我们检查是否需要联合时，我们只是检查了一下。我们刚刚检查了一下。</p>
+<p>发言人   56:48<br>Second allocated bit the allocated bit of the previous block. And if it’s one, we don’t need to know what its size is and we don’t need to know where that block is because we’re not going to coalesce it.<br>第二个分配位: 前一个块的分配位。如果它是一个，我们不需要知道它的大小，也不需要知道那个块在哪里，因为我们不会合并它。</p>
+<p>发言人   57:01<br>In we don’t need, so here we don’t need a boundary tag for an allocated block. But now if that block is free, it’ll have a boundary tag. So we’ll check if that block is free. Then the allocation status will indicate free. And then we know we need to, we need to coalesce and we’re going to need, we’re going to need a boundary tag because we need to know where that block starts. We need to know its size so that we can go back and update this size to include the total coalesce size of the those two blocks. So is that clear?<br>在中我们不需要，所以在这里我们不需要分配块的边界标记。但是现在，如果那个区块是免费的，它将有一个边界标签。所以我们会检查这个区块是否免费。分配状态将显示为免费。然后我们知道我们需要，我们需要联合，我们将需要一个边界标签，因为我们需要知道那个区块从哪里开始。我们需要知道它的大小，这样我们就可以返回并更新这个大小，以包括这两个块的总合并大小。那么清楚了吗？</p>
+<p>发言人   57:59<br>Oh, it’s just the allocated bit. So zero means not allocated. One means allocated.<br>哦，这只是分配的位。所以零表示未分配。一种是分配。</p>
+<p>发言人   58:13<br>Oh, why are those bits that are, why are the bits always 0? So blocks have to be aligned to 8 B boundaries, or payloads have to be aligned to 8 B boundaries. That means that blocks have to be the size of blocks, has to be a multiple of eight, because it’s the same thing as when we were doing padding, alignment, and strux The next each block to be a size has to be a multiple of eight that the block that follows that in memory is aligned properly. So you guarantee, because of the alignment requirement, you’re guarantee that 8 or 16, you’re guaranteed that the size of the blocks are always multiples of either 8 or 16, and so because that size is always a multiple of eight or 16, you’re guaranteed that either 3 or 4, 4 b are all zeros.<br>哦，为什么那些位是，为什么位总是为0？因此，块必须与8 B边界对齐，或者有效载荷必须与8 B边界对齐。这意味着块的大小必须是块的大小，必须是8的倍数，因为这与我们进行填充、对齐时的情况相同，strux和下一个每个块的大小必须是8的倍数，内存中紧随其后的块必须正确对齐。所以你保证，由于对齐要求，你保证是8或16，你保证块的大小总是8或16的倍数，因为这个大小总是8或16的倍数，你保证是3或4，4 b都是零。</p>
+<p>发言人   59:26<br>Any other questions?<br>还有什么问题吗？</p>
+<p>发言人   59:36<br>Okay, let me summarize then some key policies when implementing an allocator. And I mentioned that the design spaces for these things is really large and really interesting. There’s a lot of things that a lot of decisions that you have to make about various policies. So the first is the placement policy, where we, when we’re to a free block, I, when we’re trying to place an allocated block somewhere in a free. Block Somewhere in the list. What policy do we use? First fit, next fit or best fit? And generally these things, they trade off throughput for fragmentation. So the faster versions.<br>好的，让我总结一下实现分配器时的一些关键策略。我提到这些东西的设计空间非常大，非常有趣。关于各种政策，你必须做出很多决定。所以第一个是放置政策，当我们要到一个免费区块时，当我们试图将一个分配的区块放置在一个免费的区块中的某个地方时。阻止列表中的某个地方。我们使用什么政策？第一次适合，下一个适合还是最适合？一般来说，这些事情会在吞吐量和碎片之间进行权衡。更快的版本。</p>
+<p>发言人   01:00:31<br>If you’re willing to deal with lower throughput, like in the case of best fit, then you can get better memory utilization. Now, there are interesting ways to improve the performance of best-fit.<br>如果您愿意处理较低的吞吐量，比如在最适合的情况下，那么您可以获得更好的内存利用率。现在，有一些有趣的方法可以提高最佳拟合性能。</p>
+<p>发言人   01:00:48<br>You might consider something like good fit, which is sort of a mix of first fit and best fit. Maybe you only search the first, you know, a portion of the heap and then identify the best fit you. Maybe instead of searching the entire heap, you just search some portion of the heap and then cut off the search. And then within that region that you searched, you pick the best block. So that’s something called good fit. So that kind of approximates best fit. Or you can use these multiple free lists to approximate this. And there, the real advantage of using multiple free lists, it’s that it not only improves memory utilization, but it improves performance too, because the individual lists that you’re looking for, you know that they contain blocks that are close to what you’re asking for.<br>你可能会考虑像 “合身” 这样的东西，它是第一次适合和最佳适合的混合。也许你只搜索第一个，你知道的，堆的一部分，然后确定最适合你的。可能您只需搜索堆的某些部分，然后切断搜索，而不是搜索整个堆。然后在你搜索的区域内，你选择最好的区块。这就是所谓的 “良好匹配”。所以这种近似最合适。或者您可以使用这些多个空闲列表来近似计算。而使用多个空闲列表的真正优势在于，它不仅提高了内存利用率，而且还提高了性能，因为您要查找的各个列表包含的块与您所要求的接近。</p>
+<p>发言人   01:01:46<br>And since you’re dividing all the free blocks up amongst multiple free lists, those free lists will be shorter. So your searches will take less time. And your probability of finding a block that fits goes up because you’re segregating these different size classes.<br>由于您将所有的空闲块划分到多个空闲列表中，这些空闲列表将会更短。这样你的搜索将花费更少的时间。你找到适合的区块的概率也会上升，因为你将这些不同大小的类别进行了隔离。</p>
+<p>发言人   01:02:09<br>Now there A, we also have to decide on some splitting policy. So when we find a free block that’s big enough, what do we do with the left over the leftover part of that block? You know, once we place our allocated block into into that free block, what do we do with the leftovers? Do we just leave the leftover part in the block itself and return that back to the application avoiding so that sort of keeping larger blocks? Or do we go ahead and split it like I showed before and? Going ahead and splitting that block and creating, creating the original free block, allocating a portion of it, and then creating a smaller free block. So that’s a policy you may want to.<br>现在，我们还必须决定一些分裂政策。所以，当我们找到一个足够大的空闲区块时，我们该如何处理该区块剩余部分的剩余部分？你知道，一旦我们将分配的区块放入那个免费的区块中，我们该如何处理剩菜呢？我们是否只是将剩余的部分留在块本身中，并将其返回给应用程序，以避免保留较大的块？或者我们继续像我之前展示的那样分割它？继续拆分该块并创建，创建原始免费块，分配其中的一部分，然后创建一个较小的免费块。所以这是你可能想要的政策。</p>
+<p>发言人   01:02:58<br>You may want to. For small request for small payloads you up to a certain size. You may not want to split, so you may decide not to split blocks smaller. You may decide not to create free blocks that are smaller than some threshold, only splitting for requests for larger blocks. And then there’s a coalescing policy.<br>你可能想要。对于小型有效载荷的小请求，您最多可以达到一定大小。您可能不想拆分，因此您可能决定不将块拆分得更小。您可以决定不创建小于某个阈值的可用块，只为较大块的请求拆分。然后有一个联合政策。</p>
+<p>发言人   01:03:29<br>Now we’ve seen freeing is pretty quick. Now it’s constant time because of the boundary tag footers. But you may, you may want to try to speed that up even more by deferring the coalescing. So you could, you can do coalescing every time the free is called, like we just looked at, or you could defer coalescing to some later time, maybe when you’re scanning the free list. When you’re scanning the free list, trying to place an allocated block in response to a Malik call, maybe as you scan that free list, you could go ahead and do the coalescing at that time. I’m not saying which one is better. It’s really hard to argue for deferred coalescing, giving the constant time performance of boundary tag based coalescing. But it is an option.<br>现在我们已经看到了释放是相当快的。现在由于边界标记页脚的原因，它是恒定时间。但是你可以，你可能想尝试通过推迟合并来进一步加快速度。所以你可以，你可以在每次调用free时进行合并，就像我们刚才看到的那样，或者你可以将合并推迟到稍后的时间，也许当你扫描空闲列表时。当您扫描空闲列表时，尝试放置已分配的块以响应Malik呼叫，也许当您扫描该空闲列表时，您可以继续并在那个时候进行合并。我不是说哪一个更好。由于基于边界标记的融合具有恒定的时间性能，因此很难争辩延迟融合。但这是一种选择。</p>
+<p>发言人   01:04:35<br>So here’s a summary, then, of implicit lists. This is the simplest. It’s a very simple kind of allocator. The cost to allocate is linear in the size of the heap. Worst case, the cost of free is constant time. Even with coalescing. Memory usage will depend on the placement policy, first fit, next fit, or best fit.<br>下面是对隐式列表的总结。这是最简单的。这是一种非常简单的分配器。要分配的成本与堆的大小呈线性关系。最坏情况下，免费的成本是恒定的时间。即使是凝聚。内存使用情况将取决于放置策略、首次适合、下一个适合或最佳适合。</p>
+<p>发言人   01:05:08<br>It’s not used in practice because of linear, the linear time cost of allocation, but it can be used in sort of special purpose allocators where you have a small number of size classes maybe, or you have a very, you know, that you have a very small or fairly small free list. But the idea of splitting and coalescing that we looked at are general to all allocators. So the idea of a boundary tag based coalescing is used regardless of the structure of your free list. So implicit lists are useful to study because they introduce some important concepts, but generally they not, they’re not, they’re not that useful.<br>由于线性分配的时间成本，它不会在实践中使用，但它可以用于某种特殊目的的分配程序，其中你可能只有少量的类，或者你有一个非常小或相当小的空闲列表。但是我们所看到的拆分和合并的想法对于所有分配器都是通用的。因此，无论自由列表的结构如何，都使用基于边界标记的合并的想法。所以隐式列表对学习是有用的，因为它们引入了一些重要的概念，但通常它们不是，它们不是，它们不是那么有用。</p>
+<p>发言人   01:05:57<br>So next, next class, we’ll look at some more sophisticated organizations of free lists, the explicit list, multiple freels in particular. All right, so we’ll see you then, good luck on your shell lab due tonight, and we’ll see you on Thursday.<br>所以，下一节课，我们将看看一些更复杂的免费列表组织，显式列表，特别是多个免费列表。好的，那么我们到时候见，祝你在今晚的贝壳实验室好运，我们星期四见。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts</div>
+      <div>http://example.com/2025/10/12/15213-020/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-021/" title="深入理解计算机系统 021-Dynamic Memory Allocation, Advanced Concepts">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 021-Dynamic Memory Allocation, Advanced Concepts</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-019/" title="深入理解计算机系统 019-Virtual Memory, Systems">
+                        <span class="hidden-mobile">深入理解计算机系统 019-Virtual Memory, Systems</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

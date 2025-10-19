@@ -1,0 +1,735 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00Welcome, good to see you. Today, we’re going to begin transitioning from how our programs interact with hardware to how they interact with software, in particular system software. And we’re">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 014-Linking">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-014/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00Welcome, good to see you. Today, we’re going to begin transitioning from how our programs interact with hardware to how they interact with software, in particular system software. And we’re">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:13.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.137Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 014-Linking - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 014-Linking"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          137 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 014-Linking</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>Welcome, good to see you. Today, we’re going to begin transitioning from how our programs interact with hardware to how they interact with software, in particular system software. And we’re going to start that investigation by studying and learning about a process called linking, which is how the system builds your programs. So we’re going to study the process of linking. And then I’m going to show you a really cool technique called library interposal, which allows you to use linking to actually intercept in function calls in libraries like the standard C library. So it’s a very, very powerful and interesting technique. And it’s all enabled by linking.<br>欢迎，很高兴见到你。今天，我们将开始从程序与硬件的交互方式转变为它们与软件特别是系统软件的交互方式。我们将通过研究和学习一个称为链接的过程来开始这项调查，这是系统构建程序的方式。所以我们将研究链接的过程。然后我将向您展示一项非常酷的技术，称为库中断，它允许您使用链接来实际拦截库中的函数调用，例如标准C库。所以这是一种非常强大且有趣的技术。这一切都是通过链接实现的。</p>
+<p>发言人   00:58<br>So let’s start with a simple program. This program consists of two modules, main dot c and sum dot c sum dot c takes as an array, as an argument, and a length n, and then it sums up the elements of that array and returns the sum back to the collar. Main DOC calls the sum function using and passes it a two element array of ints, and then returns that and then returns the value received from sum. That’s kind of an odd thing to do to return your exit status like that. But we just did it so that the compiler wouldn’t optimize away all of our code.<br>让我们从一个简单的程序开始。这个程序由两个模块组成，主点c和sum点c作为一个数组，作为一个参数和一个长度n，然后它将该数组的元素求和并将总和返回到领。Main DOC使用调用sum函数，并传递给它一个由int组成的两个元素的数组，然后返回该数组，然后返回从sum接收到的值。这样返回你的退出状态有点奇怪。但我们只是这样做，这样编译器就不会优化掉我们所有的代码。</p>
+<p>发言人   01:49<br>All right, now let’s look at what happens when we want to compile those two modules. For each of main dot c and some dot C, the GCC calls a series of translators on that, on those modules, on those dot C files, first calls the C preprocessor CPP. Then it calls the compiler the actual compiler, which is CC 1. The compiler generates assembly, which is then translated by the assembler as resulting in a doo file called main doo. Similar things happens for sum DOC. So after. These three translators work on the code.<br>好的，现在让我们看看当我们想要编译这两个模块时会发生什么。对于每个主点c和某些点C，GCC调用一系列转换器，在这些模块上，在这些点C文件上，首先调用C预处理器CPP。然后它调用实际编译器，即CC 1。编译器生成程序集，然后由汇编器翻译为名为main doo的doo文件。类似的事情也发生在sum DOC上。所以之后。这三个翻译者在代码上工作。</p>
+<p>发言人   02:44<br>We have two object files, 2.0 files. The linker takes those point zero files and. Links them, sort of smashes them together to form a single executable called that we can then run. That we can then load and run on the system?<br>我们有两个目标文件，2.0文件。链接器获取那些零点文件并。链接它们，将它们砸在一起形成一个名为的可执行文件，然后我们就可以运行了。然后我们可以在系统上加载和运行吗？</p>
+<p>发言人   03:12<br>Main DOC and some DOC are called source files. These O files are object files. We were separately compiled and we call them relocatable object files because they can be combined together to form the fully linked executable object file. So why do we do it like this? You, why do we allow this so called a separate compilation? Why don’t we just have one big file that with all of our code in it?<br>主文档和一些文档被称为源文件。这些O文件是目标文件。我们是单独编译的，我们称之为可重定位的目标文件，因为它们可以组合在一起形成完全链接的可执行目标文件。那么我们为什么要这样做呢？你，为什么我们允许这种所谓的单独编译？为什么我们不有一个大文件，其中包含我们所有的代码呢？</p>
+<p>发言人   03:49<br>Well, there’s a couple reasons. The first is modularity. So by allowing you to break your code into smaller pieces, you can put related functions into separate source files. You can define libraries and functions. So it’s just good technique, and it allows you to kind of break your code up into nice, nice modular pieces.<br>嗯，有几个原因。第一个是模块化。因此，通过允许您将代码分成小块，您可以将相关函数放入单独的源文件中。您可以定义库和函数。所以这是一种很好的技术，它允许你将代码分解成漂亮的、漂亮的模块化部分。</p>
+<p>发言人   04:14<br>The other reason is efficiency. So if we’ve broken up our program into multiple chunks, if we only need to change. One of the chunks, we don’t have to recompile all the other modules. We can just recompile the one module that we changed and then link them all together again. So it’s efficient in time. It’s also efficient in space because you can take, say, all of the functions in the standard C library, you can put them all together, but then the only functions that you actually get compiled and linked into your program are the ones that you actually call. So you can save space. You normally you use only a small subset of the standard C functions, so there’s no point in linking all of those functions into your code if you don’t need them.<br>另一个原因是效率。所以如果我们将程序分成多个块，如果我们只需要改变。其中一个块，我们不必重新编译所有其他模块。我们可以重新编译我们更改的一个模块，然后再次将它们链接在一起。所以它在时间上是高效的。它在空间上也是高效的，因为你可以把标准C库中的所有函数放在一起，但是你实际编译并链接到程序中的函数是你实际调用的函数。这样你就可以节省空间。通常，您只使用标准C函数的一小部分，因此如果您不需要它们，将所有这些函数链接到您的代码中是没有意义的。</p>
+<p>发言人   05:15<br>So what do linkers do? Well, there’s two.<br>链接器是怎么做的？有两个。</p>
+<p>发言人   05:19<br>There’s two main tasks that a linker performs. The first is called symbol resolution. So programs define and reference symbols, what the linker refers to as symbols, global variables and functions, and the names and those objects referred to as symbols. We’re declaring, we’re defining a symbol called swap here. What we’re referring when we call swap, we’re referring to that symbol that’s a reference to the symbol. And here we’re defining a pointer to an int called XP. So we’re defining XP, and we’re initializing it to the address of x, so that’s a reference to x, so the symbol definitions are stored in the object file by the assembler in a symbol table, which is an array of structs where each trucks contains information about the symbol, like the name of the symbol, its size, and where it’s located.<br>链接器执行两个主要任务。第一个被称为符号解析。因此，程序定义和引用符号，链接器所指的符号，全局变量和函数，以及被称为符号的名称和那些对象。我们在这里声明，我们在定义一个名为swap的符号。当我们称之为swap时，我们指的是那个符号，它是对该符号的引用。在这里，我们定义了一个名为XP的int指针。所以我们正在定义XP，并将其初始化为x的地址，因此这是对x的引用，因此符号定义由汇编器存储在目标文件中的符号表中，符号表是一个结构数组，每个卡车都包含有关符号的信息。像符号的名称，大小和位置。</p>
+<p>发言人   06:41<br>Now, what we mean by symbol resolution is that during the linking process, the linker associates each symbol reference with exactly one symbol definition. So it’s possible in multiple. Why is this an issue? Well, it’s possible, like in multiple modules, you may declare a global variable with the same name. The linker has to decide which one of those definitions to use for all subsequent references.<br>现在，我们所说的符号解析是指在链接过程中，链接器将每个符号引用与一个符号定义相关联。所以有可能在多个。为什么这是一个问题？嗯，有可能，就像在多个模块中一样，您可以声明一个同名的全局变量。链接器必须决定将哪一个定义用于所有后续引用。</p>
+<p>发言人   07:17<br>Now, once the linker is associated a unique object with each, a unique symbol definition with each reference, then it does the second step, which is relocation. And during relocation, it merges all of the modules together into a single executable object module that can be directly loaded and executed on the system. When it does this merging. It has to figure out where each, each symbol, each function, and each variable is going to be stored. And this is called relocation because initially functions are just stored at some offset in there in their object module because the linker doesn’t know where those functions are actually going to be eventually loaded into memory. So before relocation, the address of a function in the object module is just its offset in the module. And similarly, for data, during the relocation step, the linker decides on where each symbol is going to be ultimately located in memory when the program executes, and it binds those absolute memory locations to the symbol. And then it goes and looks at all the references to those symbols, and it updates those references so that now they point to the correct address.<br>现在，一旦链接器与每个引用都关联了一个唯一的对象，每个引用都有一个唯一的符号定义，那么它就会执行第二步，即重定位。并且在重新定位期间，它将所有模块合并到一个可执行对象模块中，该模块可以直接在系统上加载和执行。当它进行此合并时。它必须弄清楚每个符号、每个函数和每个变量将被存储在哪里。这被称为重定位，因为最初函数只是以某个偏移量存储在它们的对象模块中，因为链接器不知道这些函数最终将在哪里加载到内存中。因此，在重定位之前，对象模块中函数的地址就是它在模块中的偏移量。同样地，对于数据，在重定位步骤中，链接器决定程序执行时每个符号在内存中的最终位置，并将这些绝对内存位置绑定到符号上。然后它查看对这些符号的所有引用，并最新进展这些引用，以便现在它们指向正确的地址。</p>
+<p>发言人   08:56<br>So figure out where stuff is going to go for each definition, figure out where it’s going to go and for each reference, then update that reference so it now points to the right spot.<br>因此，要弄清楚每个定义的东西要去哪里，弄清楚它要去哪里，对于每个引用，然后更新该引用，使其指向正确的位置。</p>
+<p>发言人   09:09<br>So let’s look at what how these steps work in more detail. Before that, we need to define a few things. So there’s three kinds of object modules that I’ve alluded to. There’s the O file, which is a relocatable object module. This is the output of the assembler, and it’s a binary file, but it’s not. In any form that can be directly loaded into memory, it needs to be manipulated by the linker before it can be actually used.<br>让我们更详细地看看这些步骤是如何工作的。在那之前，我们需要定义一些事情。所以我提到了三种对象模块。有一个O文件，它是一个可重定位的对象模块。这是汇编器的输出，它是一个二进制文件，但不是。在任何可以直接加载到内存中的形式下，链接器需要对其进行操作才能实际使用。</p>
+<p>发言人   09:45<br>There’s the executable object file, which is generated by the linker. These are called a dot out files. Sometimes, historically, the very first Linux systems, the executable sort of the default name that the developers of Unix used, the default name for their executables was a do out. So that’s just sort of a historical reason that it’s called they do out. And then there’s another type of object file called the shared object file or doso file, which is sort of a modern technique for creating shared libraries. And we’ll look at those, we’ll look at those later today.<br>这里有一个可执行对象文件，它是由链接器生成的。这些文件被称为 “点出来的文件”。有时，在历史上，最早的Linux系统中，Unix开发者使用的默认可执行名称，可执行文件的默认名称是do out。这就是所谓的 “他们做出来” 的历史原因。然后还有另一种对象文件类型，称为共享对象文件或doso文件，这是一种创建共享库的现代技术。我们会看看那些，今天晚些时候我们会看看那些。</p>
+<p>发言人   10:29<br>Now, object modules come in a standard format called Elf format. And it’s a unified format for 0 files, for executables, and for Soo files. They all use the same format, the same general format.<br>现在，对象模块采用了一种称为Elf格式的标准格式。并且它是0文件、可执行文件和Soo文件的统一格式。它们都使用相同的格式，相同的通用格式。</p>
+<p>发言人   10:48<br>So while these elfs are, they’re binaries. They’re very structured and they’re broken up into sections. At the beginning is a header that defines things like the size of the words, the byte ordering, whether it’s a dot O, an, a dot O, or a dot. So, so it just provides some sort of general information about this binary. And then there’s what’s a so called segment header table. It’s only defined for the executable object files, indicates where all the different segments of the code are going to go in memory. So where does your stack go? Where do your shared libraries go? Where does your initialized and uninitialized data, where does your code go? So all these various sections are defined in the segment header table.<br>虽然这些精灵是二进制文件。他们非常有条理，被分成几个部分。开头是一个标头，它定义了单词的大小、字节顺序、是点O、点O还是点。所以，它只是提供关于这个二进制文件的某种一般信息。然后是所谓的段头表。它仅针对可执行对象文件定义，指示所有不同代码段将在内存中的位置。那么你的堆栈去哪里了？你的共享库去哪里了？您的初始化和未初始化数据在哪里，您的代码在哪里？所以所有这些不同的部分都在段标题表中定义。</p>
+<p>发言人   11:53<br>And then there’s the code itself, which is called the dot text section for sort of arcane historical reasons. So dot text is always code. And then that’s followed by read only data, such as the jump tables in switch statements. So text and read only the dot text and Doro data have the property that they’re both read only you don’t write to them.<br>然后是代码本身，由于某种神秘的历史原因，它被称为点文本部分。因此，点文本始终是代码。然后接着是只读数据，例如switch语句中的跳转表。因此文本和只读的点文本和Doro数据具有这样的属性，即它们都是只读的，您无需写入它们。</p>
+<p>发言人   12:22<br>Then that’s followed by the data section, which contains space for all of your initialized global variables.<br>然后是数据部分，其中包含所有已初始化的全局变量的空间。</p>
+<p>发言人   12:31<br>And then there’s a section called BSS, which. Which defines the uninitialized global variables? Now, this doesn’t actually take up any space because they’re uninitialized droids, but there are entries in the symbol table for them. When this program gets loaded, these variables are going to need, they’re actually, I have to have space allocated for them, BSS is another one of those sort of arcane names that goes all the way back to the 60s for there was an IBM instruction called block started by symbol. I think a better way to remember what it means is better save space. If you have a separate section for the uninitialized variable. Since they’re uninitialized, you don’t have to, they don’t have to consume any room in the doo file.<br>然后还有一个叫做BSS的部分。这定义了未初始化的全局变量？现在，这实际上并不占用任何空间，因为它们是未初始化的机器人，但在符号表中有它们的条目。当这个程序被加载时，这些变量将需要，实际上，我必须为它们分配空间，BSS是另一个神秘的名称之一，可以追溯到60年代，因为有一个叫做block开头的符号的IBM指令。我认为更好的记住它的方法是更好地节省空间。如果您有一个未初始化变量的单独部分。由于它们未初始化，您不必这样做，它们不必在doo文件中占用任何空间。</p>
+<p>发言人   13:33<br>Okay, there’s also a section for the symbol table. This contain, like I said, it’s an array of structs for procedures, global variables. And anything defined with the static attribute. And each one of these, each one of these symbols gets an entry in the symbol table.<br>好的，还有一个符号表部分。就像我说的，它包含了一个用于过程的结构数组，全局变量。以及使用静态属性定义的任何内容。每个符号都在符号表中有一个条目。</p>
+<p>发言人   14:00<br>And then there’s two sections called that contain relocation info. So this is the notes when the linker went and identified all the references to symbols, it put a little note to say I’m going to have to remember to fix this, the reference to this symbol up when I actually create the executable. So a relocation entry is just like a note that it’s a note that the assembler makes to the linker to say, hey, you’re going to have to fix up this this reference because I don know I don’t know where this symbol is actually going to be stored in memory when it’s loaded. And then there’s a debug section that contains information that relates line numbers in the source code to line numbers in the machine code. And so this is called dot debug. And this is what you get when you compile with dash G, and then there’s a header table that tells you where all these different sections start.<br>然后有两个部分叫做，包含重新定位信息。所以这是链接器去标识所有符号引用时的注释，它放了一个小注释说我将不得不记住修复这个问题，当我实际创建可执行文件时对此符号的引用。因此，重新定位条目就像一个注释，它是汇编者对链接器说的一个注释，你将不得不修复这个引用，因为我不知道这个符号在加载时实际上将存储在内存中的哪个位置。然后有一个调试部分，其中包含将源代码中的行号与机器代码中的行号相关联的信息。所以这被称为点调试。这就是用dash G编译时得到的结果，然后有一个标题表告诉你所有这些不同部分的起点。</p>
+<p>发言人   15:09<br>Now, to a linker, there’s three different kinds of symbols. Global symbols are defined in some module M, and they can be used by other modules. I mean, did you notice when if we have a program that consists of multiple modules and we compile each one of those modules into 1 .0 file, we’ll be calling functions are nott that are defined by other modules, right? So, but there’s no error. The compiler doesn’t throw an error because it’s assuming that those are defined in other modules in. It assumes the linker will be able to find them and determine the address anything that’s defined with any either global variable or function name that’s defined without the static attribute is a global symbol now and then external symbols are kind of the flip side of that.<br>现在，对于一个链接器，有三种不同类型的符号。全局符号在一些模块M中定义，它们可以被其他模块使用。我的意思是，你有没有注意到，如果我们有一个由多个模块组成的程序，并且我们将每个模块编译成1.0文件，我们将调用由其他模块定义的函数，对吗？所以，但是没有错误。编译器不会抛出错误，因为它假设这些是在其他模块中定义的。它假设链接器能够找到它们并确定地址，任何用任何全局变量或函数名定义的，没有静态属性的东西现在都是全局符号，然后外部符号则是另一面。</p>
+<p>发言人   16:16<br>External symbols, symbols that are referenced by some module but defined in some other module. In our little running example, one main DOC called the function sum. It was referencing an external symbol, and then there’s local symbols. And these are symbols that are defined and referenced within a module. And you create. This is different from local variables. Linker, local C variables are managed by the compiler on the stack. Linker has no idea about local C variables in this context.<br>外部符号，被某些模块引用但在其他模块中定义的符号。在我们的小运行示例中，一个名为sum函数的主要文档。它引用了一个外部符号，然后还有本地符号。这些符号是在模块中定义和引用的。你创造了。这与局部变量不同。连接器，局部C变量由堆栈上的编译器管理。链接器在这种情况下不知道局部C变量。</p>
+<p>发言人   17:04<br>When we talk about a local symbol, what we’re talking about is either is a global variable or function declared with a static attribute, whose that can only be referenced from within that module. So we say that the scope, the scope of a function or global variable defined with the static attribute is limited to the module that it was defined in. So in C, this is how we do abstraction. And this is how we can create sort of private functions and private functions that can’t be called from from outside that module. So for instance, if we want to make a library in C of functions, we want to make a collection of functions that other programs can then call link into their program and call the functions that we want to make visible to other programs are defined without the static attribute and the functions that we want to have private and just be internal, we declare with the static attribute.<br>当我们谈论局部符号时，我们所谈论的要么是全局变量，要么是用静态属性声明的函数，只能从该模块内引用。因此，我们说范围，即用静态属性定义的函数或全局变量的范围仅限于定义它的模块。所以在C中，这就是我们进行抽象的方式。这就是我们如何创建私有函数和无法从该模块外部调用的私有函数的方法。因此，例如，如果我们想在C中制作一个函数库，我们想要创建一个函数集合，其他程序可以调用这些函数链接到它们的程序中，并调用我们想要使其对其他程序可见的函数，这些函数没有静态属性，而我们想要拥有私有且只是内部的函数，我们使用静态属性声明。</p>
+<p>发言人   18:17<br>And that way we get abstraction and we get hiding information hiding, and we’re only exposing data and functions that we want to expose. So let’s look in detail how this symbol resolution step works.<br>这样我们就得到了抽象，得到了隐藏信息，我们只公开了我们想要公开的数据和函数。让我们详细看看这个符号解析步骤是如何工作的。</p>
+<p>发言人   18:36<br>Recall our example, our example program. So here we’re referencing a global called Arra that’s defined within main dot c? Here we’re defining main, a global called main. Here we’re referencing a global called sum that’s defined in sum DOC. And Val is a local C variable on the stack, and linker knows nothing about that. Nor does it know anything about I or S, which are also local variables.<br>回想一下我们的例子，我们的例子程序。所以我们在这里引用了一个在main dot c中定义的名为Arra的全局？在这里，我们定义了main，一个名为main的全局。这里我们引用了一个在sum DOC中定义的名为sum的全局。Val是堆栈上的局部C变量，链接器对此一无所知。它也不了解I或S，它们也是局部变量。</p>
+<p>发言人   19:27<br>Now let’s just let’s make sure that we understand the difference between local static C variables versus local non-static C variables. Here, we’re defining a local static variable called int within this function f, now, because it’s local, its scope is limited to this function. Variable X can only be referenced within function A. And similarly, for this definition of x and function, g can only be referenced by function g, but because it’s declared with the static attribute, it’s not stored on the stack. It’s actually stored in dot data just like a global would be. So it’s like a global in the sense that it’s actually stored in that data rather than the stack, but it’s like a local C variable in the sense that its scope is limited just to the function that it’s defined in. So, what?<br>现在让我们确保我们理解局部静态C变量与局部非静态C变量之间的区别。这里，我们在这个函数f中定义了一个名为int的局部静态变量，现在，因为它是局部的，它的范围仅限于这个函数。变量X只能在函数A内引用。类似地，对于x和函数的定义，g只能被函数g引用，但由于它是用static属性声明的，因此它不会存储在堆栈上。它实际上像全局一样存储在点数据中。因此，它就像一个感知的全局变量，实际上存储在该数据中而不是堆栈中，但它就像一个局部C变量，感知它的范围仅限于定义它的函数。所以，什么？</p>
+<p>发言人   20:40<br>The compiler will do. It’ll allocate space for each definition of x, and it’ll give it some name disambiguated. So maybe it will call this 1x dot one, maybe this 1x do 2. So these symbols are allocated in dot data because they’re initialized and they get symbol table entries just like any other symbol.<br>编译器会做的。它会为x的每个定义分配空间，并为它提供一些消除歧义的名称。所以也许它会叫这个1x点1，也许这个1x做2。所以这些符号被分配在点数据中，因为它们被初始化并且它们像任何其他符号一样获得符号表条目。</p>
+<p>发言人   21:09<br>OK, so I said that during symbol resolution, the linker associates each reference, each symbol reference to exactly one unique symbol definition. Now, how does it do that if there’s multiple symbol definitions across all the modules? So to understand this, we’ll define symbols as being either strong or weak. So strong symbols are either procedures, function names, or initialized global variables. Weak symbols are uninitialized global variables.<br>好的，所以我说在符号解析期间，链接器将每个引用，每个符号引用与一个唯一的符号定义关联。现在，如果所有模块都有多个符号定义，它是如何做到的？为了理解这一点，我们将符号定义为强或弱。因此，强符号要么是过程、函数名，要么是初始化的全局变量。弱符号是未初始化的全局变量。</p>
+<p>发言人   21:52<br>Int foo here is a strong symbol because it’s initialized. We’re initializing it. P1 is strong. By definition, foo is weak, and P2 DOC. This definition of foo is weak because it’s uninitialized, and the definition of P2 is strong. So the rules that the loncar uses are the following.<br>这里的Int foo是一个强符号，因为它已经初始化。我们正在初始化它。P1很强大。根据定义，foo是弱的，P2是DOC。foo的这个定义是弱的，因为它是未初始化的，而P2的定义是强的。所以loncar使用的规则如下。</p>
+<p>发言人   22:20<br>Multiple strong symbols not allowed. So that’s an error. So that means that if across multiple modules, we declare a function with the same name, the linker will throw an error. That’s not allowed Given a strong symbol and multiple weak symbols, the linker will always choose the strong symbol.<br>不允许多个强符号。所以这是一个错误。这意味着，如果跨多个模块声明一个同名的函数，链接器将抛出错误。这是不允许的，因为有一个强符号和多个弱符号，链接器将始终选择强符号。</p>
+<p>发言人   22:45<br>Now, remember if we initialize a global variable. And if we declare an initialized global variable across multiple modules, that’s an error because those are strong symbols by rule one. But if we have one strong symbol and multiple weak symbols, all with the same name, then the compiler will choose the strong symbol, and it will sociate all references to that symbol, will go to that strong symbol. And if there’s multiple weak symbols, then it just picks an arbitrary one. And this, as we’ll see, can be problematic. Now you can override it with this GCC flag called no common, and if you declare your function with this no common argument, then multiple weak symbols will throw an error in a linker. So why do we care about all this stuff? Well, it turns out if you’re not aware of this stuff, you can run into some really serious problems that are perplexing and confounding.<br>现在，记住如果我们初始化一个全局变量。如果我们在多个模块之间声明一个已初始化的全局变量，这是一个错误，因为这些都是规则一的强符号。但是，如果我们有一个强符号和多个弱符号，它们都具有相同的名称，那么编译器将选择强符号，并且它将关联对该符号的所有引用，将转到该强符号。如果有多个弱符号，那么它只选择任意一个。而这一点，正如我们将看到的，可能会有问题。现在你可以用这个叫做no command的GCC标志覆盖它，如果你声明你的函数使用这个没有公共参数，那么多个弱符号将在链接器中抛出错误。那么，我们为什么要关心这些东西呢？事实证明，如果你没有意识到这些东西，你可能会遇到一些非常严重的问题，这些问题令人困惑和困惑。</p>
+<p>发言人   23:48<br>So linker errors are like the worst kind. They’re the hardest kind of debug because people aren’t usually aware of what’s going on inside their linkers, and usually it’s only like the very best programmers that really understand how these linkers work and what kind of errors they can throw and how to debug them.<br>所以链接器错误就像是最糟糕的一种。它们是最难调试的类型，因为人们通常不知道他们的链接器内部发生了什么，通常只有最优秀的程序员才真正了解这些链接器的工作原理，可以抛出什么样的错误以及如何调试它们。</p>
+<p>发言人   24:09<br>So let me show you some examples of these kind of errors. So we a program, we have two modules. So each of these rectangles corresponds to a module, and we’re defining P1 in each module. That’s two strong symbols. That’s an error.<br>让我给你展示一些这类错误的例子。所以我们有一个程序，我们有两个模块。每个矩形都对应一个模块，我们在每个模块中定义P1。这是两个强有力的象征。那是个错误。</p>
+<p>发言人   24:37<br>Now here we’re defining P1 and P2, so we’re OK. But now we’ve got two weak symbols. Both are integers, variables called x, so. And if these modules are referencing x, the linker will just pick, we’ll just pick one of these to serve as the definition. But is this really what you want?<br>现在我们在这里定义P1和P2，所以我们没问题。但现在我们有两个弱符号。两者都是整数，被称为x的变量。如果这些模块引用x，链接器将只选择其中一个作为定义。但这真的是你想要的吗？</p>
+<p>发言人   25:05<br>Now, in this case, it doesn’t really hurt anything because x declared in both modules as an int. So it’ll just be some integer sized variable that, and it’ll be somewhere in, but it doesn’t really matter which one the linker chooses.<br>现在，在这种情况下，它并没有什么坏处，因为x在两个模块中都声明为int。所以它只是某个整数大小的变量，它会在某个地方，但链接器选择哪个并不重要。</p>
+<p>发言人   25:27<br>But we start to get into trouble if we declare these weak symbols with different types. So here we’ve declared an int x in one module and a double x in another module. So if we write to x, if the linker just arbitrarily chooses this, this symbol definition to use, now this is a symbol that of length eight of size 8. Anywhere in this program, if the linker chooses that, then anywhere in the program, those references to X will be to this double word. This double word even. Even in this module, if we reference X, it’ll be an 8 B, right? So it’ll overwrite why with the. High order, excuse me.<br>但是如果我们用不同的类型声明这些弱符号，我们就会开始遇到麻烦。在这里，我们在一个模块中声明了一个int x，在另一个模块中声明了一个double x。所以如果我们写入x，如果链接器任意选择使用这个符号定义，现在这是一个长度为8、大小为8的符号。在这个程序的任何地方，如果链接器选择了这个，那么在程序的任何地方，那些对X的引用都将是这个双词。甚至是这个双重词语。即使在这个模块中，如果我们引用X，它也会是一个8 B，对吧？所以它会覆盖为什么。高阶，对不起。</p>
+<p>发言人   26:40<br>Oh no, it’s completely. It’ll just pick one arbitrarily. You don’t know?<br>哦，不，完全是这样。它只会任意挑选一个。你不知道？</p>
+<p>发言人   26:55<br>Now this is here’s. A problem. We’ve defined a strong symbol x because we’ve initialize it. So the linker will always, we’ll associate all references to x to this integer sized. This integer sized symbol. So if we write.<br>现在这就是这里。有问题。我们已经定义了一个强符号x，因为我们已经初始化了它。因此，链接器将始终将所有对x的引用关联到这个整数大小。这个整数大小的符号。所以如果我们写作。</p>
+<p>发言人   27:32<br>Oh yeah, right. So writes to x here, this will be a double in this module, but it’ll overwrite y in this module. So that’s really nasty.<br>对，对。所以在这里写入x，这将是这个模块中的一个double，但它会覆盖这个模块中的y。所以这真的很讨厌。</p>
+<p>发言人   27:50<br>And here we’re defining a strong symbol x, so references to x in this second module, well, always get it will refer to this initialized variable, which so it might not be what you want, right? You may be assuming that it’s uninitialized in your code. And then you get the ultimate nightmare scenario is suppose because we’re following a standard ABI, we can compile our code with multiple compilers. And this actually happens in some, oh, yes, questions? What if the strong ex thaty ones? Oh yeah, actually you’re right. It will still take preference and you’ll be writing a four by quantity, which is what you want. So that slide’s not quite right. Before?<br>在这里，我们定义了一个强符号x，所以在第二个模块中对x的引用，总是会引用这个初始化的变量，所以它可能不是你想要的，对吧？你可能会假设它在你的代码中没有初始化。然后你会得到最终的噩梦场景，因为我们遵循标准ABI，我们可以使用多个编译器编译我们的代码。这实际上发生在一些问题上吗？如果强大的前thaty的呢？是的，实际上你是对的。它仍然会优先选择，你将会写一个按数量计算的四个，这就是你想要的。所以这张幻灯片不太正确。之前？</p>
+<p>发言人   28:53<br>Oh yeah, what is the point of doing the static versus nonconstat? It’s always being referenced just locally. What is the point of declaring it? Sta is it stores it in no, no, no reference.<br>哦，是的，做静态与非静态有什么意义？它总是只在本地被引用。宣布它的意义是什么？Sta是将它存储在无引用中。</p>
+<p>发言人   29:08<br>If you reference a variable that’s you mean? So a variable’s defined in your module and then you. With the static, right? Oh, they’re both local. So you do this if you want a value to, if you want that variable to retain value from invoke to invocation. So suppose it’s usually a bad idea, as we’ll see when we study threads, because it makes your code non-street safe. But like early, like random number generators, it would compute a pseudo random number, and then it would store it in a static variable and then use that as the starting value for the next time you call that function. So whenever you want values to persist across function invos, you would do static, yes. Like something of.<br>如果你引用一个变量，那是你的意思吗？所以在您的模块中定义了一个变量，然后您自己。静态的，对吧？哦，他们都是本地人。因此，如果您想要一个值，如果您希望该变量在调用过程中保留值，请执行此操作。因此，假设这通常是一个坏主意，正如我们在研究线程时会看到的那样，因为它使您的代码非街道安全。但是像早期的随机数生成器一样，它会计算一个伪随机数，然后将其存储在一个静态变量中，然后在您下次调用该函数时将其用作初始值。因此，每当您希望值在函数调用之间持久化时，您会使用静态，是的。像某种东西。</p>
+<p>发言人   30:26<br>Well, wait a minute, let me get this straight. Write to x and P2 will actually correspond to, it’ll actually go to the memory. Location I’m sorry, I need to amend that. So rights to X in P2 will be 8 B because the compiler knows that it’s a double, but it’ll go to a memory location that’s that’s only 4 B x because the linker chose the strong symbol. So the writes to X and P2 will actually overwrite y. I’m sorry, yes, question?<br>好吧，等一下，让我把它说清楚。写入x和P2实际上会对应，它实际上会进入内存。位置很抱歉，我需要修改一下。因此，在P2中X的权限将是8 B，因为编译器知道它是一个double，但它将转到一个内存位置，那只是4 B x，因为链接器选择了强符号。所以对X和P2的写入实际上会覆盖y。对不起，是的，有问题吗？</p>
+<p>发言人   31:25<br>That’s just usually the way it happens.<br>这就是通常发生的方式。</p>
+<p>发言人   31:35<br>No, no, no, global variables go in dot data. They don’t go on the stack. But usually if you define local variables in a function, it will put them, it will allocate them one after the other on the stack. Okay? All right, so all this discussion about. These weird, strong, weak symbol rules that the linker have.<br>不，全局变量放在点数据中。它们不会堆叠起来。但通常如果你在函数中定义局部变量，它会把它们放在堆栈上，一个接一个地分配它们。好吗？好的，所以所有这些讨论都是关于。链接器拥有的这些奇怪的、强的、弱的符号规则。</p>
+<p>发言人   32:03<br>It’s another reason to avoid global variables if you can. If you need to declare a global, see if you can declare it static, because that’ll limit its scope to the module that it’s declared in. So that’s a good idea if you can do it. And if you define a global variable, initialize it so that you’ll find, you’ll discover if you have multiple initialized global symbols with the same name in your code. And then it’s always good practice if you’re referencing an external variable to tell the compiler about it by using the extern attribute.<br>如果可以的话，这是避免全局变量的另一个原因。如果您需要声明一个全局变量，请查看是否可以将其声明为静态变量，因为这会将其范围限制为声明它的模块。如果你能做到的话，这是个好主意。如果您定义了一个全局变量，请对其进行初始化，这样您就会发现代码中是否有多个具有相同名称的已初始化全局符号。然后，如果您通过使用extern属性引用外部变量来告诉编译器它，那么这始终是一种良好的做法。</p>
+<p>发言人   32:47<br>All right, so now at this point, the linker has associated every symbol reference with some symbol definition. Now it has to take all those relocatable object files and smoosh them together and create like one big executable.<br>好的，现在链接器已经将每个符号引用与某个符号定义相关联。现在它必须将所有这些可重定位的目标文件放在一起，然后像一个大的可执行文件一样创建。</p>
+<p>发言人   33:06<br>So suppose with our example, our little running example, each main point zero and some .0 contain code and initialized data. Some point zero doesn’t have any initialized data, just has code. And then there’s system code that actually runs before and after your program. When your program run, it actually starts executing startup code from libc that sort of initializes things. And then the last thing that it does is it calls main and passes it RC and RV, and then when your program exits, well, that’s a sys call. But if your program, if your main function routine doesn’t return, then it returns back to that startup code, which then does an exit. So this is just, and so this consists of of text and data as well.<br>因此，假设在我们的示例中，我们的小运行示例，每个要点0和一些0包含代码和初始化数据。有些零点没有任何初始化的数据，只有代码。然后是实际在你的程序前后运行的系统代码。当你的程序运行时，它实际上开始执行libc中的启动代码，初始化一些东西。然后它做的最后一件事是调用main并传递遥控和RV，然后当你的程序退出时，这是一个sys调用。但如果你的程序，如果你的主函数例程没有返回，那么它会返回到启动代码，然后退出。所以这只是，所以这也由文本和数据组成。</p>
+<p>发言人   34:11<br>And so when the linker relocates these object files, it takes all of the dot text sections from each of the modules and put them together contiguously in the dot text section for the executable object file. So it just puts them together in some order that it determines, and it creates a combined that text section in the executable that contains all of the system code and all of the all of the code defined in the modules. And then it does the same thing with the data, takes all the all the dot data sections from the various object files, and puts them together in one combined DOC data section in the executable.<br>因此，当链接器重定位这些目标文件时，它从每个模块中获取所有点文本部分，并将它们连续地放在可执行目标文件的点文本部分中。所以它只是按照自己确定的顺序将它们放在一起，然后在可执行文件中创建一个组合的文本部分，其中包含所有系统代码和模块中定义的所有代码。然后它对数据执行相同的操作，从各个目标文件中获取所有点数据节，并将它们放在可执行文件的一个组合文档数据节中。</p>
+<p>发言人   35:04<br>And it also emerges as symbol tables in the debug information as well. When just the act of of relocating these object files requires the linker to figure out where it’s going to actually store these different symbols, when the system, when this program gets loaded, it has to pick an address for main that that function will start at some absolute address. It’s going to have to do the same for swap. So for all the data arrays.<br>并且它也作为符号表出现在调试信息中。当重新定位这些目标文件的行为需要链接器弄清楚它将实际存储这些不同符号的位置时，当系统加载此程序时，它必须为main选择一个地址，该函数将从某个绝对地址开始。它必须为swap做同样的事情。对于所有的数据数组。</p>
+<p>发言人   35:55<br>But the problem is that when this code is compiled, the compiler doesn’t know what addresses the linker is going to pick. So the compiler creates these reminders to the linker called relocation entries, which are then stored in the relocation sections of the object file. And these relocation entries are instructions to the linker. That’s something that there’s a reference to a symbol that’s going to have to be patched up when the code is actually relocated and merged into the executable. So let’s look at a couple these, a couple of examples.<br>但问题是，当这段代码被编译时，编译器不知道链接器将选择哪些地址。因此，编译器会为链接器创建这些提醒，称为重定位条目，然后将其存储在目标文件的重定位部分中。这些重新定位条目是对链接器的指令。这是指在代码实际重定位并合并到可执行文件中时必须修补的符号的引用。让我们来看看这些例子。</p>
+<p>发言人   36:39<br>In our main DOC module, there was a reference this to this global, a symbol called Arra. And then there’s also a reference to this, this global symbol sum, which is a function. So the compiler creates two relocation entries.<br>在我们的主文档模块中，有一个对这个全局变量的引用，一个名为Arra的符号。然后还有一个对this的引用，这个全局符号和，它是一个函数。所以编译器创建了两个重定位条目。</p>
+<p>发言人   37:00<br>The first one for the reference to the array A, so here we’re moving, Remember EDI is the first argument. So you remember our sum function takes the address of array of the input array as its argument. So this move, we’re moving the address of the array into EDI for the first argument. But the compiler doesn’t know what that address is going to be so. Just it just moves an immediate value of zero into EDI temporarily. So you can see this is all zeros.<br>第一个是对数组A的引用，所以我们在这里移动，记住EDI是第一个参数。所以你记得我们的sum函数将输入数组的地址作为它的参数。所以这一步，我们将数组的地址移动到第一个参数的EDI中。但是编译器不知道那个地址会是什么。只是它只是暂时将零的即时值移动到EDI中。所以你可以看到这都是零。</p>
+<p>发言人   37:46<br>The BF is the move instruction, and then there’s all zeros for now. And then it places this relocation entry in the relocation section of main .0. And it says to the lake at offset A, so these, let me remind you, these are our main .0 module only contains one function.<br>BF是移动指令，然后现在全部都是零。然后它将此重新定位条目放置在main .0的重新定位部分中。它在偏移A处对湖说，所以这些，让我提醒你，这些是我们的main .0模块只包含一个函数。</p>
+<p>发言人   38:17<br>So that function starts at offset zero in the in the code section of the module, in the dot text section of the module. If there were other functions in this module, they would follow immediately after. And so you can see what the compilers, it’s just generating offsets of these instructions from the beginning of the dot text section. And it includes this relocation entry, which says to the linker, hey, when you’re relocating main .0 at offset A, in this dot section, you’ve got a reference, a reference to array in the form of a 32 b address. So eventually, the linker is going to have to patch up.<br>这样该函数就可以在模块的代码部分、模块的点文本部分从零偏移量开始。如果此模块中有其他功能，它们将立即执行。所以你可以看到编译器，它只是从点文本部分的开头生成这些指令的偏移量。并且它包括这个重定位条目，它对链接器说，嘿，当你在偏移量A处重定位main .0时，在这个点部分，你有一个引用，一个以32 b地址形式的数组的引用。所以最终，链接器将不得不修补。</p>
+<p>发言人   39:14<br>So this is address 9. This is address A, it’s going to have to patch up the 4 B starting at address A with the absolute address of the symbol array. And then similarly, the reference to the reference to. The reference to this function sum.<br>所以这是地址9。这是地址A，它必须用符号数组的绝对地址修补从地址A开始的4 B。然后同样地，对引用的引用。引用此函数的总和。</p>
+<p>发言人   39:42<br>The compiler has no idea where some actually will end up. It doesn’t even know what module it’s in, or even if even if it is defined in a module. So in this case, it just it does a call with all zeros. And then it adds this relocation entry that says to the linker and offset f, you’ve got a 4 B PC relative reference to a function, to a symbol called sum. And then this is sort of an arcane detail. And it includes there’s an option to include a bias in the offset. And since we’re using, since calls are, since calls are always resolved using PC relative addressing the value that’s going to be placed here at these 4 B that offset f is going to be an offset from the current RP value or programmer counter value. And since the program counter always points to the next instruction it, which is 4 B away, it includes this offset of -4.<br>编译器不知道一些人最终会在哪里。它甚至不知道它在哪个模块中，或者即使它是在模块中定义的。所以在这种情况下，它只是用全零进行调用。然后它将这个重定位条目添加到链接器和偏移量f中，你得到了一个对函数的4 B的相对引用，添加到一个名为sum的符号中。然后这是一个神秘的细节。它包括在偏移中包含偏差的选项。因为我们正在使用，因为调用总是使用PC相对寻址来解析调用，这个值将被放置在这4 B处，偏移f将是当前RP值或程序员计数器值的偏移量。并且由于程序计数器总是指向它的下一指令，距离4 B远，它包括这个偏移量-4。</p>
+<p>发言人   41:06<br>So I talk about it. In detail in the book, if you really want to know how this works. But just the point here is that there’s enough information for the linker to actually fill in the right address.<br>所以我谈论它。如果你真的想知道这是如何工作的，请在书中详细介绍。但这里的重点是有足够的信息供链接器实际填写正确的地址。</p>
+<p>发言人   41:21<br>So now if we look at the relocated text section, so if we compile this code into an executable, and then we use object dump to disassemble it, then what you see is this, this reference here where we move the of the address of A into EDI, those 4 B, which were originally 0, have now been updated with the actual address of of array in memory at runtime. So the linkers decided that the array is going to go at address 0x 6 0 1 0 1 8. And then it’s actually patched the 4 B in the move instruction with that absolute address. And the call to some, it’s also been updated. But this one’s interesting, right? So the address, it’s been updated with the PC relative address of 5, okay? So when this program runs, this call instruction, what it will do, when it determines, when it computes the absolute address of, of the function sum it will take.<br>现在，如果我们查看重新定位的文本部分，那么如果我们将此代码编译成可执行文件，然后使用对象转储来反汇编它，那么您将看到的是这个参考，在这里我们将A的地址移动到EDI中，即那些4 b，最初为0，现在已在运行时使用内存中数组的实际地址进行更新。因此链接器决定数组将在地址0 x6 0 1 8。然后它实际上用这个绝对地址修补了移动指令中的4 B。并且对一些人的呼吁也已经更新。但这个很有趣，对吧？所以这个地址已经用PC相对地址5更新了，好吗？所以当这个程序运行时，这个调用指令，它将做什么，当它确定时，当它计算它将采取的函数总和的绝对地址时。</p>
+<p>发言人   42:51<br>It will take the current value of the program counter, which is the next instruction, so 4 0 0 4 E3, and it will add to it whatever value is in this immediate field, which is a two comp. Interpret it as a tooth complement integer. So it can be, it can go.<br>它将获得下一个指令 (即4 0 0 4 E3) 的程序计数器的当前值，并将这个立即字段中的任何值 (即2 comp) 相加。将其解释为牙齿补足整数。所以它可以，它可以去。</p>
+<p>发言人   43:19<br>Minus or plus. In this case, it’s saying that the function that you want to call is that is at 404 E3 plus 5, which is 4 0 4 e 8, which is the address of some, the linker. The linker does. The compiler has all the smarts. The compiler computed the relocation entry. The linker is just blindly going through each of those relocation entries and just doing what it’s told. But the net result is that now all of these references have been patched up with valid absolute addresses.<br>减号或加号。在这种情况下，它的意思是你想要调用的函数是在404 E3加5，也就是4 0 4 e8，这是一些链接器的地址。是链接器做的。编译器拥有所有的智能。编译器计算重定位条目。链接器只是盲目地浏览每个重新定位条目，并只是做它被告知的事情。但最终结果是，现在所有这些引用都已使用有效的绝对地址进行了修补。</p>
+<p>发言人   44:07<br>Now, once the linker has created an object file, that object file can be loaded. The code and data in that object file can be loaded directly into memory with no further modifications. So the, if you look at all of the read only sections in the executable, so there’s this init section, we don’t have to worry about that. All the code is in the dot text. And things like jump tables are in Roda. All of this data can be loaded directly into memory as is. So these bytes can just be copied directly into memory. And that forms the so called a read only code segment.<br>现在，一旦链接器创建了一个目标文件，就可以加载该目标文件了。该目标文件中的代码和数据可以直接加载到内存中，无需进一步修改。所以，如果你查看可执行文件中的所有只读部分，那么就有这个init部分，我们不必担心这个问题。所有代码都在点文本中。像跳台这样的东西在Roda。所有这些数据都可以直接加载到内存中。所以这些字节可以直接复制到内存中。这就形成了所谓的只读代码段。</p>
+<p>发言人   45:06<br>The data and the Dot data and BSS X sections can also be copied directly into into memory. And in the case of the variables in dot data, they’ll be initialized to a value that’s stored in the symbol table. So we’re drawing our memory here. This is the. Address space that every Linux program sees. And we’re drawing addresses starting from 0 and going up, increasing as we grow up. And every program is loaded at the same address, 0x 4 0 0 0 0. And so the code comes directly from the object file.<br>数据、点数据和BSS X部分也可以直接复制到内存中。对于点数据中的变量，它们将被初始化为存储在符号表中的值。所以我们在这里画我们的记忆。这就是。每个Linux程序都能看到的地址空间。我们正在从0开始绘制地址，并随着我们的成长而不断增加。并且每个程序都被加载到相同的地址，即0 x4 0。因此，代码直接来自目标文件。</p>
+<p>发言人   46:06<br>The data comes directly from the object file, And then that’s followed by a runtime heap, which is created and managed by malloc. So when you dynamically need to allocate memory using malloc, that memory comes out of this heap, which starts immediately following the data segment and grows upwards.<br>数据直接来自目标文件，然后是运行时堆，由malloc创建和管理。因此，当您需要使用malloc动态分配内存时，该内存将从这个堆中出来，该堆紧随数据段开始并向上增长。</p>
+<p>发言人   46:32<br>The stack is at the very top of the visible memory that’s available to application programs. The memory above that is restricted to the kernel. So if you try to access those memory locations, you’ll get a seg fault. And then the stack, as we know, grows down. So this is managed and created at runtime. And then there’s this region somewhere in this huge gap between the stack and the heap. There’s a region for shared libraries. So the DOS files all get loaded into this memory mapped region for shared libraries.<br>堆栈位于应用程序可用的可见内存的最顶部。上面的内存仅限于内核。因此，如果您尝试访问这些内存位置，您将得到一个sig错误。然后，正如我们所知，堆栈向下增长。所以这是在运行时管理和创建的。然后在堆栈和堆之间的巨大间隙中有一个区域。有一个用于共享库的区域。因此DOS文件都加载到共享库的内存映射区域中。</p>
+<p>发言人   47:20<br>Now the top of the heap is indicated by this global variable maintained by the kernel called break Brk. And the top of the stack, as we know, is maintained by the general purpose register Rsp.<br>现在堆的顶部由名为break Brk的内核维护的全局变量指示。堆栈的顶部，正如我们所知，是由通用寄存器Rsp维护的。</p>
+<p>发言人   47:37<br>Now, there’s this is a little bit of a simplification. If you actually look at the address is returned by Mali, there’s actually, there’s actually two heaps. There’s a heap up here in the high of memory that grows down, that’s used for large objects, very large. If you mount a whole bunch of space, then the heap that grows up is reserved for smaller, smaller objects. So I’m not really sure why they do this. I think it allows them to have separate allocation algorithms for large objects and small objects.<br>现在，这是一个有点简化的过程。如果你实际查看由Mali返回的地址，实际上有两个堆。在内存的高处有一个逐渐下降的堆，用于大型对象，非常大。如果你安装了一大堆空间，那么增长的堆将被保留给越来越小的对象。所以我真的不确定他们为什么要这样做。我认为这允许他们对大对象和小对象有不同的分配算法。</p>
+<p>发言人   48:22<br>Okay, so one of the real advantages of linking is it allows us to create libraries of things. So it’s always something we want to do as programmers, we always. Want to create abstractions and then present those abstractions to users? And we do that by creating libraries. Defining an API, yes.<br>好的，链接的真正优势之一是它允许我们创建事物库。所以这总是我们作为程序员想做的事情，我们总是这样。想要创建抽象并将这些抽象呈现给用户吗？我们通过创建图书馆来做到这一点。定义一个API，是的。</p>
+<p>发言人   48:56<br>I think it just no, no. Actually, that’s a good question. The things I’ve done, it just grows until it runs out of memory. So I don’t think actually that’s a really good question. I mean I’ve done those experiments and it eventually reaches some limit.<br>我认为它就是不，不。实际上，这是个好问题。我所做的事情，它会一直增长，直到耗尽记忆。所以我认为这实际上不是一个很好的问题。我的意思是，我做了那些实验，最终达到了一些极限。</p>
+<p>发言人   49:24<br>Yeah, I don’t know. It’s a very large number, but. So? You as programmers, we always want to abstract, define Apis, implement, package up those Apis, and make them available to other programmers. So how can we actually do that?<br>是的，我不知道。这是一个非常大的数字，但是。所以呢？作为程序员，我们总是想要抽象、定义Apis、实现、打包这些Apis，并使它们可供其他程序员使用。那么我们该怎么做呢？</p>
+<p>发言人   49:49<br>How can we make commonly used functions available to other programmers? Well, one thing, given what we’ve learned so far, you could just take all the functions and them all in a single big C file, and then programmers would just link that C file into their programs if they want to use them. Another option would be to take that might get kind of unwieldy if it’s a big library, lipc has hundreds and hundreds of functions. So another option might be to just take each function, put it in a separate file, and then compile them all together, compile, and link them all together. So this is more space and time efficient than then our first option, but it seems like it would be burdensome on the programmer. The program would have to know where all these functions were and put them in make files. It’d just be a lot of you could end up with a ridiculously large command line to GCC.<br>我们如何使常用的函数对其他程序员可用？嗯，根据我们到目前为止所学的，有一件事，你可以把所有的函数和它们都放在一个大的C文件中，然后程序员如果想使用它们，就把那个C文件链接到他们的程序中。另一个选择是采取可能会变得有些笨拙的方法，如果它是一个大的库，lipc有成百上千个函数。所以另一个选择可能是将每个函数放在一个单独的文件中，然后将它们编译在一起，编译并将它们链接在一起。所以这比我们的第一个选项更节省空间和时间，但似乎这会给程序员造成负担。程序必须知道所有这些功能在哪里，并将它们放在生成文件中。这可能只是很多人最终会得到一个大得离谱的命令行到GCC。</p>
+<p>发言人   50:56<br>So? One solution to this problem is the first solution that the developers of Unix came up with, something called a static library. So the idea with a static library is that you create this archive called a do a file, which it’s just a collection of .0 files, where each point 0 file contains a function. So you take all the functions in your library.<br>所以呢？这个问题的一个解决方案是Unix开发者提出的第一个解决方案，称为静态库。所以静态库的想法是创建一个名为do a文件的档案，它只是一个.0文件的集合，其中每个点0文件包含一个函数。因此，您可以使用库中的所有功能。</p>
+<p>发言人   51:25<br>You use option 2 to create a bunch of .0 files, and then you use a program called an archive or AR to take those point zero files, put them together all together in a big file called an archive with a table of contents at the beginning that tells you the offset of each one of the .0 files. So an archive is just this concatenated collection of doo files, and then you link, you pass that archive to the to the linker, and it only takes the point zero files that are actually referenced and links them into the code. So it’s a more efficient way you can have a huge archive, but like libc. But if you only call printf, the only point 0 file you get is printf point 0. So the way this works is, as before, we take.<br>您可以使用选项2创建一堆.0文件，然后使用名为archive或AR的程序来处理这些点零文件，把它们放在一起，放在一个叫做存档的大文件中，开头有一个目录，告诉你每个0文件的偏移量。因此，档案只是doo文件的串联集合，然后您链接，将该档案传递给链接器，它只接受实际引用的零点文件并将它们链接到代码中。因此，这是一种更有效的方式，您可以拥有庞大的存档，但像libc一样。但如果你只调用printf，你得到的唯一点0文件就是printf点0。因此，我们采取的方式是像以前一样。</p>
+<p>发言人   52:28<br>We take all the functions we want to put in our library. We run them through our translators to get .0 files. We pass those to the archiver to get the archive. So in this case, libc. A which has this code for printf that we might want to use. And so we can recreate that archive anytime we want.<br>我们将想要放入库中的所有函数都取走。我们通过翻译人员运行它们以获取.0文件。我们将它们传递给存档者以获取存档。在这种情况下，libc。有一个我们可能想要使用的printf代码。因此，我们可以随时重新创建档案。</p>
+<p>发言人   52:55<br>So if one of these functions changes, like say, printf changes, you just re-architect dot recompile printf, and then re-architect of the doo files. So in loop C, it’s about 1500 object files in its archive. Things like printf, scanf, simple integer math. And there’s also a math library, which has you several hundred common functions for things like floating point math, sine, cosine, tension, etc..<br>因此，如果其中一个函数发生更改，例如printf更改，您只需重新构建点重新编译printf，然后重新构建doo文件。所以在循环C中，它的存档中有大约1500个目标文件。像printf，scanf，简单整数数学这样的东西。还有一个数学库，里面有数百个常见的函数，可以处理浮点数学、正弦、余弦、张力等。</p>
+<p>发言人   53:31<br>These is the convention is that a library always is prefixed with lib, lib, and then some indication of what it does. So now let’s see how linking with these static libraries would work.<br>惯例是库总是以lib，lib为前缀，然后指明它的作用。所以现在让我们看看如何链接这些静态库。</p>
+<p>发言人   53:48<br>So I’ve created a little example here. I’ve created a library called Lib Ctor A, and it consists of functions that vector. And this is a real simple library. It just, there’s a function to 2 vector is x and y together and return the result in z? And then another similar function that will do pairwise multiplication of two vector is Xi times yi equals z, And now I compile these two programs. And I’ll package them into an archive called lib vector Doa. And then in my main program I’m going to call one of those functions advect to add these two vector is x and y together.<br>所以我在这里创建了一个小例子。我创建了一个名为Lib Ctor a的库，它由向量函数组成。这是一个非常简单的图书馆。它只是，有一个函数将两个向量x和y放在一起，并以z为返回结果？然后另一个类似的函数将对两个向量进行成对乘法，即Xi乘以yi等于z，现在我编译这两个程序。我会将它们打包到一个名为lib vector Doa的档案中。然后在我的主程序中，我将调用其中一个函数，将x和y这两个向量相加。</p>
+<p>发言人   54:46<br>So now what happens when we compile this program? We’ve already we’ve constructed the archive lib vector Doa from advect .0 and malt VC .0, and we pass that archive to the linker along with our main 2.0 relocatable object file. And we also pass it libc do A, which has the definition of which contains printf point 0. And anything else that printf do zero might call. The linker detects the reference to advect the function advac, and so it just pulls advect .0 out and ignores the rest. Similarly for printf point 0. And then it compiles all those main 2.0, advent .0 and printf point 0 all into this fully linked executable called proc 2 c for compile time. So we, we’re doing this linking at compile time when we call a GCC now what the linker does?<br>那么现在当我们编译这个程序时会发生什么？我们已经从advect .0和malt VC .0构建了归档库vector Doa，并将该归档与主2.0可重定位目标文件一起传递给链接器。并且我们还将它传递给libc do A，它的定义包含printf点0。以及printf可能会调用的任何其他操作。链接器检测到advect函数advac的引用，所以它只是拉出advect .0并忽略其余部分。同样，对于printf点0。然后它会在编译时将所有主2.0、来临.0和printf点0都编译到名为proc 2 c的完全链接的可执行文件中。所以，当我们调用GCC时，我们正在编译时进行链接，现在链接器做什么？</p>
+<p>发言人   56:06<br>When it’s using static libraries. It scans all the O files and do A files in order on the command line. So you’re just typing GCC and then a list of 0 files and Doa files in some order.<br>当它使用静态库时。它扫描所有O文件，并在命令行上按顺序执行文件。所以你只需输入GCC，然后按某种顺序列出0个文件和Doa文件。</p>
+<p>发言人   56:25<br>So during the scan, it keeps a list of the current unresolved references. Let’s say it looks at main point zero first, and there’s a reference to printf. Well, that’s an unresolved reference because print f’s not defined in main .0. So that goes in a list of undefined references. And at some point or another, as each new doo file or do a file is encountered, the linker tries to resolve its list of unresolved references with the symbols that are defined in that doo file or do a file. And then if there’s any entries in the list at the end of the scan, then there’s an error so that the key here is that the linker will try to resolve these references from we’re left to right on the command line.<br>因此在扫描期间，它会保留当前未解析引用的列表。假设它首先查看主点零，并且有一个对printf的引用。嗯，这是一个未解析的引用，因为在main .0中没有定义print f。这样就进入了未定义引用的列表。在某个时刻，当遇到每个新的doo文件或执行文件时，链接器尝试使用在该doo文件或执行文件中定义的符号来解析其未解析的引用列表。然后，如果在扫描结束时列表中有任何条目，则会出现错误，因此这里的关键是链接器将尝试从命令行从左到右解析这些引用。</p>
+<p>发言人   57:17<br>And so this is another sort of important thing for you to know as programmers, because the order that you that you put your files on the command line actually makes a difference. So you can get sort of weird baffling linker errors you if you use the wrong order.<br>因此，对于程序员来说，这是另一件重要的事情，因为您将文件放在命令行上的顺序实际上会有所不同。所以如果你使用错误的顺序，你可能会得到一些奇怪的令人困惑的链接器错误。</p>
+<p>发言人   57:35<br>So for instance, suppose we’ve got. A function, an object module called lib test that calls a function that’s defined in lib mind do a, so these dash LS dash big L period that says to look for to look for. Library files in the current directory. That’s with the dot. Look there first, and then look in the normal places that you look. And the dash lowercase l, it’s like an abbreviation. We could replace this with just the fully spelled out libm on A, but you’ll see this lowercase l used a lot.<br>例如，假设我们有。一个函数，一个名为lib test的对象模块，它调用在lib mind中定义的函数，所以这些破折号破折号大L个周期，表示要寻找的。当前目录中的库文件。这是点的。先看那里，然后看你平常看的地方。和破折号小写的l，就像一个缩写。我们可以用完全拼写的libm替换它，但你会看到这个小写的l经常使用。</p>
+<p>发言人   58:28<br>So lib test calls a function that’s declared in libm do a, so the linker, it looks at the unresolved symbols in libtard .0, and it detects that there’s this unresolved function. Let’s say it’s called foo, or no, it’s called lib fun. And it puts it on the list. And then it goes on to the next command line entry, and that’s libm mine Doa. And in there, it finds this symbol lib fund, and it resolves the reference to that, to lib fund, to the actual address, the relocated address.<br>因此，lib测试调用一个在libm中声明的函数do a，因此链接器会查看libtard .0中未解析的符号，并检测到这个未解析的函数。让我们假设它叫做foo，或者不，它叫做lib fun。它把它放在清单上。然后它继续进入下一个命令行条目，那就是libm我的Doa。在那里，它找到了这个符号lib fund，并将对lib fund的引用解析为实际地址，即重新定位的地址。</p>
+<p>发言人   59:12<br>Now, if we switch the order and we put libm mine a first, followed by libtard zero, well, there’s no unresolved references in this library collection of function definitions. So there’s no unresolved references. So the linker looks at that, that’s all good. And then it looks at libtard .0, and now there’s an unresolved reference to lib f-one, but we’re at the end of the command line, so that’s a linker error. So you get, you get this really cryptic error message.<br>现在，如果我们切换顺序，先放置libm，然后是libtard零，那么在这个函数定义库集合中没有未解析的引用。所以没有未解决的参考文献。所以链接器看到了，这一切都很好。然后它查看libtard .0，现在有一个未解析的lib f-one引用，但是我们已经到了命令行的末尾，所以这是一个链接器错误。所以你会收到这条非常神秘的错误消息。</p>
+<p>发言人   59:49<br>And if you didn’t know about this ordering rule, you wouldn’t have any idea how to debug it.<br>如果你不知道这个排序规则，你就不会知道如何调试它。</p>
+<p>发言人   59:57<br>So static libraries are kind of the old fashion-show. The solution, the modern solution is to use dynamic libraries are shared libraries. So the reason there’s this sort of newer form of libraries is static libraries have some disadvantages. So every if you compile with static libraries, then every function that uses printf, which or every program that uses printf, has to have a copy of printf. But almost every program uses printf. So shared libraries allow provide a mechanism where there can just be where every, there’s just one instance of a shared library member like printf, and every program running on the system will share that one copy.<br>所以静态库有点像旧的时装秀。解决方案，现代的解决方案是使用动态库是共享库。因此，这种较新形式的库出现的原因是静态库有一些缺点。因此，如果您使用静态库进行编译，那么每个使用printf的函数或每个使用printf的程序都必须有printf的副本。但是几乎每个程序都使用printf。因此，共享库允许提供一种机制，其中每个共享库成员 (如printf) 只有一个实例，并且系统上运行的每个程序都将共享该副本。</p>
+<p>发言人   01:00:58<br>So that’s sort of the big disadvantage is this potential duplication.<br>因此，这种潜在的重复是一种很大的劣势。</p>
+<p>发言人   01:01:05<br>So shared libraries are different in the sense that they contain. Code and data that are linked and loaded into the program, not when it’s not, when it’s compiled and linked into an executable object file, but actually when the program is loaded into the system. So linking of references to shared library objects is deferred until the program is actually loaded into memory, until the executable object file is actually loaded into memory. And this can either, and it can even happen. It can happen when the program is actually loaded into memory, but it can also happen at runtime anytime at runtime. So you can be running a program, and that program can arbitrarily decide to load a function that’s declared in a shared library. And I’ll show you that it’s really cool.<br>因此，共享库包含的感知不同。链接并加载到程序中的代码和数据，不是在编译并链接到可执行目标文件时，而是在程序加载到系统时。因此，共享库对象引用的链接被推迟，直到程序实际加载到内存中，直到可执行对象文件实际加载到内存中。这也可能发生，甚至可能发生。它可以在程序实际加载到内存时发生，但也可以在运行时随时发生。因此，您可以运行一个程序，该程序可以任意决定加载在共享库中声明的函数。我会向你展示它真的很酷。</p>
+<p>发言人   01:02:07<br>Now, these things are often called, they’re called shared libraries. They’re called dynamic link libraries. Like in Windows, they’re called Dlls, doso files, they’re all reference the same thing.<br>现在，这些东西通常被称为共享库。它们被称为动态链接库。就像在Windows中一样，它们被称为dll、doso文件，它们都引用同一个东西。</p>
+<p>发言人   01:02:25<br>So this, like I said, the dynamic linking can occur when the program’s loaded, after it’s loaded and actually running. And there’s this sort of big deal that shared library routines can be shared by multiple processes. We’ll look at. This will make sense when we look at virtual memory, so don’t worry about that now.<br>所以，就像我说的，动态链接可以在程序加载时、加载并实际运行后发生。还有这样一件大事，共享库例程可以被多个进程共享。我们会看看。当我们查看虚拟内存时，这会产生感知，所以现在不用担心。</p>
+<p>发言人   01:02:47<br>But here’s how the process works. So first we have to create, instead of creating an archive, we create a shared library. So our lib vector routines, instead of creating an archive, a file, we create a Soo file using the shared argument to GCC. So we take our two input functions, advac and mot vac, and shared, it says to create, and we’re telling GCC to create a shared library and place it in lib ctor doso. And there’s also the. C developers created a shared library called libc, so that contains printf and other standard library functions. So we take our program main two. This is the same program that calls advac, and we compile it into main 2, 0, and we pass main 2.0 and these DOS files to the linker.<br>但这个过程是这样运作的。所以首先我们必须创建一个共享库，而不是创建一个归档。所以我们的lib向量例程，不是创建一个归档文件，而是使用GCC的共享参数创建一个Soo文件。因此，我们使用我们的两个输入函数advac和mot vac，并共享，它表示创建，我们正在告诉GCC创建一个共享库并将其放置在lib ctor doso中。还有一个。C开发人员创建了一个名为libc的共享库，其中包含printf和其他标准库函数。所以我们把我们的程序主要分为两个部分。这是调用advac的相同程序，我们将其编译为main 2，0，然后将main 2.0和这些DOS文件传递给链接器。</p>
+<p>发言人   01:04:03<br>Now, the linker, at this point, it doesn’t actually copy. Let’s say we’re using advac or printf. It doesn’t actually copy those functions or do anything with them in the executable. It just makes a note in the symbol table that those functions. The references to those functions will need to be resolved when the program is loaded, so it puts in a relocation entry that says fix this up when you load the program. So it’s partially linked, but it’s not fully linked.<br>现在，链接器，在这一点上，它实际上并没有复制。假设我们正在使用advac或printf。它实际上并不复制这些函数或在可执行文件中使用它们做任何事情。它只是在符号表中记录这些功能。在程序加载时需要解析对这些功能的引用，因此它会添加一个重新定位的条目，指出在加载程序时修复这个问题。所以它是部分链接的，但不是完全链接。</p>
+<p>发言人   01:04:39<br>You can’t take a program, you can’t take it executable file that was dynamically linked and loaded directly. What you do is the loader, which is the exec vegan call, and we’ll learn more about that. This is just a syscall that loads executables into memory and runs them. The loader takes the executable and then it takes the shared Soo files that this program needs. Also, the linker also made a note of which doso files it needs. So the loader calls the dynamic linker, which takes those doso files, and then actually resolves all the references to any unresolved reference, the address of advac, the advac and printf functions isn’t determined until the program is loaded, and it isn’t determined by the dynamic linker until the program is loaded. So the dynamic linker goes through a similar process that the static linker did, sort of fixing up references to advac at references to printf. And then at that point, the binary, the binary is.<br>你不能使用一个程序，你不能使用它动态链接并直接加载的可执行文件。你要做的是加载程序，也就是执行素食主义者调用，我们会详细了解它。这只是一个将可执行文件加载到内存并运行它们的系统调用。加载程序获取可执行文件，然后获取此程序所需的共享Soo文件。此外，链接器还记下了它需要哪些doso文件。因此加载程序调用动态链接器，它接收这些doso文件，然后实际解析对任何未解析引用的所有引用，advac的地址，advac和printf函数在程序加载之前不会确定，并且在程序加载之前也不会由动态链接器确定。因此，动态链接器经历了与静态链接器类似的过程，在对printf的引用处修复对advac的引用。然后在那个时候，二进制，二进制是。</p>
+<p>发言人   01:06:10<br>In a form that can be executed directly.<br>以可以直接执行的形式。</p>
+<p>发言人   01:06:12<br>So a question before you said that it scans or what if you look include? But if you include a file that’s in your same directory, so you don’t actually type in the. If the question is what happens if you include a file, includes are handled by the C preprocessor? So they’re gone. They’re long gone by the time, by the time the linker gets around to it. So the C preprocessor just takes sharp sign to fine sharp sign include and interprets those and outputs another C program. So if you include a file, the C preprocessor just takes that file and just expands it. And the output C program contains an expanded version of all the files that you included.<br>所以在你说它扫描或者如果你看起来包括什么之前有一个问题？但是，如果您包含位于同一目录中的文件，那么您实际上不会输入。如果问题是包含一个文件会发生什么，包含是由C预处理器处理的？所以他们走了。随着时间的推移，当链接器到达它的时候，它们已经消失了。因此，C预处理器只采用sharp符号来包含并解释这些符号，并输出另一个C程序。因此，如果您包含一个文件，C预处理器只会获取该文件并展开它。并且输出C程序包含您包含的所有文件的扩展版本。</p>
+<p>发言人   01:07:15<br>Now, what’s really cool is that you can also do this dynamic linking at runtime. What I showed you before, we’re doing it at load time, but you can also arbitrarily decide to load link and call a function from a shared, from a, from any function defined in a doso file. And the way you do it is there’s a, there’s an interface called the DL open that’s in libc that allows you to do this.<br>现在，真正酷的是你也可以在运行时进行动态链接。正如我之前向您展示的那样，我们正在加载时执行此操作，但您也可以任意决定从共享的，从doso文件中定义的任何函数加载链接并调用函数。你的做法是，在libc中有一个名为DL open的接口，允许你这样做。</p>
+<p>发言人   01:07:49<br>And so let’s say we want to, this is our main program. And just like before, we want to call advective, but advac now is defined in a doso file, the exact same DOS file that we generated before when we compile. So we’ll call this Dll DOC when we compile this program Dll DOC. We have no idea that it’s going to call a function from from libm vector. So we just compile it as though it a standalone CC program.<br>假设我们想要，这是我们的主程序。就像以前一样，我们想调用对流，但现在advac在一个doso文件中定义，与我们编译时生成的DOS文件完全相同。因此，当我们编译此程序Dll文档时，我们将调用此Dll文档。我们不知道它会从libm向量中调用一个函数。所以我们只是像编译一个独立的CC程序一样编译它。</p>
+<p>发言人   01:08:29<br>Within this program, though, we declare a pointer, a function pointer called advective. And we give the prototype for this function pointers. So two input arrays, the output array in the size. And then first, we dynamically load the shared library that contains the function we want. So we call DL openened and we say load up this DOS file into memory so that I can call a function, but don’t resolve. Don’t worry about resolving the references to functions until I actually tell you to. That’s the lazy part. And so this deal open returns a handle that the thing you use in subsequent calls. So if we don’t, if the handle is null, there was some kind of error, like maybe this data, so fileleftheron exist.<br>然而，在这个程序中，我们声明了一个指针，一个名为 “对流” 的函数指针。我们给出了这个函数指针的原型。所以两个输入数组，输出数组的大小。然后首先，我们动态加载包含我们想要的函数的共享库。所以我们调用DL opened，我们说将这个DOS文件加载到内存中，这样我就可以调用一个函数，但不能解析。在我实际告诉您之前，不要担心解析对函数的引用。这就是懒惰的部分。因此，这个交易打开返回您在后续调用中使用的事物的句柄。所以如果我们不这样做，如果句柄是null，就会出现某种错误，比如可能是这个数据，所以文件引用是存在的。</p>
+<p>发言人   01:09:32<br>So once we’ve opened that Soo file, then we use DL Sim with the handle, and then we give it as we pass as a string, the name of the function that we want to in Vogue and what we get back from DLC as a pointer to that function. And then we can use that function just like any other function. So we can use that function pointer. And we call it just as though it were a statically defined function. So you can see this is a very powerful technique.<br>因此，一旦我们打开了那个Soo文件，我们就会使用带有句柄的DL Sim，然后在我们作为字符串传递时给它，我们想要流行的函数的名称以及我们从DLC中获取的作为指向该函数的指针。然后我们可以像使用任何其他函数一样使用该函数。所以我们可以使用这个函数指针。我们称之为静态定义的函数。所以你可以看到这是一种非常强大的技术。</p>
+<p>发言人   01:10:12<br>Okay, so let’s finish the last little bits of the class. I want to show you it to try to convince you that linking is actually interesting, which is kind of a hard sell sometime. Yes, question? So you said. Yes? No, that’s? How it’s declared as a function pointer? And you just use the name of the function, you don’t have to dereference it. Or you call it, you call the function by just using that, that function pointer name, just like I did.<br>好的，让我们完成课程的最后一小段。我想向您展示它，试图说服您链接实际上是有趣的，有时这是一种难以推销的方式。是的，有问题吗？你说过了。是吗？不，那是什么？它是如何被声明为函数指针的？你只需使用函数的名称，不必取消引用它。或者你调用它，你只需使用那个函数指针名称来调用函数，就像我做的那样。</p>
+<p>发言人   01:11:04<br>If you dereference it, you just get back a pointer value. You’d get back the address of that function. So it’s kind of a hard sell that to convince you that linking is interesting. But I’m going to try.<br>如果你取消引用它，你只会得到一个指针值。你会得到那个函数的地址。所以说服你链接很有趣有点难推销。但我要试试。</p>
+<p>发言人   01:11:23<br>There’s this powerful technique called library interpositional. And the goal is to intercept function calls from libraries and do something, intercept them for some reason. So what we typically want to do is intercept a function call, record some statistics, or do some error checking, and then call the real function as intended. So the idea is we’re going to create wrappers. And when a program calls a function, what we’re going to do is we’re going to execute its wrapper instead. And we’re going to do it without changing any of the source.<br>有一种强大的技术叫做图书馆干预。而目标是拦截来自库的函数调用并做一些事情，出于某种原因拦截它们。所以我们通常想要做的是拦截一个函数调用，记录一些统计数据，或者进行一些错误检查，然后按照预期调用真正的函数。所以我们的想法是我们要创建包装器。当程序调用一个函数时，我们要做的是执行它的包装器。我们将在不改变任何来源的情况下进行。</p>
+<p>发言人   01:12:14<br>Now, there’s a lot of reasons, there’s a lot of applications for this that the neatest one that I know is that these Facebook engineers we’re trying to deal with this year long bug in the Facebook iPhone app. And nobody could figure out what was going on. And they figured it out using library interposal. They figured out that there was something in the network stack writing to the wrong location, and they figured it out by intercepting all the calls from their Facebook app that did writes. So things like write, write, VP, write. So they intercepted all those calls, and then they were able to, when they looked at the arguments and how those functions were being called, they determined.<br>现在，原因有很多，有很多应用程序，我所知道的最整洁的是这些Facebook工程师，我们正在努力处理Facebook iPhone应用程序中一年之久的错误。没有人能弄清楚发生了什么。他们通过图书馆干预找到了它。他们发现网络堆栈中有些东西写入错误的位置，他们通过拦截来自他们Facebook应用程序的所有写入调用来找到它。所以像写，写，VP，写这样的事情。所以他们拦截了所有这些调用，然后当他们查看参数和这些函数的调用方式时，他们能够确定。</p>
+<p>发言人   01:13:04<br>You can also use it for monitoring and profiling like so. If you want to know how many times different functions get called do you can interpose. We use it for generating address traces.<br>您也可以像这样使用它进行监控和概要分析。如果你想知道不同的函数被调用了多少次，你可以进行干预。我们使用它来生成地址跟踪。</p>
+<p>发言人   01:13:17<br>So your Mali, when you do your Mali lab later in the semester, you’re going to be evaluating your malloc using traces that we generated from real programs using this interposition of technique. So we interposed on all the Mali and free calls Netscape. And then we just recorded what addresses and sizes Malik was returning and what blocks Free was freeing up. And we just created a trace of those. And then so let me show you how you would do this.<br>所以你的Mali，当你在学期后期进行Mali实验时，你将使用我们使用这种技术从实际程序中生成的跟踪来评估你的malloc。所以我们在所有的Mali和免费电话上插入了Netscape。然后我们只是记录了Malik返回的地址和大小，以及释放的区块。我们刚刚创建了这些痕迹。然后让我向您展示如何做到这一点。</p>
+<p>发言人   01:13:58<br>So the idea, let’s say we have this main program, and the idea is to trace all the Mali and free call. So there’s 1 Malik call and there’s one free call. And we want to know what these addresses are, and we want to know what these sizes are. So we can do this at either compile time, link time, or run time.<br>所以这个想法，假设我们有这个主程序，这个想法是跟踪所有的Mali和免费通话。所以有一个Malik电话和一个免费电话。我们想知道这些地址是什么，我们想知道这些地址的大小是什么。所以我们可以在编译时、链接时或运行时执行此操作。</p>
+<p>发言人   01:14:18<br>To do it at compile time, we first write wrapper functions called my Mali and my free, where my Mali calls the real Mali function. And then it prints out the size that it was called and the address that Mali returned. So when we run our program, it’ll print out all these addresses. And it does the same thing for free. And then here’s the trick. In Mali dot h, we define Mali to be my Malik and free to be my free. And then we give the prototype for it so the compiler doesn’t get confused.<br>为了在编译时完成，我们首先编写名为my Mali和my free的包装函数，其中我的Mali调用真正的Mali函数。然后它打印出它被调用的大小和Mali返回的地址。所以当我们运行程序时，它会打印出所有这些地址。它免费做同样的事情。然后诀窍是这样的。在Mali.h中，我们将Mali定义为我的马利克，自由地成为我的自由。然后我们给出它的原型，这样编译器就不会混淆了。</p>
+<p>发言人   01:14:58<br>And then we compile my malloc C into a O file. And then then we call our program is our main program int dotsy for interposal, and we call that, and here’s the trick, we call it with the dash cap I argument, and we say look for any include files in the current directory. So this was similar to that L dash cap L argument, but because we tell GCC to look in the current directory first, so this is sort of where the interposition of happens, because when it does that it’s going to, it’s going to find a, it’s going to find a library called malloc doh, I mean, a dot h file called malloc dot h, and so all the calls to Mali will be translated by the c preprocessor to my Mali. So when we run this, it prints out the Mali and free trace.<br>然后我们将我的malloc编译成一个O文件。然后我们将我们的程序称为我们的主程序int dotsy，用于中间处理，我们称之为，这里的诀窍是，我们使用dash cap I参数调用它，我们说在当前目录中查找任何包含文件。所以这类似于那个L dash cap L参数，但是因为我们告诉GCC首先查看当前目录，所以这就是发生干预的地方，因为当它这样做时，它会找到一个，它将找到一个名为malloc doh的库，我的意思是，一个名为malloc dot h的点h文件，因此所有对Mali的调用都将被c预处理器翻译为我的Mali。所以当我们运行它时，它会打印出Mali和free trace。</p>
+<p>发言人   01:16:12<br>Now we can also do this at length time. So we can tell. See, in order to do this, we had to get access to the, we had to compile the program. We didn’t have to change it, but we had to compile it. We can use link time interposal. To avoid that compilation. So the way this works, we define our wrapper functions with this special name underscore, underscore, wrap malloc. And this calls the real malloc function and then prints out the information.<br>现在我们也可以在长时间内这样做。所以我们可以判断。看，为了做到这一点，我们必须访问，我们必须编译程序。我们不必修改它，但我们必须编译它。我们可以使用链接时间干预。避免这种编译。所以它的工作方式是，我们使用这个特殊名称下划线，下划线，wrap malloc来定义我们的包装函数。这将调用真正的malloc函数，然后打印出信息。</p>
+<p>发言人   01:16:45<br>And then at link time, then we do the interposition by calling the linker with the special dash WL argument. And so what this does, the dash WL flag to GCC says, hey, take what follows the argument that follows, replace all the commas with spaces, and then invoke the linker with this argument. So what we’re doing is passing of arguments to the linker and this dash dash wrap argument to the linker. It tells the linker to resolve all references to Mali as underscore underscore Rap Mali and all references to underscore real Mali should be resolved as Mali. So anywhere in the program where we call Mali, it’ll be resolved to underscore underscore Rap Mali, and it’ll invoke our rapper. And then the rapper calls real Malik. Which, because of this flag, resolves to the actual malir team?<br>然后在链接时，我们通过使用特殊的dash WL参数调用链接器来进行干预。所以这样做，GCC的短划线标志说，嘿，取后面参数后面的内容，用空格替换所有逗号，然后用这个参数调用链接器。所以我们正在做的是将参数传递给链接器，并将这个短划线换行参数传递给链接器。它告诉链接器将所有对Mali的引用解析为下划线: Rap Mali，并且所有对下划线: real Mali的引用都应解析为Mali。因此，在程序中我们称为Mali的任何地方，它将被解析为下划线Rap Mali，并且它将调用我们的说唱歌手。然后说唱歌手打电话给真正的马利克。因为这面旗帜，哪一个可以解析为实际的马拉尔团队？</p>
+<p>发言人   01:17:57<br>Now here you can also, and the really amazing thing is you can also do this interposition at load time and runtime when the program is loaded. So you don’t even need access to the point zero files. All you need is access to the executable. And for every program, we have access to the executable. So think about that. We can take any program and we can interpose on its library calls at runtime.<br>现在，您也可以在这里进行操作，真正令人惊奇的是，您还可以在程序加载时和加载时运行时进行这种干预。所以你甚至不需要访问零点文件。你只需要访问可执行文件。对于每个程序，我们都可以访问可执行文件。所以想想看。我们可以接受任何程序，并可以在运行时干预它的库调用。</p>
+<p>发言人   01:18:23<br>So the way we do this is we write the wrapper function now uses the dlsm call that we saw before, and we call it with this special function, the special argument called next. So and what this is saying is get the address of the real Mali. So, and we’re going to trick the linker into looking first to our implementation of Mali. But here we want the real 1. So we’re telling it to get to look in the next place. It’s next place that it would normally look and fetch the address of Malik. So the result is a pointer function pointer called malloc p, and then we can just call that function to get to call the libc malloc, and then print out the data.<br>因此，我们的做法是编写包装函数，现在使用我们之前看到的dlsm调用，并使用这个特殊的函数调用它，称为next的特殊参数。这就是说，要得到真正的Mali地址。所以，我们将欺骗链接器首先查看我们的Mali实现。但这里我们想要真正的1。所以我们告诉它去下一个地方看看。这是它通常会查找并提取Malik地址的下一个地方。因此结果是一个名为malloc p的指针函数指针，然后我们可以调用该函数来调用libc malloc，然后打印出数据。</p>
+<p>发言人   01:19:17<br>And we do the same thing for free. We use dlsm in exactly the same way for free. And then the interposition of now happens when the program is loaded.<br>我们免费做同样的事情。我们免费以完全相同的方式使用dlsm。然后在程序加载时发生现在的干预。</p>
+<p>发言人   01:19:31<br>So notice we build this, our main program now int r for runtime interposal, we built it. I’m sorry, we created our Soo file my Mali Soo using the shared argument. And then we compiled int int DOC into this executable called in tar. But notice there’s no mention of my Mali DOS anywhere. And now the interposition of happens when we actually run the program and we do it.<br>所以请注意我们构建了这个，我们的主程序现在int用于运行时干预，我们构建了它。对不起，我们使用共享参数创建了Soo文件my Mali Soo。然后我们将int int DOC编译成tar中的可执行文件。但请注意，在任何地方都没有提到我的马利多斯。现在，当我们实际运行程序并执行它时，干预就会发生。</p>
+<p>发言人   01:20:06<br>We affect the interposition by setting an environment variable called LD preload to my malloc DOS. And so this is an environment variable that tells the dynamic linker to look first in the value, Look first in the value of LD. Preload is a list of locations. Look first in those locations to resolve references, and only later look in the normal system places. So we’re saying to look in my malloc Soo for unresolved references first, and then we’re invoking, so in bash, this is how you initialize an environment variable, so we’re initializing it to my malo doso, and then we’re loading and running the program and the LD all the to malloc get turned into references to the wrapper function, the malloc function that we defined in our program. So, that’s it.<br>我们通过将名为LD preload的环境变量设置为我的malloc DOS来影响干预。因此，这是一个环境变量，它告诉动态链接器首先查看LD的值。Preload是一个位置列表。首先在那些位置查找以解析引用，然后再在正常系统位置查找。所以我们说首先在我的malloc Soo中查看未解析的引用，然后我们调用，所以在bash中，这就是初始化环境变量的方式，所以我们将其初始化为我的malo doso，然后我们加载并运行程序，所有的malloc都被转换成对包装函数的引用，这个函数是我们在程序中定义的malloc函数。所以，就是这样。</p>
+<p>发言人   01:21:14<br>So that interpositions is a really cool technique. It’s only possible because of linkers. So, all right, so good, we’ll see you on Thursday, and good luck with your cache labs.<br>因此，插话是一种非常酷的技术。这只是可能的，因为有了链接器。所以，好的，太好了，我们将在星期四见到你，祝你的缓存实验室好运。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 014-Linking</div>
+      <div>http://example.com/2025/10/12/15213-014/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-015/" title="深入理解计算机系统 015-Exceptional Control Flow, Exception and Processes">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 015-Exceptional Control Flow, Exception and Processes</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-013/" title="深入理解计算机系统 013-Thread-Level Parallelism">
+                        <span class="hidden-mobile">深入理解计算机系统 013-Thread-Level Parallelism</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:02All right I’d like to get started. Today I want to talk about virtual machines and Amm. The lecture is really going to be divided into three pieces. One is I’m going to start with what’s ca">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 018-Virtual Machines">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-018/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:02All right I’d like to get started. Today I want to talk about virtual machines and Amm. The lecture is really going to be divided into three pieces. One is I’m going to start with what’s ca">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:18.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.144Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 018-Virtual Machines - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 018-Virtual Machines"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          23k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          192 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 018-Virtual Machines</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:02<br>All right I’d like to get started. Today I want to talk about virtual machines and Amm. The lecture is really going to be divided into three pieces. One is I’m going to start with what’s called trap and emulate virtualization, which is basically an overview of how you could build your own virtual machine scheme on risk 5 in QM. Now I’m going to talk a bit about recent hardware support in microprocessors for virtualization, and then about today’s paper Dune, which uses this modern hardware support.<br>好的，我想开始了。今天我想谈谈虚拟机和Amm。讲座实际上将分为三个部分。首先，我将从所谓的陷阱和模拟虚拟化开始，这基本上是如何在QM中构建自己的虚拟机方案的概述。现在我要谈一下最近对虚拟化微处理器的硬件支持，然后谈一下今天的报纸Dune，它使用了这种现代硬件支持。</p>
+<p>发言人   00:43<br>Alright, so first, what’s a virtual machine? It’s really, you can think of it as a simulation of a computer that’s accurate enough to run an operating system, so qmu is. Example of you could consider to be an example of a virtual machine. The way I’m going to talk about it is that.<br>好的，首先，什么是虚拟机？你可以把它想象成一个计算机的模拟，它足够精确地运行一个操作系统，所以qmu就是这样。例如，您可以将其视为虚拟机的示例。我要谈论的方式是这样的。</p>
+<p>发言人   01:10<br>Down at the sort of the lowest level, sitting on top of the hardware, we’re going to imagine a virtual machine monitor, or VMM. And this more or less takes the place of the standard operating system kernel. And the virtual machine monitor’s job is to simulate a bunch of computers for guest operating systems.<br>在最低的层次上，坐在硬件之上，我们将想象一个虚拟机监视器，或VMM。这或多或少地取代了标准操作系统内核。虚拟机监视器的工作是为来宾操作系统模拟一堆计算机。</p>
+<p>发言人   01:34<br>So, so up here in, you know, what used to be user space in our usual diagrams, but it’s guest space. So this is I’m going to call this guest space. And down here, host space, we’re going to have a bunch of one or more guest operating systems kernels. We might have a Linux kernel. As one guest. And this Linux kernel is going to, you know, it’s just a, it thinks of itself as an ordinary kernel and it runs a bunch of processes, maybe a VI and AC compiler, and we might have other guest. We might have other guests to guest virtual machines running here that might be maybe another Linux or maybe even some other operating system like Windows. All running on the same machine and there would be Windows.<br>所以，在这里，你知道，在我们通常的图表中，曾经是用户空间，但它是访客空间。所以我将这个称为来宾空间。在这里，主机空间，我们将拥有一堆一个或多个来宾操作系统内核。我们可能有一个Linux内核。作为一个客人。而这个Linux内核将会，你知道，它只是一个，它认为自己是一个普通的内核，它运行一堆进程，可能是一个VI和交流编译器，我们可能还有其他的客户。我们可能有其他的来宾到来宾虚拟机在这里运行，可能是另一个Linux，甚至可能是其他操作系统，如Windows。所有这些都在同一台机器上运行，并且会有Windows。</p>
+<p>发言人   02:38<br>Process is running within this guest operating system. So the host world where the virtual machine monitor runs and the guest world where these ordinary operating systems run. And furthermore, we’re going to talk about a lot about.<br>进程正在此来宾操作系统中运行。因此，在虚拟机监视器运行的主机世界和运行这些普通操作系统的客户世界。此外，我们将谈论很多关于。</p>
+<p>发言人   02:58<br>Within the guest world guest supervisor mode, which is. Mode that the kernels run. The guest kernels run in guest user mode.<br>在客户世界客户主管模式下，即。内核运行的模式。客户机内核在客户机用户模式下运行。</p>
+<p>发言人   03:16<br>And again, the kind of classical goal of the virtual machine monitor is to provide an emulation of a machine that’s so good that you can just boot ordinary Linux, ordinary Windows, unmodified, and have it run inside this virtual machine, never suspecting that anything funny is going on. So for example, the virtual machine monitor has to be in a position to emulate the difference between supervisor mode and user mode in a way that is just completely convincing simulation of how the actual hardware does it, even though that’s can’t really be exactly what’s going on. So that’s why we talk about guest supervisor mode and guest user mode. These are the VMM ISS emulation of those two modes.<br>而且，虚拟机监视器的经典目标是提供一种机器仿真，其效果非常好，你可以只启动普通的Linux，普通的Windows，未经修改，并让它在这个虚拟机中运行，永远不会怀疑有什么有趣的事情正在发生。因此，例如，虚拟机监视器必须能够以一种完全令人信服的方式模拟主管模式和用户模式之间的差异，以模拟实际硬件的工作方式，即使这不能确切地说明正在发生的事情。这就是为什么我们谈论访客主管模式和访客用户模式。这些是这两种模式的VMM仿真。</p>
+<p>发言人   04:01<br>So why would you want to use a virtual machine? It turns out there’s a lot of reasons to run lots of distinct guest operating systems on a single computer. Sometimes maybe you’re running a big company and you know, you need to have lots and lots of servers, maybe name servers and security servers, who knows what? Each one of them doesn’t use many resources. So it’s sort of a waste of time to have to buy a physical machine for it. But you want to run, you know, you want to run lots of these low intensity servers on a single piece of hardware. You can save money by using a virtual machine.<br>那么你为什么要使用虚拟机呢？事实证明，在一台计算机上运行许多不同的来宾操作系统有很多原因。有时候也许你正在经营一家大公司，你知道，你需要很多服务器，可能是名称服务器和安全服务器，谁知道呢？它们中的每一个都不使用太多资源。因此，必须为其购买物理机器有点浪费时间。但是你想运行，你知道，你想在一个硬件上运行许多这些低强度服务器。您可以通过使用虚拟机来节省资金。</p>
+<p>发言人   04:40<br>It turns out virtual machines are also very, very widely used in cloud computing, where it’s an outfit like Amazon. Amazon AWS, they don’t want to rent out physical machines to people because that turns out to be a difficult to manage. What they want to do is rent their customers, their cloud customers, just a machine that Amazon can on the fly, you know, decide what Harvard to run it on, whether to run it on a bigger or smaller machine. Amazon can decide, you know, it’s current customers, maybe there’s two customers on this piece of hardware right here, but they’re not using the computer very much. Maybe it can pack a third or a fourth customer on to that same piece of hardware without spending it extra money, but get more revenue. So this virtual machines allow kind of extra level of flexibility. And, you know, it’s the kind of trick that’s being used is that we’re kind of shifting up the existing operating system kernels in user space, adding a new layer underneath to provide this flexibility.<br>事实证明，虚拟机在云计算也得到了非常广泛的使用，就像亚马逊一样。亚马逊AWS，他们不想将物理机器出租给人们，因为这很难管理。他们想要做的是租用他们的客户，他们的云客户，只是亚马逊可以即时运行的机器，你知道，决定在哪个哈佛大学运行它，是在更大还是更小的机器上运行它。亚马逊可以决定，你知道，它是现有的客户，也许这里有两个客户在使用这个硬件，但他们不太经常使用电脑。也许它可以让第三或第四个客户使用同样的硬件，而无需花费额外的钱，但可以获得更多的收入。因此，此虚拟机允许额外的灵活性级别。而且，你知道，我们正在使用的一种技巧是将用户空间中的现有操作系统内核向上移动，在下面添加一个新层以提供这种灵活性。</p>
+<p>发言人   05:47<br>It turns out there’s know there’s other reasons why people use virtual machines. One is certainly kernel development, which is why we all use QM. The ability to run XV 6 in a kind of virtual environment rather than on a real computer makes this course much more convenient for all of us, also makes it a little bit easier to debug because we can. Turns out that once you’re running XV 6 in this virtual machine environment that qmu provides, it’s easier to provide Gdb access, and it would be on a physical computer.<br>事实证明，人们使用虚拟机还有其他原因。一个当然是内核开发，这就是为什么我们都使用QM。在一种虚拟环境中而不是在真实计算机上运行XV 6的能力使本课程对我们所有人来说更加方便，也使调试变得更加容易，因为我们可以。事实证明，一旦您在qmu提供的虚拟机环境中运行XV 6，就更容易提供Gdb访问，并且它将在物理计算机上。</p>
+<p>发言人   06:21<br>And a final reason that people use virtual machines is that there’s a bunch of tricks that can be played using this extra layer of indirection provided by the virtual machine monitor. For example, you can checkpoint an entire running operating system and user processes. You can take a checkpoint of it, stash it away somewhere, maybe on disk, and then later restore that checkpoint, sort of exactly the state of that operating system and its processes as it was at the time of the checkpoint end. Useful for reliability, for debugging, maybe cloning the image of a virtual machine so you can run it multiple times. Another game you can play, you can migrate. A guest? An entire guest to another computer. If you have a guest operating system running on a physical computer and you need to shut down or replace that physical computer, you can actually, turns out move the running virtual machine image without disturbing it to another physical computer so that you can shut down the first one.<br>人们使用虚拟机的最后一个原因是，使用虚拟机监视器提供的这个额外间接层可以玩很多技巧。例如，您可以对整个正在运行的操作系统和用户进程执行检查点检查。你可以拿一个检查点，把它藏在某个地方，也许在磁盘上，然后稍后恢复该检查点，确切地说是操作系统及其进程在检查点结束时的状态。对于可靠性、调试很有用，也许可以克隆虚拟机的映像，以便可以多次运行。另一个你可以玩的游戏，你可以迁移。一个客人？整个客人连接到另一台计算机。如果您有一个在物理计算机上运行的来宾操作系统，并且需要关闭或替换该物理计算机，您实际上可以将正在运行的虚拟机映像移动到另一台物理计算机上，这样您就可以关闭第一台物理计算机。</p>
+<p>发言人   07:22<br>There’s just examples of why people really like virtual machines, and people really do.<br>这里只是一些例子说明为什么人们真的喜欢虚拟机，而人们确实喜欢。</p>
+<p>发言人   07:26<br>Virtual machines are very, very widely used, and they also have a long history. This idea first came up in the 1960s and they’ve been developed over time until they’re are quite pervasive and easy to use for this course. The reason why we’re looking into them is that virtual machine monitors provide a sort of different view on what an operating system can be instead of the process abstraction we’re all used to. You know, we have some analogous structures here, but that sort of we’re providing a different kind of container. It’s not a process, it’s a sort of simulated machine. So it allows us to kind of think about all the stuff we’ve been talking about, you know, memory allocation, scheduling, protection from a different point of view, maybe give us some ideas which we can take back to traditional operating system kernels. And indeed, much of the action, the sort of development design, development research action has shifted from conventional kernels down into the virtual machine monitors themselves as they’ve gotten more and more prevalent. So in some sense, kind of the topic of operating systems is drifting downwards a bit by one layer.<br>虚拟机的应用非常广泛，而且它们也有着悠久的历史。这个想法最早出现在1960年代，并且随着时间的推移不断发展，直到它们在本课程中非常普遍和易于使用。我们研究它们的原因是虚拟机监视器提供了一种不同的操作系统视图，而不是我们都习惯的过程抽象。你知道，我们在这里有一些类似的结构，但我们提供的是一种不同类型的容器。这不是一个过程，它是一种模拟机器。因此，它使我们能够从不同的角度思考我们一直在谈论的所有内容，如内存分配、调度、保护等，也许会给我们一些可以带回传统操作系统内核的想法。事实上，许多行动，开发设计，开发研究行动已经从传统的内核转移到虚拟机监控自身，因为它们变得越来越普遍。所以在某些感知，操作系统的话题有点向下漂移一层。</p>
+<p>发言人   08:48<br>Okay, for the first part of this lecture, I want to talk about a bit about how we could implement our own virtual machine. And I’m going to use risk 5 as the sort of assume that we’re trying to emulate risk 5 hardware so we can run operating systems designed for risks 5, like XV 6. And just to repeat specific goals, what we’d like for kind of classical virtual machines, what we’d like to build is something in which the guest software is just completely not aware that it’s running inside a virtual machine. We want to build something that makes it impossible for the guest software to distinguish to decide whether is this, am I running on a real machine or a virtual machine? We want the emulation to be that good. And the reason for that is that we don’t want want to be able run. We’d like to be able to run anything in our virtual machine, any operating system, even maybe an operating system we haven’t heard of. And that means that know whatever funny stuff the operating system does and the way it uses hardware, the virtual machine has to provide that an emulation of exactly the hardware so that any tricks that work on the real hardware are also going to work on the virtual machine.<br>好的，在本讲座的第一部分，我想谈谈如何实现我们自己的虚拟机。我将使用风险5作为一种假设，即我们正在尝试模拟风险5硬件，以便我们可以运行为风险5设计的操作系统，如XV 6。并且只是为了重复特定的目标，我们希望对于经典虚拟机类型，我们想要构建的是客户机软件完全不知道它正在虚拟机内运行的东西。我们想要构建一些东西，使客户软件无法区分以决定我是在真实机器上运行还是在虚拟机上运行？我们希望仿真能够那么好。原因是我们不想能够跑步。我们希望能够在我们的虚拟机中运行任何东西，任何操作系统，甚至可能是我们没有听说过的操作系统。这意味着，知道操作系统所做的任何有趣的事情以及它使用硬件的方式，虚拟机必须提供精确的硬件模拟，以便在真实硬件上工作的任何技巧也将在虚拟机上工作。</p>
+<p>发言人   10:13<br>A sort of similar goal that we’d like is we want there to be no way, not only no way for a guest to decide if it’s running on virtual machine, but no way for a guest to be able to escape from the virtual machine.<br>我们想要的一个类似的目标是，我们希望没有任何方式，不仅没有任何方式让来宾决定它是否在虚拟机上运行，而且没有任何方式让来宾能够从虚拟机中逃脱。</p>
+<p>发言人   10:29<br>A lot of the reason why people use virtual machines is to provide strict confinement for untrusted software, even untrusted operating systems running inside the virtual machine. For example, if you’re Amazon and you’re selling cloud service and it’s your customers often who provide the operating system that runs in the virtual machine as well as the applications. And gosh, for all you know, your customers are not running ordinary Linux. They’re running a special hacked version of Linux who’s intended to try to break out of its virtual machine and break into Amazons, either the virtual machines of Amazon’s other customers into the virtual machine monitor that Amazon uses to enforce isolation. So it’s quite important that guests not be able to break out of their virtual machines, that they be able to use the memory that they’re allowed to use by the virtual machine monitor, for example, but not other memory, and similarly, that they shouldn’t be able to reach out without permission and use things like storage devices or network interface cards. So we want to have very strict isolation.<br>人们使用虚拟机的很多原因都是为了对不受信任的软件，甚至是在虚拟机内运行的不受信任的操作系统提供严格的限制。例如，如果您是亚马逊并且正在销售云服务，而通常是您的客户提供在虚拟机中运行的操作系统以及应用程序。天哪，就你所知，你的客户并没有运行普通的Linux。他们正在运行一个特殊的Linux黑客版本，旨在试图突破其虚拟机并入侵亚马逊，无论是亚马逊的其他客户的虚拟机还是亚马逊用于执行隔离的虚拟机监视器。因此，非常重要的是，来宾不能脱离他们的虚拟机，他们能够使用虚拟机监视器允许他们使用的内存，但不能使用其他内存，同样，他们不应该在未经许可的情况下使用存储设备或网络接口卡之类的东西。所以我们想要非常严格的隔离。</p>
+<p>发言人   11:34<br>And in many ways, virtual machines provides stricter isolation than ordinary Unix processes. Ordinary Unix processes can often interact, You know, they can kill each other or they can all read or write the same files or communicate over pipes, but in a sort of ordinary virtual machine system, none of that’s possible. The different virtual machines running on the same computer, completely isolated from each other by the virtual machine monitor. So people like them for security. It’s a way of being able to run untrusted software without having to worry if it’s buggy or malicious.<br>在许多方面，虚拟机提供了比普通Unix进程更严格的隔离。普通的Unix进程经常可以进行交互，你知道，它们可以互相杀死，或者都可以读写相同的文件，或者通过管道进行通信，但在某种普通的虚拟机系统中，这些都是不可能的。在同一计算机上运行的不同虚拟机，通过虚拟机监控程序彼此完全隔离。所以人们喜欢它们是为了安全。这是一种能够运行不受信任的软件而不必担心它是错误还是恶意的方式。</p>
+<p>发言人   12:15<br>Now in practice I’ve pitched the goal as being a sort of completely faithful emulation of a physical machine. In fact, it turns out that for performance reasons, this is often blurred. And you’ll find, for example, that Linux and the most common virtual machine monitors have co-evolved a little bit so that in real life Linux may actually be aware that it’s running on a virtual machine monitor. And with the virtual machine monitor’s permission for efficiency Linux sometimes knowingly talks down to the virtual machine monitors to do things like get high speed access to devices. But that’s a carefully controlled exception. And general strategy is completely faithful simulation.<br>现在在实践中，我已经将目标定位为一种完全忠实的物理机器仿真。事实上，事实证明，出于性能原因，这通常是模糊的。你会发现，例如，Linux和最常见的虚拟机监视器已经协同进化了一点，所以在现实生活中，Linux可能实际上意识到它正在虚拟机监视器上运行。并且在获得虚拟机监视器的许可以提高效率的情况下，Linux有时会有意地与虚拟机监视器进行对话，以执行诸如获取高速访问设备之类的操作。但这是一个精心控制的例外。一般策略是完全忠实的模拟。</p>
+<p>发言人   13:05<br>Okay, so how could we build our own virtual machine monitor? Well, one possibility would be to do it entirely in software. You can imagine writing something like QM that interpreted the machine instructions. That is, you could write a program that would open up the XV 6, the read the file that has the XV 6 instructions in it, and your program could look at each instruction and say, oh, that’s a, that’s a load instruction or a move instruction. And your program, could you sort of simulate risk 5 state like might have 32 registers implemented in software and as your software sort of reads each instruction and picks it apart and figures out what kind of instruction it is, it would apply the effects of that instruction to the 32 registers and control registers that it was simulating all that software. And people do this, and it’s conceptually straightforward to make it work, although it maybe a lot of work to get all the details right? The reason why. Sort of pure software.<br>好的，那么我们如何构建自己的虚拟机监视器呢？一种可能性是完全在软件中完成。你可以想象写一些像QM这样的东西来解释机器指令。也就是说，你可以编写一个打开XV 6的程序，读取包含XV 6指令的文件，你的程序可以查看每个指令并说，哦，那是一个加载指令或移动指令。你的程序是否可以模拟风险状态，就像软件中可能实现32个寄存器一样，当你的软件读取每个指令并将其拆开并计算出它是什么类型的指令时，它会将该指令的效果应用于它模拟所有软件的32个寄存器和控制寄存器。人们这样做，并且概念上简单明了，尽管可能需要很多工作才能把所有细节都做好？原因。有点像纯软件。</p>
+<p>发言人   14:17<br>Interpretive virtual machines aren’t widely used is that they’re slow. If you play this game, your virtual machine is going to run guest software at a small fraction of the speed of the hardware that you’re using. Because for every your virtual machine monitor, software has to look at every instruction as it’s executed up here, your machine monitor is going to maybe run dozens of instructions in the process of interpreting each one of the guest instructions. And so it’s going to be orders of magnitude slower than a real computer. And for something like cloud computing, I really would not be practical. People don’t use the software interpretation to build virtual machines for production systems. Instead?<br>解释性虚拟机没有被广泛使用是因为它们速度慢。如果你玩这个游戏，你的虚拟机将以你正在使用的硬件的一小部分速度运行客户软件。因为对于每个虚拟机监视器，软件必须查看在此处执行的每条指令，您的机器监视器在解释每条来宾指令的过程中可能会运行数十条指令。因此，它将比真正的计算机慢几个数量级。而对于像云计算这样的事情，我真的不太实际。人们不使用软件解释来构建生产系统的虚拟机。相反？</p>
+<p>发言人   15:07<br>Sort of core of one of the main widely used strategies is to actually run the guest instructions on the real CPU. So if you were going to run XV 6 in your virtual machine monitor, you would actually load XV six’s instructions, the kernel, the beginning, you know, entire XV 6 instructions in a memory, and then jump to the first instruction in XV 6. In order to have your computer actually run the instructions in XV six, of course, this requires that your computer have the same microprocessor in that XV 6 is expecting. That’s easy to arrange.<br>广泛使用的主要策略之一的核心是在真实的CPU上实际运行来宾指令。因此，如果您要在虚拟机监视器中运行XV 6，您实际上将加载XV 6的指令，内核，开始时，您知道，整个XV 6指令在内存中，然后跳转到XV 6中的第一个指令。为了让您的计算机实际运行xv6的指令，当然，这需要您的计算机具有与xv6期望的相同的微处理器。这很容易安排。</p>
+<p>发言人   16:00<br>It turns out you can’t literally do this. The point at which you would run into trouble is when guest operating system first executed a privileged instruction if it, and you know, that’s really the difference between a kernel and ordinary user code, is that kernels, which is what we’re trying to run here in our virtual machine, kernels use privileged instructions. So the your guest kernel might, for example, try to load a new page table into the satp register on risk 5. So that’s starting to present a puzzle if we’re executing our guest kernel as an ordinary user process in Linux, for example, boy loading sapy is an illegal instruction in user mode, and so our program is going to crash if we are so foolish as to load our guest kernel into and run it in supervisor mode somehow, then our guest kernel will now be able to modify the real page table and would be able to escape from its virtual machine and because it control the contents of Ptes read and write. Any memory?<br>事实证明，你真的不能做到这一点。你会遇到的问题是当客户操作系统第一次执行特权指令时，如果它，你知道，这实际上是内核和普通用户代码之间的区别，就是内核，这就是我们试图在虚拟机中运行的东西。内核使用特权指令。因此，您的客户内核可能会尝试在风险为5的情况下将新的页表加载到satp寄存器中。所以如果我们在Linux中作为普通用户进程执行我们的客户内核，这开始带来一个难题，例如，男孩加载sapy在用户模式下是非法指令，因此，如果我们如此愚蠢地将客户内核加载并以某种方式在主管模式下运行，那么我们的程序将会崩溃，然后是我们的客户内核现在将能够修改实际页表，并能够从其虚拟机中逃脱，因为它控制了读取和读取的内容。写作。有记忆吗？</p>
+<p>发言人   17:11<br>So we can’t use a strategy that’s as simple as just running the guest kernel directly. Instead, we’re going to start playing some tricks. The first step is to run the guest kernel in user mode. So this is sort of the. Fundamental strategy here.<br>所以我们不能使用像直接运行客户内核这样简单的策略。相反，我们要开始玩一些把戏了。第一步是在用户模式下运行客户内核。所以这有点像。这里是基本战略。</p>
+<p>发言人   17:40<br>I’m going to run the guest kernel in user mode. You know, in the risk five user mode. And so what that means, now we’re arere writing our own virtual machine monitor. And when we tell it, look, please boot XV 6, it’s going to load XV six’s kernel instructions into memory somewhere. Maybe set up a page table appropriately that makes it look to XV 6 like its memory starts at 0 and goes up to whatever high memory is. And then the virtual machine monitor will use trap SRE instruction as you come across an XV 6 to jump into the first instruction of the guest OS. In user mode. And so the guest operating system will execute along.<br>我将在用户模式下运行客户内核。你知道，在风险五用户模式下。这意味着，现在我们还没有编写自己的虚拟机监视器。当我们告诉它，看，请启动XV 6，它将把XV 6的内核指令加载到内存中的某个地方。可能适当地设置一个页表，使其看起来像XV 6，就像其内存从0开始上升到任何高内存一样。然后虚拟机监视器将在您遇到XV 6时使用陷阱SRE指令跳转到guest OS的第一个指令。在用户模式下。因此，来宾操作系统将一起执行。</p>
+<p>发言人   18:34<br>Now, many instructions will work fine if the guest operating system is just adding two registers together or even loading or storing from memory, that’ll just work.<br>现在，如果客户操作系统只是将两个寄存器添加在一起，甚至从内存中加载或存储，那么许多指令都可以正常工作。</p>
+<p>发言人   18:42<br>And as soon as the guest operating system uses privileged instruction, what’s going to happen is it’s going to trap the risk. 5 hardware, we’ll calls it, since it’s running in user mode, not supervisor mode, we’ll cause it to trap back into the our virtual machine monitor and we’ll get control. So if the guest operating system, for example, tries to change satp the page table pointer, boom, the risk 5 CPU will trap into our virtual machine monitor and our software will get control back and our software will be able to look and see what instruction caused the crap and do something appropriate. But the cool thing here is that the guest operating system didn’t actually get to set the page table pointer. But how does, how does the VM M, intercept this like it has to set the trap handler, right? Isn’t that something only a privilege process can do? Like the VMM is a user program on the host OS, right?<br>一旦客户操作系统使用特权指令，它就会陷入风险。5个硬件，我们将调用它，因为它运行在用户模式下，而不是主管模式下，我们将使它陷入我们的虚拟机监视器中，然后我们将获得控制。因此，例如，如果来宾操作系统试图更改页表指针，则风险为5 cpu将会陷入我们的虚拟机监视器中，我们的软件将重新获得控制权，我们的软件将能够查看并查看导致垃圾的指令并执行适当的操作。但这里很酷的是，客户操作系统实际上并没有设置页表指针。但是，VM是如何拦截的，就像它必须设置陷阱处理程序一样，对吗？这不是只有特权流程才能做到的吗？就像VMM是主机操作系统上的一个用户程序，对吧？</p>
+<p>发言人   19:39<br>Okay, what I’m assuming, what I’m assuming is that the virtual machine monitor runs in supervisor mode. So in this simple picture, the virtual machine monitor is the kernel that boots on this piece of hardware. So instead of booting Linux or whatever, you would boot this virtual machine monitor. It boosts in supervisor mode. It is complete control over the hardware. So we can set up, you know, st vac and all this other stuff however it likes. That makes sense now. And actually some virtual machine monitors work in exactly that way. You just boot them on the hardware, it’s just the virtual machine monitor only that’s running in supervisor mode. In fact, there’s also many, many virtual machine schemes out there.<br>好的，我假设，我假设的是虚拟机监视器在主管模式下运行。因此，在这个简单的图片中，虚拟机监视器是在这个硬件上启动的内核。因此，您可以引导此虚拟机监视器，而不是引导Linux或其他东西。它在主管模式下增强。它是对硬件的完全控制。所以我们可以设置st vac和所有其他东西，不管它喜欢什么。现在感知了。实际上，一些虚拟机监视器正是这样工作的。你只需在硬件上启动它们，它只是在主管模式下运行的虚拟机监视器。事实上，还有很多虚拟机方案。</p>
+<p>发言人   20:21<br>In fact, boot Linux, and then once Linux is up and running, you load, you load the virtual, either Linux. I mean, actually Linux comes with a virtual machine monitor or you load the virtual machine monitor as what’s called a loadable kernel module into Linux and it runs in the kernel in supervisor mode and that that’s the way actually today’s paper works is you boot Linux and then run this loadable kernel module. But the main point is the virtual machine monitor software you, the software rear writing that we trust runs in supervisor mode and we’re going to run the guest in user mode that arrange for it to look like it’s running in supervisor mode as far as it’s concerned. So the good news is that on risk 5, everything dangerous.<br>事实上，启动Linux，然后一旦Linux启动并运行，您加载，您加载虚拟Linux。我的意思是，实际上Linux附带了虚拟机监视器，或者您可以将虚拟机监视器作为所谓的可加载内核模块加载到Linux中，并在内核中以主管模式运行，这实际上就是今天论文的工作方式，您可以启动Linux，然后运行这个可加载内核模块。但主要的一点是虚拟机监控软件，我们信任的软件后端编写在主管模式下运行，我们将在用户模式下运行客户机，使其看起来像在主管模式下运行一样。好消息是，在风险5中，一切都很危险。</p>
+<p>发言人   21:22<br>Traps, if you try to do it in user mode, that is all the sort of privileged things that supervisor mode can do, with the exception of stuff having to do with a page table or Ptes, which we’ll talk about in a bit. But basically, every supervisor only instruction causes a trap if you try to execute it in user mode. So that means that every time they get a stop running system, does anything like reads St cause or reads and writes STV, or does any of those things that XV 6, for example, does to kind of configure the privileged part of versus 5 hardware or cause a trap into the virtual machine monitor and we’ll get control and then the game is going to be the virtual machine monitor is going to maintain virtual state, a whole table, a virtual state information.<br>陷阱，如果你尝试在用户模式下执行，这就是主管模式可以做的所有特权事情，除了与页表或Ptes有关的事情，我们稍后会讨论。但基本上，如果您试图在用户模式下执行每个主管指令，每个指令都会导致陷阱。这意味着每次他们停止运行系统时，都会执行类似读取St原因或读取和写入STV的操作，或者执行XV 6之类的操作，例如，这样做是为了配置特权部分而不是5硬件，或者导致陷阱进入虚拟机监视器，我们将获得控制，然后游戏将成为虚拟机监视器，将维护虚拟状态、整个表和虚拟状态信息。</p>
+<p>发言人   22:18<br>For.<br>为了。</p>
+<p>发言人   22:24<br>For the guest. So the virtual machine monitor will have, for example, and a. Virtual St VC Register just implemented as a variable in software a virtual.<br>对于客人。因此，虚拟机监视器将具有，例如和。Virtual St VC寄存器只是在软件虚拟中实现为一个变量。</p>
+<p>发言人   22:40<br>Sepc register all these protected registers. There’ll be a whole array of them down here implemented by the virtual machine monitor. And when the guest operating system, for example, runs the instruction that reads one of these registers, boom, it’ll take a trap because it’s legal in user space.<br>Sepc注册所有这些受保护的寄存器。这里会有一个完整的它们数组，由虚拟机监视器实现。例如，当来宾操作系统运行读取这些寄存器之一的指令时，它会陷入陷阱，因为它在用户空间是合法的。</p>
+<p>发言人   22:57<br>The virtual machine monitor will inspect the instruction and say, aha, that’s an instruction that’s reading the scpc register. And so the virtual machine monitor will then emulate that instruction. It’ll read the virtual sepc value out of this array. It’ll copy that into the hardware. Or, well, what really happened here if is that the, I forget the name of the. There’s some instruction whose name I forget, which is basically supervisor read, although that’s not its name. And you give the name of an ordinary register and the name of a privileged like scpc. And so with the virtual, that will trap, the virtual machine monitor will read that instruction.<br>虚拟机监视器将检查指令并说，啊哈，这是一条读取scpc寄存器的指令。因此虚拟机监视器将模拟该指令。它将从这个数组中读取虚拟的sepc值。它会将其复制到硬件中。或者，好吧，这里真正发生的是什么，如果是，我忘记了这个名字。有一些指令的名字我忘记了，基本上是主管阅读，尽管那不是它的名字。你可以给出一个普通寄存器的名称和一个像scpc这样的特权名称。因此，对于虚拟机，它将捕获，虚拟机监视器将读取该指令。</p>
+<p>发言人   23:51<br>We’ll see, oh, it’s an S read. The virtual machine monitor will copy the virtual copy of scpc into a 0 in the trap frame. It’s after all, when entering the VMM that’s going to have created a trap frame with copies of all the guest registers. It’ll copy this scpc into azer and the trap frame, then return from the trap using sret. You, after copying the trap frame registers and the real registers, return from this trap to the instruction.<br>我们会看到，哦，这是读的。虚拟机监控会将scpc的虚拟副本复制到陷阱帧中的0中。毕竟，当进入VMM时，将会创建一个陷阱框架，其中包含所有来宾寄存器的副本。它会将此scpc复制到azer和陷阱帧中，然后使用slet从陷阱返回。在复制了陷阱帧寄存器和实际寄存器之后，从这个陷阱返回指令。</p>
+<p>发言人   24:24<br>After the S read and continue reading there with now FA zero set to the virtual scpc and now the guest operating system will proceed, you know? But I’m not realizing that something funny happened here, but it will have gotten a copy of the virtual scpc that the vmn was keeping on its behalf. So any questions about this strategy?<br>在S读取并继续读取后，现在将FA零设置为虚拟scpc，现在客户机操作系统将继续进行，你知道吗？但我没有意识到这里发生了一些有趣的事情，但它将获得vmn代表其保存的虚拟scpc的副本。有什么关于这个策略的问题吗？</p>
+<p>发言人   24:58<br>How does the VMM differentiate between different guests? It’s basically the same way it would keep one of these tables of virtual state per guest. And it just knows, just like XV 6 knows which process it’s running as a variable, maybe a per core variable, saying here’s the process I’m currently running. Similarly, a VMM would have a per core variable that indicated which virtual machine be multiple of these state structures. VMM would know which virtual machine it was executing, and it would look in the appropriate virtual machine state structure, defined s.p.c. or whatever it is it’s looking for. Can it run multiple? Can it assign multiple courses to one of the guests?<br>VMM如何区分不同的客人？这基本上与为每个来宾保留这些虚拟状态表中的一个的方式相同。它只知道，就像XV 6知道它作为变量运行哪个进程一样，也许是每个核心变量，说这是我当前正在运行的进程。同样地，一个VMM将有一个per core变量，指示哪个虚拟机是这些状态结构的多个。VMM会知道它正在执行哪个虚拟机，并且它会查看适当的虚拟机状态结构，定义为s.p.c.。 或者它正在寻找的任何东西。它可以运行多个吗？它可以将多个课程分配给其中一位客人吗？</p>
+<p>发言人   25:49<br>Yes, sophisticated virtual machine monitors can do that, yes.<br>是的，复杂的虚拟机监视器可以做到这一点，是的。</p>
+<p>发言人   25:57<br>So if you, sorry, go ahead. Oh sorry, so the guest operating system, it will have like some registers in the actual hardware will be the registers that the guest OS uses. So why do we not use the actual scpc will use a virtual 1, The reason is that the virtual machine monitor needs to use these registers to use the real registers. So for example, if you think about S causes, when a trap occurs, what happens when the S operating system tries to do almost anything privilege? The trap will occur and the hardware sets the real hardware S cause register to the cause of the trap, which is illegal instruction or unprivileged instruction, whatever it is.<br>所以，如果你，抱歉，请继续。抱歉，来宾操作系统将具有类似于实际硬件中的一些寄存器，这些寄存器将是来宾操作系统使用的寄存器。那么为什么我们不使用实际的scpc将使用虚拟1，原因是虚拟机监视器需要使用这些寄存器来使用实际的寄存器。例如，如果您考虑S原因，当陷阱发生时，当操作系统尝试执行几乎所有特权时会发生什么？陷阱将发生，硬件将实际硬件的原因寄存器设置为陷阱的原因，无论是非法指令还是非特权指令。</p>
+<p>发言人   26:53<br>If guest operating system, suppose in the guest operating system has just taken a system call from a guest user process, the guest operating system needs to see an S cause. That’s whatever the right S call value is for system call, right? Even though maybe the last thing that you know, so the guest operating system is going to read S cause. And what it thinks is the trap handler handling a system call from one of its guest processes, the S calls that the guest operating system needs to see is the value that says that means system call. But the S cause is going to be in the real S cause register is the S cause. That means illegal instruction or unprivileged, you know, instructions, violating the privileged rules.<br>如果来宾操作系统，假设在来宾操作系统中刚刚从来宾用户进程中进行了系统调用，则来宾操作系统需要查看原因。这就是系统调用的正确S调用值，对吧？即使可能是你知道的最后一件事，所以来宾操作系统将会读取S原因。并且它认为陷阱处理程序处理来自其来宾进程之一的系统调用，来宾操作系统需要看到的S调用是表示系统调用的值。但S原因将在实际的S原因寄存器中，即S原因。这意味着非法的指令或没有特权的指令，违反了特权规则。</p>
+<p>发言人   27:50<br>There are actually some times when you could. Well anyway, in general VM, the VMM is the one that needs to see the real. The VM needs to see different values in the real registers than operating system should see in its vision of the registers, does that make sense, thank you?<br>实际上有些时候你可以。无论如何，一般来说，VM是需要看到真实的。VM需要在实际寄存器中看到不同的值，而不是操作系统在寄存器中应该看到的值，这感知吗，谢谢？</p>
+<p>发言人   28:17<br>Okay, so this is called the name for this style of virtual machine implementation in which the guest runs at user level and therefore traps whenever it tries to do anything privileged. And the VMM can emulate the privileged instruction. The name for that is trap and emulate. And it’s nice because you can build this for yourself. Actually, you can build this for yourselves entirely in software. And you could modify XV 6, for example, to be a virtual machine monitor on risk 5, run little virtual machines, perhaps regular XV 6, just by writing software.<br>好的，这被称为这种风格的虚拟机实现的名称，其中来宾在用户级别运行，因此每当尝试执行任何特权操作时都会陷入陷阱。并且VMM可以模拟特权指令。它的名字是陷阱和模仿。这很好，因为你可以自己建造。实际上，您可以完全用软件为自己构建此功能。例如，您可以通过编写软件将XV 6修改为风险5的虚拟机监视器，运行小虚拟机，也许是常规的XV 6。</p>
+<p>发言人   29:00<br>Of course, your software does have to run in supervisor mode. The state here, all the registers that begin with S, all those supervisor control registers have to be part of this virtual state. There’s also some other things that are not directly accessible from those S registers that nevertheless need to be down in the state.<br>当然，您的软件必须在主管模式下运行。这里的状态，所有以S开头的寄存器，所有那些管理控制寄存器都必须是这个虚拟状态的一部分。还有一些其他的东西不能直接从那些需要在该州关闭的寄存器中访问。</p>
+<p>发言人   29:25<br>One of them is the mode the virtual machine monitor needs to know whether the virtual machine is running in or guest user mode or guest operating system mode. Because for example, if if user code executes the privilege instruction, like trying to read S cause, sure, that’ll cause a trap into the VMM too. But in that case, the VMM should not just emulate the instruction in return because that’s not a legal instruction in user mode. So the VMM has to track whether the guest is in guest supervisor mode or guest user mode. And so there’s going to be a mode slot down here as well. And the VM will know because when the guest operating system jumps into user space, it’ll execute the SRE instruction. SRE is a privileged instruction, and so the VM will actually get controlled area and will see, oh, the guest is running an S instruction, among other things. I’m going to change the virtual mode from supervisor to user.<br>其中一个是虚拟机监控需要了解虚拟机是在访客用户模式还是访客操作系统模式下运行的模式。因为例如，如果用户代码执行特权指令，比如试图读取S原因，当然，这也会导致进入VMM的陷阱。但在这种情况下，VMM不应该只是模拟返回指令，因为这不是用户模式下的法律指令。因此，VMM必须跟踪访客是处于访客主管模式还是访客用户模式。因此，这里也将有一个模式槽。并且虚拟机将知道，因为当客户操作系统进入用户空间时，它将执行SRE指令。SRE是一个特权指令，因此虚拟机将实际获得受控区域并将看到，哦，来宾正在运行S指令，等等。我要将虚拟模式从主管更改为用户。</p>
+<p>发言人   30:25<br>And another hidden piece of state is the heart number. That is the core number. You can’t get at that directly, even with a privileged instruction. But the vmms really needs to keep track of which heart it’s emulating right now.<br>另一个隐藏的状态是心数。这就是核心数字。你无法直接得到那个，即使有特权指令。但是vmms确实需要跟踪它现在在模仿哪个心脏。</p>
+<p>发言人   30:46<br>Okay, the risk phi, it turns out different Cpu’s are different levels of difficulty and how hard it is to write a trap and emulate virtual machine on them wrist wise is particularly well suited to it because the designers had that in mind when they were designing the instruction set. And so they knew what the requirements of a trap and emulate virtual machine were, for example, been quite diligent in making sure that every single privileged thing that supervisor code can do will cause a trap if you try to do it in user mode, which is what you need in order to make sure the virtual machine monitor sees a trap for every privilege instruction.<br>好的，风险phi，事实证明不同的Cpu有不同的难度级别，并且在手腕上编写一个陷阱并模拟虚拟机是多么困难特别适合它，因为设计人员在设计指令集时就考虑到了这一点。因此，他们知道陷阱和模拟虚拟机的要求是什么，例如，他们非常努力地确保主管代码可以执行的每一个特权操作，如果您尝试在用户模式下执行，都会导致陷阱。这就是您需要的，以确保虚拟机监视器为每个权限指令看到一个陷阱。</p>
+<p>发言人   31:33<br>I have a quick question. So does anything actually run in the guest OS itself, or does it always trap into the virtual machine? Monitor all ordinary instructions, like if you just have an ad instruction that you know ads, I don’t know how to write this risk five assembly, but let’s just say you add a 0 to a 1 and you want to put the result in a two, that instruction just executes directly on the hardware at full hardware speed. If you make a function call, just an ordinary function call up here in the guest world that just executes without anything special, it’s just ordinary, you know, all the instructions that are legal in user code on non-erectile transactions just execute directly at full speed when the guest operating system.<br>我有个简短的问题。那么，任何东西实际上在来宾操作系统本身中运行，还是总是陷入虚拟机中？监控所有普通的指令，就像如果你只有一个你知道广告的广告指令一样，我不知道如何编写这个风险五汇编，但是假设你将0添加到1中，你想把结果放在2中，该指令直接在硬件上以全速执行。如果你进行一个函数调用，只是在来宾世界中的一个普通函数调用，它只是在没有任何特殊情况下执行，它只是普通的，你知道，所有在非事务事务上合法的用户代码指令在来宾操作系统时直接全速执行。</p>
+<p>发言人   32:26<br>Okay, so is there a semblance of like user mode and kernel mode in the guest OS? Yes, the operating system is, well, the guest operating system is unchanged, so what we’re running up here is exactly the Linux kernel or exactly the XV 6 kernel of course XV 6, that’s all, you know, it knows the XV 6 kernel knows it’s running in supervisor mode. Yeah, right, that’s just, it just is, of course it’s not here, but as far as the code is concerned, it’s just definitely running as supervisor mode, it just does all kinds of privileged things and expects them to work and then it knows when it executes an SRE to get into user space that knows, aha I’m going to enter user space now, and the VMM sort of makes everything look like that’s indeed what’s happening. Even though it’s actually in the real machine, it’s in user mode in both places. But this looks just like supervisor mode, and this looks just like user mode. Okay? So for example, when the guest, when we executed s ret to enter user space, the Sres privileged. Luckily, it traps into the virtual machine monitor.<br>好的，那么在来宾操作系统中是否存在用户模式和内核模式的相似点？是的，操作系统是，嗯，客户操作系统没有改变，所以我们在这里运行的正是Linux内核或确切的XV 6内核，当然XV 6内核，就是这样，你知道，它知道XV 6内核知道它在主管模式下运行。是的，没错，这只是，它当然不在这里，但就代码而言，它肯定是以主管模式运行的，它只是做各种特权的事情，并期望它们工作，然后它知道何时执行一个SRE以进入用户空间，知道现在我要进入用户空间，而VMM让一切看起来确实是这样发生的。尽管它实际上在真实机器中，但它在两个地方都处于用户模式。但这看起来就像主管模式，而这看起来就像用户模式。好吗？因此，例如，当我们执行s ret以进入用户空间时，Sres特权。幸运的是，它会陷入虚拟机监视器中。</p>
+<p>发言人   33:52<br>The virtual machine monitor changes the virtual mode to user, even though, of course, the real mode is still supervisor because we’re still executing down here, changes the virtual mode to user. It just before it returns from the trap, the virtual machine monitor sets the real scpc to the virtual scpc because in order that when the virtual machine monitor returns using its own SRE value, it returns to is a is the program counter.<br>虚拟机监视器将虚拟模式更改为用户，当然，即使真实模式仍然是主管，因为我们仍在这里执行，将虚拟模式更改为用户。虚拟机监视器在从陷阱返回之前将实际scpc设置为虚拟scpc，因为当虚拟机监视器使用自己的SRE值返回时，它将返回到程序计数器。</p>
+<p>发言人   34:28<br>That the guest operating system wanted to return to. So here’s a case where, very briefly, the real scpc was set equal to the virtual scpc. And I’ll talk about this in a bit, but the virtual machine monitor also is going to be switching page tables when goes back into into the virtual machine, when the guest user code wants to make it, then the guest user code, if for ordinary instructions, it just execute the machine X, use them directly at full speed when the guest code wants to make a system call, executes the E call instruction, that causes a trap, that trap goes to the virtual machine monitor and this scheme, the virtual machine monitor says, aha, we’re in consults the virtual mode. Virtual mode is user space and looks at the instruction that trapped the faulted. It’s an E call, and then the virtual machine monitor sort of does makes all the changes in the virtual state required to simulate a system called trap into the guest operating system, so it’s going to set the virtual scpc to be whatever program counter the eco instruction was that you change the virtual mode back to supervisor, it’s going to set the virtual S cause to be system call. It’s going to set the real EPC to be equal to the virtual St vac and then call Sra so that it’ll jump into the guest operating systems trap handler, which is what or trampoline page or whatever it is, which is what the virtual STV was pointing to.<br>客户操作系统想要返回到的地方。所以这里有一个情况，非常简单地说，真实的scpc被设置为等于虚拟的scpc。我稍后会谈论这个，但是虚拟机监视器在返回虚拟机时也会切换页表，当访客用户代码想要使其成为虚拟机时，那么访客用户代码，如果对于普通指令，它只是执行机器X，当客户代码想要进行系统调用时，直接全速使用它们，执行E调用指令，这会导致一个陷阱，这个陷阱会进入虚拟机监视器，这个方案，虚拟机监视器会说，“啊哈，我们正在咨询虚拟模式。”虚拟模式是用户空间，并查看捕获错误的指令。这是一次E调用，然后虚拟机监视器会在虚拟状态中进行所有所需的更改，以模拟一个名为陷阱的系统进入来宾操作系统，所以它将虚拟scpc设置为任何程序计数器，eco指令是将虚拟模式更改回supervisor，它将设置虚拟S，因为是系统调用。它将实际的EPC设置为等于虚拟St vac，然后调用Sra，这样它就会跳转到客户机操作系统的陷阱处理程序，也就是蹦床页面或其他任何东西，也就是虚拟STV所指向的。</p>
+<p>发言人   36:16<br>Okay? We got two remaining pieces of business, which are quite important. One is what about page tables? And the other is what about devices so?<br>好吗？我们还有两个剩余的业务，它们非常重要。第一，页表的问题是什么？另一个问题是设备怎么样？</p>
+<p>发言人   36:36<br>Page table, sort of. There’s two pieces to that. One is that at various points, the guest operating system is going to modify the satp register. And of course, you know that I’ll turn into a trap and the virtual machine monitor and the virtual machine monitor gets a chance to do something. But what we don’t want the virtual machine monitor to do is simply let the guest set the real Sat peak. And then execute after having changed the real set, because that would let the guests get at any memory, not just the memory that the virtual machine monitor has allocated to it. So we can let the guest operating system simply set the Sat peak. But we do need to do something to the set because we need to provide the allusion to the guest operating system that, yes, indeed, the page table has been changed.<br>页面表格，有点。这有两个部分。一个是在不同的时间点，客户操作系统将修改satp寄存器。当然，你知道我会变成一个陷阱，虚拟机监视器和虚拟机监视器有机会做点什么。但是我们不希望虚拟机监视器做的只是让客户机设置真实的峰值。然后在更改真实设置后执行，因为这将允许来宾获取任何内存，而不仅仅是虚拟机监视器分配给它的内存。所以我们可以让客户机操作系统简单地设置操作峰值。但是我们确实需要对集合做点什么，因为我们需要提供客户机操作系统的暗示，是的，确实页表已经更改了。</p>
+<p>发言人   37:24<br>And more than an illusion, when the guest software runs load and store instructions or fetches instructions to execute, we need those to come from the right place, from the place that the guest operating system pointed its page table entries to. So what actually happens when the guest sets the Sat P?<br>而且不仅仅是一种幻觉，当客户软件运行加载和存储指令或获取要执行的指令时，我们需要这些指令来自正确的位置，来自客户操作系统将其页表条目指向的位置。那么当客人设置Sat P时，实际上会发生什么？</p>
+<p>发言人   37:47<br>Is, you know, can’t let it, we can’t directly use the guest operating systems page table, but the virtual machine monitor cooks up a new page table that simulates the guest operating system’s desired ph table. So, and now the page translation situation is a little bit different. We have the guest with the guest was trying to set the page table to. So this is the page table.<br>你知道的，我们不能直接使用客户操作系统的页表，但是虚拟机监视器会烹饪一个新的页表，模拟客户操作系统所需的ph表。所以，现在页面翻译情况有点不同。我们有个访客正在尝试将页表设置为。这就是页表。</p>
+<p>发言人   38:19<br>Of course, this is the guest kernel and that maps sort of guessed virtual addresses to what I’ll call guest physical addresses. Of course, the guest physical addresses are virtual. Machine monitor is given the guests 32 GB or however much physical memory. For its use, presumably starting at. Telling the guest operating system that it’s physical addresses start at 0 and go up for 32 MB. But of course, you know, they don’t in real life on the real heart, where they’re just 32 GB worth of pages somewhere not contiguous. So we can’t directly use the guest physical addresses because they don’t correspond to the real physical addresses. So instead, the VMM is going to maintain.<br>当然，这是访客内核，它将猜测的虚拟地址映射到我称之为访客物理地址的地方。当然，客人的物理地址是虚拟的。机器监视器被分配给客户机32 GB或多少物理内存。为了使用它，大概从开始。告诉客户操作系统它的物理地址从0开始，向上增加32个MB。但当然，你知道，它们在现实生活中并不在真正的心脏上，在那里它们只有32 GB价值的页面，而不是连续的。所以我们不能直接使用客人的物理地址，因为它们与真实的物理地址不对应。相反，VMM将会保持。</p>
+<p>发言人   39:18<br>A map for each virtual machine that maps guest physical addresses to real physical addresses, what I’ll call host physical addresses. So this map know it’s like a page table has an entry for every page, every physical page that the guest thinks exist and indicates what real physical page that guest’s physical address refers to. VMM is allocated for it. And then when the guest writes a new page table to satp in the trap handler for that, the VMM creates what’s called a shadow page table, which is going to be what the VMM puts in the real.<br>每个虚拟机的映射，将来宾物理地址映射到实际物理地址，我称之为主机物理地址。因此，这个地图知道它就像一个页表，每个页面都有一个条目，每个客人认为存在的物理页面，并指示客人的物理地址所指的真实物理页面。VMM被分配了。然后，当客户机在陷阱处理程序中写入一个新的页表到satp时，VMM会创建所谓的影子页表，这将是VMM实际放入的内容。</p>
+<p>发言人   40:08<br>Satp and this saddle page table is constructed by the combination of these two page tables. And so it maps guest virtual addresses to host physical addresses. And then it’s constructed by taking every entry in the guest page table, looking at the guest’s desired guest physical address, using the VMM map to translate that guest physical address to a real host physical address. I’m putting that virtual physical pair into the shadow page table. And then the virtual machine monitor sets this to be in satp as the real page table before returning back.<br>Satp和鞍形页表是由这两个页表的组合构建的。因此，它将来宾虚拟地址映射到主机物理地址。然后，它通过获取客人页面表中的每个条目，查看客人所需的客人物理地址，使用VMM地图将该客人物理地址转换为真实的主机物理地址来构建。我正在将这个虚拟物理对放入影子页面表中。然后虚拟机监视器将其设置为实际页表的satp，然后返回。</p>
+<p>发言人   40:50<br>To the guest kernel. And so the guest kernel thinks it’s one page table. But actually, the real hardware is using this shadow page table instead. And this way there, this is what prevents the guest from escaping from the memory. It’s allowed to use.<br>到客户内核。因此，客户内核认为它是one page表。但实际上，真正的硬件使用的是这个影子页表。通过这种方式，这就是防止客人从记忆中逃脱的原因。允许使用。</p>
+<p>发言人   41:09<br>The shadow page table can only contain host physical addresses that the VMM had allocated for that guest guest. There’s nothing the guests can put in the page table it asks for that’ll allow it to access a page that wasn’t allocated to it by the virtual machine monitor.<br>影子页表只能包含VMM为该来宾分配的主机物理地址。在它请求的页表中，没有任何内容可以让它访问虚拟机监视器没有分配给它的页面。</p>
+<p>发言人   41:30<br>As a critical piece of the sort of isolation story here, any questions about the paging setup for Trap and Emulate? Sorry, so if it’s if the operating system, the guest just wants to make a new, a new process and a new page table for the process, what does it do? Like what happens? The guess the guess does, does the usual just does exactly what Linux or XV 6 does right now. It formats up a page table entries to make a page table, and then it executes the instruction to assign that address of the page table into satp. So that’s what the guest operating system does. And when the, but it can’t actually assign to set P, because that’s a privileged operation, so there’s a trap into the virtual machine monitor. The virtual machine monitor inspects the instruction of the trap to sees, oh, gosh, that guest is trying to assign to Sat P, and then the virtual machine monitor would create this new shadow page table from the combination of the page table that the guest asked was trying to set up.<br>作为隔离故事的关键部分，对于陷阱和模拟的分页设置有什么问题吗？抱歉，如果操作系统，客户只是想为进程创建一个新的进程和一个新的页表，它会做什么？发生了什么？猜测是这样的，通常的做法是否只是像Linux或XV 6现在所做的那样。它将页表条目格式化为页表，然后执行指令将页表的地址分配给satp。这就是来宾操作系统所做的。并且，但它实际上不能分配给设置P，因为这是一个特权操作，所以在虚拟机监视器中有一个陷阱。虚拟机监视器检查陷阱的指令以查看，哦，天哪，该来宾正在尝试分配给Sat P，然后虚拟机监视器将从来宾请求尝试设置的页表的组合中创建这个新的影子页表。</p>
+<p>发言人   42:38<br>The virtual machine monitor looks at the page table of all the Ptes and the page table the guest was trying to set up. It runs. It translates the physical address and each guest page table entry through this map to get a real physical address or the causal real fault if the guest is trying to use a physical address that it’s not allowed to. And then the virtual machine monitor installs this shadow page table and the real Sat P and returns back to the guest.<br>虚拟机监视器查看所有Ptes的页表以及来宾尝试设置的页表。它在运行。它通过此地图转换物理地址和每个来宾页表条目，以获得真实的物理地址，或者如果来宾尝试使用不允许的物理地址，则可以获得因果真实故障。然后虚拟机监视器安装这个影子页面表和真实的Sat P，并返回到客户机。</p>
+<p>发言人   43:08<br>Oh, okay, okay. I see, I see. Okay, Thank you, yes.<br>哦，好吧，好吧。我明白了，我明白了。好的，谢谢，好的。</p>
+<p>发言人   43:19<br>Okay? Okay, so this saddle page table stuff is certainly one of the tricky aspects of. Implementing a virtual machine monitor.<br>好吗？好的，所以这个马鞍页表的东西肯定是棘手的方面之一。实施虚拟机监视器。</p>
+<p>发言人   43:35<br>There actually another thing that there’s another way in which the guest operating system can interact with the page table. The guest operating system actually XV 6, sometimes directly reads and writes page table entries in its page table. And you know, so Xb 6 could can modify a page table entry or read the dirty bit, for example, in a page table entry.<br>实际上还有另一件事，就是客户操作系统可以通过另一种方式与页表进行交互。客户操作系统实际上是XV 6，有时直接在其页表中读取和写入页表条目。你知道，所以Xb 6可以修改页表条目或读取脏位，例如，在页表条目中。</p>
+<p>发言人   43:59<br>Now on the risk five, if software modifies the page table entry, if you read the risk five spec, risk 5 is not required to do anything at that point. So if you modify a page table entry, the risk 5 microprocessor does not promise to immediately observe that modification to a page table entry may completely ignore it for the time being. Instead, what the manual says is that if you modify page table entries and you actually want the hardware to the MMU to see them, you have to execute the S fans do VMA instruction, and the spec says only. It’s only this instruction that causes the hardware to pay attention your Phd with modifications. And so if you’re building a virtual machine monitor, your virtual machine monitor on disk 5 can completely ignore the guest modifications to page table entries.<br>现在在风险5上，如果软件修改了页表条目，如果您阅读了风险5规范，此时风险5不需要做任何事情。因此，如果您修改了页表条目，风险5微处理器不会承诺立即观察到对页表条目的修改可能会暂时完全忽略它。相反，手册说，如果你修改了页表条目，并且你实际上想让硬件到MMU才能看到它们，你必须执行S fans do VMA指令，而规范只说了。只有这个指令才会引起硬件注意你的博士修改。因此，如果您正在构建虚拟机监视器，则磁盘5上的虚拟机监视器可以完全忽略对页表条目进行的来宾修改。</p>
+<p>发言人   44:57<br>But since you know the guest is it, it’s going to execute an S fence DMA instruction after modifying page table entries. And this is a privileged instruction. You can tell because it starts with S that’s going to trap into the virtual machine monitor. The virtual machine monitor is going to. Re knows that an S fence was executed. It looks at the instruction. It’s going to rescan the guest, the guests version of the current, the current page table, and look for page table entries that have changed and reflect those changes, if they’re legal, into the shadow page table, reset the execute the real S fence, do VMA to get the real hardware to pay attention to the Sa page table, and then return to the guest operating system.<br>但是由于您知道客户机是它，因此它将在修改页表条目后执行一个S栅栏DMA指令。这是一个特权指令。你可以看出，因为它以将要进入虚拟机监视器的S开头。虚拟机监视器即将启动。你知道S围栏被处决了。它查看指示。它将重新扫描来宾，当前页表的来宾版本，并查找已更改的页表条目，并反映这些更改 (如果它们是合法的) 到影子页表中，重置执行实际的栅栏，执行VMA以获取真正的硬件来关注Sa页表，然后返回到客户操作系统。</p>
+<p>发言人   45:45<br>So this means that there’s only like the MMU actually just uses one page table, right, which is the shadow. It’s not like it’s using the Ept or anything like no, there’s no Ept yet, okay? So the just like thinks it has a page table like the GVA to GPA, but that’s not actually doing any translation. And then the VMM, yeah, makes its own page table based on both of them combined. That’s right, that’s right.<br>这意味着只有像MMU这样的东西实际上只是使用了one page表，对吧，那就是影子。它不像它在使用Ept或任何类似的东西，还没有Ept，好吗？因此，它认为它有一个类似于GVA到GPA的页表，但实际上它并没有做任何翻译。然后，VMM，是的，基于它们的组合制作自己的页表。没错，没错。</p>
+<p>发言人   46:11<br>Just just to be clear, the Ept is part of a different, a quite different virtual machine implementation, virtual machine design that requires hardware support.<br>只是为了明确，Ept是一个不同的、完全不同的虚拟机实现的一部分，虚拟机设计需要硬件支持。</p>
+<p>发言人   46:21<br>I’m assuming this is a story about how to build a virtual machine with no special hardware support other than trapping on privilege instructions. Does this mess up direct mapping in any way? Well, there won’t be a direct map. This will allow the guest. This will cause the guest keel to run correctly with what the guest colonel thinks is a direct mapping. But it’s a direct mapping in the virtual world. But it’s not a direct mapping on the real machine. But it doesn’t matter because. Because we’re tricking the yeah, we’re tricking the guests into everything. Looks just like it was a direct mapping.<br>我认为这是一个关于如何构建虚拟机的故事，除了捕获特权指令外，没有特殊的硬件支持。这会以任何方式扰乱直接映射吗？好吧，不会有直接的地图。这将允许客人。这将导致来宾龙骨正确运行，来宾上校认为是直接映射。但它是虚拟世界中的直接映射。但它不是在真实机器上的直接映射。但这并不重要，因为。因为我们欺骗了客人，我们欺骗了客人一切。看起来就像一个直接映射。</p>
+<p>发言人   47:18<br>One more question, you may be addressing this later, but I wonder, like when we discussed the trap mechanism earlier in the semester, we mentioned the high performance cost, so trapping. So this sounds like there’s way more of a performance hit when we use a VM.<br>还有一个问题，你可能稍后会回答，但我想知道，就像我们在本学期早些时候讨论陷阱机制时，我们提到了高性能成本，所以陷阱。这听起来像是当我们使用VM时，性能会受到更多的影响。</p>
+<p>发言人   47:35<br>Yes, yes, there’s all these instructions, you know, if your operating system makes excuse, a lot of privileged instructions, which it may, and you spend a lot of time in the operating system and the traps, you may have quite a few traps and that may cost you quite a bit of performance. And that’s what motivates in a little bit. We’ll talk about modern hardware support, virtual machines, which is what today’s paper was using. And the high cost of the traps is a lot of the motivation for why Indel felt compelled to an AMD, felt compelled to add hardware support for a much more efficient or for a virtual machine scheme that hadn’t much, many fewer traps.<br>是的，是的，有所有这些指令，你知道，如果你的操作系统找借口，很多特权指令，这可能会让你花很多时间在操作系统和陷阱上，你可能有很多陷阱，这可能会让你付出相当大的性能代价。这就是一点点的动力。我们将讨论现代硬件支持，虚拟机，这就是今天的报纸所使用的。而陷阱的高成本是为什么Indel被迫进行AMD，被迫为更高效或没有太多陷阱的虚拟机方案添加硬件支持的主要动机。</p>
+<p>发言人   48:16<br>Yes, that’s quite important. But this actually ran, I mean, for many years, this is what people did for virtual machines. It was very successful and it works. And it’s, you know, so much slower, but not so much slower that people didn’t like it. People liked it a lot. Okay, any more questions about the trap and emulate strategy for page tables?<br>是的，这很重要。但这实际上运行了很多年，这就是人们为虚拟机所做的事情。这非常成功，而且奏效了。它，你知道的，慢得多，但并不是慢得多，以至于人们不喜欢它。人们非常喜欢它。好的，还有关于页表的陷阱和模拟策略的问题吗？</p>
+<p>发言人   48:44<br>Okay, let me, as a final piece of the trap and emulate story.<br>好的，让我作为陷阱和模仿故事的最后一部分。</p>
+<p>发言人   48:51<br>Let me talk about devices. So here I’m talking about, you know, ordinary operating system expects to be able to get out of disk to sort file system on and maybe network interface card. And maybe if it’s XV 6, a UART so it can talk to its console, you know, who knows? A sound card, graphics adapter, a mouse, a keyboard, all kinds of stuff. So the operating system we need to a virtual machine scheme has to have some provision to allow allow guests to at least trick them into thinking that all these devices that they need really exist. And there’s three main strategies that people use.<br>让我谈谈设备。所以我在这里谈论的是，普通操作系统希望能够从磁盘中取出文件系统，也许还需要网络接口卡。也许如果它是XV 6，一个UART，这样它就可以和它的控制台对话，你知道，谁知道呢？声卡，图形适配器，鼠标，键盘，各种各样的东西。因此，我们需要的操作系统对于虚拟机方案必须有一些规定，允许访客至少欺骗他们认为他们需要的所有设备确实存在。人们使用三种主要策略。</p>
+<p>发言人   49:36<br>One is just pick some very commonly used device in the class that you need, say a disk drive, and just do an emulation. That is nothing. You’re not actually having a real device. The VMM just makes it look like this particular kind of describe exists and that the guest is talking to it. And the way you would drive this emulation, typically the guest operating system is going to try to talk to the device through memory mapped control registers. So this is how XV 6 talks to its U, its UART, you know, the serial port, the console device that you type characters to and that displays characters to you.<br>其中一种方法是挑选一些你需要的班级中非常常用的设备，比如磁盘驱动器，然后进行仿真。那没什么。你实际上没有一个真正的设备。VMM只是让它看起来像是这种特定的描述存在，并且客人正在与它交谈。以及您驱动此模拟的方式，通常来宾操作系统将尝试通过内存映射控制寄存器与设备进行通信。这就是XV 6与它的U，它的UART，你知道的，串行端口，你输入字符并显示字符的控制台设备。</p>
+<p>发言人   50:25<br>Xb 6 is talking to some control registers that are mapped that it assumes the hardware has mapped in a known loop address in the address in the kernel’s address space. And so the way you’d emulate that in a virtual machine monitor is you’d you’re not map those pages in the gas. Instead, you would have those pages be invalid so that every time the guest operating system tried to use the UART hardware or whatever device hardware, the VM virtual machine monitor will get a trap and the virtual machine monitor will get look at the instructions, say, oh, it’s trying to send a character on the UART or read from the disk, or who knows what. And the virtual machine monitor would have some simulation of a disk or simulation of a serial device. And, you know, sort of invoke its simulation to figure out how to respond to the guest instruction and then allow the guests to resume. And so this is basically how qmu implements the UART console device that XV 6 uses.<br>Xb 6正在与一些控制寄存器对话，这些寄存器被映射，它假设硬件已经映射到内核地址空间中的地址中的已知循环地址。因此，在虚拟机监视器中模拟的方式是，您不会在气体中映射这些页面。相反，您将使这些页面无效，这样每次来宾操作系统尝试使用UART硬件或任何设备硬件时，VM虚拟机监视器将收到一个陷阱，虚拟机监视器将查看说明，例如，它试图在UART上发送一个字符或从磁盘读取，或者天知道是什么。虚拟机监视器将具有磁盘的模拟或串行设备的模拟。而且，你知道，有点像调用它的模拟来弄清楚如何响应客人的指示，然后允许客人恢复。因此，这基本上就是qmu实现XV 6使用的UART控制台设备的方式。</p>
+<p>发言人   51:31<br>It just has a, there’s actually no physical serial port in sight, but qmu emulates 1 to keep XV 6 happy. And so this is a common strategy. It can be very low performance though, because it involves a trap and the operating system for every interaction between the guest and the device hardware. But for low speed stuff, it’s works pretty well.<br>它只有一个，实际上看不到物理串行端口，但是qmu模拟1以保持XV 6的快乐。所以这是一种常见的策略。但是它的性能可能非常低，因为它涉及到来宾和设备硬件之间每次交互的陷阱和操作系统。但对于低速的东西，它工作得相当好。</p>
+<p>发言人   51:56<br>A second strategy that’s often used and actually, but if your goal is to provide is to be able to boot operating systems that have no idea they’re running on a virtual machine. This is pretty much the way you have to go. There’s really no other choice. But in the modern world, it’s often the case that the operating systems are aware that they’re actually running at a low level, at least aware that they’re running on top of a virtual machine. And so a different strategy is to provide virtual devices, that is, not try to emulate a real device, but cook up a device interface that is particularly efficient.<br>第二个经常使用的策略，但实际上，如果你的目标是提供能够启动不知道它们正在虚拟机上运行的操作系统的能力。这几乎是你必须走的路。真的没有其他选择。但在现代世界中，通常情况下，操作系统意识到它们实际上正在以较低的水平运行，至少意识到它们正在虚拟机上运行。因此，一种不同的策略是提供虚拟设备，也就是说，不尝试模拟真实设备，而是制作一个特别高效的设备接口。</p>
+<p>发言人   52:44<br>Provides efficient ways for the device driver in the guest to be able to talk to the device support inside the virtual machine monitor. And so you might not have memory map control registers and said you might have sort of a queue of command structures in memory in which the guest operating system would write its commands to the devices. In fact XV 6 also uses one of these. If you look at the XV 6 vert IO disk. Brood DOC, you’ll see the guest end of a.<br>为来宾设备驱动程序提供高效的方式，使其能够与虚拟机监视器内的设备支持进行通信。因此，您可能没有内存映射控制寄存器，并且您可能在内存中拥有一种命令结构队列，在其中来宾操作系统会将其命令写入设备。事实上，XV 6也使用了其中之一。如果您看一下XV 6 vert IO磁盘。Brood DOC，你会看到a的客人端。</p>
+<p>发言人   53:28<br>A device driver intended to talk to a disk virtual device that’s implemented by qmu, and it uses either little or almost not either either little or no memory map control registers. And so it doesn’t really rely on traps. And instead, it formats up this sort of hue of commands in memory, as I mentioned, and then qmu looks at these commands in memory and applies them not to a real disk, but to a file. Like for us, it’s FS dot image qmu applies these commands, FS dot image, instead of instead of using a real piece of device hardware, which is another strategy and a third strategy that people use. So this is higher performance straight emulation because you can design the interface. So it doesn’t require a lot of traps.<br>一个设备驱动程序，旨在与由qmu实现的磁盘虚拟设备通信，它使用很少或几乎不使用，很少或没有内存映射控制寄存器。因此，它并不真正依赖陷阱。相反，它在内存中格式化了这种命令色调，正如我所提到的，然后qmu查看内存中的这些命令，并将它们应用于文件，而不是实际磁盘。就像我们一样，它是FS点图像qmu应用这些命令，而不是使用真正的设备硬件，这是人们使用的另一种策略和第三种策略。因此，这是更高性能的直接仿真，因为您可以设计接口。所以它不需要很多陷阱。</p>
+<p>发言人   54:24<br>A final strategy people use is pass through of a real device. And the sort classic situation for this is network interface controllers that provide access to the network. And modern network devices actually have hardware support for talking to multiple guest operating systems running under a virtual machine monitor. And so you can configure a modern nick to actually act as if it’s multiple independent, apparently independent mix, one for each guest operating system. And then the guest operating system can talk directly. It can be configured by the virtual machine monitor so that it’s allowed to talk directly to its sort of slice of the network interface card hardware with very high efficiency.<br>人们使用的最后一种策略是通过真实设备。这种情况的典型情况是提供网络访问的网络接口控制器。而现代网络设备实际上具有与在虚拟机监控下运行的多个来宾操作系统通信的硬件支持。因此，您可以配置现代昵称，使其实际上像多个独立的，显然是独立的组合一样运行，每个来宾操作系统一个。然后来宾操作系统可以直接通信。它可以由虚拟机监视器配置，以便允许它直接与其网络接口卡硬件的一部分进行高效通信。</p>
+<p>发言人   55:17<br>So this is the modern high performance way, the guest operating system, probably in theory, I think you could design, you could set this up. So the guest operating system wasn’t really a way, did anything odd was going on. But I think in practice, the guest operating system, device drivers kind of know that they’re talking to one of these special network interface cards. All right, so, so these are the options for devices.<br>这是现代高性能方式，来宾操作系统，可能在理论上，我认为你可以设计，你可以设置这个。所以客户操作系统并不是一种真正的方法，做了任何奇怪的事情。但我认为在实践中，客户操作系统，设备驱动程序有点知道他们正在与这些特殊的网络接口卡之一进行通信。好的，那么这些是设备的选项。</p>
+<p>发言人   55:47<br>In fact, I believe that most of the difficulty in implementing a virtual machine monitor today comes in the form of trying to cook up device emulations and device drivers that are. Sufficiently good that they’ll actually work correctly with real gas operating system. This is where probably the majority of the work is, particularly if you need to use this emulation strategy. Any questions about devices?<br>事实上，我相信目前实施虚拟机监视器的大部分困难在于试图编造设备仿真和设备驱动程序。足够好，他们将真正正确地与真正的天然气操作系统一起工作。这可能是大部分工作的地方，特别是如果您需要使用这种模拟策略。有任何关于设备的问题吗？</p>
+<p>发言人   56:32<br>So what exactly is I didn’t quite get the difference between the virtual and the emulation because they like they, they’re similar. They’re similar.<br>所以确切地说，我并没有完全理解虚拟和模拟之间的区别，因为它们喜欢它们，它们很相似。他们很相似。</p>
+<p>发言人   56:45<br>Here’s a way to think about it. If you’re booting an operating system that has no idea about virtual machine, it probably has a lot of disk drivers in it, but they’re all for real hardware that you can go out and like physical chunks of hardware that you can go out and buy. And that means that if you want to boot that kind of operating system on your virtual machine, you need to have an exact emulation. You need to choose one of those real pieces of hardware and have a precise, super accurate emulation of that hardware so that the, and I mean, that people totally do that. So that works, however, and that would be fine, except most of these for real hardware, the device interfaces were not designed.<br>这里有一个思考的方式。如果您正在启动一个不了解虚拟机的操作系统，它可能包含很多磁盘驱动程序，但它们都是真实的硬件，您可以出去购买物理硬件块。这意味着如果您想在虚拟机上启动这种类型的操作系统，您需要进行精确的仿真。你需要选择一个真正的硬件，并对该硬件进行精确、超精确的仿真，以便人们完全做到这一点。但是，这样可以工作，这很好，除了大多数用于真正的硬件，设备接口并没有设计。</p>
+<p>发言人   57:32<br>The hardware interfaces were not designed to be efficient with a trap and emulate virtual machine monitor. And so it’s very often the case that the real device just requires you to read and write. Its control registers a lot. But the virtual machine monitor has to get control for every right of a device control register because it needs to emulate it. And that means that every rate of a device control register results in a trap into the virtual machine monitor, which you costs maybe hundreds of cycles. And that means this is slow, This is inefficient.<br>硬件接口没有设计成高效的陷阱和模拟虚拟机监视器。因此，经常出现的情况是，真正的设备只需要你读和写。它的控制注册了很多。但虚拟机监视器必须对设备控制寄存器的每个权限进行控制，因为它需要模拟它。这意味着每个设备控制寄存器的速率都会导致一个进入虚拟机监视器的陷阱，这可能需要花费数百个周期。这意味着这是缓慢的，这是低效的。</p>
+<p>发言人   58:06<br>So the difference here is that instead of slavishly mimicking a real device, some designers come up with a device interface that’s not implemented by any real piece of hardware, but only implemented by a virtual machine monitor. And it just happens to be designed in a way that doesn’t require a lot of traps. Then, instead of chatting with control registers and expecting the device to respond immediately, which really requires a trap, instead the device driver and that sort of virtual hardware are decoupled and don’t ever require sort of immediate interaction.<br>因此，这里的区别在于，一些设计人员不是盲目地模仿真实的设备，而是提出了一种不是由任何真实硬件实现的设备接口，而是由虚拟机监视器实现的设备接口。而且它恰好是以不需要太多陷阱的方式设计的。然后，与其与控制寄存器进行聊天并期望设备立即响应，这实际上需要陷阱，相反，设备驱动程序和那种虚拟硬件是解耦的，不需要立即交互。</p>
+<p>发言人   58:45<br>So in that case, the guest needs its own like a new driver. So it’s just like the guest will have a driver for like this model of the disk and that model of the disk. And they’ll also have a driver for the virtual Dis and the XV 6 does so.<br>在这种情况下，客人需要像新司机一样拥有自己的司机。所以就像客人会有一个驱动程序一样，适用于这种型号的磁盘和那种型号的磁盘。他们还将有一个虚拟显示的驱动程序，XV 6就是这样做的。</p>
+<p>发言人   59:00<br>So at the functionality level, you play this game, maybe you can boot any operating system, whereas if you play this game, you can only boot operating systems that have been taught about your virtual devices if you want to use the virtual devices, turns out this is actually a standard that’s provided by multiple different virtual machine schemes. So with this, except for the fact that we never tested it on anything other than qmu, this describer in XV 6 might work or could probably be modified to work on other virtual machines.<br>所以在功能层面上，你玩这个游戏，也许你可以启动任何操作系统，而如果你玩这个游戏，如果你想使用虚拟设备，你只能启动已经教过你的虚拟设备的操作系统，事实证明，这实际上是由多种不同的虚拟机方案提供的标准。因此，除了我们从未在qmu以外的任何东西上进行过测试外，XV 6中的这个描述可能会起作用，或者可能会被修改以在其他虚拟机上起作用。</p>
+<p>发言人   59:34<br>So if F XV 6 was compiled for that board that you showed sometime in the beginning, in that case, you would have to have a different disk driver based on what disk that was running, right? Yeah, I think you may be able to buy disk interface, real hardware disk interfaces that now support disk interface, but most most described don’t. And we would have to implement a new, as you said, we’d have to implement a new disk or for a real piece of hardware.<br>因此，如果F XV 6是为你在开始时展示的那个板子编译的，在这种情况下，你必须根据正在运行的磁盘使用不同的磁盘驱动程序，对吗？是的，我认为您可能能够购买磁盘接口，现在支持磁盘接口的真正硬件磁盘接口，但大多数描述的都不支持。我们必须实现一个新的，就像你说的，我们必须实现一个新磁盘或一个真正的硬件。</p>
+<p>发言人   01:00:06<br>Okay, any other questions about devices?<br>好的，还有其他关于设备的问题吗？</p>
+<p>发言人   01:00:15<br>Next topic I want to talk about hardware support for virtual machines.<br>下一个主题我想谈谈虚拟机的硬件支持。</p>
+<p>发言人   01:00:27<br>And in particular Intel’s. Vtx scheme What’s motivating? What motivated? Intel and other hardware providers to add direct hardware support for virtual machines Is a the fact that virtual machine use is pervasive. A lot of our customers were running a lot of virtual machines and B, the fact that trap and emulate, as I just described it, often involves a lot of expensive traps. And so it’s not particularly efficient. And a third, sort of less interesting, perhaps, motivation was that although the risk 5 is pretty well suited to trap and emulate virtualization, the x 86 Intel’s microprocessor has a number of detailed features which make it actually very difficult, possible, but very difficult to virtualize. And so Intel was also motivated to try to fix that because so many of his customers wanted to run virtual machine monitors, All right, okay, so this hardware is.<br>特别是英特尔。Vtx方案的动机是什么？什么是动力？英特尔和其他硬件提供商为虚拟机添加直接硬件支持是因为虚拟机的使用非常普遍。我们的许多客户都运行着大量的虚拟机，而陷阱和模拟的事实，正如我刚才所描述的，通常涉及许多昂贵的陷阱。因此它不是特别有效。第三，也许不太有趣的动机是，尽管风险5非常适合陷阱和模拟虚拟化，但x86英特尔的微处理器具有许多详细的功能，这使得它实际上非常困难，可能，但非常难以虚拟化。英特尔也有动力尝试解决这个问题，因为他的许多客户想要运行虚拟机监视器，好吧，好吧，所以这个硬件是。</p>
+<p>发言人   01:01:31<br>The main point is to make it allow you to build faster virtual machines using this hardware support. And another motivation was to make it easier to implement a virtual machine. And this support has been around for maybe 10 years and is now very, very widely used to build virtual machines.<br>主要的观点是让您可以使用此硬件支持更快地构建虚拟机。另一个动机是让实现虚拟机变得更容易。这种支持已经存在了大约10年，现在非常广泛地用于构建虚拟机。</p>
+<p>发言人   01:01:53<br>The basic strategy is that all that virtual state that in my trap and emulate ski, all the virtual state that was being maintained by the virtual machine monitor just in software, all that virtual state is going to be implemented in the hardware, in these hardware supported schemes. And that will allow guest software to execute privilege instructions affecting these virtual hardware supported registers directly. So rather than trapping. So the goal is now the guests will be able to execute privilege instructions, but not trap. And the reason, you know, the way that works is that, again, we have virtual machine monitor and. A guest operating system and user level and the hardware. Now, you know, we know in the hardware we have a, you know? Svac and all those hardware registers?<br>基本策略是，在我的陷阱和模拟中，所有虚拟状态都是由虚拟机监视器在软件中维护的，所有虚拟状态都将在硬件中实现，在这些硬件支持的方案中。这将允许客户机软件执行权限指令，直接影响这些虚拟硬件支持的寄存器。而不是陷阱。所以现在的目标是客户机能够执行特权指令，但不能执行陷阱。原因是，你知道的，它的工作方式是，再一次，我们有虚拟机监视器和。来宾操作系统、用户级别和硬件。现在，你知道，我们知道在硬件方面我们有一个，你知道吗？Svac和所有那些硬件寄存器？</p>
+<p>发言人   01:03:06<br>And there’s all the when we’re running in these new schemes, hardware supported schemes, when we’re running the virtual machine monitor, we just use the real versions of these registers. But the hardware, when the virtual machine monitor tells the hardware look pretty, please switch into guest mode. The hardware has a complete separate set of registers dedicated for use by in guest mode, so the guest mode can read and write these registers. But it’s not, you know, it’s reading, it’s reading and writing it. Hardware copies of these, its versions of these registers rather than the real registers. And the hardware know has the kind of extra checks it makes on the guest operating system can do to make sure that it can’t abuse these registers to escape from the virtual machine.<br>当我们在这些新方案中运行时，硬件支持的方案，当我们运行虚拟机监视器时，我们只使用这些寄存器的真实版本。但是对于硬件，当虚拟机监视器告诉硬件看起来很好时，请切换到访客模式。硬件有一组完整独立的寄存器，专用于客户模式使用，因此客户模式可以读取和写入这些寄存器。但它不是，你知道，它是阅读，它是阅读和写作。这些寄存器的硬件副本是其版本，而不是实际寄存器。并且硬件知道会对客户机操作系统进行额外的检查，以确保它不能滥用这些寄存器逃离虚拟机。</p>
+<p>发言人   01:03:54<br>This is the basic, this is most of the basic strategy. And in the terminology of these hardware supported virtual machine schemes, the name, at least the in-to one, the name for guest mode is nonro. And the name for? Host mode, where we’re using the real registers is root set of non root or virtual registers for the virtual machine to use. And there’s a set of registers that are used when we’re in root mode.<br>这是基本策略，这是大部分基本策略。在这些硬件支持的虚拟机方案的术语中，客户模式的名称至少是nonro。这个名字是什么？主机模式下，我们使用的是真实的寄存器，是非根寄存器或虚拟寄存器的根集合，供虚拟机使用。还有一组寄存器，在我们处于根模式时使用。</p>
+<p>发言人   01:04:32<br>So now when we’re running in the guest kernel, it can execute any privileged instruction without trapping. So if it wants to read or write the STV, the hardware just letsgo read or write non root copy of the hardware st vac register. And so all this stuff proceeds at full speed without having to trap into the VMM. So it’s much faster for code that was incurring a lot of traps.<br>所以现在当我们在客户内核中运行时，它可以执行任何特权指令而不会被捕获。因此，如果它想要读取或写入STV，硬件只需让它读取或写入硬件st vac寄存器的非根副本。所以所有这些东西都在全速前进，而不必陷入VMM。因此，对于会引发很多陷阱的代码，速度要快得多。</p>
+<p>发言人   01:05:07<br>The you still have to, there’s a whole bunch of stuff having involved in configuring this, when the virtual machine monitor wants to create a new virtual machine, it actually has to tell the hardware. And so there is down in virtual machine monitor’s memory, there’s this structure that the virtual machine monitor and the Vtx hardware used to communicate, which is called the vmcs, or VM control something structure. And when the virtual machine monitor wants to create a new virtual machine, it creates one of these in memory and fills in a bunch of configuration flags and also initial values for all these registers and then tells the Vtx hardware.<br>你仍然需要做的是，在配置这个过程中涉及了很多事情，当虚拟机监视器想要创建一个新的虚拟机时，它实际上必须告诉硬件。因此，在虚拟机监视器的内存中，有一种结构，虚拟机监视器和Vtx硬件用于通信，称为vmcs，或VM控制某种结构。当虚拟机监视器想要创建一个新的虚拟机时，它会在内存中创建其中一个，并填写一堆配置标志以及所有这些寄存器的初始值，然后告诉Vtx硬件。</p>
+<p>发言人   01:05:51<br>Look, I want to start running a new virtual machine. And here’s the initial state. So there’s these new instructions, there’s the paper mentions, there’s VM launch. It is like a new, new machine instruction. You tell it the address of this and it starts running, starting with these registers, starts running the guest kernel, and there’s also this VM resume because sometimes you break out of the kernel, trap out of kernel into the BMM, and you need to resume it. And then code up here can run a new instruction called VM call, which is sort of intentionally exits from non root mode and basically traps into the virtual machine learning and root mode. So when the virtual machine monitor X one of these instructions to jump into a guest, the ways that it may come back, I mean, the guests and I can execute ordinary privilege instructions without trapping.<br>看，我想开始运行一个新的虚拟机。这是初始状态。所以有这些新的指令，有论文提到，有VM启动。它就像一个新的机器指令。你告诉它这个的地址，它开始运行，从这些寄存器开始，开始运行客户内核，还有这个VM恢复，因为有时你会脱离内核，从内核进入BMM，你需要恢复它。然后这里的代码可以运行一条名为VM调用的新指令，该指令有点故意从非根模式退出，基本上会陷入虚拟机器学习和根模式。因此，当虚拟机监视这些指令中的一条跳转到客户机时，它可能会返回的方式，我的意思是，客户机和我可以执行普通的权限指令而不会被捕获。</p>
+<p>发言人   01:06:53<br>But there’s a bunch of reasons why you may nevertheless return to the virtual machine mode. One isn’t intentional exit, but also if the device interrupt goes off, like the timer interrupt goes off, that the microprocessor will force a trap out of non mode, out of the guest into root mode in the virtual machine lender, so in general, device interrupteds. Trapped back into the virtual machine monitor. And so that means that a guest operating system can’t hog the CPU every time the hardware timer ticks, the virtual machine monitor gets control. And if there’s multiple guests, it can now basically times share the machine using the timer interrupts among all the different guests.<br>但是有很多原因可以解释为什么你仍然可以返回到虚拟机模式。一个不是故意退出的，但是如果设备中断关闭，就像计时器中断关闭一样，微处理器将强制陷阱从非模式中退出，从来宾模式进入虚拟机借方的根模式，因此通常情况下，设备中断。被困回虚拟机监视器中。这意味着客户操作系统不能在每次硬件计时器滴答时占用CPU，虚拟机监视器将获得控制。如果有多个访客，它现在基本上可以使用计时器中断在所有不同的访客之间共享机器。</p>
+<p>发言人   01:07:40<br>Okay, so this is a basic strategy. Basically, there’s a second set of registers. The other me, the other big piece of machinery that Vtx provides is a page table support.<br>好的，这是一个基本策略。基本上，还有第二组寄存器。另一个我，Vtx提供的另一个大机器是页表支持。</p>
+<p>发言人   01:07:58<br>When we’re operating up here in the guest world, you know, we still need a page table. Now we need page table for two reasons. One is the guest kernel wants to be able to configure his own page tables, wants to be able to load CR 3, which is the Intel equivalent of the satp register. So we’d love to be able, or bdx allows the guest kernel to load any value it likes into the CR 3 register to set the page table, and the hardware will actually obey that page table that the guest kernel load. But we know that can’t be, which is fantastic, right? Because now the guest can also call the mode page staple without trapping the VMM. But we know that we can’t just let the guest kernel put anything it likes in its page table without, because that would allow it to read and write arbitrary memory.<br>当我们在客人世界中操作时，你知道，我们仍然需要一个页表。现在我们需要页表有两个原因。一个是客户内核希望能够配置自己的页表，希望能够加载cr3，这是satp寄存器的英特尔等效版本。所以我们希望能够这样做，或者bdx允许客户内核将它喜欢的任何值加载到cr3寄存器中以设置页表，并且硬件实际上将遵循客户内核加载的页表。但我们知道那是不可能的，这太棒了，对吧？因为现在客人也可以调用模式页面钉书钉，而不会捕获VMM。但是我们知道，我们不能让客户机内核把它喜欢的任何东西放在页表里而不这样做，因为这将允许它读写任意内存。</p>
+<p>发言人   01:08:53<br>So this Vtx scheme actually has an another important register, which is in fact part of the real, well, who knows where I should draw it? But I’ll draw it right here, the extended page table. Register and the virtual which points to a page table. That maps well, maps one kind of address to another kind of address.<br>所以这个Vtx方案实际上有一个另一个重要的寄存器，它实际上是真实的一部分，谁知道我应该在哪里画它？但我会把它画在这里，扩展页表。寄存器和指向页表的虚拟。映射得很好，将一种地址映射到另一种地址。</p>
+<p>发言人   01:09:26<br>And the virtual machine monitor sets when it’s about to run a guest kernel, it sets up and Ept for that kernel, tells the hardware, look, here’s the Ept for the. Virtual machine I’m about to run and then jumps into the virtual machine. And then the game is that the MMU on this machine, when it’s translating a guested virtual address, it first translates the guest virtual address to a guested physical address to the guest. The page table that the guest sets up, and then does another translation of that guest physical address to the Ept to get a host physical address. And the hardware does that automatically for every memory reference the guest does, does this double level of translation. And so this, again, gives the VMM control over what physical memory the guest is allowed to use.<br>当虚拟机监视器设置要运行客户内核时，它会为该内核设置并通知硬件，看，这是步骤。我即将运行虚拟机，然后跳入虚拟机。然后游戏是这台机器上的MMU，当它翻译一个被猜测的虚拟地址时，它首先将来宾虚拟地址翻译成来宾的一个被猜测的物理地址。访客设置的页表，然后对该访客物理地址进行另一次翻译以获取主机物理地址。硬件会自动为来宾操作的每个内存参考执行此操作，并实现此双重翻译。因此，这再次使VMM能够控制来宾可以使用的物理内存。</p>
+<p>发言人   01:10:20<br>The guest can set up any page table it likes and can do it quite efficiently because it can directly execute the instructions. But it’s still constrained by the Ept, which the VMM configures to be able to only use physical pages that the VMM wants to really use. Any questions about the Ept?<br>客户可以设置它喜欢的任何页表，并且可以非常高效地做到这一点，因为它可以直接执行指令。但它仍然受到Ept的限制，VMM将其配置为只能使用VMM想要真正使用的物理页面。关于Ept有什么问题吗？</p>
+<p>发言人   01:10:47<br>Oh, sorry, I have a question not about, but about the second set of registers. So if you have two course and you want to run 2 Vm’s, does it do you get us like a third copy of the register? Every core has its own set of these registers.<br>哦，对不起，我有一个问题不是关于第二组寄存器的。那么，如果你有两个课程，并且你想运行2个Vm，你会给我们提供第三个寄存器的副本吗？每个核心都有自己的一组寄存器。</p>
+<p>发言人   01:11:06<br>Every chord has a sort of independent. An independent instance of all this Btx hardware. So every every core has its own 32 general purpose registers, its own real control registers, and its own virtual registers for guest mode and its own Ept. So you can be running two different guests on two different cores. They all have their own. Every register, every core has its own one. So you need a new VMM too.<br>每个和弦都有一种独立的形式。所有这些Btx硬件的独立实例。因此，每个核心都有自己的32个通用寄存器、自己的实控寄存器、以及用于来宾模式和自己的Ept的虚拟寄存器。因此，您可以在两个不同的核心上运行两个不同的来宾。他们都有自己的。每个寄存器，每个核心都有自己的一个。所以你也需要一个新的VMM。</p>
+<p>发言人   01:11:41<br>Well, I mean, it could just like an ordinary operating system like XV 6 can support multiple processes and it’s all the same XV 6, although, and just like XV 6, has a separate struct proc for every process. Our virtual machine monitor would have a separate structured struct VM or whatever it is, one for each guest to keep track of that guest information for that guest.<br>嗯，我的意思是，它可以像普通的操作系统一样支持多个进程，而且XV 6都是一样的，尽管像XV 6一样，每个进程都有一个单独的struct proc。我们的虚拟机监视器将有一个单独的结构化虚拟机或其他任何东西，每个客户机都有一个虚拟机，以跟踪该客户机的客户机信息。</p>
+<p>发言人   01:12:08<br>Okay, I see, thank you. Yes, and as I mentioned before, the switch, and if you have, you know, 1 core and three gas, the switching can be driven by timer in Ro switch, go to the virtual machine monitor, not the gas. Okay, more questions about virtual machines before I switch to the?<br>好的，我明白了，谢谢。是的，正如我之前提到的，开关，如果你有，你知道，1个核心和3个气体，开关可以由Ro开关中的计时器驱动，转到虚拟机监视器，而不是气体。好的，在我切换到之前，还有更多关于虚拟机的问题？</p>
+<p>发言人   01:12:34<br>The paper? All right, the paper takes this hardware as starting point and uses it for something else, a lot of virtual machine. So that’s a lot of the interest in the papers that they took this harder, which is like absolutely design just for virtual machines. And the paper saying, gosh, we could just use the hardware to do something that’s not a virtual machine. And what they sort of high level view of what they’re doing is they’re just they want to implement the ordinary processes.<br>这纸？好吧，这篇论文以这个硬件为起点，将它用于其他东西，很多虚拟机。所以这是他们更加努力的论文中的很多兴趣，就像绝对为虚拟机设计一样。而且报纸上说，天哪，我们可以只使用硬件来做一些不是虚拟机的事情。他们对自己所做的事情的高层次看法是，他们只是想实现普通的流程。</p>
+<p>发言人   01:13:09<br>And now we’re back in just Linux, no virtual machines anymore, just Linux. But assuming Vtx hardware is is Dune. We have Linux and we’ve assumed we’ve loaded the Dune loadable kernel module into Linux, and that is Dune software is running in supervisor mode as part of the Linux kernel. But for the most part, we’re running Linux and we’re expecting to run Linux processes. So the abstraction we’re trying to support is mostly the process abstraction with system calls and all the sort of ordinary things that Linux processes can do. But we want to use this Vtx hardware to give sort of more sort of allow ordinary processes to do some extra things. And there’s really, so we’re actually going to run. So doing runs these processes or allows the process to switch into dune mode, which means that instead of just being protected, being isolated by a page table, now this process is isolated by the complete Vtx apparatus.<br>现在我们回到了Linux，不再有虚拟机，只有Linux。但假设Vtx硬件是沙丘。我们有Linux，并且我们假设我们已经将Dune可加载内核模块加载到Linux中，并且Dune软件作为Linux内核的一部分以主管模式运行。但大多数情况下，我们正在运行Linux，我们期望运行Linux进程。因此，我们试图支持的抽象主要是系统调用和Linux进程可以做的所有普通事情的进程抽象。但是我们想使用这个Vtx硬件来提供更多种类的允许普通进程做一些额外的事情。而且真的有，所以我们实际上要运行。这样做可以运行这些进程或者允许进程切换到沙丘模式，这意味着现在这个进程被完整的Vtx设备隔离，而不仅仅是被保护，被页表隔离。</p>
+<p>发言人   01:14:21<br>So for this process, dune’s going to maintain this process now has this virtual set of all the control registers, like its own CR 3 real and its therefore its own page table, because these process is going to run in non-root supervisor mode. So it can run all the privileged instructions, although against the virtual state implemented by Btx.<br>因此，对于这个进程，dune现在将维护这个进程，它拥有所有控制寄存器的虚拟集，就像它自己的CR 3 real和它自己的页表一样，因为这些进程将在非根主管模式下运行。所以它可以运行所有特权指令，尽管它是针对Btx实现的虚拟状态。</p>
+<p>发言人   01:14:51<br>So one of the critical things this process can do under Dune is set up its own page table using its own hardware CR 3. And of course Dune controls an Ept for this process. And the Ept is going to be set up to only have entries for this processes, ordinary process memory. So the process can put anything it likes in Co 3, but because the MMU translates through the Ept after translating through the ordinary page table, the process still can not escape it’s allocated memory. So the process doesn’t have any sort of additional powers with respect to other processes or kernel memory. It just has now a more flexible way of setting up its own memory, right?<br>因此，这个过程在沙丘下可以做的关键事情之一是使用自己的硬件cr3建立自己的页表。当然，沙丘控制着这一过程。并且Ept将被设置为仅具有此进程的条目，即普通进程内存。因此，该进程可以将它喜欢的任何内容放入Co 3中，但是由于MMU在通过普通页表翻译后通过Ept进行翻译，因此该进程仍然无法逃脱分配的内存。因此，相对于其他进程或内核内存，该进程没有任何额外的能力。它现在有了一种更灵活的方式来设置自己的内存，对吧？</p>
+<p>发言人   01:15:34<br>So one thing a Dune process can do is have its own page table. In fact, it’s basically required to have its own page table. Otherwise, it won’t work. And the other thing a process can do is have supervisor mode and user mode within its little virtual machine and be able to run, be able to have the supervisor code set itself up to be protected against the code that it runs in guest user mode. So the paper really talks about these two different uses, two different things you can do with Dune.<br>因此，沙丘进程可以做的一件事是拥有自己的页表。实际上，它基本上需要有自己的页表。否则，它不会起作用。进程可以做的另一件事是在其小型虚拟机中拥有主管模式和用户模式，并且能够运行，能够将主管代码设置为免受在来宾用户模式下运行的代码的影响。这篇论文真正谈论了这两种不同的用途，你可以用沙丘做两件不同的事情。</p>
+<p>发言人   01:16:13<br>So the this ability to, for a process to get at the hardware support for supervisor versus user mode allows them to run untrusted plugin code here in a sandbox.<br>因此，对于一个进程来说，获得管理员与用户模式的硬件支持的能力允许他们在沙箱中运行不可信的插件代码。</p>
+<p>发言人   01:16:31<br>And so the idea is, oh, maybe the main program is like a web browser. You know, you can download plugins that your web browser runs, maybe a new. Video decoder or a new ad blocker or something. But we don’t totally trust that plug-in, so we’d like to run it with restricted privileges somehow. Actually, it, it’s possible, but a little bit tricky to do in ordinary Linux. But with Dune, now we can run the plugin up here in user space and the web browser, which runs in the process in supervisor mode, can configure the page table, can config a different page table for use by this user code because it’s allowed to write CR 3. And that can allow it to run this uncrested plugin code with only allowing it restricted access to just some pages of the web browser’s memory so that even if the plugin code is malicious, it can’t just arbitrarily read and write the main web browser’s memory.<br>所以想法是，哦，也许主程序就像一个网络浏览器。你知道，你可以下载你的网络浏览器运行的插件，也许是一个新的。视频解码器或新的广告拦截器或其他东西。但我们并不完全信任这个插件，所以我们希望以某种方式使用受限权限运行它。实际上，这是可能的，但在普通的Linux中做这件事有点棘手。但是有了Dune，现在我们可以在用户空间和web浏览器中运行插件，它在主管模式下运行，可以配置页表，可以配置一个不同的页表供此用户代码使用，因为它允许编写CR 3。这可以允许它运行这个未篡改的插件代码，只允许它限制访问web浏览器内存的某些页面，这样即使插件代码是恶意的，它也不能随意读写主web浏览器的内存。</p>
+<p>发言人   01:17:39<br>And if the user code, you know, the user code may be expecting to make system calls, but those system calls actually trap into the supervisor mode of the process and not into Linux. So the user this plugin code may think it’s calling fork or read a writer who knows what. But actually, those attempts to execute system calls trap into the web browser in the process. And it can do whatever it likes, not do the system call or exit the system call or who knows what. So now our web browser has sort of full control over the sandboxed plugin code.<br>如果用户代码，你知道，用户代码可能希望进行系统调用，但这些系统调用实际上陷入了进程的管理模式，而不是进入了Linux。因此，用户可能会认为这个插件代码正在调用fork，或者阅读了一个知道什么内容的作者。但实际上，那些执行系统调用的尝试在此过程中会进入web浏览器。它可以做任何它喜欢的事情，而不是进行系统调用或退出系统调用，谁知道呢。所以现在我们的网络浏览器可以完全控制沙盒插件代码。</p>
+<p>发言人   01:18:19<br>As a quick overview, any questions about using Dune to sandbox?<br>作为快速概述，您对使用沙丘沙箱有任何问题吗？</p>
+<p>发言人   01:18:30<br>And to be fair, this is something, this is an effect that could be achieved by quite different techniques using existing Linux, facilities. But Dune allows you to provide in a particularly kind of elegant end, efficient way by using the Vtx hardware.<br>公平地说，这是一种可以通过使用现有Linux设施的完全不同的技术来实现的效果。但是沙丘允许您使用Vtx硬件提供一种特别优雅、高效的方式。</p>
+<p>发言人   01:18:51<br>The other thing that the paper talks about using Dune for is to make garbage collection faster. And here it’s the way it does that is by allowing the garbage collect. We’re not doing sandbox anymore. We’re actually not even using user mode, we’re just having one program. We’re assuming that we’re writing just whatever program, who knows what. But in a garbage collected language like, you know Java or Python or something, garbage collection can be slow. You know, there’s dozens and dozens of tricks for making garbage collection faster.<br>该论文讨论的另一件事是使用沙丘来加快垃圾收集速度。这是通过允许垃圾收集来实现的。我们不再做沙盒了。我们实际上甚至没有使用用户模式，我们只有一个程序。我们假设我们正在编写任何程序，谁知道呢。但是在像Java或Python之类的垃圾收集语言中，垃圾收集可能会很慢。你知道，有几十种技巧可以更快地进行垃圾收集。</p>
+<p>发言人   01:19:29<br>But one of the things that’s important and garbage collectors is the garbage collectors is many garbage collectors trace find the memory that’s still alive, that’s still active by just tracing all the pointers through all objects starting at the registers. And it doesn’t find some object after it’s completed the trace, then that object can’t be reached, isn’t referred to by any pointer, and could be freed. But many garbage collectors run at the same time in a different thread or something as the main program. And so maybe the garbage collector has started tracing pointers from, you know, maybe from some set of registers and swallowed a pointer to this object which had pointers to these objects. You know, the garbage collector is following each of these pointers down through the tree or graph of objects. Maybe the garbage collector’s gotten, you know, down here so far and actually traced through all these objects. But then, because the garbage collector is running concurrently with the program itself, maybe the program modifies this object that the garbage collector already traced through. So that’s a bad deal, you know, because now the list of object pointers the garbage collectors decided are alive or dead or whatever may not be correct because some object that’s already seen has been modified by the program.<br>但垃圾回收器是很重要的一件事，它是垃圾回收器，许多垃圾回收器跟踪通过跟踪从寄存器开始的所有对象的所有指针来找到仍然活跃的内存。如果跟踪完成后找不到某个对象，则无法访问该对象，该对象不会被任何指针引用，并且可以被释放。但是许多垃圾回收器同时在不同的线程或主程序中运行。因此，也许垃圾回收器已经开始跟踪指针，你知道的，可能来自某一组寄存器，并吞下了指向这个对象的指针，这个对象有指向这些对象的指针。你知道，垃圾回收器在对象树或图形中向下跟踪每个指针。也许垃圾收集器已经到这里了，你知道的，实际上通过所有这些对象进行了追踪。但是，由于垃圾回收器与程序本身同时运行，可能程序修改了垃圾回收器已经跟踪过的对象。所以这是一个糟糕的交易，你知道，因为现在垃圾收集器决定的对象指针列表是活的还是死的，或者可能不正确，因为已经看到的某个对象已经被程序修改了。</p>
+<p>发言人   01:20:48<br>So Dune using page table support provides a way for the garbage collector to detect writes like that. And in particular Dune sets up CR 3, the virtual CR 3 supported by Vtx, to point to its own page table. And then it leaves all these page table entries valid, but it looks at the D bit, you know, every page type boundary has a dirty bit that indicates that there’s been a right to that page. So if the program writes some object, then the dirty bit in the corresponding page in the page table, the dirty bit will be set. And so the government, the garbage collector, is finished tracing through the objects. It goes back and looks at the debits in the page table to find all pages that contain objects that might have been modified and rescanned those objects.<br>因此，使用页表支持的Dune为垃圾回收器提供了一种检测写入的方式。特别是，沙丘将Vtx支持的虚拟cr3设置为指向自己的页表。然后它让所有这些页表条目都有效，但它会查看D位，你知道，每个页面类型边界都有一个脏位，表示对该页面有权利。因此，如果程序编写了一些对象，那么页表中相应页面中的脏位将被设置。因此，政府，垃圾收集器，完成了对这些物体的追踪。它返回并查看页表中的借项，以查找包含可能已被修改的对象的所有页面，并重新扫描这些对象。</p>
+<p>发言人   01:21:44<br>And it turns out that this facility of getting at the D bits is difficult and slow with ordinary Linux. I don’t even know if Linux supports that. There are operating systems where you can make system calls to ask for D bits, but if you use Dune and Vtx, then the process can just use ordinary load and store instructions to get out the Ptes and therefore the dbis. And it’s very fast. And so they showed, you know, that this makes this trick for some programs that are garbage collection intensive, makes the programs significantly faster.<br>事实证明，使用普通Linux获取D位是困难且缓慢的。我甚至不知道Linux是否支持这一点。在某些操作系统中，您可以进行系统调用以请求D位，但如果您使用Dune和Vtx，则该进程可以使用普通的加载和存储指令来获取Ptes，从而获取dbis。而且非常快。所以他们表明，你知道，对于一些垃圾回收密集型的程序来说，这使得这个技巧可以使程序显著更快。</p>
+<p>发言人   01:22:23<br>Any questions? What would happen if the sandboxed program? Wants to like run its own garbage collector or something like that?<br>有问题吗？如果使用沙盒程序会发生什么？想要运行自己的垃圾收集器或类似的东西？</p>
+<p>发言人   01:22:38<br>I see, so we’re sort of using, all right, All right, so we got, we’re using Dune. We have a dune process that actually using Vtx SS supervisor versus user mode, we’re running a plug-in up here in user mode. The plug-in would also, it’s also written in a garbage collect language and was like to use like to have its own page table, its own CR 3 pointing to its own page table with its own D bits. Now that doesn’t work because we’re going to run the way Dune wants you to run plugins, sandbox plugins is to run them and use in guest user mode. Guest user mode is not allowed I, it’s just like user mode, it’s not allowed to think about CR 3 and so in mode, in guest user mode, we don’t get to have our own page table. And so we don’t get quick access to the debits. It’s only in guest supervisor mode, so we can have our own Co 3.<br>我明白了，我们有点在使用，好的，好的，我们有，我们正在使用沙丘。我们有一个沙丘进程，实际上使用Vtx SS supervisor与用户模式，我们在用户模式下运行一个插件。这个插件也是用垃圾收集语言编写的，并且喜欢使用像拥有自己的页表，它自己的CR 3指向自己的页表，带有自己的D位。现在这不起作用，因为我们将按照Dune希望您运行插件的方式运行，沙盒插件将在访客用户模式下运行和使用。不允许访客用户模式，就像用户模式一样，不允许考虑cr3，因此在模式下，在访客用户模式下，我们不能拥有自己的页表。因此，我们无法快速访问借记。它仅在访客主管模式下，因此我们可以拥有自己的Co 3。</p>
+<p>发言人   01:23:44<br>So you can’t, well, there’s no obvious way to combine the two tricks, the two kinds of tricks do the labs.<br>所以你不能，嗯，没有明显的方法可以结合这两种技巧，这两种技巧可以完成实验。</p>
+<p>发言人   01:23:57<br>What about, let’s say somebody wrote a browser actually using Dune? That would mean like, that would be quite tough to make if some computers didn’t support Dune or something, right? Like it’s hard to just put Chrome into and you to use Dune. If not, not everyone has that kernel modules, right? So, so first of all, you have to be running out of a computer that supports the Vtx. You know, the underlying computer S is for Btx, which means many Intel chips, many. So you need Vtx to run Dune and Dune had to be loaded in order to run the browser. So it takes advantage of Jim. So, yeah, we’ve set all this up correctly, You know, I mean, it’s a research project.<br>那么，假设有人使用Dune编写了一个浏览器呢？这意味着，如果某些计算机不支持沙丘或其他东西，那将非常难以制作，对吧？就像很难把Chrome放进去而你想使用Dune一样。如果没有，那么并不是每个人都有那个内核模块，对吧？因此，首先，您必须运行支持Vtx的计算机。你知道，底层计算机是Btx的，这意味着许多英特尔芯片，许多。因此，您需要Vtx来运行Dune，并且必须加载Dune才能运行浏览器。所以它利用了吉姆。所以，是的，我们已经正确设置了所有这些，你知道，我的意思是，这是一个研究项目。</p>
+<p>发言人   01:24:44<br>It’s, you know, it’s intended to sort of get people thinking about things that could be deployed in the real world if they were, if it seemed like they were valuable enough. And, you know, just like Linux, I mean Linux has hundreds and hundreds of features it has. And so somebody decided to add Dune to Linux, you know, as a standard feature, then they would start relying on it. Chronic could just use it and would not be a problem name.<br>你知道，它的目的是让人们思考一些可以在现实世界中部署的东西，如果它们看起来足够有价值的话。而且，你知道的，就像Linux一样，我的意思是Linux有成百上千的功能。所以有人决定将Dune添加到Linux中，你知道的，作为一个标准功能，然后他们就会开始依赖它了。慢性可以只使用它，不会是一个有问题的名称。</p>
+<p>发言人   01:25:17<br>Sorry, so in a high level doing this like, like, like making a VM, but instead of a VM, you run a process Or yeah, or yeah, you can phrase it either way it, I mean, it’s supporting what’s mostly a process abstraction, but it’s using instead of using a page table hardware, it’s using the CPU hardware to support a process abstraction, but instead of the particular CPU hardware, it’s using is the Vtx hardware, which has a few extra features like like the ability to set up your own page, right? Right? I see I remember in the paper I read process level of abstraction, but I didn’t understand what that means, but now I understand it, thank you.<br>抱歉，所以在高层次上这样做，就像制作一个VM，但不是运行一个VM，而是运行一个进程，或者，你可以用两种方式表达它，我的意思是，它支持主要是一个进程抽象，但是它使用的不是页表硬件，而是使用CPU硬件来支持进程抽象，而是使用Vtx硬件，而不是特定的CPU硬件，它有一些额外的功能，比如设置自己的页面的能力，对吧？对吧？我记得在论文中读到了抽象层次的过程，但我不明白这意味着什么，但现在我理解了，谢谢。</p>
+<p>发言人   01:26:11<br>All right, time is up, and I’m happy to continue. If anybody has any more questions, happy to answer.<br>好的，时间到了，我很乐意继续。如果有人还有问题，很乐意回答。</p>
+<p>发言人   01:26:18<br>Yeah, so I had a question in particular about something that said in the paper was if a dune like a process, process inside dune forks, it becomes non dune process, isn’t that like a security flying away or or what’s the attack? Well, you’ve run something as a doom process thinking that it’s now safe, but then it can run, it can just fork escape. So here’s the possibility, yeah, okay. So if, let’s see, code down here in supervisor mode, you know, there’s no security problem for this, you know, respects like to this code because it would already have whatever privileges where possible it already had. It does not going to gain any extra pillar just like pork, right?<br>是的，所以我有一个特别的问题，关于论文中提到的一些事情，如果一个沙丘像一个过程，在沙丘分叉内的过程，它就变成了非沙丘过程，这不是像一个安全的飞走，还是什么攻击？好吧，你已经运行了一个厄运进程，认为它现在是安全的，但是它可以运行，它可以只是分叉逃逸。所以可能性是这样的，是的，好的。因此，让我们看看，在主管模式下的代码，你知道，这个没有安全问题，你知道，尊重这个代码，因为它已经拥有任何可能的特权。它不会像猪肉一样增加任何额外的支柱，对吧？</p>
+<p>发言人   01:27:04<br>Okay, coda, but you know, maybe it’s using dune sandbox plug-in and what we have untrusted code up here that that it would be dangerous, you know, let it run without do because it’s not trusted and we’re using Doe to sandbox it.<br>好的，最后，但你知道，也许它使用了沙丘沙盒插件和我们这里不可信的代码，这将是危险的，你知道，让它运行而不要做，因为它不可信，我们正在使用Doe来沙箱。</p>
+<p>发言人   01:27:20<br>And so then if we forked of all, okay, so this code can not fork, right? It can try to call the fork system call, but oh, a system call restriction. I’m here traps into the supervisor part of this process, and presumably the supervisor process part of this process is carefully written, not to be tricked. And so it’s not actually Ford. So that doesn’t work if the supervisor of code it is allowed to fork, it is allowed to make this, then it system calls, it’ll get a fork of this process with the same memory image. So we’ll get the plugin up here and see if it didn’t realize that fork turned off Dune, and it did. Well, I mean, it’s hard to see how this could actually happen, but it did something to resume execution of the plugin. Now that would be very foolish because now the plug is in sandbox, You know, in fact, this, you know, the code jumping in the sandbox here involves privileged instructions just like it does on risk 5 because it switches, switches guess modes.<br>那么如果我们将所有代码分叉，那么这段代码就不能分叉了，对吗？它可以尝试调用fork系统调用，但哦，系统调用限制。我在这里陷入了这个过程的主管部分，大概这个过程的主管过程部分是精心编写的，不要被骗。所以它实际上不是福特。因此，如果代码的管理程序被允许分叉，那么就不起作用，它被允许这样做，然后系统调用，它将使用相同的内存镜像获得此进程的分叉。所以我们将把插件放在这里，看看它是否没有意识到分叉关闭了沙丘，而它确实意识到了。嗯，我的意思是，很难看出这是如何发生的，但它确实做了一些事情来恢复插件的执行。现在这将是非常愚蠢的，因为现在插件已经在沙盒中，你知道，事实上，在沙盒中的代码跳跃涉及特权指令，就像在风险5上一样，因为它会切换，切换猜测模式。</p>
+<p>发言人   01:28:27<br>And if you ask for bad instruction here, that’s an illegal instruction, I guess. I guess what I was misunderstanding was I think that the plugin is not a process like the Dune process is the sandbox, the plugin is just inside there, the student process is just enabled to use features to let the plug-in run faster.<br>如果你在这里要求不好的指导，我猜这是一个非法的指导。我猜我误解的是我认为插件不是一个像沙丘进程是沙箱一样的过程，插件就在里面，学生进程只是被启用来使用功能，让插件运行得更快。</p>
+<p>发言人   01:28:47<br>Basically, that’s right, now we’re absolutely assuming that this software down here is clever with, is careful about what, what is letsgo preventing, you know, the sandbox from to actually calling for it can be life and it’s not, it’s not onsa Florida doing process to have supervisor mode because it’s actually supervisor mode in non-roma, which is the same as supervisor mode go guest OS, right?<br>基本上，这是正确的，现在我们绝对假设这里的这个软件是聪明的，对什么，什么是小心，防止，你知道，沙箱从实际调用它可以是生命，它不是，这不是佛罗里达做流程有主管模式，因为它实际上是非罗马的主管模式，这与主管模式进入来宾操作系统相同，对吗？</p>
+<p>发言人   01:29:15<br>So it’s like you can let it do everything just, but because it because of Vtx, it’s going to be like a virtual machine, so it’s not going to hurt us that’s right, it can’t escape from it address Ept instead of Ept to.<br>所以就像你可以让它做所有事情一样，但是因为它有Vtx，它就像一个虚拟机，所以它不会伤害我们，这是对的，它无法逃脱它的地址，而不是直接。</p>
+<p>发言人   01:29:28<br>Constrain it to its address space. That makes sense? So one last thing I had, I, there was like a paragraph on on epts and it said that the user page table can just expand the addresses, like like remap them to their original layout. That was something I just didn’t understand the whole paragraph, so I don’t, but maybe that’s a bit specific. I think what’s going on is that the physical addresses on the x eighty-sixth fewer bits than virtual addresses, so I’m kind of guessing. And so that means that the Ept, you know, the ordinary paytable mass virtual addresses, the physical addresses, the physical addresses have fewer bits and so that constricts the that means. That when Dune is setting up an address space for a process, one way to look at it is when Dune setting up the address space for a process, the process address space has to fit in the smaller number of bits for a dune process.<br>将其限制在地址空间内。这就是感知？所以我还有最后一件事，我，在epts上有一段文字，上面写着用户页表可以扩展地址，就像将它们重新映射到原始布局一样。这是我只是不理解整段的内容，所以我不理解，但也许这有点具体。我认为发生的情况是，x&#x2F;86上的物理地址比虚拟地址少，所以我有点猜测。这意味着Ept，你知道，普通的支付批量虚拟地址，物理地址，物理地址具有较少的位数，从而限制了这意味着。当Dune设置进程的地址空间时，一种看待它的方法是当Dune设置进程的地址空间时，进程的地址空间必须适合dune进程的较小位数。</p>
+<p>发言人   01:30:44<br>Okay? Regular processes can maybe use, I don’t know what the numbers are, let’s say 48 b virtual addresses, but maybe physical addresses are only 36 b. Again, again I’m making this up ordinary process because use all 48 b for virtual addresses. A dun process can only use 36 or so. There’s like different rules for things have to fit down it. Okay? I.<br>好吗？常规进程可能会使用，我不知道数字是什么，比如说48个虚拟地址，但可能物理地址只是36个。再说一次，我正在制作这个普通进程，因为使用所有48 b作为虚拟地址。一个dun进程只能使用36个左右。好像有不同的规则，事情必须适应它。好吗？一。</p>
+<p>发言人   01:31:13<br>I had a question about the Btx scheme and how we’re accessing page tables. So when like in the way we’re accessing page tables, because we’re going to the Ept and then like doing the second layer of translation there from the guest physical address to the host physical address is the latency of accesses to the page table actually lower? It takes more time, potentially takes more time, possibly much more time for the hardware m.u. to translate it into dress because now we have to do 2. Well, the worst case is very much worse because, you know, on the wrist five, there’s multiple levels of the page table and so the MMU ester B and from this from this page table page, and then the next to the next, each of those, the x 86 also has multiple levels. So, and the x 86 in the lookup in the first in the main page table also has to make multiple memory references. Potentially each of those multiple memory references has to go through the Ept and the Ept is also a multiply Itl page table. And so I don’t even know what the worst case number of memory references is, but it’s quite a bit worse under Vtx than it is with a not then it is an ordinary case. So there’s a potential there, you know, in fact, there’s lots of caching, so usually you don’t run up against that worst case, but.<br>我有一个关于Btx方案以及我们如何访问页表的问题。因此，当我们访问页表的方式出现问题时，因为我们要进行第二层翻译，从访客物理地址到主机物理地址，是否访问页表的延迟实际上更低？这需要更多时间，可能需要更多时间，可能更多的时间用于硬件m.u. 把它翻译成衣服，因为现在我们必须做2个。嗯，最坏的情况是非常糟糕的，因为，你知道，在手腕上，页表有多个级别，所以MMU ester B从这个页表页面中，然后下一个到下一个，每个，x86也有多个级别。因此，在主页表的第一个查找中的x86也必须进行多个内存引用。这些多个记忆引用中的每一个都可能必须通过Ept，而Ept也是一个乘法Itl页表。所以我甚至不知道最坏情况下的内存引用数量是多少，但是在Vtx下比在普通情况下更糟。所以那里有潜力，你知道，事实上，有很多缓存，所以通常你不会遇到最坏的情况，但是。</p>
+<p>发言人   01:32:43<br>And so virtual machines, are they still generally slow today? If so, I guess I was wondering how does AWS work? If it seems to be fast and it seems to be working well, my belief is that they use Vtx hardware, that they use the support that we’re talking about, and that it it’s as well as clever device schemes for efficient device access, and that the result is that AWS virtual machines are like bass or we’re not much lower than a real computer.<br>所以虚拟机，它们今天通常仍然很慢吗？如果是这样，我想知道AWS是如何工作的？如果它看起来很快而且工作得很好，我的信念是他们使用Vtx硬件，他们使用我们正在谈论的支持，并且它是用于高效设备访问的聪明设备方案，结果是AWS虚拟机就像低音，或者说我们并不比真正的计算机低多少。</p>
+<p>发言人   01:33:22<br>Cool, thank you. So yes. Oh, I had also another question on the Shadow coffee for Tro and no way you said that like I understand how you would make it, but does it actually make the shadow of coffee or does it just, I think it has to be the shadow of copyright because it has to allow the process just to do it itself, not like to know it all of the tracks, but does do it every time? Does it remember the previous?<br>很酷，谢谢。所以，是的。哦，我还有一个关于Tro的影子咖啡的问题，你不可能这么说，我理解你是怎么做的，但它实际上是咖啡的影子还是只是，我认为它必须是版权的阴影，因为它必须允许进程自己完成，不像知道所有曲目，但每次都这样做吗？还记得以前的吗？</p>
+<p>发言人   01:33:55<br>So yes and yes, the virtual machine monitor has to create a new page table or has to create a new page table. And it’s the virtual machine monitors page table, which it formatted up, which is what the real hardware uses. Now, of course, there are plenty of opportunities for caching and for reuse. So if the clever virtual machine monitors, if they notice that, oh, the guest changed just one Pte, then the virtual machine monitor may be able to do correspondingly limited amount of work to update it’s shadow page table. And it also may keep you when it if it’s sort of multiplexing time sharing among multiple virtual machines, the virtual machine monitor will keep around the shadow page tables for the virtual machines that aren’t running so that it can reuse them directly when it switches back to that virtual machine. Okay, I see. So does that mean that you have like, you have to remember a shadow copy for like each process for each virtual machine?<br>所以是的，虚拟机监视器必须创建一个新的页表或者必须创建一个新的页表。它是虚拟机监控页表，经过格式化后，真正的硬件使用它。当然，现在有很多缓存和重用的机会。因此，如果聪明的虚拟机监视器，如果他们注意到，哦，客户机只更改了一个Pte，那么虚拟机监视器可能能够做相应有限的工作量来更新它的影子页表。如果它在多个虚拟机之间进行多路复用时间共享，它也可能会让你保持不变，虚拟机监视器将保留未运行的虚拟机的影子页表，以便在切换回该虚拟机时可以直接重用它们。好的，我明白了。那么，这是否意味着您必须为每个虚拟机的每个进程记住一个卷影副本？</p>
+<p>发言人   01:35:03<br>Yes, there are many, many, right? There are many, many page tables running around in the virtual machine. The virtual machine is rarey of all page table switches that the guest does. The specific issue of maintaining the shadow page tables has consumed a lot of work, right? Thank you. Yeah, before you know, this is one of the many things that hardware supported virtual machines made quite a bit easier.<br>是的，有很多，对吧？有很多很多的页表在虚拟机中运行。虚拟机是客户机所做的所有页表开关的rarey。维护影子页表的具体问题消耗了大量的工作，对吗？谢谢。是的，在你知道之前，这是硬件支持虚拟机使其变得相当容易的许多事情之一。</p>
+<p>发言人   01:35:34<br>Oh, okay, okay. I see, I see, okay, Because the Ept means you don’t have to cook up your own shadow page, right, right, right, Yeah, that’s, that’s nice. Yeah, thank you, yes.<br>哦，好吧，好吧。我明白了，我明白了，好吧，因为这意味着你不必自己制作影子页面，对，那很好。是的，谢谢，是的。</p>
+<p>发言人   01:35:51<br>All right, got Ta head out, but I’ll see you guys on Wednesday. Thank you, thank you, bye, thank you. Is it okay? You have time for one more question? Yes please?<br>好的，我先走了，但我将在星期三见到你们。谢谢，谢谢，再见，谢谢。可以吗？你还有时间问一个问题吗？是，请问？</p>
+<p>发言人   01:36:08<br>This one is about the garbage collection of how it like rescanned to see if like they’re dirty bits. Like is this like a sort of a continued process where like it continues to rescan like indefinitely because couldn’t. You’re asking, oh, yeah, would it ever terminate?<br>这一个是关于垃圾收集如何重新扫描以查看它们是否像脏位。就像这样一种持续的过程，它会无限地继续重新扫描，因为无法。你在问，哦，是的，它会终止吗？</p>
+<p>发言人   01:36:28<br>Supposing that, oh, there’s always something new modified, in fact, potential problem. In fact, what the garbage collector does is it does one pass, one pass through to completion, and then it freezes everything else but the garbage collector. So nothing else can happen. Then it goes back and look at the dirty pages. But of course, everything else is frozen. And so no more, no more dirty pages can occur. And then the so the garbage trail looks all the dirty page and then it knows it’s done it, you know, does whatever it’s supposed to do to finish up and create the free list, and then it so all the thread.<br>假设，哦，总有一些新的东西被修改，事实上，潜在的问题。事实上，垃圾回收器所做的是做一次传递，一次传递直到完成，然后冻结除了垃圾回收器之外的所有东西。所以没有其他事情可以发生。然后它回去看看脏页。但当然，其他一切都被冻结了。因此，不再会出现更多的脏页。然后，垃圾跟踪会查看所有脏页面，然后它知道它已经完成了，你知道，它会做任何应该做的事情来完成并创建可用列表，然后它会处理所有的线程。</p>
+<p>发言人   01:37:04<br>Okay, yeah, okay, that makes a lot sense. Everything else, this is complex stuff. And of course, there’s not enough room in the paper to Dune paper to explain all the internet, what the garbage collectors have to, sadly. All right, yeah, thank you so much. Thank you, see you later.<br>好的，是的，好的，这很感知。其他的一切，这都是复杂的东西。当然，文件中没有足够的空间来解释所有的互联网，垃圾收集器必须做什么，可悲的是。好的，非常感谢。谢谢，待会儿见。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 018-Virtual Machines</div>
+      <div>http://example.com/2025/10/18/6S081-018/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-019/" title="操作系统工程 019-Kernels and High-Level-Languages">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 019-Kernels and High-Level-Languages</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-017/" title="操作系统工程 017-OS Organization">
+                        <span class="hidden-mobile">操作系统工程 017-OS Organization</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

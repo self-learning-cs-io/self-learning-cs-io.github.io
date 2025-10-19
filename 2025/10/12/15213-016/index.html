@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00Good afternoon, everybody. Welcome, good to see you. Today, we’re going to continue our study of exceptional control flow by looking at some higher level mechanisms known as Linux signals a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 016-Exceptional Control Flow, Signals and Nonlocal Jumps">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-016/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00Good afternoon, everybody. Welcome, good to see you. Today, we’re going to continue our study of exceptional control flow by looking at some higher level mechanisms known as Linux signals a">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:15.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.137Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 016-Exceptional Control Flow, Signals and Nonlocal Jumps - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 016-Exceptional Control Flow, Signals and Nonlocal Jumps"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          17k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          141 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 016-Exceptional Control Flow, Signals and Nonlocal Jumps</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>Good afternoon, everybody. Welcome, good to see you. Today, we’re going to continue our study of exceptional control flow by looking at some higher level mechanisms known as Linux signals and see nonlocal jumps. Now, we’re going to spend most of our time looking at signals because they have a lot of subtleties of semantics, it can be kind of confusing. So we’re going to spend most of our time there. And I’ll mention the idea of non-slovak jumps, but for details on those, you’ll want to look in your textbook and in the slides at the supplemental slides at the end of this, the slide deck. Now, to motivate the notion of signals, I want to talk a little bit about.<br>大家下午好。欢迎，很高兴见到你。今天，我们将继续研究异常控制流，方法是观察一些被称为Linux信号的更高级机制，并观察非本地跳跃。现在，我们将花费大部分时间来研究信号，因为它们有很多微妙的语义，这可能会有点令人困惑。所以我们将在那里度过大部分时间。我会提到非斯洛伐克跳跃的想法，但是关于这些细节，你需要看看你的教科书以及幻灯片末尾的补充幻灯片。现在，为了激发信号的概念，我想谈一点关于信号的话题。</p>
+<p>发言人   00:53<br>Shell programs. Now, as we mentioned last time, there’s only one way to create processes on a Linux system, and that’s using the fork call. All of the processes on the system actually form a hierarchy. So the very first process created when you boot the system up, it’s the init process, which has the process ID of 1, And then all other processes on the system are descendants of that, of that init process.<br>Shell程序。现在，正如我们上次提到的，在Linux系统上创建进程只有一种方法，那就是使用fork调用。系统上的所有进程实际上形成了一个层次结构。因此，在启动系统时创建的第一个进程是init进程，其进程账号为1，然后系统上的所有其他进程都是该init进程的后代。</p>
+<p>发言人   01:24<br>Now, the init process, when it starts up, it creates demons, which are long-running programs that provide services typically. So for example, a web server, other kinds of services that you always want running on the system. And then eventually it creates login, so called login shells, which provide the command line interface to users. So when you log into a Linux system, what you eventually get to is a login shell that’s expecting you to type commands. Now the login shells execute programs on your behalf.<br>现在，init进程在启动时会创建恶魔，恶魔是通常提供服务的长时间运行的程序。例如，web服务器，您始终希望在系统上运行的其他类型的服务。然后最终它会创建login，即所谓的login shell，为用户提供命令行界面。因此，当您登录到Linux系统时，最终会看到一个期望您输入命令的登录shell。现在，登录shell代表您执行程序。</p>
+<p>发言人   02:08<br>So when we type something into the shell, say we type the LS command, we’re asking the shell to run the executable program called LS. And so what the shell will do is it will create a child, and then it will execute LS within that child process. And it’s possible that that process may create other child processes. So a shell is an application program, no different from any other program that executes programs on the behalf of users.<br>因此，当我们在shell中输入某些内容时，例如输入LS命令，我们要求shell运行名为LS的可执行程序。因此，shell将创建一个子进程，然后在该子进程中执行LS。并且该进程可能会创建其他子进程。因此，shell是一个应用程序，与代表用户执行程序的任何其他程序没有什么不同。</p>
+<p>发言人   02:49<br>The default shell for Linux is called Bash, but there’s other shells that that were created with earlier versions of Unix. Sh was the original shelf called the BN shell because it was created by Stephen Bourn. And when Berkeley came out with their distribution of Unix, they created a shell called Csh. Now the.<br>Linux的默认shell称为Bash，但还有其他shell是用早期版本的Unix创建的。Sh是最初的架子，被称为BN壳，因为它是由斯蒂芬·博恩创建的。当伯克利发行Unix发行版时，他们创建了一个名为Csh的shell。现在。</p>
+<p>发言人   03:17<br>Execution in a shell is a sequence of read and evaluate steps. So first, a shell prints out a prompt, and then it waits for you to type something in on the command line and hit return. And typically, what you’re typing in is a command, which is just so the first thing you type is a command. And then you follow that with optional arguments separated by spaces. So once you type in a command and those optional arguments and hit return, the shell checks for the end of file-level is a CR D to a terminal. And if so, it exits, Otherwise it evaluates that command line and the evaluation consists. And then when it returns from the evaluation, it just does the same thing over.<br>在shell中执行是一系列读取和评估步骤。所以首先，一个shell打印出一个提示符，然后它等待您在命令行上输入内容并点击return。通常情况下，你输入的是一个命令，也就是说，你输入的第一件事就是一个命令。然后用空格分隔的可选参数跟随它。所以一旦你输入一个命令和那些可选的参数并点击返回，shell会检查文件级的结尾是一个终端的CR。如果是，它将退出，否则它将评估该命令行并完成评估。然后当它从评估返回时，它只是做同样的事情。</p>
+<p>发言人   04:15<br>Now, the evaluation consists of the following kinds of steps. First, it parses the command line by. And in the process, so it takes the command line, which in this example is in buff, and it produces an RV array where arc v 0 is a command, and then arc-v 1 and 2 and so on are the optional arguments. And the convention in a shell is that if the command line is terminated by an ampersand, then you’re asking the shell to run that job, to run that command in the background, meaning the shell won’t wait for that job to finish before it goes through its next read step.<br>现在，评估由以下几种步骤组成。首先，它解析命令行。并且在这个过程中，它接受命令行，在这个例子中是buff，它生成一个RV数组，其中arc v 0是一个命令，然后arc-v 1和2等等是可选参数。shell中的约定是，如果命令行被符号终止，那么您要求shell运行该作业，在后台运行该命令，这意味着shell不会等待该作业完成，然后再进行下一个读取步骤。</p>
+<p>发言人   05:02<br>If the line that you type doesn’t have an ampersand, then you’re asking the shell to run that job in the foreground, which means the shell will wait. So first, we parse this command line into an RV array, and we return whether or not it was terminated by an ampersand. So BG for background, if argv 0 is null, then that means we just hit return. So it’s an empty line. So we’ll just return and just ignore those.<br>如果您输入的行没有符号，那么您要求shell在前台运行该作业，这意味着shell将等待。所以首先，我们将这个命令行解析成一个RV数组，并返回它是否被一个 &amp; 符号终止。所以BG为背景，如果argv 0为空，那么这意味着我们只需点击返回即可。所以这是一个空行。所以我们将返回并忽略它们。</p>
+<p>发言人   05:37<br>Now, a show also implements what are called built in commands. So various things like jobs, BG, FG are examples of built in commands which are just implemented in the shell itself.<br>现在，一个节目也实现了所谓的内置命令。因此，像jobs，BG，FG这样的东西都是内置命令的例子，这些命令只是在shell本身中实现的。</p>
+<p>发言人   05:53<br>So if the first thing you type, if the. Command you enter is a built in. Then the shell, it will check that. It will check arc-v zero to see if it’s a built in command. And if it is, it’ll just execute it, whatever it is you asked it to do. Otherwise, if it’s not a built in, then that means that you’re asking the shell to run some program. So in that case, the shell will fork a child, and then the child will execute that program by calling exec Ve, passing as the first argument the name of the command and as the second and third arguments RV and the environment, respectively.<br>所以，如果你输入的第一件事，如果。您输入的命令是内置的。然后是外壳，它会检查。它将检查arc-v zero以查看它是否是内置命令。如果是这样，它会直接执行它，无论你要求它做什么。否则，如果它不是内置的，那么这意味着你要求shell运行一些程序。因此，在这种情况下，shell将分叉一个子级，然后子级将通过调用exec Ve执行该程序，分别传递命令名称作为第一个参数以及第二个和第三个参数RV和环境。</p>
+<p>发言人   06:42<br>Now, execve, if you recall from last time, never returns unless there’s an error. So it, so we check the return value for exec ve, and if it returns less than 0, in fact, the only time it’ll return, if it does return, it’ll always return is one. But we’re just being careful here. So we check that for a an error and print an error message if we find an error and then exit. So?<br>现在，exeve，如果你回想起上次的情况，除非有错误，否则永远不会返回。所以我们检查exec ve的返回值，如果它返回小于0，实际上，只有在它返回时，如果它确实返回，它将始终返回1。但我们在这里只是小心点。所以我们检查一个错误，如果我们发现一个错误，打印一条错误消息，然后退出。所以呢？</p>
+<p>发言人   07:20<br>Once the parent gets control again, then it waits for that foreground job to terminate. So if it’s not a background job, then it waits for it to terminate by calling weight pit and waiting for that child, that foreground job, to terminate and reaping it. Otherwise, if it’s a background job, it just prints a message and goes on. So this is really interesting, right? There’s really the only difference between a foreground job and a background job is just that the shell does a weight pit on that job or not. So otherwise, really, there’s really no difference.<br>一旦父级再次获得控制，它就会等待前台作业终止。因此，如果这不是一个后台作业，那么它会通过调用权重坑等待它终止，并等待那个前台作业，终止并收获它。否则，如果是后台作业，它只会打印一条消息并继续进行。这真的很有趣，对吧？前台作业和后台作业之间的唯一区别就是shell是否对该作业进行了加权处理。否则，真的没有什么区别。</p>
+<p>发言人   08:01<br>What, there’s a problem with our example shell? And the problem is that we’re doing the right thing for the foreground job. We always have to reap these children so that. Their state can be released, but we’re not doing anything to reap any background jobs if the background jobs. So if not beg, we’re just pruning a message and then we’re returning and then we’re continuing with this read, evaluate step and never going back and taking care of that background job. So this is a problem because the background job will eventually become, if we have enough of those jobs, we create a memory leak that could crash the system. So this is an error. So what are we going to do about this?<br>我们的示例shell有问题吗？问题在于我们正在为前台工作做正确的事情。我们总是不得不收获这些孩子。他们的状态可以释放，但我们不会做任何事情来收获任何后台作业。所以，如果不乞求，我们只是在修剪一条信息，然后我们返回，然后我们继续阅读，评估步骤，永远不会回头照顾那个后台工作。所以这是一个问题，因为后台作业最终会变成，如果我们有足够的这些作业，我们会创建一个内存泄漏，可能会导致系统崩溃。所以这是一个错误。那么我们该怎么做呢？</p>
+<p>发言人   08:54<br>Well, it turns out that exceptional control flow will help us solve this problem. And what happens is that the kernel will notify the shell when a any of its children terminate. And then the shell can then react to that and issue a weight pit.<br>事实证明，异常的控制流将帮助我们解决这个问题。发生的事情是，当内核的任何子项终止时，内核将通知shell。然后外壳可以对此做出反应并发出一个配重坑。</p>
+<p>发言人   09:16<br>And this notification mechanism that the kernel uses is something called a signal. So a signal is a small message that the kernel delivers to a process to notify it that there’s been some event in the system now. So this is very similar to the exceptions that we studied the last time, except it’s all implemented in software.<br>而内核使用的这种通知机制叫做信号。所以信号是内核传递给进程的一条小消息，通知它现在系统中有一些事件。所以这与我们上次研究的异常非常相似，只是它都在软件中实现。</p>
+<p>发言人   09:49<br>Now, keel signals are always sent from the kernel, but sometimes they’re sent at the request of another process. Sometimes the kernel will notice that there’s some event. Other times another process will ask the kernel to send a message to some other process. Now we say that it’s a small message because the only information that’s contained in a signal is it’s a unique integer ID and the fact that it was delivered. So, so there’s nothing else in a signal except except that it arrived and that it has some unique ID. Now, examples of these are the signet. So signals have this unique ID, and then they also have a name.<br>现在，龙骨信号总是从内核发送，但有时它们是在另一个进程的请求下发送的。有时内核会注意到有一些事件。其他时候，另一个进程会要求内核向其他进程发送消息。现在我们说这是一个小信息，因为信号中包含的唯一信息是它是一个唯一的整数账号以及它被传递的事实。所以，信号中除了它到达并且有一些独特的账号之外，没有其他的东西。现在，这些例子就是印章。因此，信号具有独特的账号，而且它们也有一个名称。</p>
+<p>发言人   10:45<br>So Sig An is when you type Cl C on the command line, the kernel sends a signal to any processes in the foreground, and the default to action of receiving a big in is to terminate. So this is how if you’re running a foreground job, you hit control C, you get the prompt back because it kills that job.<br>所以Sig的是，当你在命令行上输入Cl C时，内核会向前台的任何进程发送信号，默认接收大的操作是终止。所以这就是如果你正在运行一个前台作业，你点击控制C，你会得到提示，因为它会终止那个作业。</p>
+<p>发言人   11:09<br>Sig kill number 9 can be used to terminate any program. So these two have sig an and sigkill have the same effect on the programs. They kill the program the.<br>Sig kill号码9可以用来终止任何程序。所以这两个有sigkill和sigkill对程序产生相同的效果。他们杀死了这个程序。</p>
+<p>发言人   11:26<br>Unique aspect of Skell is that there’s no way to ignore it or override it. So this is like the failsafe. As we’ll see, there are ways to catch and ignore other signals like sient Sig. SGV is our favorite seg fault segmentation violation. So if you access region of memory that’s protected or not legal, then your program will. The kernel will send that process of sig sig v signal And the faults, the default effect of that is to terminate the program.<br>Skell的独特之处在于无法忽略或覆盖它。所以这就像故障安全一样。正如我们所看到的，有一些方法可以捕捉并忽略其他信号，例如sient Sig。SGV是我们最喜欢的故障段违规行为。因此，如果您访问受保护或不合法的内存区域，那么您的程序将会访问。内核将发送信号和错误的进程，其默认效果是终止程序。</p>
+<p>发言人   12:07<br>A Sig alarm is a way within your program you can arrange for a signal to be sent to yourself. So you can say inside your program, send me a Sig alarm signal in three seconds, something like that. So this is a way to do things like you can set up timers, you can set up timeouts, like if you want to, if you want to set a timeout value and you’re doing some work, you want to guard against that work, taking an exceptionally long time, you can use S Arm to set a timeout and then a very important one, as we’ll see, that will be very important for our shell is the Sig Childe signal, which the colonel sends to a parent every time one of its children terminates or stops. So this is, we’ll see now we’ll see this is how this is how our shell it’s going to actually reap all of its children taking advantage of the sigchi of signal.<br>信号警报是程序内部的一种方式，您可以安排向自己发送信号。所以你可以在你的程序中说，在三秒钟内给我发送一个标志警报信号，就像那样。所以这是一种方法，比如你可以设置计时器，你可以设置超时，比如如果你想设置超时值并且你正在做一些工作，你想防止这项工作花费特别长的时间，你可以使用S Arm来设置超时，然后一个非常重要的超时，正如我们将看到的，这对我们的shell来说非常重要的是Sig Childe信号，每当它的一个孩子终止或停止时，上校都会发送给它的父母。因此，现在我们将看到，我们将看到这就是我们的shell如何利用信号的sigchi来实际收获其所有子项的方式。</p>
+<p>发言人   13:10<br>But before I can show you that, we need to go through a number of concepts. Around signals, like I said, the semantics of signals, it’s probably one of the thorniest aspects of Linux was it was developed very early in the lifespan of Linux, and it maybe wasn’t as clean as it could be, right? In order to get a handle on signals, we’re going to have to be very careful about defining terms and very careful about the way we talk about them. So we say that the kernel sends or delivers a signal to some destination process. And it does this by setting some state in the context of the destination process. Now, nothing happens except that some bits get changed in the destination process context.<br>但在我向你展示之前，我们需要先了解一些概念。关于信号，就像我说的，信号的语义，这可能是Linux最棘手的方面之一，因为它是在Linux的生命周期早期开发的，可能并不像它可能的那样干净，对吗？为了掌握信号，我们必须非常小心地定义术语，并非常小心地谈论它们的方式。所以我们说内核发送或传递信号到某个目标进程。它通过在目标进程的上下文中设置一些状态来做到这一点。现在，除了在目标进程上下文中更改一些位之外，什么也没有发生。</p>
+<p>发言人   14:15<br>There’s no immediate impact of sending a signal. Now, a kernel sends a signal either because it detected some event in the system like that, like a child process is terminated, for example, or another process has asked the kernel to send to deliver a process a signal on its behalf. And there’s a number of ways to do that. One of them is with the kill system call. It’s kind of an unfortunate term, isn’t it? I mean, so kill is a general way to send signals. The impact is sometimes not to kill the program, but for some reason they chose to call it Kt.<br>发送信号没有立即的影响。现在，内核发送信号要么是因为它检测到系统中的某个事件，比如一个子进程被终止，要么是因为另一个进程请求内核代表它发送信号来传递一个进程。有很多方法可以做到这一点。其中之一是使用击杀系统调用。这个词有点不幸，不是吗？我的意思是，杀死是发送信号的一般方式。影响有时不是杀死程序，而是出于某种原因，他们选择称之为Kt。</p>
+<p>发言人   15:08<br>Now, the destination process receives a signal when it’s forced by the kernel act in some way to react in some way to the delivery of a signal. So these are two very different things. Sending a signal set state in the context of the destination process receiving a signal is what happens when the destination process is is finally forced by the kernel to act in some way, to react in some way.<br>现在，当内核以某种方式强制目标进程以某种方式对信号的传递做出反应时，目标进程会收到信号。所以这是两件非常不同的事情。在接收信号的目标进程的上下文中发送信号集状态，这是当目标进程最终被内核强制以某种方式行动，以某种方式作出反应时发生的事情。</p>
+<p>发言人   15:42<br>Now, some possible ways to react are to just ignore the signal.<br>现在，一些可能的反应方式是忽略信号。</p>
+<p>发言人   15:50<br>To terminate the process or to catch the signal by executing a user level function called a signal handler. So in this case, when we catch signals, it’s very similar to the and execute a signal handler. It’s very similar to executing an exception handler in response to some kind of event in the system. Now, the difference is that exception handlers are in the kernel. Signal handlers are actually just in your C code. And they execute in your process so.<br>通过执行称为信号处理程序的用户级函数来终止进程或捕获信号。因此，在这种情况下，当我们捕捉信号时，它与执行信号处理程序非常相似。这非常类似于执行异常处理程序以响应系统中的某种事件。现在的区别在于异常处理程序在内核中。信号处理程序实际上就在你的C代码中。它们在你的过程中执行。</p>
+<p>发言人   16:30<br>The way to think about if we catch a signal by executing a signal handler, we have our process executing instructions, and then the signal is received by that process. So the kernel passes control to a signal handler, which is also just in the code that’s executing in the current process. It’s just a function. In our C code, the signal handler runs, and when it returns, it eventually returns back to the next instruction, and then we continue. So it’s just like kind of like an interrupt, right? We just temporarily pause what we’re doing in our code to execute this handler before just continuing on.<br>这是一种思考方式，如果我们通过执行信号处理程序捕获信号，我们让我们的进程执行指令，然后该进程接收信号。因此内核将控制权传递给信号处理程序，信号处理程序也只在当前进程中执行的代码中。这只是一个功能。在我们的C代码中，信号处理程序运行，当它返回时，它最终返回到下一条指令，然后我们继续。所以这就像是一个中断，对吧？我们只是暂时暂停我们在代码中执行此处理程序，然后再继续。</p>
+<p>发言人   17:20<br>Now we say that a signal is pending if it’s been sent by the kernel, but not yet received so. At any given point in time, there can only be one pending signal of any particular type. So this has very important consequences for using signals because you can’t cue signals up at any point in time. There can only be one pending sigchi of signal, for example, or Sig in signal. And if a subsequent sigchi signal, say, is sent, it just overwrites. Well, you can think of it as it has no impact. It’s just discarded if there’s already a pending signal. So they don’t queue up in any meaningful way.<br>现在我们说一个信号是挂起的，如果它是由内核发送的，但还没有收到。在任何给定的时间点，只能有一个任何特定类型的挂起信号。因此，这对使用信号具有非常重要的后果，因为您无法在任何时间点提示信号。例如，信号中只能有一个待定的sigchi，或信号中的Sig。如果随后发送了sigchi信号，它只会覆盖。嗯，你可以认为它没有影响。如果已经有挂起的信号，它将被丢弃。所以他们不会以任何有意义的方式排队。</p>
+<p>发言人   18:10<br>Now, a process can block the receipt of certain signals. Now it can’t stop signals from being delivered, but it can stop the process from having to react to that signal when it’s received, okay? So blocked signals can be delivered, but they won’t be received until the signals unblocked. And pending signals are received at most once. Now the kernel keeps track of these pending and blocked signals.<br>现在，一个进程可以阻止接收某些信号。现在它不能阻止信号的传递，但它可以阻止过程在接收到该信号时必须做出反应，好吗？因此，阻塞的信号可以传递，但在信号解除阻塞之前，它们不会被接收。和挂起的信号最多被接收一次。现在内核跟踪这些挂起和阻塞的信号。</p>
+<p>发言人   18:52<br>And bit vector is that we’ll call pending and blocked. And pending represents the set of pending signals where each bit in the pending bit vector corresponds to some particular signal. So this is why they can’t be Ced, because there’s only 1 b for any signal k, there’s only 1 b in the bit vector. And when we deliver a signal, we’re just we set that bit. The kernel will set that bit. If we deliver another signal of the same type, it’ll just set that bit again, which has no, has no effect.<br>位向量是我们将调用挂起和阻塞。和pending表示一组待定信号，其中待定位向量中的每一位都对应于某个特定信号。所以这就是为什么它们不能被Ced的原因，因为任何信号k只有1 b，位向量中只有1 b。当我们发出信号时，我们只是设置了那个位。内核将设置该位。如果我们传递另一个相同类型的信号，它将再次设置该位，这没有任何效果。</p>
+<p>发言人   19:27<br>Now the kernel sets that the bit impending when the signal is delivered, and it clears it when the signal is received. And the kernel also provides mechanism for users to block signals with this blocked bit vector. So the blocked bit vector is the same size as the pending bit vector. Turns out it’s just a 32 b int. And it can be and cleared. The bits that can be set and cleared using the Sig proc mask system call.<br>现在内核设置发送信号时即将发生的位，并在接收信号时清除它。内核还为用户提供了使用此阻塞位向量阻塞信号的机制。因此，阻塞的位向量与待定位向量的大小相同。结果它只是一个32 b的整数。它可以被清除。可以使用Sig proc掩码系统调用设置和清除的位。</p>
+<p>发言人   20:00<br>Now in the next literature, the blocked bit vector is also called the signal mask. Okay, now I want to look in a little more detail about sending and receiving signals. So let’s start first with sending signals.<br>现在在接下来的文献中，阻塞位向量也被称为信号掩码。好的，现在我想要查看有关发送和接收信号的更多细节。所以让我们首先从发送信号开始。</p>
+<p>发言人   20:19<br>First, we need to understand the idea of a process group. So every process belongs to exactly one process group. And so here I’m showing a shell that’s in it has a process ID of 10 and a process group ID of 10. The shell created a foreground job, which has a process ID of 20 and a process group ID of 20. And then all of the children that this foreground job created have the same process group ID of 20.<br>首先，我们需要理解过程组的概念。所以每个进程只属于一个进程组。这里我展示了一个shell，其中进程账号为10，进程组账号为10。shell创建了一个前台作业，它的进程账号为20，进程组账号为20。然后，此前台作业创建的所有子项都具有相同的进程组账号20。</p>
+<p>发言人   20:55<br>So these process groups can be set by a system called set process group ID. And you can fetch that process group using the Get process group system call. So you can see in this example, what this shell has done is it created a foreground child. So it created this child and it changed the process group ID to be equal to the process ID of the child. And then when this child created other child children, they just inherited the same process group ID, okay?<br>因此，这些进程组可以由称为 “设置进程组账号” 的系统进行设置。您可以使用Get进程组系统调用来获取该进程组。所以你可以在这个例子中看到，这个shell所做的是创建了一个前台孩子。因此，它创建了这个子进程，并将进程组账号更改为等于子进程的进程账号。然后当这个孩子创建其他孩子时，他们只是继承了相同的进程组账号，好吗？</p>
+<p>发言人   21:36<br>Now, this notion of a process group is useful because it allows you to send signals to groups of processes at the same time. And you can do that with a program called kill, which is typically in slash bin directory. And the kill program, you can use the kill program to send an arbitrary signal to either an individual process or all the processes in one process group. So let’s look at an example. This program, this forks program, creates two children, with each of which has a. Process group of 24 8 1 7. And of course, they have different process Id’s. And so if we do a Ps, we see these two, we see these two processes running and these just go into loops, so they’ll just run continuously.<br>现在，进程组的概念很有用，因为它允许您同时向进程组发送信号。你可以用一个叫做kill的程序来实现这一点，它通常在斜杠bin目录中。和kill程序，您可以使用kill程序向一个进程组中的单个进程或所有进程发送任意信号。让我们来看一个例子。这个程序，这个分叉程序，创建了两个孩子，每个孩子都有一个。24 8 1 7的进程组。当然，它们有不同的进程Id。所以如果我们做一个Ps，我们会看到这两个，我们会看到这两个进程在运行，它们会进入循环，所以它们会持续运行。</p>
+<p>发言人   22:38<br>Now we can. Use to kill an individual process, for example. So if we call it the first argument indicates what signal you want to send. In this case, it’s signal 9, which is the Sig kill signal. So kill -9 is a very typical. Usually, if you want to kill processes, you just kill -9. And actually one of my favorite auto lab nicknames for 213 was the nickname was kill -9 1 5 2 1 3.<br>现在我们可以。例如，用于杀死单个进程。因此，如果我们称之为第一个参数指示您要发送的信号。在这种情况下，它是信号9，是信号杀死信号。所以kill -9是非常典型的。通常，如果你想杀死进程，你只需要杀死-9。而实际上，我最喜欢的汽车实验室对213的昵称之一是kill -9 1 5 2 1 3。</p>
+<p>发言人   23:17<br>And then the second argument is it’s the process ID. So this is, this is asking the kernel to kill process ID 2 4 8 1 8 by sending it a sigkill signal. Now, if if the process ID is preceded by a dash, then it sends a sigkill to every process in process group, then it treats this argument as a process group, and then it sends a signal to every process in that process group. So in this case, it will send a sigkill both of both of these children processes. And then afterwards, if we do a Ps, we see that those processes are gone, that it really did work that way.<br>然后第二个参数是进程账号。这就是要求内核通过发送sigkill信号来终止进程账号2 4 8 1 8。现在，如果进程账号前面有一个短划线，那么它会向进程组中的每个进程发送一个sigkill，然后它会将此参数视为进程组，然后向该进程组中的每个进程发送一个信号。所以在这种情况下，它将同时发送这两个子进程的sigkill。然后，如果我们做一个Ps，我们会看到这些过程已经消失了，它确实是以这种方式工作的。</p>
+<p>发言人   24:11<br>Now another way to send signals is by typing either CRL C or CR Z to the command line. CC causes the kernel to send AC to every job in the foreground process group, and CR Z causes it to send a Sig T stop signal to every job in the in the foreground process group. The default action for sigit is to terminate the process, The default action for the Sig T stop is to suspend the process, stop it until it receives a Sig CT signal.<br>现在，另一种发送信号的方法是在命令行中输入CRL C或crz。CC使内核向前台进程组中的每个作业发送交流，CR Z使内核向前台进程组中的每个作业发送停止信号。sigit的默认操作是终止进程，sigt停止的默认操作是暂停进程，停止它直到收到sigct信号。</p>
+<p>发言人   24:56<br>So you can see an example of this. Here we have a program that creates a parent and a child running in the foreground. So the parents running in the foreground. Now, when we type CR Z to the command line, the shell notifies us that it’s suspended that process. And if we do a Ps, we can see the parent and the child indeed are suspended. So the p.s. indicates that it’s suspended or stopped using T?<br>所以你可以看到一个例子。这里我们有一个程序，它创建了一个在前台运行的父级和一个子级。所以父母在最前面奔跑。现在，当我们在命令行中输入CR Z时，shell会通知我们它已暂停该进程。如果我们进行Ps，我们可以看到父母和孩子确实被暂停了。所以，P.S 表示它已暂停或停止使用T？</p>
+<p>发言人   25:34<br>Now next we type in the built in the shell built in, which is FG. And FG restores those suspended jobs to the foreground. So after typing FG, now we’re running our program again in the foreground. And then we can kill it by typing control C, which elicits a cient whose default action is to terminate. And then when we do a Ps, we see that indeed, that they’re gone.<br>接下来，我们输入内置的shell内置，即FG。和FG将暂停的作业恢复到前台。所以在输入FG后，现在我们再次在前台运行我们的程序。然后我们可以通过输入control C来杀死它，这会引发一个默认操作是终止的cent。然后当我们进行Ps时，我们确实看到它们已经消失了。</p>
+<p>发言人   26:08<br>Now, the third way that we can send signals is by using the kill system call. So here’s an example of how that works. So in this example, we’re creating n children, each of which goes into an infinite loop. And we’re recording the process ID of each child that we create. And then in another loop, we go through and we kill each of those child processes by using the kill function, passing it the process ID, and the signal that we want sent to that process. And then we do our due diligence and reap each one of those children that we’ve terminated. Now, this isn’t strictly necessary because we’re going to exit as soon as this fork and 12 function returns, we’re going to exit the code. But we’re just being careful here and maybe a little pedantic.<br>现在，我们可以发送信号的第三种方式是使用kill系统调用。所以这里有一个例子来说明它是如何工作的。因此，在这个例子中，我们创建了n个子级，每个都进入了一个无限循环。我们正在记录我们创建的每个孩子的过程账号。然后在另一个循环中，我们经过并使用kill函数杀死每个子进程，将进程账号传递给它，然后将我们想要发送的信号发送到该进程。然后我们进行尽职调查，并收获我们终止的每一个孩子。现在，这不是绝对必要的，因为我们将在此分叉和12个函数返回后立即退出，我们将退出代码。但我们在这里只是小心，可能有点迂腐。</p>
+<p>发言人   27:18<br>Now let’s look at how a process receives signals. Now suppose process A is running along, executing its user code. There’s a control passes into the kernel because of some exception. Now that exception can be either timer going off an interrupt, or it can be a trap. User calls a system call, but it’s always caused the trap into the transferring. Control into the kernel is always caused by some exception. So at this point, the kernel calls its scheduler function, and it decides to do a context switch from process A to process B, and it gets process B all set up and right. It returns from that exception and right before it’s ready to pass control back to.<br>现在让我们来看看进程是如何接收信号的。现在假设进程A正在运行，并执行其用户代码。由于一些异常，有一个控制传递到内核中。现在这个异常可以是计时器中断，也可以是陷阱。用户调用系统调用，但它总是导致转移的陷阱。控制进入内核总是由某些异常引起的。因此，在这一点上，内核调用其调度程序函数，并决定从进程a到进程B进行上下文切换，并使进程B全部设置正确。它从该异常返回，正好在它准备好将控制权传递回之前。</p>
+<p>发言人   28:23<br>Back to the user code. In process B, it checks for any signals that any pending signals. And it does this by computing a bit vector PNB. So pending non blocked, which is the logical end of the bitvector and the inverse of the blocked bit vector. So PNB is the list of all the pending signals that aren’t blocked. So these are all the pending signals that should be received. Now, if PNB is all zeros, then there’s no pending signals. So it just returns. It passes control back.<br>回到用户代码。在进程B中，它检查任何待定信号。它通过计算位向量PNB来实现。因此挂起的非阻塞，这是位向量的逻辑结尾和阻塞位向量的反转。所以PNB是所有未被阻止的待定信号的列表。所以这些都是应该接收的待定信号。现在，如果PNB全部为零，那么就没有挂起的信号。所以它只是返回。它将控制权传回来。</p>
+<p>发言人   29:08<br>It passes control back to process B, which can continue executing. However, if p and b is nonzero, then it chooses the smallest non-e-zpass bit in PNB, and it forces process P to receive that’s signal, the corresponding signal. The receipt of the signal triggers some action in the process. And then we repeat that for all the signals k nonzero. Bits that are set in PNB. And finally, when we’ve gone through all the non-zero bits, then we pass control to the next instruction in.<br>它将控制权传递回进程B，该进程可以继续执行。然而，如果p和b不为零，则它选择PNB中最小的非e-zpass位，并强制过程P接收该信号，相应的信号。接收到信号会触发进程中的一些操作。然后我们对所有信号k非零重复这一过程。在PNB中设置的位。最后，当我们处理了所有非零位后，我们将控制权传递给下一个指令。</p>
+<p>发言人   29:57<br>In process p? So the receipt of a signal always triggers some action, which is either the process terminates, The process stops until it’s restarted by a Sig Con signal. The process ignores the signal. So there’s always some predefined default action. But we can modify that default action by using a function system called called Signal. So we can now signals A, that’s another sort of misleading kind of term, just like kill.<br>在过程中，p？因此，收到信号总是会触发一些动作，要么进程终止，要么进程停止，直到被信号重新启动。这个过程忽略了信号。所以总是有一些预定义的默认操作。但是我们可以通过使用名为Signal的函数系统来修改默认操作。所以我们现在可以发出信号，这是另一种误导性术语，就像杀死一样。</p>
+<p>发言人   30:39<br>When we send a signal to a process, we don’t always want to kill it, and signal doesn’t actually signal anything, It just modifies the default action associated with some signal. So if the signal function takes out a signal number. And then specifies a change in the default action for that signal. And those default actions can be either to ignore the signal, ignore signals of type signal, revert to the default behavior for that signal.<br>当我们向一个进程发送信号时，我们并不总是想杀死它，而信号实际上并没有发出任何信号，它只是修改与某个信号相关的默认操作。因此，如果信号功能取出信号编号。然后指定该信号的默认操作的更改。这些默认操作可以是忽略信号，忽略信号类型的信号，恢复为该信号的默认行为。</p>
+<p>发言人   31:19<br>Or we can give it. Or it can be the address of a user level signal handler, which is a function that we’ve declared in our C program. There’s nothing special about the function. It has a certain prototype. It takes a single argument, which is the signal number. So when that function gets called in response to receiving a signal, that argument will be set to the signal number.<br>或者我们可以给予。或者它可以是用户级信号处理程序的地址，这是我们在C程序中声明的一个函数。这个功能没有什么特别的。它有一个特定的原型。它只需要一个参数，即信号编号。因此，当该函数被调用以响应接收信号时，该参数将被设置为信号编号。</p>
+<p>发言人   31:49<br>So calling signal with A and specifying a signal handler is called installing a handler and then executing the handlers, referred to as catching or executing or handling the signal. And this handler, it’s just like an exception handler. When it returns, when it’s executed, it will interrupts whatever is currently executing in the process. When it returns, it’ll return back to that point and continue executing.<br>因此，使用并指定信号处理程序调用信号称为安装处理程序，然后执行处理程序，称为捕获或执行或处理信号。而这个处理程序，就像一个异常处理程序。当它返回时，当它被执行时，它将中断进程中当前正在执行的任何内容。当它返回时，它将返回到该点并继续执行。</p>
+<p>发言人   32:24<br>Okay, so here’s a simple example of installing a handler. So here in Maine, we’re going to install a sig n handler, which is called sig, an underscore handler, which is defined up here. And the prototype for this function is returns nothing. And it takes a single integer argument, which is the signal number, and returns nothing. And after we install that handler, then we’re going to execute the pause, this call, which just waits for a signal handler to execute. So pause terminates the current or suspends the current process until a signal is received. And a handler executes in that process. And then pause returns.<br>好的，这是一个安装处理程序的简单示例。所以在缅因州，我们将安装一个名为sig的sig n处理程序，这是一个下划线处理程序，在这里定义。这个函数的原型没有返回任何东西。它接受一个整数参数，即信号编号，不返回任何东西。安装完该处理程序后，我们将执行暂停，即这个调用，它只等待信号处理程序的执行。所以pause会终止当前进程或暂停当前进程，直到接收到信号。并且处理程序在该进程中执行。然后暂停返回。</p>
+<p>发言人   33:15<br>So we’re going to wait until the sgan happens. So sgan recall is when we type CC, so when you were doing your bombs, did you panic at some point and try to hit control C to get out of it? So that snarky message you got, that was, we did that by installing a S handler in your bomb. So when you type CRL C, that elicits a sgan when that signet is received, we printed this message and then eventually let you exit.<br>所以我们要等到sgan发生。所以sgan回忆起来是当我们输入CC时，所以当你在做你的炸弹时，你是否在某个时候惊慌失措并试图击中控制C以摆脱它？所以你收到的那个尖笑的消息是，我们通过在你的炸弹中安装一个S处理器来做到这一点。因此，当您输入CRL C时，会在收到该图章时引发一个sgan，我们会打印此消息，然后最终让您退出。</p>
+<p>发言人   33:59<br>Now, signals are other examples of concurrency.<br>现在，信号是并发的其他例子。</p>
+<p>发言人   34:04<br>Now, we’ve seen concurrency earlier in the form of processes, right? Concurrent flows overlapping in time, logical flows overlapping in time, by definition, are concurrent now with processes. Because they have separate address spaces, those concurrent flows never interfere with each other. In some sense, processes are very easy to deal with, and we don’t really have to worry. One process doesn’t have to worry about being interfered with by another process. In fact, you have to go to great lengths to share things between processes, use specific system calls in order to, say, share memory between 2 processes.<br>现在，我们已经看到了并发以进程的形式出现，对吧？根据定义，并发流在时间上重叠，逻辑流在时间上重叠，现在与进程是并发的。因为它们有独立的地址空间，所以这些并发流永远不会相互干扰。在某些感知，流程很容易处理，我们不必担心。一个进程不必担心被另一个进程干扰。实际上，你必须竭尽全力在进程之间共享东西，使用特定的系统调用，以便在两个进程之间共享内存。</p>
+<p>发言人   34:57<br>Now, signals are another form of concurrency. This is the second time in this class that you’ve experienced concurrency.<br>现在，信号是另一种并发形式。这是您在本课程中第二次体验并发。</p>
+<p>发言人   35:06<br>And so a signal, a concurrent, it is just a logical flow. So a handler is just another logical flow that runs concurrently with your program. So let’s say we’re executing a while loop in process A, and that while loop is executing, and then process A receives a signal, which causes a transfer of control to this handler. This handler executes. So this is a concurrent flow that overlaps in time with the while loop in process A, eventually this handler, and we return back to process A now One of the reasons signals are so tricky is because of this overlapping concurrent. This concurrency, because the signal handler runs in the same process as the main program, so it shares all the global variables of that program. So that signal handler is a function that you’ve declared, and it has access to all, all the state, all the global state in the program, And the existence of the shared global state can create real problems.<br>所以一个信号，一个并发，它只是一个逻辑流。因此，处理程序只是与您的程序同时运行的另一个逻辑流。因此，假设我们在进程a中执行一个while循环，并且该while循环正在执行，然后进程A接收到信号，这导致将控制权转移到此处理程序。此处理程序执行。所以这是一个并发流，在时间上与进程中的while循环重叠，最终这个处理程序，我们现在返回到进程，信号如此棘手的原因之一是因为这种重叠的并发。这种并发性，因为信号处理程序与主程序在同一进程中运行，因此它共享该程序的所有全局变量。因此，信号处理程序是您声明的一个函数，它可以访问程序中的所有状态，所有全局状态，并且共享全局状态的存在可能会产生真正的问题。</p>
+<p>发言人   36:39<br>And we’ll get into more details about some of those problems. So another way to look at these signal handlers, this as concurrent flows, is using this context switch diagram. So suppose we’re executing in process A, and now at some point.<br>我们将更详细地讨论其中一些问题。因此，另一种看待这些信号处理程序的方法是使用此上下文切换图，将其视为并发流。所以假设我们正在进程A中执行，现在在某个时刻。</p>
+<p>发言人   37:00<br>A signal is delivered to process A, now nothing happens, right? Just the pending bit gets set in process A at this point. Now, at some point, there’s a transfer of control into the kernel, and the kernel decides to do a context switch from A to B, and now B gets to run for a while. There’s another transfer of control to the kernel, and the Kern decides to schedule process A, and now right before it returns control to process A, it notices that the pending bit for this signal is set. So it causes process A to receive that signal. So that executes the handler code. When the handler returns, it returns briefly to the kernel, which then transfers control back to the next instruction that the process was going to execute.<br>信号被传递来处理A，现在什么也没有发生，对吧？此时只会在进程A中设置挂起的位。现在，在某个时候，控制转移到内核，内核决定从面向企业进行上下文切换，现在B需要运行一段时间。有一个控制转移到内核，Kern决定调度进程A，现在在它返回控制到进程A之前，它注意到这个信号的待定位被设置了。因此它会导致进程A接收该信号。以便执行处理程序代码。当处理程序返回时，它会短暂返回到内核，然后内核将控制权转移回进程将要执行的下一条指令。</p>
+<p>发言人   37:58<br>Now, handlers are also tricky because they can be interrupted by other handlers. So suppose we have our main program that catches a signal S, which causes a transfer of control to handler S, and then, well, handler S, did you have a question? Oh, well, handler S is, is executing.<br>现在，处理程序也很棘手，因为它们可能会被其他处理程序中断。所以假设我们的主程序捕获了信号S，这会导致控制权转移给处理程序，那么，处理程序，你有问题吗？哦，好吧，处理程序正在执行。</p>
+<p>发言人   38:27<br>The program catches signal T, which causes a transfer of control to the handler for T, and then when that handler returns, it returns the point to the instruction in handler, else where it was interrupted. And then handler S continues its execution and eventually it returns back to the point in the main program where it was interrupted. Now signals, the kernel always blocks pending signals of the type currently being handled.<br>程序捕获信号T，这将导致控制转移到处理程序T，然后当该处理程序返回时，它将点返回到处理程序中的指令，否则它将被中断。然后处理程序继续执行，最终返回到主程序中被中断的点。现在信号，内核始终阻止当前正在处理的类型的挂起信号。</p>
+<p>发言人   39:09<br>A handler for a signal of type T can’t be interrupted by the receipt of another signal of that same type can be. As I showed in the previous slide, it can be interrupted by a signal of another type, but not by a signal of the same type. So that’s sort of an implicit form of blocking. But there’s the kernel also provides a system call that allows you to explicitly block and unblock signals in the form of the Sig proc mask function. And then there’s associated. So this allows you to block and unblock a set of signals, and then there’s some support functions that allow you to create those sets. So just think of these as bit vector is, and these functions will set and reset the bits and those bit vector is.<br>T类型信号的处理程序不能被同一类型的另一个信号的接收中断。正如我在上一张幻灯片中所展示的，它可以被另一种类型的信号中断，但不能被同一类型的信号中断。所以这是一种隐含的阻塞形式。但是内核还提供了一个系统调用，允许您以Sig proc掩码函数的形式显式阻止和取消阻止信号。然后就有了关联。因此，这允许您阻止和取消阻止一组信号，然后有一些支持功能允许您创建这些信号集。所以只需将这些视为位向量，这些函数将设置和重置位和那些位向量。</p>
+<p>发言人   40:09<br>So let’s see how we can use sig proc mask to temporarily block and unblock a signal. So this is going to turn out to be very important for you when you’re working on your shells, which is your next lab assignment. So what we do, we’ll use Sig empty set to create an empty mask. So this is a mask with all zeros with no elements in the set. And then we’re going to add a single element to this set, which is sgan. And now we have some code that we don’t want to be interrupted by the seed of Sig in. So we want to temporarily block the receipt of sig n signals. And we do it by calling sig proc mask with the command.<br>所以让我们看看如何使用sig proc掩码来临时阻止和解除阻止信号。所以当你处理你的shell时，这对你来说将是非常重要的，这是你的下一个实验任务。因此，我们将使用Sig空集来创建一个空掩码。所以这是一个全零掩码，集合中没有任何元素。然后我们将向这个集合添加一个元素，即sgan。现在我们有一些代码，我们不想被Sig的种子打断。所以我们想暂时阻止接收sig n信号。我们通过使用命令调用sig proc掩码来实现。</p>
+<p>发言人   41:01<br>Say I want to, I want to block the signals. That are in the set specified by mask? And I’ll assign the so this will become my new mask. This becomes the new blocked bit vector or. The new signal mask, and it makes a copy of the old one and stores it at the address specified in the third argument. So at this point, after we return from sig proc mask, sig n signals are blocked and they won’t be received. And then so we can execute this code knowing that we won’t be interrupted by receipt of a signants. And then we can restore the previous block set by using the Sig set mask operation and passing in the previous mask that we saved up here when we initially blocked Sigma.<br>说我想，我想屏蔽信号。在mask指定的集合中的是什么？我会分配，所以这将成为我的新面具。这将成为新的阻塞位向量或。新的信号掩码，它制作旧信号掩码的副本并将其存储在第三个参数中指定的地址。因此，在这一点上，在我们从sig proc掩码返回后，sig n信号被阻止，它们将不会被接收。然后，我们可以执行这段代码，知道我们不会被收到签署者打断。然后，我们可以通过使用Sig set掩码操作并传入我们最初阻止Sigma时保存在这里的先前掩码来恢复先前的块集。</p>
+<p>发言人   42:12<br>Okay, so signals and signal handling is a really tricky business. And there’s sort of three things that make them so tricky and kind of nasty, really.<br>好的，所以信号和信号处理是一项非常棘手的业务。有三件事使它们变得如此棘手和令人讨厌，真的。</p>
+<p>发言人   42:25<br>One is that you have to be very careful to write handlers that are safe. You can write signal handlers that are unsafe in the sense that they’ll create a deadlock in your program. Or you can write signal handlers that’ll corrupt a global data structure that’s being modified by the main program. So I mean, imagine, imagine your main programming is updating some data structure, like a linked list. And right in the middle of updating that data structure, when it’s no longer consistent, the program gets interrupted by the receipt of a signal. And if that signal handler is updating that same data structure, reading that structure, or modifying it, then it’s going to encounter it in an inconsistent state, and you’re in trouble. So the fact that the fact that.<br>一个是你必须非常小心地编写安全的处理程序。你可以编写不安全的信号处理程序，感知它们会在你的程序中造成死锁。或者你可以编写信号处理程序，破坏主程序正在修改的全局数据结构。所以我的意思是，想象一下，你的主编程正在更新一些数据结构，比如链表。在更新数据结构的过程中，当它不再一致时，程序会因接收到信号而中断。如果该信号处理程序正在更新相同的数据结构，读取该结构或修改它，那么它将会遇到不一致的状态，你就麻烦了。所以事实是。</p>
+<p>发言人   43:27<br>It’s easy to write signal handlers that are unsafe. Is is one aspect that makes them tough to deal with. Another aspect is they have this funny semantics that signals aren’t queued. And so if you’re not really careful about this, it’s very easy to use the receipt of signals to count events. And you can’t do that. If signals were cubed, you could use the receipt of a signal to count events in the system, but you can’t do it. Their signals aren’t cubed.<br>很容易编写不安全的信号处理程序。这是使他们难以处理的一个方面。另一个方面是它们具有有趣的语义，信号没有排队。因此，如果您对此不特别注意，使用信号接收来计算事件非常容易。你不能这样做。如果信号是立方的，你可以使用信号的接收来计算系统中的事件，但你不能这样做。他们的信号没有被立方。</p>
+<p>发言人   43:59<br>And then a third aspect of signals, which makes them tough, is that they’re not even portable across different versions of Linux. So if you use Solaris or some form of BSD, it’s not necessarily the signal handling semantics aren’t necessarily the same as they are in Linux. So we’ll look at all three of these in a little more detail.<br>然后，信号的第三个方面使它们变得困难，那就是它们甚至不能在不同版本的Linux之间移植。因此，如果您使用Solaris或某种形式的BSD，则信号处理语义不一定与Linux中的相同。所以我们将更详细地看看这三个。</p>
+<p>发言人   44:24<br>First, we’ll start with writing safe handlers. So let me give you some guidelines for how to write safe handlers. And just a collection of this is just a collection of sort of collected wisdom from various sources. But it covers a lot of aspects of signal handlers. So the first guideline is to keep your handlers as simple as possible. For example, the simplest possible handler I can think of just sets a global variable, and then it returns. And in fact. Cert The CMU cert provides guidelines for sort of compliant programs, and this is the only signal handler that they allow. This is the only compliance signal handler, one that just sets a global variable and then returns.<br>首先，我们将从编写安全处理程序开始。那么让我给你一些如何编写安全处理程序的指南。而这只是从各种来源收集的智慧的集合。但它涵盖了信号处理程序的许多方面。因此，第一个指导方针是使您的处理程序尽可能简单。例如，我能想到的最简单的处理程序就是设置一个全局变量，然后它返回。事实上。Cert CMU cert提供了兼容程序的指南，这是它们允许的唯一信号处理程序。这是唯一的合规性信号处理程序，只需设置全局变量然后返回即可。</p>
+<p>发言人   45:29<br>Guideline number one, call only functions in your handlers that have this property of async signal safety. And we’ll look at this in a second. But I want to point out that printf s printf Malik exit functions that are very common and commonly used are not safe. Guideline number 2 is to always save and restore a no on entry and exit. So aero is a global, a global variable that’s set whenever there’s an error in a system level function. So you need to save, you need to save and restore it on entry and exit so that it doesn’t get overwritten if you’re interrupted by another handler.<br>准则一，仅调用处理程序中具有异步信号安全属性的函数。我们马上来看这个。但我想指出的是，非常常见和常用的printf s printf Malik退出函数是不安全的。准则2是始终保存和恢复进入和退出时的编号。因此aero是一个全局变量，每当系统级函数出现错误时就会设置它。所以你需要保存，你需要在进入和退出时保存并恢复它，这样如果你被另一个处理程序中断，它就不会被覆盖。</p>
+<p>发言人   46:18<br>Okay, if you’re accessing any shared data structures inside a signal handler that are also accessed by your main routine, then you need to temporarily block signals while you access that data structure, both in the main routine and your signal handler. And the reason for this is what I described earlier. If your main routine is updating that global data structure, and then it gets interrupted and the signal handler is reading that data structure, it’s going to find it in an inconsistent state and bad things will happen.<br>好的，如果您正在访问信号处理程序内的任何共享数据结构，并且这些数据结构也会被主例程访问，那么在主例程和信号处理程序中访问该数据结构时，您需要临时阻塞信号。原因就是我之前所描述的。如果您的主要例程正在更新全局数据结构，然后它被中断，并且信号处理程序正在读取该数据结构，它将发现它处于不一致的状态，并且会发生不好的事情。</p>
+<p>发言人   46:53<br>Okay, you want to be sure to declare any global variables that are shared between signal handlers and the main routine as volatile. The volatile attribute will prevent the compiler from putting that value in a register. So if you declare a global variable as volatile, it will always be read, write will always go to and from memory. So this is very important, right? You might, if you don’t declare these global variables are volatile and the compiler chooses to put to put one of those in a register, then you may miss that variable being updated.<br>好的，您要确保将信号处理程序和主例程之间共享的任何全局变量声明为volatile。volatile属性将防止编译器将该值放入寄存器中。因此，如果您将一个全局变量声明为volatile，则它将始终被读取，写入将始终进入和离开内存。所以这很重要，对吧？如果您不声明这些全局变量是volatile的，并且编译器选择将其中一个放入寄存器中，那么您可能会错过更新的变量。</p>
+<p>发言人   47:36<br>So suppose, suppose your signal handlers is setting a global variable. And now suppose your main routine is spinning, waiting for that global variable to get set. Well, if it’s in a register, the right to that variable will just update the register. Your main routine is in danger just of spinning forever, not seeing the change. So always use volatile so that they’re not stored in registers.<br>那么假设，假设您的信号处理程序正在设置一个全局变量。现在假设你的主要例程正在旋转，等待全局变量被设置。如果它在寄存器中，则对该变量的权限将只更新寄存器。你的主要例行公事有永远旋转的危险，看不到变化。所以始终使用volatile，这样它们就不会存储在寄存器中。</p>
+<p>发言人   48:09<br>And then if you have a special kind of global called a flag, which by definition is a variable, it’s only read or written, not incremented or updated. It’s just read or written. If you have a variable with that property, then you can declare it with this sig atomic t attribute. And if you do that, then the system guarantees that reads and writes to that variable will be atomic. So you don’t have to, in other words, you don’t have to protect to these accesses or references to. Those global variables. And so by atomic means that the read or write of that flag will always happen in one uninterruptible step, 1 uninterruptible load or store particular.<br>然后，如果您有一种特殊的全局标记，称为标志，它的定义是一个变量，它只能读取或写入，不能递增或更新。它只是读或写的。如果你有一个具有该属性的变量，那么你可以使用这个sig原子属性来声明它。如果你这样做，那么系统保证对该变量的读取和写入将是原子的。所以你不必，换句话说，你不必保护这些访问或引用。这些全局变量。因此，通过原子方式，该标志的读或写将始终发生在一个不间断的步骤中，即1个不间断的加载或存储特定步骤。</p>
+<p>发言人   49:03<br>Now, in practice, on most systems, the sig atomic t is an int. So you can read or write an int with one instruction. So it’s atomic. But if you want to be portable, you declare it with Sig atomic T, and then it’ll work on them. It’ll work on all systems.<br>现在，在实践中，在大多数系统中，sig原子t是一个int。所以你可以用一条指令读或写一个int。所以它是原子的。但是如果你想成为可移植的，你可以用Sig原子T声明它，然后它就可以在它们上工作。它将在所有系统上运行。</p>
+<p>发言人   49:27<br>Okay, we mentioned this property of async signal safety. Now a function is safe to be used inside of a signal handler if it’s either reentrant or if it can’t be interrupted by signals. And a reentrant function, as we’ll see when we study threads, is a function where all of the data that it accesses is on its own stack. No, no global variables, no pointers to global variables. Everything’s stored on the stack locally. Okay? So that means you can, it’s called reentrant because you can have multiple instances of that function and they all have their own separate copies of all of the variables that they’re using.<br>好的，我们提到了异步信号安全的这个属性。现在，如果一个函数是可重入的或者不能被信号打断，那么它就可以安全地在信号处理程序内使用了。而可重入函数，正如我们在研究线程时会看到的那样，是一个函数，它访问的所有数据都在自己的堆栈上。不，没有全局变量，没有指向全局变量的指针。一切都本地存储在堆栈上。好吗？这意味着您可以将其称为可重入，因为您可以拥有该函数的多个实例，并且它们都拥有自己使用的所有变量的单独副本。</p>
+<p>发言人   50:13<br>Now, the Pos standard guarantees 117 different functions to be async signals saved. These include underscore exit, right weight, weight pit, sleep kill. But unfortunately, there’s some very popular functions that aren’t on this list, printf s, printf, things that you really want to use. And in fact, right is the only output function that’s async signal safe. So this is kind of a problem because especially when you’d often like your signal handlers to output information, but you can’t if you want to really be pedantic and careful, you can’t use printf. In fact, it’s possible to write a program, and I’ll try. It’s possible to write a program that does a tight loop of print FS in the main routine and then a steady stream of interrupts which execute a handler which also does a printf.<br>现在，Pos标准保证117个不同的函数可以被异步保存。这些包括下划线退出，右重物，负重坑，睡眠杀死。但不幸的是，有一些非常流行的功能没有在这个列表中，printf s，printf，你真正想使用的东西。实际上，right是唯一一个异步信号安全的输出函数。所以这有点问题，因为特别是当你经常希望你的信号处理程序输出信息时，但如果你想真正地迂腐和小心，你就不能使用printf。事实上，写一个程序是可能的，我会试一试。可以编写一个程序，在主例程中执行一个紧密的打印FS循环，然后执行一个也执行printf的处理程序的稳定中断流。</p>
+<p>发言人   51:23<br>Now the printf call has to acquire what’s called a lock on the terminal. Each printf inside that library function, it acquires a lock, which means only one instance of printf can write to the terminal at any point in time. If another function tries to acquire that lock, it has to wait until whatever function owns the lock releases it. Okay, so a lock prevents a lock is a way to get mutually exclusive access to shared resources. So if we have a tight loop in our main routine with executing printf, imagine what happens if one of those print ups acquires a lock on the terminal and then gets interrupted now by the receipt of a signal. Now within the signal handler, it calls another printf, and that printf tries to acquire that lock. And it blocks forever because nothing’s going to release that lock.<br>现在printf调用必须在终端上获取所谓的锁定。在该库函数内的每个printf，它都会获取一个锁，这意味着在任何时间点只有一个printf实例可以写入终端。如果另一个函数试图获取该锁，它必须等待，直到拥有该锁的任何函数释放它。好的，所以锁防止锁是一种获取对共享资源的互斥访问的方式。因此，如果我们在主例程中有一个执行printf的紧密循环，想象一下，如果其中一个打印ups在终端上获得锁定，然后现在被接收信号中断，会发生什么。现在在信号处理程序中，它调用另一个printf，并且该printf尝试获取该锁。它会永远阻塞，因为没有什么会释放那个锁。</p>
+<p>发言人   52:33<br>The main routine was interrupted by the handler. So you have what’s called a classical. Condition called deadlock, which is we have a process waiting for an event that’ll never occur. In this case, the printf and the signal handler is waiting for a lock to be released that’ll never be released. It’s interesting. You can try this.<br>主要的例行程序被处理程序打断了。所以你有所谓的古典。条件称为死锁，这是我们有一个进程等待一个永远不会发生的事件。在这种情况下，printf和信号处理程序正在等待释放一个永远不会释放的锁。这很有趣。你可以试试这个。</p>
+<p>发言人   53:00<br>It’s not too hard to create this deadlock situation. So to deal with this, I really didn’t want to tell you guys that you couldn’t have any output in your programs, and right’s a very difficult thing to deal with. So I created a small little library called the Safe IO library consists of three routines, and they’re available to you in the CSP DOC file, which is distributed on the website. And it consists of three reentrant routines.<br>创建这种僵局并不难。因此，为了处理这个问题，我真的不想告诉你们程序中不能有任何输出，这是一件非常困难的事情。因此，我创建了一个名为安全IO库的小型库，由三个例程组成，它们可以在网站上分发的CSP DOC文件中使用。它由三个可重入的例程组成。</p>
+<p>发言人   53:37<br>Sio put us princess string, put L prince along, and Sio error prints a message and then exits. So you can take my word for it. You can safely use this in your signal handlers. So if we were going to rewrite our sig n handler from the binary bomb, we could rewrite it like this. And now we have every function async signal safe.<br>Sio把我们的公主串放在一起，把L王子放在一起，Sio错误打印一条消息，然后退出。所以你可以相信我的话。您可以在信号处理程序中安全地使用它。因此，如果我们要从二进制炸弹重写我们的sig n处理程序，我们可以像这样重写它。现在我们有了每个异步信号安全的函数。</p>
+<p>发言人   54:14<br>Now, signals are also tough because of this funky non queueing semantics. And so it’s really easy to make mistakes when you have an implicit assumption that the, that the receipt of a signal can be used to count the occurrence of an event. So to at, let’s look at this example program. We install a sigchi handler, and this is actually this sort. I want to close the loop.<br>现在，由于这种时髦的非排队语义，信号也很困难。因此，当你有一个隐含的假设，即信号的接收可以用来计算事件的发生时，很容易犯错误。所以，让我们来看看这个示例程序。我们安装了一个sigchi处理程序，这实际上是这种类型的。我想关闭这个循环。</p>
+<p>发言人   54:50<br>Remember we talked about our example shell? We’re wondering how are we going to reap those background children? Well, we do it by installing a Sig child handle like we’re doing in this example. So here we have a program that installs this Sig child handler, and then it creates n different child processes where each child sleeps for a little bit and exits. And then it spins until the C count variable becomes 0. The parent. I’m sorry, the parent spins until the C count variable becomes 0. Now, in our child handler, we have a global that’s that’s initialized to 0 c count. And then we wait.<br>还记得我们谈论过我们的示例shell吗？我们想知道我们将如何收获这些背景儿童？好的，我们通过安装Sig子句柄来做到这一点，就像我们在这个例子中所做的那样。因此，这里我们有一个程序，它安装了这个Sig子处理程序，然后创建了n个不同的子进程，每个子进程都会睡眠一点并退出。然后它旋转直到C计数变量变为0。父母。对不起，父项会一直旋转，直到C计数变量变为0。现在，在我们的子处理程序中，我们有一个初始化为0 c count的全局。然后我们等待。</p>
+<p>发言人   55:48<br>We’re going to wait. So when the child handler gets called, that means it’s called because we received a Sig child signal. So in our handler, we’re going to reap that child by calling weight, and then we’ll decrement C count. So once all of the children have have been reaped, c count will be 0. And then the parent can exit this while loop, okay?<br>我们要等待。所以当子处理程序被调用时，这意味着它被调用时是因为我们收到了一个Sig子信号。所以在我们的处理器中，我们将通过调用权重来收获那个孩子，然后我们将减少C计数。所以一旦所有的孩子都被收获了，c计数将为0。然后父母可以退出这个while循环，好吗？</p>
+<p>发言人   56:19<br>Now in this particular example, n was five. But when you run this code. The handler only gets called twice. So the message handler reap child only gets executed twice, which means the handler was only called twice. We created five children, we terminated five children, but we only reaped 2.<br>现在在这个特定的例子中，n是5。但是当你运行这段代码时。这个处理程序只被调用两次。因此，消息处理程序收割子只被执行两次，这意味着该处理程序只被调用两次。我们创造了五个孩子，终止了五个孩子，但我们只收获了两个。</p>
+<p>发言人   56:51<br>So the problem is, the problem is that we assumed that the receipt that the, that the execution of the child handler corresponded to the single receipt of a single sig child-led signal, when in reality, these signals aren’t queued, right?<br>所以问题是，问题是我们假设子处理器的执行与单个sig子引导信号的单次接收相对应，而在现实中，这些信号没有排队，对吧？</p>
+<p>发言人   57:13<br>We had in reality, multiple Sig child-led signals were delivered to that child, which kept Oper Wri that bit in the pending bit vector. And the delivery of those signals didn’t cause any reaction in the process until that process was just about ready to be rescheduled and only then was the signal received. But even though like, say, three signals were delivered, only one was received. So you can’t use events. In this case, we’re using event. We’re using signals to count events, which in this case is the termination of a child. The receipt of a signal in this case only indicates that at least one child terminated, not one child terminated. All we can infer from the receipt of that signal is that at least one child has terminated to fix that.<br>我们在现实中，多个由孩子主导的信号被传递给那个孩子，这使得Oper将那个位记录在待定位向量中。并且这些信号的传递在过程中没有引起任何反应，直到该过程准备好重新安排，并且只有到那时信号才被接收到。但是即使传递了三个信号，也只接收到了一个。所以你不能使用事件。在这种情况下，我们使用事件。我们正在使用信号来计算事件，在这种情况下是一个孩子的终止。在这种情况下，收到信号仅表明至少有一个孩子终止，而不是一个孩子终止。我们只能从收到的信号中推断出，至少有一个孩子已经终止了修复。</p>
+<p>发言人   58:19<br>When we receive a sick child, we have to put the weight that’s reaping our children. We have to put that in a loop. So we have to assume that the receipt of a Sig child, if we get a Sig child, there could be multiple terminated children that we have that we have to reap. And so we put that in this loop, and we execute this loop until there’s no more terminated children, in which case, weight we’ll.<br>当我们接收一个生病的孩子时，我们必须把给我们的孩子造成的负担放在一起。我们必须把它放在一个循环中。所以我们必须假设收到一个Sig孩子，如果我们得到一个Sig孩子，可能会有多个终止的孩子，我们必须收获。所以我们把它放在这个循环中，然后执行这个循环，直到没有更多终止的孩子为止，在这种情况下，我们会加权。</p>
+<p>发言人   58:53<br>Exit with an error code of -1 and an error no of each child. So this isn’t really an error. It just means there’s no more terminated children. So we check as long as if our error knows is not each child, then we have an error. Otherwise we terminated normally as we expected. Now, if we run this code, now we see that we reap all five children, as we should. OK, so the litany of problems with signals.<br>退出，错误代码为-1，每个子级的错误编号为。所以这并不是一个错误。这只是意味着没有更多的终止孩子。所以我们只要检查我们的错误是否知道不是每个孩子，那么我们就有一个错误。否则我们会像预期的那样正常终止。现在，如果我们运行这段代码，现在我们看到我们收获了所有五个孩子，正如我们应该的那样。好的，那么一连串的信号问题。</p>
+<p>发言人   59:26<br>First, it’s easy to write handlers that aren’t safe. Second, it’s easy to get the semantics wrong. Third, they’re often not even portable across different versions of Unix. So there’s some older systems, there’s some earlier versions of Unix that after you catch a signal, restores the default to action. So you have to reinstall the handler. Every time a handler gets called, you have to reinstall that handler by calling signal inside the handler itself. We don’t have to do that for Linux systems.<br>首先，编写不安全的处理程序很容易。其次，语义很容易搞错。第三，它们通常甚至不能在不同版本的Unix上移植。因此，有一些较旧的系统，有一些早期版本的Unix，在您捕获信号后，将默认恢复为操作。所以你必须重新安装处理程序。每次调用处理程序时，您都必须通过在处理程序内部调用信号来重新安装该处理程序。我们在Linux系统上不必这样做。</p>
+<p>发言人   01:00:06<br>On some systems, when you have so called slow syscalls, for example, read, you know, if you do a read system call, the kernel doesn’t wait around for that data to arrive. It sends a request to the disk controller and it schedules another process. So in a way that the read call is sort of, and then only when the data arrives and the interrupt comes in, announcing that the data arrives, does that read call finish and then restore and return. So you can think of Reed is actually kind of broken up into two parts, right? And so functions like read, these kind of functions are called slow syss call alls.<br>在某些系统上，当你进行所谓的慢系统调用 (例如读取) 时，你知道，如果你进行读取系统调用，内核不会等待数据到达。它向磁盘控制器发送请求，并安排另一个进程。因此，在某种程度上，读调用是排序的，只有当数据到达并且中断进入，宣布数据到达时，该读调用才会完成，然后恢复并返回。所以你可以认为芦苇实际上是分成两部分的，对吧？因此，像read这样的函数被称为 “慢系统调用”。</p>
+<p>发言人   01:00:59<br>And on some systems, if the process receives a signal before a slow system call has finished, the kernel will will just abort that system call and return from that system call with an error. So from a user’s point of view, you’re doing a read call, and it returns with this E enter signal, this E enter error. You did nothing wrong. You just happen to have the bad luck of being interrupted by some signal. And so in your user code, you have to check for that. If a slow system call like read is interrupted by signal, you have to redo it, So you have to put, which is really a pain because you have to put these read calls in a loop and keep looping until it succeeds.<br>在某些系统上，如果进程在缓慢的系统调用完成之前收到信号，内核将中止该系统调用并从该系统调用返回错误。因此，从用户的角度来看，您正在进行读取调用，它返回此E输入信号，此E输入错误。你没有做错什么。你只是碰巧被一些信号打断了，运气不好。因此，在您的用户代码中，您必须进行检查。如果像read这样的缓慢系统调用被信号中断，你必须重做它，所以你必须把它放进去，这真的是一件痛苦的事情，因为你必须把这些read调用放在循环中并保持循环，直到它成功。</p>
+<p>发言人   01:01:46<br>And finally, some systems don’t block signals of the type being handled, right? So the solution for this is a replacement for signal.<br>最后，一些系统不会阻塞被处理类型的信号，对吗？因此，解决这个问题的方法是替代信号。</p>
+<p>发言人   01:01:56<br>So the problem is with this signal sysca, and the solution is a newer called Sig action, which provides a mechanism, a replacement for signal that provides a mechanism for portable and predictable signal handling. And so what I’ve done, what I’ve done is created a wrapper called uppercase signal that takes the same arguments as the signal call, but inside it calls the Sig action function to get portable signal handling. And so it’s not really important to go into detail about this. The point is, in your code, you always want to call uppercase signal using the wrapper that I provided in CSP DOC. And then if you do that, then you’ll always block signals of the type being handle. The system will automatically restart slow syscalls that have been interrupted by signals. So fortunately, there’s an easy fix for this.<br>所以问题在于这个信号系统，解决方案是一种更新的称为Sig action的机制，它提供了一种机制，一种替代信号的机制，为便携式和可预测的信号处理提供了一种机制。所以我所做的，我所做的是创建一个名为大写信号的包装器，它采用与信号调用相同的参数，但在内部调用Sig操作函数以获得可移植的信号处理。因此，详细介绍这一点并不重要。重点是，在你的代码中，你总是希望使用我在CSP DOC中提供的包装器来调用大写信号。如果你这样做，那么你将总是阻塞被处理类型的信号。系统将自动重新启动已被信号中断的缓慢系统调用。幸运的是，这个问题有一个简单的解决方案。</p>
+<p>发言人   01:03:08<br>Now let’s finish up with. There’s some interesting, I mentioned that signals are difficult because of the fact that they’re concurrent flows. So I want to look at some sort of subtle issues that you can run into because of this concurrency. And I want to talk about how to identify those errors and how to fix them.<br>现在让我们结束吧。有一些有趣的地方，我提到信号很困难，因为它们是并发流。所以我想看看由于这种并发性可能会遇到的一些微妙问题。我想谈谈如何识别这些错误以及如何修复它们。</p>
+<p>发言人   01:03:34<br>So here’s a program that this is like a simple shell program that maintains a jobs list. So every time it creates a new child, it adds it to the jobs list. And every time that child terminates, it removes it from the jobs list. So our simple shell, just in a loop, it just creates a child and then executes a program within that child. And then in the parent, it correctly blocks all of the signals temporarily while it adds the job to the job queue. And then it unblocks. And then it unblocks those signals. So this is correct in that it’s protecting access to the shared job queue.<br>这里有一个程序，它就像一个简单的shell程序，用于维护作业列表。所以每次它创建一个新的子项时，它都会将其添加到作业列表中。每次子终止时，它都会将其从作业列表中删除。所以我们的简单shell，只是在一个循环中，它只是创建一个孩子，然后在这个孩子内执行一个程序。然后在父级中，当它将作业添加到作业队列时，它会正确地暂时阻止所有信号。然后它解锁了。然后它会释放这些信号。所以这是正确的，因为它保护了对共享作业队列的访问。</p>
+<p>发言人   01:04:29<br>Because that job queue is also manipulated by the sigchi handler. When a child terminates and the parent receives the Sig child, this handler runs and this handler goes through, and it reaps all of the children, potentially terminated children. And then for each one, it deletes that job from the job queue.<br>因为该作业队列也由sigchi处理程序操作。当一个孩子终止并且父收到Sig孩子时，此处理程序运行并且此处理程序通过，并获取所有孩子，可能终止的孩子。然后对于每一个，它都会从作业队列中删除该作业。</p>
+<p>发言人   01:04:57<br>So here’s a classic case. We have two concurrent flows. Our main routine and our signal handler. They’re each accessing a shared data structure, in this case, the job queue. They’re correctly blocking signals while they update this job queue. But this program has a really subtle and nasty bug in it. Can you see what it is. What’s the sequence of events that would cause this program to fail? Yes?<br>这是一个经典案例。我们有两个并发流。我们的主要例程和信号处理程序。它们都访问一个共享数据结构，在本例中是作业队列。他们在更新此作业队列时正确地阻塞了信号。但这个程序有一个非常微妙和讨厌的错误。你能看到它是什么吗？会导致这个程序失败的事件顺序是什么？是吗？</p>
+<p>发言人   01:05:51<br>Exactly, that’s exactly it. Is it possible that the child process could terminate before the parent has a chance to add that job to the queue? And the answer is yes. You can not make any assumptions about the execution ordering the child in the process or about how long they run. So it’s very possible that the child after the fort control, returns to the child instead of the parent, and then the child terminates before the parent ever has a chance to add that job to the job queue. So now what’s happened is that the child is deleting a job that hasn’t been added to the job queue. And now when the parent finally gets around to running, it adds that job to the job queue, and that job will never be deleted.<br>没错，就是这样。子进程是否有可能在父进程有机会将该作业添加到队列中之前终止？答案是肯定的。你不能对执行过程中对孩子的排序或他们运行的时间做出任何假设。因此，很有可能堡垒控制之后的子项返回到子项而不是父项，然后子项在父项有机会将该作业添加到作业队列之前终止。所以现在发生的事情是孩子正在删除尚未添加到作业队列的作业。现在当父级最终开始运行时，它会将该作业添加到作业队列中，并且该作业将永远不会被删除。</p>
+<p>发言人   01:06:47<br>So this is the kind of subtle, nasty, horrible kind of bug that you run into when you’re dealing with concurrency, trying to keep track of all of these interleaving of events can just make your head explode now, and it happens, and it happens with any kind of concurrency where you have concurrent flows accessing shared resources, and signal handlers are no different.<br>所以这是一种微妙、令人讨厌、可怕的错误，当你处理并发时会遇到，试图跟踪所有这些事件的交错只会让你的头爆炸，而且会发生这种情况。并且这种情况发生在任何并发情况下，其中您有访问共享资源的并发流，信号处理程序也不例外。</p>
+<p>发言人   01:07:14<br>Now we’ll look at principled ways where we can deal with this kind of sharing when we study threads later on, but I just want to point this out to you and scare you a little bit. So here’s how we would fix that. What we have to do is somehow avoid the possibility of the.<br>现在我们将看看有原则的方法，当我们稍后学习线程时，我们可以处理这种共享，但我只是想向你指出这一点，让你有点害怕。这就是我们如何解决这个问题的方法。我们要做的就是以某种方式避免这种可能性。</p>
+<p>发言人   01:07:39<br>Child handler executing before parent can add the corresponding job to the job queue. Now we can’t control whether the child executes first or the parent executes first, and we can’t control how long the child runs, but we can control when the sigchi handler runs because we can block signals. So what we’ll do, we’ll modify our program to, we’ll use sig proc mask to block Sig child signals before we create the child. So at this point, after this invocation of sig proc, sigchi signals are blocked, then we create the child. And before we do our exec vector, we don’t know that child may need to reap its children. We don’t know if it by default, children inherit the blocked a bitvector of their parents. So when this child runs after it returns from fork, at this point, right after the fork, a Sig child is blocked and the child as well.<br>子处理程序在父级可以将相应的作业添加到作业队列之前执行。现在我们无法控制是孩子先执行还是父母先执行，我们也无法控制孩子运行的时间，但我们可以控制sigchi处理程序何时运行，因为我们可以阻止信号。所以我们要做的是，我们将修改我们的程序，在创建孩子之前，我们将使用sig proc掩码来阻止Sig子信号。因此，在调用sig proc之后，sigchi信号被阻塞，然后我们创建了孩子。在我们执行向量之前，我们不知道这个孩子可能需要收获它的孩子。我们不知道默认情况下，孩子是否继承了他们父母的被阻止的位向量。因此，当这个孩子从叉子返回后运行时，此时，就在叉子之后，一个Sig孩子被阻止了，这个孩子也被阻止了。</p>
+<p>发言人   01:08:56<br>If we didn’t do anything and the child created children and tried to reap them with a Sig child handler, that sigchi handler wouldn’t run, so that would be a problem. So in the child, before we execute the program itself, we unblock sigchi’s. And this was an example that I was alluding to last time of how it’s useful sometimes to separate creating processes with executing programs. So this allows us to get our signal mask set up the way we want it before we run our program in the child, so now even if the child terminates early. The sick child handler won’t run until after we’ve added the job to the job queue because we don’t unblock sigchi until after we call adjo.<br>如果我们什么都不做，而孩子创建了孩子，并尝试使用Sig孩子处理程序来收获它们，那么sigchi处理程序将无法运行，所以这将是一个问题。因此，在孩子中，在我们执行程序本身之前，我们会解锁sigchi。这是我上次提到的一个例子，说明有时将创建过程与执行程序分开是非常有用的。因此，这允许我们在子级运行我们的程序之前以我们想要的方式设置信号掩码，因此现在即使子级提前终止。生病的孩子处理程序在我们将作业添加到作业队列之前不会运行，因为我们在调用adjo之前不会取消阻止sigchi。</p>
+<p>发言人   01:10:02<br>Now there’s another. So this sort of scenario be very relevant to you when you do your shell lab. So you want to be careful not to make that mistake.<br>现在又有了另一个。所以当你做shell实验室时，这种情况与你非常相关。所以你要小心不要犯那个错误。</p>
+<p>发言人   01:10:16<br>Another thing that you’re going to need to do in your shell lab. Now you remember in our our simple shell example, we did the weight inside the main routine. So we waited for foreground jobs using weight. But now in a real shell, we’re going to have our sick child handler do all the weights, call all the weights. And so we can’t put the way it has to go in the sigchi al handler can’t go in the main routine. So if we can’t put a weight in the main routine, how are we going to detect that our foreground job is finished? So somehow, so what we could do, we could define in the sigchi handler when we reap the foreground job.<br>你需要在shell实验室里做的另一件事。现在你记得在我们简单的外壳示例中，我们在主例程中设置了权重。所以我们使用权重等待前台工作。但现在在一个真正的外壳中，我们将让生病的孩子处理程序处理所有的重量，调用所有的重量。所以我们不能把它必须走的方式放在sigchi处理器中，不能放在主要例程中。那么，如果我们不能在主例程中设置权重，我们如何检测到我们的前台任务已经完成？所以不知何故，我们可以做什么，当我们收获前台作业时，我们可以在sigchi处理程序中定义。</p>
+<p>发言人   01:11:11<br>We’ve created a foreground job. When we reap that foreground job, we could set this global flag. We could declare this process ID a variable PID as a global flag, and then just assign the process ID of the of the foreground job. So this is an example of a handler. It just all it does, it sets a flag and then exits.<br>我们已经创建了一个前台作业。当我们获得前台作业时，我们可以设置这个全局标志。我们可以将这个进程账号变量PID作为全局标志来声明，然后只需分配前台作业的进程账号。所以这是一个处理程序的例子。它就是这样做的，设置一个标志，然后退出。</p>
+<p>发言人   01:11:43<br>And then in our main routine, okay, we want to, we want to block sigchi just like before to avoid that race condition between the parent and the child. And then we create the child. And then the parent, we set PID to 0. Then we unblock sigchi, and then we wait for the sigchi al handler to run and set PID to non-zero. Everybody see that? I mean, so this is correct, right? But it’s extremely wasteful. We’re spinning, we’re using valuable processor cycles in this tight spin loop, just executing over and over and over and over and over and over for who knows how long. So that’s not a good solution.<br>然后在我们的主程序中，好的，我们想要像之前一样阻止sigchi，以避免父母和孩子之间的竞争条件。然后我们创造了孩子。然后是父级，我们将PID设置为0。然后我们取消阻止sigchi，然后等待sigchi处理程序运行并将PID设置为非零。大家看到了吗？我的意思是，这是正确的，对吗？但这非常浪费。我们在旋转，我们在这个紧密的旋转循环中使用宝贵的处理器周期，只是一遍又一遍地执行，一遍又一遍，谁知道持续了多长时间。所以这不是一个好的解决方案。</p>
+<p>发言人   01:12:43<br>So let’s look at a couple other things we might consider and that have been considered by generations of 213 students. So one thing you might think, well I’ll just instead of just putting a semicolon here I’ll pause, and then I’ll wait for the sigchi handler to run, and then I’ll go back up and I I’ll check PID again. Now you have to put this in a loop. It still has to be in a loop because we have other signal handlers in our program.<br>那么让我们来看看我们可能会考虑的其他一些事情，这些事情已经被一代又一代的213名学生考虑过了。所以你可能会想一件事，好吧，我会暂停，而不是仅仅在这里放一个分号，然后我会等待sigchi处理程序运行，然后我会回去再次检查PID。现在你必须把它放在一个循环中。它仍然必须处于循环中，因为我们的程序中有其他信号处理程序。</p>
+<p>发言人   01:13:20<br>We have a S in handler. So it might be if we do the pause here and the sgan comes in and the sgan handler runs, that would cause us to exit the pause function and go back up. So we have to keep checking PID because we’re not sure, we have to keep checking for the specific signal handler, sigchi handler to run instead of other handlers that might run. But this is actually wrong. Because it has a race. Can you see what the race is.<br>我们有一个S处理程序。所以如果我们在这里暂停，sgan进来并且sgan处理程序运行，这可能会导致我们退出暂停功能并返回。所以我们必须继续检查PID，因为我们不确定，我们必须继续检查特定的信号处理程序，sigchi处理程序来运行，而不是可能运行的其他处理程序。但这实际上是错误的。因为它有一场赛跑。你能看出比赛是什么。</p>
+<p>发言人   01:13:59<br>What’s wrong with this? There’s a good chance that this thing will block forever. Yes?<br>这有什么问题吗？这个东西很可能永远阻塞。是吗？</p>
+<p>发言人   01:14:20<br>Yeah, so the problem, the problem with this is that signal, if the signal is received after PID is checked but before the pause executes, which is possible. It’s unlikely, but it’s possible. If that signal arrives here, then the handler will set PID to non-zero, and then we’ll execute the pause, and the pause will be blocked forever waiting for a signal that’ll never arrive. The sigchi the signal already already came very subtle, right? So this code looks okay, it looks benign, but it’s wrong, and your program would just hang forever. So we say, well OK, that’s no good.<br>是的，所以问题在于，如果信号是在检查PID之后但在暂停执行之前收到的，这是可能的。这不太可能，但这是可能的。如果该信号到达此处，则处理程序将将PID设置为非零，然后我们将执行暂停，暂停将被永久阻止，等待永远不会到达的信号。信号已经非常微妙了，对吧？所以这段代码看起来还可以，它看起来是良性的，但它是错误的，你的程序会永远挂起。所以我们说，好吧，那不好。</p>
+<p>发言人   01:15:16<br>We could replace the pause with a sleep, so we could say let’s check PID. And then sleep for some predetermined amount of time. In this case, one second. And then go back up and check PID again. So while this is correct, it’s way too slow. We’re asking the system to wait for a second, which is an eternity. And there’s forms of sleep nanosecond, where you can wait instead of units of second-consecutive can wait in units of nanoseconds, but what value do you use? So if. You choose a value that’s too large. Then you have this problem, the slowness problem.<br>我们可以用睡眠代替暂停，这样我们就可以说让我们检查一下PID。然后睡一段预定的时间。在这种情况下，一秒钟。然后返回并再次检查PID。虽然这是正确的，但它太慢了。我们要求系统等待一秒钟，这是永恒的。还有一些形式的睡眠纳秒，你可以等待而不是以第二个连续的单位，可以以纳秒为单位等待，但是你使用什么价值呢？所以如果。你选择的值太大了。那么你就有这个问题，缓慢的问题。</p>
+<p>发言人   01:15:56<br>If you choose a sleep time that’s too small, then you have the other problem that it’s inefficient. So the solution is to use 6 to spend, which is the last thing we’re going to look at today. So 6 to spend is a function that takes a signal mask. And it’s equivalent to an uninterruptible version of these three statements. So we block the signals that are specified in the signal mask. And then it’s atomic in the sense that.<br>如果你选择的睡眠时间太少，那么你就会有另一个问题，那就是效率低下。所以解决方案是用6来花费，这是我们今天最后要看的东西。所以6花是一个需要信号掩码的函数。它等效于这三个语句的不间断版本。因此，我们屏蔽了信号掩码中指定的信号。然后它在感知是原子的。</p>
+<p>发言人   01:16:37<br>These two statements can’t be interrupted. They’re always executed together. So we block these signals, and then we execute the pause. So there’s no chance of a signal interrupting this program in between the Sig proc mask and the pause. And then, and then when a signal does come in and the execution of the handler causes pause to exit, then we set the mask back to what it was before. So the proper way then to wait for a signal is to use six of pen in the following way. So here’s our program again.<br>这两个语句不能被打断。他们总是一起被处决。所以我们阻止这些信号，然后执行暂停。因此，在信号触发掩码和暂停之间没有信号中断该程序的可能性。然后，当信号确实进入并且处理程序的执行导致暂停退出时，我们将掩码设置回之前的掩码。因此，等待信号的正确方法是按照以下方式使用6支笔。这是我们的节目。</p>
+<p>发言人   01:17:22<br>Before we create the child, we block sigchi, then we create the child, and now we’re going to wait for the Sig child to be received. Now sigchi is still blocked, okay? So there’s no danger of the sigchi handler running. So we set that global variable to 0, and then while it’s nonzero, we repeatedly call 6 to spend in, and six of spend is using the previous mask that was set up here. So six of spends is using the mask where Sig Child is unblocked.<br>在创建孩子之前，我们阻止sigchi，然后创建孩子，现在我们将等待Sig孩子被接收。现在sigchi仍然被封锁，好吗？所以没有运行sigchi处理程序的危险。因此，我们将该全局变量设置为0，然后当它非零时，我们重复调用6来进行支出，其中6个支出使用此处设置的先前掩码。所以六个花费正在使用Sig孩子畅通无阻的面具。</p>
+<p>发言人   01:18:00<br>When we entered this first sig proc mask sig child was unblocked. So this allows inside the sig suspend sigchi is unblocked, so it allows for the handler now to be received or to be executed. And it does it safely because of the atomic nature of those, those first two instructions. So once, so it’s possible that the implicit pause inside of sick child could be interrupted by, say, another signal like Snt, in which case we’d loop back up. We’d notice that PID was still 0. And we go back into Sig suspend with sigchi unblocked. So that makes sense to everybody. And now, so this is exactly the behavior we want.<br>当我们进入这个第一个sig proc掩码时，sig子被解锁了。因此，这允许sigchi内部暂停sigchi未被阻塞，因此它现在允许接收或执行处理程序。它这样做是安全的，因为前两个指令的原子性质。所以一次，生病孩子内心的隐含停顿可能会被另一个信号 (如Snt) 打断，在这种情况下我们会循环回来。我们会注意到PID仍然是0。我们回到sigchi解锁的sigchi暂停。这对每个人都有感知。现在，这正是我们想要的行为。</p>
+<p>发言人   01:18:57<br>We’re not wasting resources, but we’ve eliminated race. OK, so that’s it for today. If you’re interested. Non-local jumps are this weird thing in C that allows a function to return to some other function that didn’t call it, but it’s described in your textbook and also in some additional slides here if you’re interested.<br>我们没有浪费资源，但我们已经消除了种族。好的，今天就到这里。如果你感兴趣的话。非本地跳转在C中是一种奇怪的东西，它允许一个函数返回到其他没有调用它的函数，但如果你感兴趣，你可以在你的教科书和一些其他幻灯片中进行描述。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 016-Exceptional Control Flow, Signals and Nonlocal Jumps</div>
+      <div>http://example.com/2025/10/12/15213-016/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-017/" title="深入理解计算机系统 017-System-Level I/O">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 017-System-Level I/O</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-015/" title="深入理解计算机系统 015-Exceptional Control Flow, Exception and Processes">
+                        <span class="hidden-mobile">深入理解计算机系统 015-Exceptional Control Flow, Exception and Processes</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

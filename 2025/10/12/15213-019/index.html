@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00So today we’re going to continue our study of virtual memory by looking at more detail at how address translation works. And then we’ll learn about how virtual memory works on real systems">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 019-Virtual Memory, Systems">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-019/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00So today we’re going to continue our study of virtual memory by looking at more detail at how address translation works. And then we’ll learn about how virtual memory works on real systems">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:18.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.138Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 019-Virtual Memory, Systems - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 019-Virtual Memory, Systems"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          15k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          124 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 019-Virtual Memory, Systems</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>So today we’re going to continue our study of virtual memory by looking at more detail at how address translation works. And then we’ll learn about how virtual memory works on real systems on Linux and X 8664 systems. And the payoff for that is that you’ll really be able to now understand how fork and exec really work, how vital the virtual memory system is to sort of the entire working of the system.<br>所以今天我们将通过更详细地了解地址翻译的工作原理来继续我们对虚拟内存的研究。然后我们将了解虚拟内存在Linux和X 8664系统上的实际系统上如何工作。而这样做的回报是，你现在真的能够理解fork和exec是如何工作的，虚拟内存系统对于整个系统的工作有多重要。</p>
+<p>发言人   00:38<br>So let’s look at some specific examples of how we do a dress translation. And here’s that reference slide.<br>那么让我们来看一些具体的例子，看看我们如何进行着装翻译。这是那个参考幻灯片。</p>
+<p>发言人   00:49<br>So let’s suppose we have this simple memory system with 14 b virtual addresses, 12 b physical addresses, page size of 64 B. So in our we have, so we need 6 VPO bits, offset bits, and then the remaining bits are the virtual page number. And similarly, for our physical addresses, we need, we need six offset bits. And the remaining bits form the physical page number. Now, the TLB in this system has 16 entries and it’s four way set associative. So you remember the TLB caches, page table entries, and those page table entries are uniquely identified by the virtual page number. So we only need to use the Vpn to access entries in the in the TLB.<br>所以假设我们有一个简单的内存系统，它有14个虚拟地址，12个物理地址，页面大小为64个。所以在我们的，所以我们需要6个VPO位，偏移位，然后剩余的位是虚拟页码。同样地，对于我们的物理地址，我们需要六个偏移位。剩余的位构成了物理页码。现在，这个系统中的TLB有16个条目，它是四个关联的。所以你要记住TLB缓存、页表条目，这些页表条目由虚拟页码唯一标识。所以我们只需要使用Vpn访问TLB中的条目。</p>
+<p>发言人   01:50<br>We have 16 entries, 4 way set associative. So there’s a total of four sets. And so we use low order, the two low order bits in the v.p.n. as the index, and then the remaining bits, just like any other cache or the tag bits. And then this, we’ve initialized this with some various values, now the actual contents of. The TLB are in this region here. So this set, this is just to help identify what’s set. There is no entry called set with a value of 0. We’re just identifying that as. We’re just explicitly listing the index. And so each of our entries in the TLB consists of this tag. And if the TLB entry is valid, physical page number.<br>我们有16个条目，4路集合相关联。所以一共有四组。因此我们使用低位，即v.p.n中的两个低位。 作为索引，然后是剩余的位，就像任何其他缓存或标记位一样。然后，我们已经用一些不同的值初始化了它，现在是的实际内容。TLB在这个地区。所以这个集合，这只是为了帮助识别什么是集合。没有值为0的名为set的条目。我们只是在确认这一点。我们只是明确地列出了索引。因此，我们在TLB中的每个条目都由这个标签组成。如果TLB条目有效，则为物理页码。</p>
+<p>发言人   02:55<br>Now we also need a page table. So we’ll assume that we have. This page table with we’re just showing the first 16 entries. And each page table entry consists of a physical page number and a valid bit. If valid bit is on, then that indicates that the page is in memory and the PPN field gives the physical page number. And again, there’s no actual, this v.p.n. column doesn’t actually exist in the page table.<br>现在我们还需要一个页表。所以我们假设我们有。这个页表，我们只显示了前16个条目。每个页表条目由一个物理页码和一个有效位组成。如果有效位打开，则表示该页在内存中，PPN字段提供物理页码。再次强调，这个v.p.n.没有实际的意义。 列实际上并不存在于页表中。</p>
+<p>发言人   03:35<br>And now we have a simple. Direct mapped cache. It’s addressed with physical addresses, and it contains 16 sets, each with one line. And we’ll assume a 4 B block size. So we have a 4 B block size. So we need two offset bits for the cache. 16 sets means we need four cache index bits. And then the remaining bits are for the tags.<br>现在我们有一个简单的。直接映射缓存。它使用物理地址进行寻址，包含16个集合，每个集合只有一行。我们将假设块大小为4 B。所以我们有一个4 B的块大小。所以我们需要两个偏移位用于缓存。16组意味着我们需要四个缓存索引位。然后剩余的位用于标记。</p>
+<p>发言人   04:17<br>Now it’s just an accident in the way that I define this system. The CA tags are exactly the same as the physical page number, so this is just a coincidence. It isn’t necessarily that way. Now, with the magic of a audiovisual systems switch, good.<br>现在我定义这个系统的方式只是一个意外。CA标记与物理页码完全相同，因此这只是一个巧合。不一定是这样。现在，随着视听系统开关的魔力，很好。</p>
+<p>发言人   04:46<br>Okay, so we’re going to look at a couple examples using this little system now. So let’s suppose the CPU executes an instruction that generates an effective address. It’s a virtual address of 0x 0 3D 4, and then it passes that to the MMU, which needs to figure out the corresponding physical address, and then it needs to fetch the data from cache or memory. So the first thing we do is we just write out the bits for this virtual address, and then we identify the different fields. So we have the offset, virtual page, offset bits, and then the remaining bits are the virtual page number. The offset in this case is.<br>好的，现在我们将使用这个小系统来看几个例子。那么让我们假设CPU执行一条生成有效地址的指令。它是一个虚拟地址0x03d 4，然后将其传递给MMU，MMU需要找出相应的物理地址，然后需要从缓存或内存中获取数据。所以我们做的第一件事就是写出这个虚拟地址的位，然后识别不同的字段。所以我们有偏移量、虚拟页面、偏移位，然后剩余的位是虚拟页面编号。在这种情况下，偏移量是。</p>
+<p>发言人   05:48<br>Two 4 0x 24. The Vpn is F, and then we have the two TLB bits, which are 1, 1, so 3. And then we have the tag bits, which are also equal to 3.<br>两个4 0x24。Vpn是F，然后我们有两个TLB位，分别是1，1，所以是3。然后我们有标记位，它们也等于3。</p>
+<p>发言人   06:10<br>So the first thing that the MMU does, given this address, is it checks the TLB. I hoping that the page table entry that it needs is cached in the TLB so it goes, extracts the index bits 3 and that gives us. So now that says that if if this page table entry is in the TLB, it’s going to be in set three. So we go to set three.<br>因此，给定此地址，MMU执行的第一件事是检查TLB。我希望它需要的页表条目缓存在TLB中，因此它会提取索引位3，这给我们。所以现在说，如果这个页表条目在TLB中，它将在设置三中。所以我们去设置三。</p>
+<p>发言人   06:44<br>And now we’re looking for an entry in Sep 3 with a tag of three. So we go across this one, there’s four entries in this. Here’s an entry with a tag of 7. So that’s not n and plus a valid bit 0. Oh, here’s an entry with a tag of three and a valid bit of one.<br>现在我们正在Sep 3中寻找标记为3的条目。所以我们来看看这个，这里有四个条目。这是一个标签为7的条目。所以这不是n，加上有效位0。哦，这是一个带有三个标签和一个有效位的条目。</p>
+<p>发言人   07:07<br>So we lucked out the page table entries in the TLB, and so the TLB returns the value, the physical page number, which is 0 D, back to the MMU, which can now construct the physical address. So it constructs that physical address PA by copying, directly copying the VPO bits to the PPO bits.<br>因此，我们幸运地在TLB中找到页表条目，因此TLB返回物理页码的值，即0 d，回显现在可以构建物理地址的MMU。因此，它通过复制来构造物理地址PA，直接将VPO位复制到PPO位。</p>
+<p>发言人   07:34<br>As we discussed the last time, the virtual page offset is always identical to the physical page offset because the block sizes in the virtual address space and the physical address space are the same size. So here, so we get the low order PPO bits and then the physical page number, which comes from the Pte that’s cached in the TLB is zero xd. And so that forms the PPN bits of the physical address. So these now constitute are our physical address.<br>正如我们上次所讨论的那样，虚拟页偏移始终与物理页偏移相同，因为虚拟地址空间和物理地址空间中的块大小相同。所以在这里，我们得到低位PPO位，然后是物理页码，它来自于缓存在TLB中的Pte为零xd。这样就形成了物理地址的PPN位。现在构成的就是我们的物理地址。</p>
+<p>发言人   08:09<br>So now the next step, once we have the physical address is to look to send that to the cash and ask the cash to return the value at that address. In this case, we’re just doing 1 B accesses. So we’re asking the cache to return the bytes that’s in at this physical cache.<br>所以现在下一步，一旦我们有了物理地址，就是查看将其发送到现金，并要求现金返回该地址的值。在这种情况下，我们只是进行了1 B的访问。所以我们要求缓存返回这个物理缓存中的字节。</p>
+<p>发言人   08:30<br>So the cache, of course, it first checks to see if the. Byte that’s requested is contained in some block in the cache. So so it takes and it extracts the CA index bits, which is 0 1, 0 1, so 5. And so if this byte that’s being requested is in the cache, it’s going to be in set 5. So we go to set five. And then we’re looking for a tag of zero xd. And lo and behold, here’s we have a matching tag and a matching valid bit. So the line that we request that is in the cache and the word, the word that we requested is that offset 2.<br>所以缓存，当然，它首先会检查是否。请求的字节包含在缓存的某个块中。所以它需要提取CA索引位，即0 1，0 1，所以5。因此，如果被请求的字节在缓存中，它将在集合5中。所以我们去设置五。然后我们要寻找零xd的标签。瞧，我们有一个匹配的标签和一个匹配的有效位。所以我们请求缓存中的行和单词，我们请求的单词是偏移量2。</p>
+<p>发言人   09:25<br>So we go to, so this is offset one, this is offset 2. Oh no I’m sorry.<br>所以我们去，所以这是偏移量1，这是偏移量2。哦，不，对不起。</p>
+<p>发言人   09:50<br>Let’s see? What, oh I’m sorry? I was getting confused. These are the index bits. So the offset is actually 0. This is our physical address. And the value of that offset is 0. We’re asking for in the fifth set, we’re asking for the byte at offset zero, and that’s 0x 36. So we have a hit, the cache returns that byte back to the MMU. Passes it back to the processor, which stores it in a register, most likely. Okay, so let’s look at another example.<br>让我们看看？什么，哦，对不起？我有点糊涂了。这些是索引位。所以偏移量实际上是0。这是我们的实际地址。并且该偏移量的值为0。我们在第五组中要求，我们要求偏移零的字节，那就是0x36。所以我们有一个命中，缓存将该字节返回到MMU。最有可能的是，将其传递回处理器，处理器将其存储在寄存器中。好的，让我们再看一个例子。</p>
+<p>发言人   10:45<br>And I’ve recorded these here for you if you want to go back and look at them.<br>我在这里为你录制了这些，如果你想回去看看的话。</p>
+<p>发言人   10:49<br>Let’s look at another example. So this time, the CPU sends a virtual address of 0x 0 0 2 0 to the MMU. And so if we write out the bits for that virtual address. We get this result, and then we mark off the virtual page, offset the virtual page number and the TLB index. Low order bits of the virtual page number, and then the tag for the TBT. So as step 1, same as before, check with the Tob.<br>让我们看另一个例子。这次，CPU向MMU发送虚拟地址0 x0 2 0。因此，如果我们写出该虚拟地址的位。我们得到这个结果，然后我们标记虚拟页面，偏移虚拟页面编号和TLB索引。虚拟页码的低位，然后是TBT的标签。因此，与步骤1相同，与Tob检查。</p>
+<p>发言人   11:30<br>Let’s see if that page table entries in the TLB T. In the tolb? So we’re asking in this case. This set, if this page table entry is in the TLB, it’ll be in set zero. And it’ll have a tag of 0. So we look in set zero for a tag of 0. This doesn’t match 0 3. Here’s 0 9, that doesn’t match 0 0 matches, but a valid bit’s 0. So this isn’t a valid entry, it’s just a coincidence that this tag was was 0. So this is a TLB miss. So that’s a bummer because now we have to go off the chip and make an expensive memory access.<br>让我们看看TLB T中的页表条目。在tolb中？在这种情况下，我们正在询问。这个集合，如果这个页表条目在TLB中，它将处于集合零。并且它的标签将为0。所以我们在集合0中寻找0的标签。这与0 3不匹配。这里是0 9，它不匹配0 0匹配，但有效位是0。所以这不是一个有效的条目，这个标签是0只是一个巧合。所以这是一个TLB小姐。这很让人感到不屑，因为现在我们必须放弃芯片，进行昂贵的内存访问。</p>
+<p>发言人   12:32<br>To read that page table entry from the page table. So now we have to, so now we have to check with the page table.<br>从页表中读取该页表条目。所以现在我们必须这样做，现在我们必须检查页表。</p>
+<p>发言人   12:50<br>And we’re looking for a virtual page. Virtual page 0. So we check the entry at virtual page 0 to see if that page, if that page is a memory, and if so, if it has a valid and it is in memory because a valid bits 1. So we have a valid physical page number. The memory returns the page table entry or the PPN back to the back to the MMU, which is it’s a 0x 0x 28. And now the MMU can use that physical page number to construct the physical address.<br>我们正在寻找一个虚拟页面。虚拟页面0。因此，我们检查虚拟页面0的条目以查看该页面是否为内存，如果是，则检查它是否有效并且由于有效位1而在内存中。所以我们有一个有效的物理页码。内存将页表条目或PPN返回到MMU的背面，即0x0x28。现在，MMU可以使用该物理页码来构建物理地址。</p>
+<p>发言人   13:42<br>So as before, we copy the virtual page offset directly into the physical page offset, and then our PPN is 28. So we have 1 0, it’s 2 1 0 0 0 8. So now the concatenated, those form the physical address. And now the MMU has a physical address that it can hand off to the cache. And request that the cash return that value at that physical address. So now the cache gets that physical address and it extracts the cash index bits, which in this case are 8 0x 8.<br>像以前一样，我们将虚拟页面偏移量直接复制到物理页面偏移量中，然后我们的PPN为28。所以我们有10，它是2 0 8。所以现在连接起来，这些构成了物理地址。现在，MMU有一个物理地址，可以交给缓存。并请求现金在该物理地址处返回该值。所以现在缓存获取该物理地址并提取现金索引位，在本例中为8 0x8。</p>
+<p>发言人   14:31<br>So the block, if the word that we’re looking for is contained in the cache. I’m sorry if the byte that we’re looking for is contained in the cache. It’ll be in set 8. So we go, So the CA goes to set 8. And it looks for a matching tag, which in this case is, it turns out that it’s 28, just like the PPN, just by coincidence. So in set 8, we have tag, the block has a tag of 24, so there’s a miss. So this is a cache miss. So now the cache has to request pass that physical address to the memory to fetch that bite.<br>因此，如果我们要寻找的单词包含在缓存中，则块。如果我们要查找的字节包含在缓存中，我很抱歉。它将在第8集。所以我们去，所以CA去设置8。它会寻找匹配的标签，在这种情况下是28，就像PPN一样，只是巧合。因此，在集合8中，我们有标签，该块的标签为24，因此有一个未命中。所以这是一个缓存未命中。所以现在缓存必须请求将该物理地址传递到内存以获取该咬合。</p>
+<p>发言人   15:18<br>Virtual page offset. That’s based on the yeah. The question is how, you know, how do you determine the size of the virtual page offset? And yes, it’s based on the page size. So what are we, it was 64 B. So 64 B. That’s why we have 6 VPO and PPO bits. So is that clear to everybody? That’s the kind of thing that sometimes turns up on exams.<br>虚拟页偏移量。这是基于yeah的。问题是如何，你知道，如何确定虚拟页面偏移量的大小？是的，它基于页面大小。那我们是什么，那是64 B。所以，64 B。这就是为什么我们有6个VPO和PPO位。那么每个人都清楚了吗？这就是考试中有时会出现的事情。</p>
+<p>发言人   15:57<br>Yes, is there any relationship between the length of physical page number and the cash tag on the cover? Okay, so the question is, is there any relationship between the like the physical page number and the hashtag? This was just a complete coincidence. It just happened, it was just a coincidence. Normally, they don’t necessarily have to line up like that. Any other questions?<br>是的，物理页码的长度和封面上的现金标签之间是否有任何关系？好的，那么问题是，物理页码和标签之间是否有任何关系？这完全是巧合。这只是发生了，这只是一个巧合。通常情况下，他们不一定非要这样排队。还有什么问题吗？</p>
+<p>发言人   16:27<br>The fact that the PDN is also playing with coincidence. For instance, if I’d had more sets in my cash, then I’d need more bits and they’d spill over, right? It was just a coincidence because I had six PPO bits and just a block size of 4 and 4 sets. So if my cache had more sets, the cache index would spill over, and then the cache tag wouldn’t match up with the physical page number. So it’s a similar situation to the question before, where like in this case, that’s right, it’s similar to the question before. It just happened to be a coincidence. Maybe I should have chosen a different example, but they’re completely independent.<br>事实上，PDN也在玩巧合。例如，如果我的现金中有更多的设置，那么我需要更多的比特，它们就会溢出，对吗？这只是一个巧合，因为我有六个PPO位和一个块大小的4个和4个集合。因此，如果我的缓存有更多的集，缓存索引会溢出，然后缓存标签将与物理页码不匹配。所以这与之前的问题类似，就像在这种情况下，没错，这与之前的问题类似。这只是巧合。也许我应该选择一个不同的例子，但它们是完全独立的。</p>
+<p>发言人   17:20<br>Everybody else good?<br>其他人都很好？</p>
+<p>发言人   17:23<br>Okay? Okay, so now I want to talk to you about how this stuff all works in a real system. In this case, it’s a Core i7 system from Intel to next 8, 6, and 64. It’s a family of high end desktop systems x 8664, similar to the shark machines that you use. To do your labs. So here’s the way the memory system looks in the Core i7. The processor package is the chip. And then there’s 4 cores in this package. Each core has a separate CPU and can execute instruction separately. So each of these cores has a register file and then some hardware that fetches instructions.<br>好吗？好的，现在我想和你谈谈这些东西在真实系统中是如何工作的。在这种情况下，它是一个从英特尔到下一个8、6和64的核心i7系统。它是一个高端台式系统系列x 8664，类似于您使用的鲨鱼机。做你的实验室。所以这是内存系统在核心i7中的外观。处理器封装就是芯片。然后这个包中有4个核心。每个核心都有一个单独的CPU，可以单独执行指令。所以每个内核都有一个寄存器文件，然后是一些提取指令的硬件。</p>
+<p>发言人   18:32<br>It has 2 L 1 caches. There’s a data cache called a De cache, is used to fetch data which holds data fetched from memory. And then there’s an instruction cache called an i-cache, which holds instructions fetched from the code region. So the dcache has data only, the i-cache has instructions only. They’re each 32K bytes, 8 way set associative, so they’re very small, but they have fairly high associativity.<br>它有2个L 1个缓存。有一个名为De cache的数据缓存，用于获取保存从内存中获取的数据。然后有一个称为i-cache的指令缓存，它保存从代码区域获取的指令。因此，dcache只有数据，i-cache只有指令。它们每个32k字节，8路集合相关联，所以它们非常小，但它们具有相当高的关联性。</p>
+<p>发言人   19:13<br>And then the next level in the hierarchy is an L 2 so-called unified cache, because they can hold both instructions and data. It’s a little bit bigger, 256K bytes, and also 8 way associative. And so both of these caches are on the, on the core itself outside.<br>然后层次结构中的下一个级别是一个L 2所谓的统一缓存，因为它们可以保存指令和数据。它稍微大一点，256k字节，还有8路联想。因此，这两个缓存都在核心本身的外部。</p>
+<p>发言人   19:36<br>And then there’s an L 3 cache, which is shared by all cores, which is 8 MB and 16 way associative. So the access is because the L 1 cache is closest to the processor. This is fast. This is like four cycles to access L 1. L 2 is bigger and a little away, so it’s about 10 cycles to access this. And L is off the core, so it has to go over a connection, some connection off the chip into this cache. And so the access time for this L 3 cache is like 50, 30 to 50 cycles.<br>然后有一个由所有核心共享的L 3缓存，它是8 MB和16路关联的。访问是因为L 1缓存最靠近处理器。这很快。这就像四个周期来访问L 1。L 2更大，距离有点远，所以大约需要10个周期才能访问它。而L是脱离核心的，所以它必须通过一个连接，一些芯片上的连接进入这个缓存。因此，这个L 3缓存的访问时间为50到30个周期。</p>
+<p>发言人   20:28<br>Now the MMU has, it also has a hierarchy of tlbs. And I was talking with a student after class the last lecture, and I mistakenly said that the system didn’t have a hierarchy of tlbs, but it does.<br>现在MMU已经有了，它还有一个tlbs的层次结构。我在课后与一名学生交谈时，错误地说该系统没有tlbs的层次结构，但它确实有。</p>
+<p>发言人   20:47<br>There’s a small L 1 data TLB and a separate instruction TLB. So this has 64 total entries in its four way set associative. So how many sets are there then in this? How many sets in the L 1 data TLB? 16, good. And then, and the instruction TLB has more entries, interestingly. It’s an interesting decision, I guess. I guess the thinking, I don’t really know. I’m just conjecturing that reason would make the instruction TLB bigger. Is that the penalty for missing on instructions would be much larger.<br>有一个小的L 1数据TLB和一个单独的指令TLB。因此，这在其四向关联集中共有64个条目。那么，这里有多少套呢？L 1数据TLB中有多少套？16，好的。然后，指令TLB有更多的条目，有趣的是。我想这是一个有趣的决定。我猜你的想法，我真的不知道。我只是猜测这个原因会让指令TLB变大。缺少指示的惩罚会大得多。</p>
+<p>发言人   21:50<br>But, yeah. I’m not sure that’s an interesting decision. And then there’s a unified TLB below that, which is larger still. So I think if you’re wondering, I mean, it’s interesting to think like, why do they have these like the second level caches? Why didn’t they just make these L 1 caches bigger? And in the case of the dcache and the i-cache over here I’ll show you in just a little bit. If you hang on, there’s a really interesting reason why they can’t make these things bigger or much bigger, right?<br>但是，是的。我不确定这是一个有趣的决定。然后在它下面有一个统一的TLB，它仍然更大。所以我想，如果你想知道，我的意思是，思考一下为什么他们有这些像第二级缓存一样的东西是很有趣的？他们为什么不把这些L 1个缓存做得更大呢？对于这里的dcache和i-cache，我稍后会向您展示。如果你坚持下去，有一个非常有趣的原因，为什么他们不能把这些东西做得更大或大得多，对吧？</p>
+<p>发言人   22:35<br>There’s a property of they’re constrained in the size of the offset and index bits in these caches. It’s interesting. I’ll show you in a second for the TLB. I mean, one reason that comes to mind for why why they have this second level is that if they decided just to make the L 1 DTL B and ILB bigger, take the transistors that they used for this L 2 and just give them to the level 1 tlbs.<br>它们有一个属性，即在这些缓存中的偏移量和索引位的大小受到限制。这很有趣。我马上给你看TLB。我的意思是，我想到的为什么他们有第二个层次的一个原因是，如果他们决定只是把L 1 DTL B和ILB变大，就把他们用于这个L 2的晶体管变成1 tlbs。</p>
+<p>发言人   23:14<br>You’re kind of by partitioning, partitioning those. That storage ahead of time, you’re kind of locking yourself in. So if you didn’t have this level 2 TLB and you just increased, so you gave half and made L 1 and L data TLB and instruction TLB twice as big, then you’re sort of locking yourself in.<br>你有点像分区，分区那些。提前存储，你有点把自己锁在里面。所以如果你没有这个2级TLB，而你只是增加了一半，所以你给了L 1和L数据TLB，指令TLB增加了两倍，那么你就有点把自己锁在里面了。</p>
+<p>发言人   23:42<br>If you might run, you still might run out of instructions and have capacity misses in that L 1 cache. And similarly for data. So you’re not sure in a particular program, there may be a lot more data page table entries than instruction page table entries or vice versa. So by creating this second level of of cash, you’re kind of hedging your bets, right? So you may the miss penalty when you have this L 2 cache. The miss penalty in L 1 isn’t nearly as big as it would be as if you didn’t so.<br>如果您可能运行，您仍然可能耗尽指令并在该L 1缓存中存在容量错过。数据也是如此。因此，您不确定在特定的程序中，可能会有比指令页表条目更多的数据页表条目，反之亦然。所以通过创造第二级现金，你可以对冲赌注，对吗？所以当你有这个L 2缓存时，你可能会错过罚款。在L 1中错过的点球并不像你没有错过的点球那么大。</p>
+<p>发言人   24:32<br>That’s sort of the thinking that goes on. Now. There’s a memory controller, which? Fetches data from memory. And then there’s links to other cores and to the IO bridge. Now, end to end. So it’s really interesting.<br>这是一种持续的思考。现在。有一个记忆控制器，它是什么？从内存中获取数据。然后还有到其他核心和IO桥的链接。现在，结束到结束。所以这真的很有趣。</p>
+<p>发言人   24:53<br>So it’s interesting to see how this all fits together end to end. So let’s look at it. So the CPU generates a virtual address in Intel systems, the virtual addresses are 48 b, we have 4K size blocks, so 12 offset bits, and then 36 Vpn bits.<br>所以看到这一切如何端到端地配合在一起很有趣。那么让我们来看看。因此，CPU在英特尔系统中生成一个虚拟地址，虚拟地址为48 b，我们有4k大小的块，因此有12偏移位，然后是36 Vpn位。</p>
+<p>发言人   25:21<br>So first, we look in the cache, I mean, in the TLB. And there’s, we said before, there’s 16 TLB sets. This is the L 1. I’m showing the L 1 data TLB. So we break it up into 4 tolbi index bits and 32 tag bits. So we do a lookup in the TLB to see if we can find the Pte that contains the corresponding physical page number for this virtual address. If we have a hit, then the MMU can just construct the physical address directly by copying, as we saw before, copying the VPO to the PPO, and then using the p.p.m. that was returned from the Tob. How’s that for acronym?<br>首先，我们查看缓存，我的意思是，在TLB中。还有，我们之前说过，有16个TLB组。这是L 1。我正在展示L 1数据TLB。所以我们将其分解为4个tolbi索引位和32个标记位。所以我们在TLB中进行查找，看看能否找到包含此虚拟地址相应物理页码的Pte。如果我们有一个命中，那么MMU可以直接通过复制来构建物理地址，就像我们之前看到的那样，将VPO复制到PPO，然后使用p.m。这是从Tob那里得到的。这个缩写是什么？</p>
+<p>发言人   26:11<br>If there’s a TLB miss, then the system has to fetch the corresponding PPN from the page table using that multi-way lookup. We multi-level lookup we looked at before. And I’ll show you how this works in a little more detail coming up. But the end result is that a page table entry is located and the PPN is extracted from that and. Concatenated with the PPO to form the physical address, Then the MMU passes that physical address to the cache.<br>如果出现TLB失误，那么系统必须使用多路查找从页表中获取相应的PPN。我们进行了之前看过的多级查找。我会在接下来的细节中向您展示这是如何工作的。但最终的结果是找到了一个页表条目，并从中提取了PPN。与PPO连接形成物理地址，然后MMU将该物理地址传递给缓存。</p>
+<p>发言人   26:53<br>The L 1 data cache has 64 sets, so we need 6 cash index bits. Now, here’s what I was alluding to before. Notice that the number of cash index and cash offset bits is exactly identical to the VPO in the virtual address. So the cache half and index bits in the physical address are identical to VPO the offset bits in the virtual address. And this is not a coincidence. Unlike that other example I showed you, this is not a coincidence. And this is at the root.<br>L 1数据缓存有64个集合，因此我们需要6个现金的索引位。现在，这是我之前提到的。请注意，现金索引和现金偏移位的数量与虚拟地址中的VPO完全相同。所以物理地址中的缓存半位数和索引位与虚拟地址中的偏移位相同。这并非巧合。与我给你看的另一个例子不同，这不是巧合。这是根源所在。</p>
+<p>发言人   27:35<br>This is at the root. Of why the L 1 cache is so small that the way Intel implements their CA lookups, which we’ll see in a second, depends on the cash index and cash offset bits and the physical address being identical to the offset bits in the virtual address. So anyway, so then we do our cache.<br>这是在根源。为什么L 1缓存如此之小，以至于英特尔实现其CA查找的方式取决于现金索引和现金偏移位以及物理地址与虚拟地址中的偏移位相同。所以无论如何，那么我们就做我们的缓存。</p>
+<p>发言人   28:00<br>We do our cache lookup using the cache does a lookup using using this physical address, takes the index bits to identify a set, uses the tag to see if there’s a match. If there is, then we have a hit, which returns the resulting word back to the CPU. Otherwise there’s a miss. So then the cache has to request the data from L 2 L 3 and main memory. Eventually. Worst case, that data comes from main memory. I guess worst case, it comes from disk, right? If you have a page miss, a page fault. So eventually though, the data comes back and is returned back to the CPU.<br>我们使用缓存进行缓存查找，使用这个物理地址进行查找，获取索引位来标识一个集合，使用标记来查看是否有匹配。如果有的话，那么我们有一个点击，它会将结果单词返回给CPU。否则就会出现失误。因此，缓存必须从L 2 L 3和主内存请求数据。最终。最坏情况下，数据来自主存储器。我猜最坏的情况，它来自磁盘，对吧？如果你有一个页面缺失，一个页面错误。因此，最终数据会返回并返回到CPU。</p>
+<p>发言人   28:48<br>Now, the page table entries in Intel systems have the following structure. You can see that the level 1 page which. The level 1 through three pages. Remember that page table entry points to the address of the next level page table. So it contains the level 1. The level 1 Pte contains the base address, the physical address of the level 2 table, and so on.<br>现在，英特尔系统中的页表条目具有以下结构。你可以看到级别1页面。从1级到3页。请记住，页表条目指向下一级页表的地址。所以它包含了1级。1级Pte包含2级表的基址、物理地址等。</p>
+<p>发言人   29:30<br>There’s a bit, this is the valid bit, they call it the p, p for present. So this identifies whether the page is in memory or not. If it’s not, then then there’s the location of that, of that page table on disk. There’s bits, the control whether that page table can be, is it read only or it can be written? Oh, actually this corresponds to all reachable pages, so. So all reachable pages. So all of the portion of the address space that’s covered by this particular page table entry. There’s also a bit that indicates whether users can access that or if they need to be running in kernel mode. So this is how the kernel protects its code and data from user programs.<br>有一个位，这是有效位，他们称之为p，目前是p。因此，这将标识该页面是否在内存中。如果不是，那么就有那个页表在磁盘上的位置。有位，控制该页表是否可以，是只读还是可以写入？哦，实际上这对应于所有可访问的页面。所以所有可访问的页面。所以这个特定的页表条目所覆盖的地址空间的所有部分。还有一个位指示用户是否可以访问它，或者是否需要在内核模式下运行。这就是内核保护其代码和数据免受用户程序侵害的方式。</p>
+<p>发言人   30:31<br>There’s a bit here to indicate whether we should be using write back or a write through or this for these page tables. And all the systems I know of use write back just because of the miss penalty, the enormous miss penalty. Forget what CD does. There’s a reference bit which is set when the MMU reads or writes. Reads or writes that the page table this points to. And then there’s a bit that indicates whether the page size is either 4 Kbytes or 4 MB. And then there’s, there’s this new disable, it’s the Xd bit, which allows to disable or enable execution from all the pages reachable from that page table entry. So this is how the stack modern systems protect the stack from code injection attacks.<br>这里有一点可以指出我们应该对这些页表使用写回、写透还是这个。而我所知道的所有使用的系统都回写只是因为未命中罚款，巨大的未命中罚款。忘记CD是什么意思。有一个参考位，在MMU读取或写入时设置。读取或写入此指向的页表。然后有一个位指示页面大小是4 KB还是4 MB。然后，有一个新的禁用，它是Xd位，它允许禁用或启用从该页表条目可访问的所有页面的执行。这就是现代系统保护堆栈免受代码注入攻击的方式。</p>
+<p>发言人   31:38<br>The last level page, table entry points to it points to not another page table, but actually a page in memory. And so we have the same bits here, the same 40 b that give the physical address of that page in memory. And then we have the indication of whether that page is present in memory or not. And the read writes and permission execute permission bits right through a write back. There’s a reference, there’s this reference bit, and then there’s a dirty bit, which the MMU sets when it writes to that page. So this is how the OS knows that it needs to when it selects this page as a victim, it looks at the dirty bit to see if it needs to write that page back.<br>在最后一级页面中，表入口指向它并不是指向另一个页表，而是指向内存中的一个页面。因此，我们在这里有相同的位，相同的40 b，提供了该页面在内存中的物理地址。然后我们可以指示该页面是否存在于内存中。读、写和权限通过写回来执行权限位。有一个引用，有一个引用位，然后有一个脏位，MMU在写入该页面时设置该位。所以这就是操作系统知道它需要当它选择这个页面作为受害者时，它会查看脏部分以查看是否需要回写该页面。</p>
+<p>发言人   32:35<br>You have a question? Are being? Oh, execute means that you can’t execute. Any instructions? You can’t load any instructions from that page.<br>你有问题吗？他们正在？哦，执行意味着你不能执行。任何指示？您无法从该页面加载任何说明。</p>
+<p>发言人   32:58<br>This user supervisor mode determines whether you can access that page. So if it’s set to supervisor mode, only the kernel can access that page. Anything on that page. If it’s set to you, then user code and kernel code can access that page. Any other questions?<br>此用户主管模式确定您是否可以访问该页面。因此，如果它设置为主管模式，则只有内核可以访问该页面。页面上的任何东西。如果设置为您，则用户代码和内核代码可以访问该页面。还有什么问题吗？</p>
+<p>发言人   33:25<br>So then the way it does address translation then is physical for this process. So the kernel for each process maintains set of page tables, of course. And then it maintains the address of the first level 1 table in a register called CR 3. And this is a physical address, points to the base of the level 1 page table.<br>那么它处理翻译的方式对于这个过程来说是物理的。因此，每个进程的内核当然维护一组页表。然后它将第一个1级表的地址维护在一个名为cr3的寄存器中。这是一个物理地址，指向1级页表的基础。</p>
+<p>发言人   33:54<br>The Vpn is broken up into 36 divided by 4 equals 9 b that give offsets into each page table entry. So there’s 2 to the 9th potential page table entries in each of these different page tables. So this v.p.n. 1 is used, the high order 9 b are used to compute an offset into the into that table. And you can see each Level 1 Pte covers a swath of memory that’s 512 GB in size. So you can see for most programs that exist today, you only need one level, 1 page table entry that to be initialized that would cover, you know, the vast majority of your programs, the next 9 b.<br>Vpn被分解为36除以4等于9 b，为每个页表条目提供偏移量。所以在每个不同的页表中都有2到9个潜在的页表条目。所以这个v.p.n. 如果使用1，则使用高阶9 b来计算该表中的偏移量。你可以看到每个级别1 Pte覆盖了一个512 GB大小的内存区域。因此，您可以看到，对于当今存在的大多数程序，您只需要一个级别，一个要初始化的页表条目，它将涵盖绝大多数程序，接下来的9个b。</p>
+<p>发言人   35:02<br>So the page table entry in the level 1 page table points to it, gives the physical address of the level 2 page table, and then the v.p.n. bits in the virtual address are used to compute an offset into that table. And so on. It just cascades. And then finally the last the low order bits of the 9 b of the Vpn are used to form an offset into the level 4 page table.<br>因此，1级页表中的页表条目指向它，给出了2级页表的物理地址，然后给出了v.p.n。 虚拟地址中的位用于计算该表的偏移量。等等。它只是瀑布。最后，Vpn的9 b的最后一个低位被用于在4级页表中形成偏移量。</p>
+<p>发言人   35:40<br>In which each Pte points to an actual page, it gives a physical page number. So then that physical page number then is extracted and concatenated with the. VPO, which we’ve copied down to form a physical address.<br>其中每个Pte都指向一个实际页面，它给出一个物理页码。那么物理页码就会被提取并与之连接在一起。VPO，我们已经复制下来形成一个物理地址。</p>
+<p>发言人   36:04<br>Okay, so is that everybody good? Okay, now there’s this cool trick, which I was alluding to earlier, that limits the size of L 1 cache.<br>好的，那么每个人都很好吗？好的，现在有个很酷的技巧，我之前提到过，它限制了L 1缓存的大小。</p>
+<p>发言人   36:17<br>Now, Now to this point, we’ve been using a model where the MMU takes the Does a dress translation and creates a complete virtual address, a physical address, and then it sends that physical address to the cache. But in reality Intel does this cute trick to speed L 1 cache accesses. So in reality, what happens? So we’re given a virtual address. And in this virtual address index and the physical, the index and offset bits in the physical address are identical, exactly correspond to the PPO and the physical address, which is exactly identical to the VPO in the virtual address. So what that means is that when the MMU is given a virtual address, it can send the VPO off to the L 1 cache.<br>现在，到目前为止，我们一直在使用一个模型，其中MMU采用一个dress翻译并创建一个完整的虚拟地址，一个物理地址，然后将该物理地址发送到缓存。但实际上英特尔用这个可爱的技巧来加速L 1缓存访问。那么在现实中，发生了什么？所以我们得到了一个虚拟地址。在这个虚拟地址索引和物理地址中，物理地址中的索引和偏移位完全相同，完全对应于PPO和物理地址，这与虚拟地址中的VPO完全相同。这意味着当MMU被赋予虚拟地址时，它可以将VPO发送到L 1缓存。</p>
+<p>发言人   37:21<br>Even though L 1 is physically addressed, we can send the VPO and the virtual address to the L 1 cache because of this, because of this phenomenon that the PPO is identical to the VPO. So even before the MMU is doing any address translation, it can send these VPO bits to the cache, and then the cache can get busy extracting the index, the cash index bits, looking up all of the lines in that set, and then have everything ready for the tag check, which can only occur after the address translation happens. So it can only occur once there’s a physical address a from which we can extract the hashtag.<br>即使L 1是物理寻址的，我们也可以将VPO和虚拟地址发送到L 1缓存，因为这种现象是PPO与VPO相同。因此，即使在MMU进行任何地址翻译之前，它也可以将这些VPO位发送到缓存，然后缓存可以开始提取索引，现金索引位，查找该集中的所有行，然后准备好所有内容进行标记检查，这只能在地址翻译发生之后发生。因此，只有当我们有一个可以从中提取标签的物理地址时，它才能发生。</p>
+<p>发言人   38:17<br>So there’s a little bit of parallelism now in the L 1 cache accesses. The MMU can be doing a dress translation. The L 1 cache gets going on its lookup.<br>所以现在在L 1缓存访问中有一些并行。MMU可以做衣服翻译。L 1缓存开始进行查找。</p>
+<p>发言人   38:34<br>OK, so now let’s look at how Linux implements virtual memory. And in doing so, we’ll now get a clear understanding of how fork and exec and loading really work. So we’ve seen this picture like this several times before. This is the virtual address space of a Linux process because of the way the virtual memory system works, every process has a very similar looking, a dress space. The program text, the code is always loaded at the same 0x 400000 address, and that’s followed by initialized data, which comes from the dot data section of the executable binary. And then there’s a BSS section which contains uninitialized data that was defined in the binary and then the heap, then the heap grows up from the initialized data. It’s pointed to by variable called a variable in this process context called break. So the kernel keeps track of where the top of the heap is for this, this process.<br>好的，现在让我们看看Linux是如何实现虚拟内存的。在这样做的过程中，我们现在将清楚地了解fork、exec和加载是如何工作的。这样的照片我们已经看过好几次了。这是Linux进程的虚拟地址空间，因为虚拟内存系统的工作方式，每个进程都有一个非常相似的着装空间。对于程序文本，代码总是在相同的0x400000地址加载，后面跟着初始化的数据，这些数据来自可执行二进制文件的点数据部分。然后有一个BSS部分，其中包含在二进制文件中定义的未初始化数据，然后是堆，然后堆从初始化数据增长。它是由称为变量的变量指向的，在这个进程上下文中称为break。因此，内核跟踪这个过程的堆的顶部在哪里。</p>
+<p>发言人   39:54<br>There’s a memory mapped region for shared libraries, and then at the top of the user level, user accessible memory, there’s a user stack which grows down, which is pointed to by Rsp. And then the kernel code and data live up in the upper portion of the address space.<br>有一个共享库的内存映射区域，然后在用户级别的顶部，用户可访问内存，有一个用户堆栈向下增长，由Rsp指向。然后，内核代码和数据位于地址空间的上部。</p>
+<p>发言人   40:17<br>Now, this picture isn’t completely accurate. There’s actually like a big gap between the top of the stack and the beginning of the kernel code and data. The reason for that is that the Intel architecture says that. So there’s 48 virtual address bits, right? So if the high order bit of that forty-eighters address is 0, then all bits have to be 0. The number of the 64 high order bits need to be 0. So it’s kind of like sine extension. And if that high order bit in the 48 b address is one, then you extend the one all the way up to the remaining high order bits. So those are the only feasible.<br>现在，这张图片并不完全准确。实际上，堆栈的顶部与内核代码和数据的开始之间存在巨大的差距。原因是英特尔架构这么说。所以有48个虚拟地址位，对吧？因此，如果该四十八字节地址的高位为0，则所有位必须为0。64个高位位数需要为0。所以它有点像正弦扩展。如果48 b地址中的高位是1，那么您可以将这个高位一直扩展到剩余的高位。所以这些是唯一可行的。</p>
+<p>发言人   41:09<br>So what that does is it creates that the kernel is living, the kernel is living in a portion of the virtual address space where the 12, the 12 high order bits are all ones. So that creates, so you can think of it, this is the kernel lives in the very top of the 64 b address space.<br>所以它的作用是它创造了内核的存在，内核存在于虚拟地址空间的一部分中，其中12个高阶位都是一。这样就创建了，所以你可以想到它，这是内核位于64 b地址空间的顶部。</p>
+<p>发言人   41:36<br>Another way to think of it, and kernel addresses always start with one. The most significant bit is one, and user addresses always have the most significant bit of 0. But that’s just detail doesn’t really affect things. But what is important is that this is the process, virtual address space of a process. The kernel exists in the virtual address space of each process. So there’s kernel code and data, and then it also maps. It has a region of its virtual address space that maps each element of this region, an address in physical memory. So this mapping, this region, corresponds to the amount of DRAM on the chip, and so it’s a mechanism that the kernel uses to get access to physical addresses.<br>另一种思考方式，内核地址总是从一个开始。最重要的位是1，用户地址的最重要位始终为0。但那只是细节，并不会真正影响事情。但重要的是，这是进程的虚拟地址空间。内核存在于每个进程的虚拟地址空间中。所以有内核代码和数据，然后也有映射。它具有虚拟地址空间的一个区域，该区域映射了该区域的每个元素，即物理内存中的一个地址。因此，这个映射，这个区域，对应于芯片上的DRAM数量，因此它是内核用于访问物理地址的机制。</p>
+<p>发言人   42:32<br>And this is important. Remember the colonel, you can’t turn off a dress translation. It’s always happening. So even even when the kernel runs, the address translation is happening.<br>这很重要。记住上校，你不能翻译关掉衣服。它总是发生。因此，即使内核运行时，地址翻译也正在发生。</p>
+<p>发言人   42:47<br>The kernel is generating virtual addresses. So this is map to a region. Of physical memory? So that if if the kernel axis is byte 0 of this block, it’ll actually be the address, the corresponding physical address will be 0. And if it accesses a byte at an offset of one in this region, the physical address, the corresponding physical address from the address translation process will be one. So basically, by reading and writing into this region, the kernel is reading and writing into physical memory.<br>内核正在生成虚拟地址。所以这是一个地区的地图。物理记忆？因此，如果内核轴是此块的字节0，则它实际上是地址，相应的物理地址将是0。如果它在此区域的偏移处访问一个字节，则物理地址，来自地址翻译过程的相应物理地址将是1。基本上，通过读取和写入这个区域，内核正在读取和写入物理内存。</p>
+<p>发言人   43:32<br>And so there’s portions of the kernel that are identical for every process. The code’s the same, but then there’s process specific data structures that that the kernel maintains for each process that form the context for that process. So we refer to these, we refer to all these data structures as the context. And of course, these will be different for each process.<br>因此，每个进程的内核部分都是相同的。代码是相同的，但是内核为每个进程维护特定的数据结构，这些结构构成了该进程的上下文。因此，我们将这些称为上下文，我们将所有这些数据结构称为上下文。当然，每个过程的情况都不同。</p>
+<p>发言人   44:05<br>Now Linux organizes this virtual address region as a collection of what it calls areas. And areas is like a segment. Think of it as just a chunk of a contiguous chunk of related memory items, so there’s. An area for code. There’s an area for data. Shared libraries have areas. There’s an area for the stack. It contains, there’s a structure for each process called the task struct. And this contains a pointer to the struct, which has a bunch of stuff in it. It contains the address of the level 1 page table. So that’s part of the context when this process runs, when this process is scheduled, the kernel will take this entry, this PGD entry, and it’ll copy it into CR 3.<br>现在Linux将这个虚拟地址区域组织为一个所谓区域的集合。而区域就像一个分段。把它想象成一个相关内存项目的连续块的一块，所以就有了。代码的区域。有一个数据领域。共享库具有区域。有一个堆栈区域。它包含，每个进程都有一个称为任务结构的结构。并且这包含一个指向结构的指针，其中有很多东西。它包含1级页表的地址。所以这是此进程运行时的上下文的一部分，当此进程被调度时，内核将采用此条目，此PGD条目，并将其复制到CR 3中。</p>
+<p>发言人   45:15<br>So that’s how it switches Just by changing the CR 3 register, the kernel changes the address space. So, and once, once that CR 3 value is changed, then the process no longer has access to the previous processes page tables.<br>这就是它仅通过更改cr3寄存器就可以切换的方式，内核会更改地址空间。因此，一旦CR 3的值被更改，进程就不再能够访问之前的进程页表。</p>
+<p>发言人   45:37<br>And then there’s a pointer to a list of these so called area structs. The area struct identifies the start, the beginning, and end of the region. Any protections like is this read-only region, for example? So the code section would be set as read only, or is it read, write? And then there’s some other, some other flags which see, which we’ll see later. In particular, when we look at sharing and mapping for our purposes, these flag bits tell us whether the page is shared with other processes or whether it’s private to this process. So normally, the default is that pages are all private, but you have the option if you do a fair amount of work, you can get processes to share, to share memory.<br>然后有一个指针指向这些所谓的区域结构列表。区域结构标识区域的开始、开始和结束。有没有像这个只读区域这样的保护措施？那么代码部分将被设置为只读，还是可读可写？然后还有一些其他的标志，我们稍后会看到。特别是，当我们为了我们的目的查看共享和映射时，这些标志位告诉我们页面是否与其他进程共享，或者它是否是该进程的私有页面。通常情况下，默认情况下页面都是私有的，但如果你做了大量的工作，你可以选择让进程共享，共享内存。</p>
+<p>发言人   46:38<br>Okay, so let’s look at what happens when we have a page fault. So let’s say, so there’s the processor issues and instruction. The address translation process determines that the corresponding page isn’t contained in memory. So it triggers a page fault. And so the fault handler, there’s several things that might have happened.<br>好的，让我们看看当我们有一个页面错误时会发生什么。那么假设有处理器问题和说明。地址翻译进程确定相应的页面不包含在内存中。所以它触发了一个页面错误。因此，故障处理程序可能发生了几件事情。</p>
+<p>发言人   47:06<br>One, maybe we were reading memory, it faulted because that memory, that area doesn’t even exist. So we haven’t even created the kernel, hasn’t even created, allocated that page in virtual memory yet. So that’s an error. So that’s accessing a non-existing page elicits a seg fault. So the kernel figures that out because runs down this list of area structs, and it doesn’t find this address anywhere within the ranges of those areas. So that’s a seg fault caused by accessing a non-existing page.<br>一，也许我们正在阅读记忆，它出现故障是因为那个记忆，那个区域甚至不存在。所以我们甚至还没有创建内核，甚至还没有在虚拟内存中创建并分配该页面。所以这是一个错误。这样访问不存在的页面会引发seg错误。所以内核会解决这个问题，因为它会运行这个区域结构列表，并且在这些区域的范围内找不到这个地址。所以这是由于访问不存在的页面而导致的seg错误。</p>
+<p>发言人   47:47<br>Another possibility is the instruction is attempting to write into a read only section segment of the virtual address space. Well, they. There’s nothing in the page table.<br>另一种可能是该指令试图写入虚拟地址空间的只读段段。嗯，他们。这个页面表格中什么都没有。</p>
+<p>发言人   48:03<br>The MMU typically would check the permission bits in the page table entry and throw an exception if a right is trying to write to a read only page. But in this case, there was no page table entry, right? That’s why I triggered a page fault. So the NMU doesn’t know that this is an illegal right.<br>MMU通常会检查页表项中的权限位，如果有权限尝试写入只读页，则会引发异常。但是在这种情况下，没有页表条目，对吗？这就是我触发页面错误的原因。所以NMU不知道这是一项非法权利。</p>
+<p>发言人   48:25<br>The kernel can check the protection for this area. And in the case of text, it’ll be set to read only. So that triggers a protection exception, which actually Linux reports is a seg fault. And then the other option is that we’re trying to read data from a valid area. The kernel faults the requested page in. And returns the requested data back to the CPU? The last thing I want to look at today is yes.<br>内核可以检查此区域的保护。如果是文本，它将被设置为只读。这样会触发保护异常，实际上Linux报告这是一个seg故障。然后另一种选择是我们尝试从有效区域读取数据。内核将请求的页面错误设置在中。并将请求的数据返回给CPU？今天我想看的最后一件事是肯定的。</p>
+<p>发言人   49:20<br>Okay, yes, sorry.<br>好的，是的，抱歉。</p>
+<p>发言人   49:29<br>Yeah, so all of the segments are contained in the executable file. At the beginning of the Elf binary, there’s a list of all the different segments. So when exec loads the binary creates, it creates areas for each of those. Segments.<br>是的，所以所有的段都包含在可执行文件中。在精灵二进制的开头，有一个列出所有不同段的列表。因此，当exec加载二进制文件创建时，它会为每个二进制文件创建区域。段。</p>
+<p>发言人   50:00<br>Use so it still first checks it does the MSU. This is after the page fault. Yes, the NMU doesn’t know about these. So yeah, the question was exactly how are these area trucks are used? And they’re used. In this context, in this example, anywhere they’re used during the page faults. And also just as an aside I’ve shown these actually are implemented as Lis, but in the real system, they use some kind of tree, red, black tree, something like that.<br>使用，所以它仍然首先检查它是否执行MSU。这是在页面错误之后。是的，NMU不知道这些。是的，问题是这些区域卡车究竟是如何使用的？它们被使用了。在此上下文中，在本示例中，在页面错误期间使用它们的任何地方。另外，作为旁白，我已经展示了这些实际上是作为LI实现的，但在实际系统中，它们使用某种树，红色，黑色树，类似的东西。</p>
+<p>发言人   50:50<br>So I want to talk about the last thing we’re going to look at today is this interesting idea called mapping. It will help us understand a lot about what’s going on in the system when it executes fork and exec. So VM areas are initialized by associating them with disk objects. And so this process using a process known as memory mapping.<br>所以我想谈谈今天我们要看的最后一件事，就是这个有趣的想法叫做映射。它将帮助我们了解很多执行fork和exec时系统中发生的事情。因此，通过将VM区域与磁盘对象关联来初始化它们。因此，这个过程使用一个称为内存映射的过程。</p>
+<p>发言人   51:22<br>So every area and every page within that area is associated with some portion of a file. It’s, and that’s the initial contents of the pages in that area come from that file. So an area can be backed by what we call or get its initial values from either a regular file on disk. So we saw this. So in the case of pages that are containing code, that area that has a code is mapped to a portion of the executable binary. And then the initial values of that area come from that executable binary file. So that’s how we get, that’s how we get data copied back and forth from from executables into memory.<br>因此，该区域中的每个区域和每个页面都与文件的某些部分相关联。它是，并且该区域中页面的初始内容来自该文件。因此，区域可以由我们所称的支持，也可以从磁盘上的常规文件中获取其初始值。所以我们看到了这个。因此，对于包含代码的页面，具有代码的区域将映射到可执行二进制文件的一部分。然后该区域的初始值来自该可执行二进制文件。这就是我们得到的方式，这就是我们如何将数据从可执行文件来回复制到内存中的方式。</p>
+<p>发言人   52:26<br>The file can also be an anonymous file. A file. It’s some anonymous file that consists of all zeros. It’s an anonymous file of arbitrary size that consists of all zeros. And so of course, it doesn’t exist. This is just a trick. So this allows us to create pages that are initialized to all zeros, and then so if a page is associated with the anonymous file, then the first fault will allocate a physical page of all zeros. So this is called a demand zero page. So it’s brought in on demand, and then it’s initialized to zeros.<br>该文件也可以是匿名文件。档案。这是一些由全零组成的匿名文件。它是一个任意大小的匿名文件，全部由零组成。当然，它并不存在。这只是个把戏。因此，这允许我们创建被初始化为全零的页面，然后如果一个页面与匿名文件相关联，那么第一个错误将分配一个全零的物理页面。所以这被称为零页面需求。因此它是按需引入的，然后初始化为零。</p>
+<p>发言人   53:13<br>Now, once a page that’s backed by an anonymous. File is written to or dirtied. Then it’s like any other page, and then dirty pages are copied back and forth between memory and a special swap flow.<br>现在，一旦一个由匿名者支持的页面。文件被写入或被弄脏。然后它就像任何其他页面一样，然后脏页面在内存和特殊的交换流程之间来回复制。</p>
+<p>发言人   53:35<br>Now, you remember, normally processes don’t share anything with each other, but it’s possible using this idea of mapping for processes to be mapped to the same objects.<br>现在，你记得，通常进程之间不共享任何内容，但使用映射的思想可以将进程映射到相同的对象。</p>
+<p>发言人   53:49<br>So suppose that we have two processes with their own separate virtual address spaces. And the pages in these two processes are being mapped to portions of physical memory. So let’s say there’s an area, a segment in process one that’s been mapped to this object, so to this portion of a file. Now process 2 can also map to that same object. And notice, even at a completely different virtual address, there’s no, there’s no relationship between the region of this virtual address space that’s mapped to this shared object in process one in the region of the virtual address space, in process 2, that’s mapped to the same. And the kernel, because these objects have unique names, right? They’re files.<br>因此，假设我们有两个具有各自独立虚拟地址空间的进程。这两个进程中的页面被映射到物理内存的各个部分。因此，假设有一个区域，一个进程中的段被映射到此对象，因此映射到文件的这一部分。现在进程2也可以映射到同一个对象。请注意，即使在完全不同的虚拟地址上，映射到该共享对象的虚拟地址空间区域之间也没有任何关系，在进程2中，映射到相同的虚拟地址空间区域。和内核，因为这些对象有唯一的名称，对吧？它们是档案。</p>
+<p>发言人   54:55<br>The kernel can check the other processes to see if any other processes are mapping to that object. And if so, map this region of the virtual address space to those same physical pages. So now we have a situation where each process is accessing some chunk of its virtual address space. And those accesses are actually being done on the same region of physical memory. So this might be useful.<br>内核可以检查其他进程以查看是否有任何其他进程正在映射到该对象。如果是，请将此虚拟地址空间区域映射到相同的物理页面。所以现在我们有一种情况，每个进程都在访问它的虚拟地址空间的某些块。而这些访问实际上是在物理内存的同一区域上进行的。所以这可能会有用。</p>
+<p>发言人   55:25<br>You might imagine, say these processes are servers. Say you’ve forked a bunch of copies of Apache, you might want to have some kind of shared cache, maybe a shared memory cache between those, all those different copies. So in this case, your cache would be a file. On disk, as you access regions of that file, those pages get copied into physical memory. So that would allow you to have a shared cache in the memory across all those processes.<br>你可以想象，这些进程就是服务器。假设你分叉了一堆Apache的副本，你可能想要某种共享缓存，可能是在所有这些不同副本之间共享内存缓存。因此，在这种情况下，您的缓存将是一个文件。在磁盘上，当您访问该文件的区域时，这些页面会被复制到物理内存中。这样可以让您在所有进程之间的内存中拥有共享缓存。</p>
+<p>发言人   56:05<br>Now, sometimes there’s another objects can also be private, meaning that they shouldn’t be shared across processes. And there’s an especially interesting kind of private object called the private copy on write object. So the idea here, and you’ll see this will become very important when we can see how fork actually works. The idea is that we have an object, that we have two processes that are mapping to the same object. But instead of this being a shared object, it’s what we call this private copy on write object. And just like before, these two regions of the virtual address space map into the same region of physical memory, but they’re tagged using the, and this is where those flag bits come in. The pages in this area are flagged private copy on write. Now, what that means is normally if this was a shared object.<br>现在，有时还有另一个对象也可以是私有的，这意味着它们不应该在进程之间共享。还有一种特别有趣的私有对象，称为写入对象的私有副本。所以这里的想法，当我们能够看到分叉的实际工作原理时，你会发现这将变得非常重要。这个想法是我们有一个对象，我们有两个过程映射到同一个对象。但这不是一个共享对象，而是我们称之为写入对象上的私有副本。就像以前一样，虚拟地址空间的这两个区域映射到相同的物理内存区域，但它们使用标记，这就是这些标志位进入的地方。此区域中的页面在写入时被标记为私有副本。现在，这意味着通常如果这是一个共享对象。</p>
+<p>发言人   57:27<br>Let’s say this was a shared object and process 2 wrote, did a write into this region of the virtual address space. If this was a shared object, that right would also be reflected on the disk, on the file and disk. But if it’s flagged instead of being shared, if that area, this area is marked flagged as private copy on, right? Then, if process 2 does a right to a page in that area, then instead of reflecting that change in physical memory and on the shared object, it makes a copy of that page, a separate copy of that page, and maps it to some unused portion of the physical address space. So that’s why we have the name copy on write. But if we read, if we read values from this area, nothing happens. It will just read from the this portion of the physical address space.<br>假设这是一个共享对象，进程2写入了虚拟地址空间的这个区域。如果这是一个共享对象，该权限也将反映在磁盘上，在文件和磁盘上。但如果它被标记而不是共享，如果那个区域，这个区域被标记为私人副本，对吧？然后，如果进程2对该区域中的一个页面进行了访问，那么它不会将该更改反映在物理内存和共享对象上，而是创建该页面的副本，该页面的单独副本，并将其映射到物理地址空间的某个未使用部分。这就是为什么我们在write上有名字副本。但是如果我们阅读，如果我们阅读这个区域的值，什么都没有发生。它将只从物理地址空间的这一部分读取数据。</p>
+<p>发言人   58:40<br>It’s only when we do a right to some page in an area that’s flagged as private copy on write. It’s only when we do that right that the system first makes a copy of that page and then does the right. Now, why on earth, why on earth would anybody want to do this?<br>只有当我们在write上标记为私人副本的区域中对某个页面进行权只有当我们正确地做到这一点时，系统才会首先复制该页面，然后进行正确的操作。现在，到底为什么会有人想这么做？</p>
+<p>发言人   59:02<br>Actually, this notion of copy on right is another one of these kind of fundamental important system concepts that’s used a lot. Whenever you want to share things efficiently, Yes, and then you have like two processes that want to write at the same time. And then you don’t know like which one. Like you get some issue. If you did do this well, oh, the rights all go through.<br>实际上，这种右侧复制的概念是另一种经常使用的基本重要系统概念。每当你想要有效地共享事物时，是的，然后你有两个想要同时编写的过程。然后你不知道是哪一个。就像你遇到了一些问题。如果你做得很好，哦，所有的权利都会通过。</p>
+<p>发言人   59:43<br>Yeah, the memory system. Okay, this is a really good question, and it’s beyond our scope, but the memory system takes care of those and it provides some guarantees. So the memory system, you’re right, it’s from multiple cores, it’s multiple instructions, multiple addresses, and the memory system itself takes care of sort of providing some ordering on those. And it provides, it provides some sort of non-striving all guarantees on what you can assume the ordering is. That’s a pretty complicated topic that we won’t get into. It’s called the consistency model. So every processor provides some kind of consistency model. Any other questions?<br>是的，记忆系统。好的，这是一个非常好的问题，超出了我们的范围，但记忆系统会处理这些问题，并提供一些保证。所以内存系统，你说得对，它来自多个内核，它有多个指令，多个地址，而内存系统本身负责对这些指令进行一些排序。它提供了某种非争取的保证，保证你可以假设排序是什么。这是一个相当复杂的话题，我们不会深入探讨。这被称为一致性模型。因此，每个处理器都提供某种一致性模型。还有什么问题吗？</p>
+<p>发言人   01:00:38<br>Okay, so why is this copy on right now technique useful and interesting? Well, it turns out, I mean, if you think about fork, it seems like it would be terribly expensive if you want to fork a process. The naive way to do it would just be to you have to somehow get an exact copy of the address space, but a separate copy of the address space that’s identical. So if you approach this naively, you’d have to make copies of all the page tables, all of the other data structures. And you’d also have to copy all the memory. So if you’re forking a process that’s created a huge number of of virtual pages in its address space, those would all have to be copied and mapped to different portions of the physical address of the memory. So it would be very expensive, potentially almost unbounded, depending on how much memory you were using. But fortunately, this copy on write technique provides an efficient solution.<br>好的，那么为什么现在这个复制技术有用和有趣？好吧，事实证明，我的意思是，如果你考虑分叉，如果你想分叉一个进程，它似乎会非常昂贵。天真的做法是你必须以某种方式获得地址空间的精确副本，而是相同的地址空间的单独副本。因此，如果您天真地处理这个问题，您将不得不复制所有页表和所有其他数据结构。你还必须复制所有的记忆。因此，如果您正在分叉一个在其地址空间中创建了大量虚拟页面的进程，则这些页面都必须被复制并映射到内存物理地址的不同部分。所以这将非常昂贵，可能几乎是无限的，这取决于你使用了多少内存。但幸运的是，这种写副本技术提供了一个有效的解决方案。</p>
+<p>发言人   01:01:58<br>So the idea when we do fork when a. Process executes fork. The kernel has to create exact copies of all those internal data structures mmct the area struct. And the page tables, there’s no way to get around that. But those aren’t really huge. They’re not as potentially huge as the actual data that the program is accessing. And then it flags each page in both processes as read only. Even though they’re not, no matter where they are, any process, any page in that process that flags is read only. And then it flags each VM area struct in both processes as private copy on write. So on return, now each process has the identical address space because it has identical page tables.<br>所以我们在分叉时的想法是什么。进程执行fork。内核必须在区域结构中创建所有这些内部数据结构的精确副本。和页表，没有办法绕过它。但这些并不是很大。它们并不像程序访问的实际数据那样巨大。然后它将两个进程中的每个页面标记为只读。即使它们不是，无论它们在哪里，任何进程，该进程中的任何页面标志都是只读的。然后它将两个进程中的每个VM区域结构标记为写入时的私有副本。所以在返回时，现在每个进程都有相同的地址空间，因为它有相同的页表。</p>
+<p>发言人   01:03:03<br>We bake copies of the page tables and all of the other structures. And as long as those processes just read, then they’re sharing the same physical pages. It’s only when a process does it right that the system will create a new page.<br>我们烘焙页表和所有其他结构的副本。只要这些进程只是读取，那么它们就会共享相同的物理页面。只有当一个进程做对了，系统才会创建一个新页面。</p>
+<p>发言人   01:03:25<br>Create a new page using this copy on write mechanism. So it’s only when a process writes to a page, well, it tries to do a write. The page is flagged as read only in the Pte that triggers a fault. The Colonel looks up the flags for that particular page, sees that it’s private copy on the right, and so it makes a copy of the target page and maps it to a new region of the physical address space. And then, and then when the right executes again, and then it restarts when the fault handler returns, it restarts that instruction, and now the writer is writing to the copy. So what this does, a very clever technique, it differs the copying till as late as possible, and it only does copying when it’s absolutely needed. So in some sense, it’s the most, it provides you with the most efficient way to most space efficient way to represent those two, those two different virtual address spaces.<br>使用此复制写入机制创建新页面。所以只有当进程写入页面时，它才会尝试进行写入。该页面在触发故障的Pte中被标记为只读。上校查找该特定页面的标志，发现它是右侧的私有副本，因此它制作目标页面的副本并将其映射到物理地址空间的新区域。然后，当右侧再次执行时，当故障处理程序返回时重新启动，它重新启动该指令，现在编写器正在写入副本。这是一种非常聪明的技术，它尽可能晚地进行不同的复制，并且只在绝对需要时才进行复制。因此，在某些感知中，它是最有效的方式，它为您提供了最有效的空间效率的方式来表示这两个不同的虚拟地址空间。</p>
+<p>发言人   01:04:44<br>And so what’s interesting is that regions of the virtual address space that are read from never get copied. So it’s perfectly fine for those two processes to share, to share that data on physical memory, because it’s never written to so. That’s why fork isn’t so bad.<br>所以有趣的是，从虚拟地址空间读取的区域永远不会被复制。因此，这两个进程共享在物理内存上共享数据是完全可以的，因为它从未被写入过。这就是为什么叉子没有那么糟糕。</p>
+<p>发言人   01:05:10<br>Now execve now that sharing and now that we know. About this, this mapping notion, the exec vege. Loads and runs a new program in the current process. And so what it does is it frees all the area structs for the current process. So XX not creating a new process, it’s running a new program in a new virtual address space within the current process. So it frees all the area structs and page tables for the current process. And then it creates new area structs and page tables for the new areas and the programs. So the program and initialize data, those areas are backed by the file.<br>现在我们知道了，现在我们可以分享了。关于这个映射概念，即exec vege。在当前进程中加载并运行新程序。所以它所做的是释放当前进程的所有区域结构。所以XX没有创建新进程，它正在当前进程的新虚拟地址空间中运行新程序。所以它释放了当前进程的所有区域结构和页表。然后，它为新区域和程序创建新的区域结构和页表。所以程序和初始化数据，这些区域由文件支持。</p>
+<p>发言人   01:06:11<br>In this case, the executable binary and program is backed by the portion of the executable that contains code. And the data segment is backed by the portion of the executable file that contains initialized data. So these two together are private, what we call their private. This object isn’t being shared with any anything else. And it’s file backed because this area is backed by portions of a file, the uninitialized data, which was specified in the BSS section of the of the binary, that’s defined as a private demand zero area. So so these pages will all be, remember, by definition, BSS is uninitialized. And so the system initializes these to 0. Any pages then? Any pages in the heap are also private.<br>在这种情况下，可执行二进制文件和程序由可执行文件中包含代码的部分提供支持。数据段由包含初始化数据的可执行文件部分支持。所以这两者在一起是私有的，我们称之为私有的。此对象未与任何其他对象共享。并且它是文件支持的，因为此区域由文件的部分提供支持，未初始化的数据在二进制文件的BSS部分中指定，被定义为私有需求零区域。所以这些页面都将是，记住，根据定义，BSS是未初始化的。因此，系统将它们初始化为0。那么有页面吗？堆中的任何页面也是私有的。</p>
+<p>发言人   01:07:18<br>Demand 0.<br>需求0。</p>
+<p>发言人   01:07:21<br>Now the memory mapped region for shared libraries. Remember, every process shares the same copy of libc in memory. So this is a region, the virtual address space that’s shared because it’s shared by multiple processes and it’s backed by files. And the file in this case is the doso file, the shared object file. And the code for this region is backed by text. The portion of this object file that contains code and data is initialized. Data is backed by a portion of this file that contains data. Now, I haven’t shown it here, but is there’s other portions of this region that need to be private copy on, right?<br>现在共享库的内存映射区域。记住，每个进程在内存中共享相同的libc副本。所以这是一个区域，虚拟地址空间被共享，因为它被多个进程共享，并且由文件支持。在这种情况下，文件是doso文件，即共享对象文件。并且此区域的代码由文本支持。此目标文件中包含代码和数据的部分已初始化。数据由包含数据的此文件的一部分支持。现在，我还没有在这里展示，但是这个区域还有其他部分需要进行私人复制吗？</p>
+<p>发言人   01:08:13<br>Because different lib C functions, if a lip C function has static variables or contains state like a random number generator, typical random number generator retained state across each invocation. So that state would be different for each process. So there needs to be a sort of private copy on write area for any data that’s being written to. And suppose, I suppose the system would just. Just if you made this entire region. Now, you’d have to have second portions of this that would be private copy on write. And then the stack is private demand 0.<br>由于不同的lib C函数，如果lip C函数具有静态变量或包含像随机数生成器一样的状态，则典型的随机数生成器在每次调用中都会保留状态。因此，每个进程的状态都不同。因此，对于要写入的任何数据，需要在写入区域上有一种私人副本。并且假设，我认为这个系统是公正的。如果你把这整个地区都做了。现在，你必须有这个的第二部分，它将是私有副本。然后堆栈是私有需求0。</p>
+<p>发言人   01:09:04<br>So what exec does is it just sets, it creates new areas that are backed by the object file that you want to execute. And it creates areas for BSS and stack that are backed by anonymous files. And it creates this memory mapped region that’s a shared object, which corresponds to lib C, and then it sets the program counter RP to the entry point in text. And then once as this program runs, now notice we haven’t loaded anything. All we’ve done is set mappings. We’ve just created data structures in the kernel, and we’ve created mappings between portions of the address space and these objects, but nothing’s actually been copied into memory yet. This is all we’ve just created, we’ve modified data structures in the kernel, but once, once the loader sets RP to the entry point, the first instruction in this text segment, then Linux will fault in all the code and data that’s needed on demand. So loading Ha is deferred until the loading of a page of code or data is deferred until that code or data page is actually referenced and accessed.<br>所以exec所做的只是设置，它创建由您想要执行的目标文件支持的新区域。并且它为匿名文件支持的BSS和堆栈创建了区域。它创建这个内存映射区域，它是一个共享对象，对应于lib C，然后将程序计数器RP设置为文本中的入口点。然后一旦这个程序运行，现在注意到我们没有加载任何东西。我们所做的只是设置映射。我们刚刚在内核中创建了数据结构，并在部分地址空间和这些对象之间创建了映射，但实际上还没有将任何内容复制到内存中。这就是我们刚刚创建的所有内容，我们在内核中修改了数据结构，但是一旦加载程序将RP设置到入口点，即这个文本段中的第一条指令，Linux将在所有需要的代码和数据中出现错误。因此，加载Ha被推迟到加载代码或数据页面时才进行，直到该代码或数据页面被实际引用和访问为止。</p>
+<p>发言人   01:10:37<br>So this is very clever and very interesting, I think how it’s yet another example of how useful and tightly integrated virtual memory is with the operation of the system.<br>所以这是非常聪明和有趣的，我认为这是虚拟内存与系统操作紧密集成的另一个例子。</p>
+<p>发言人   01:10:52<br>You wouldn’t have to do this. You could just, as part of the loading process, you could just copy, take those object files. You could just have a loop that would read these object files and just copy, copy them into memory and create page table entries for them as you did it. But even that would be efficient. That would be inefficient, too. A very large array that you had initialized to some non-e-zpass value, that would require you to copy that entire array. And at load time, even though you may be only accessing a small portion of that, of that data structure.<br>你就不必这样做了。作为加载过程的一部分，您可以复制并取出那些目标文件。你可以只需要一个循环来读取这些目标文件，然后复制它们到内存中，并像你所做的那样为它们创建页表条目。但即使如此也会很有效率。这也会效率低下。一个非常大的数组，您已将其初始化为某个非e-zpass值，这将需要您复制整个数组。在加载时，即使您可能只访问该数据结构的一小部分。</p>
+<p>发言人   01:11:33<br>The kernel provides a function called m-map that allows you to do your memory mapping just like the kernel does. And so it’s basically a way, it’s a system called that allows you to request the kernel to map a region of virtual memory on its behalf. And so this m-map function takes a virtual pointer, which is some pointer, into the virtual address space. And it maps, tries to map length bytes starting at this address. It tries to map that portion of the virtual address space to the object, to an offset, to some object specified by this file descriptor.<br>内核提供了一个名为m-map的函数，允许您像内核一样进行内存映射。因此，这基本上是一种方式，它是一个名为的系统，允许您请求内核代表其映射虚拟内存区域。因此，这个m-map函数将一个虚拟指针 (某个指针) 带入虚拟地址空间。它映射，尝试映射从这个地址开始的长度字节。它试图将虚拟地址空间的这一部分映射到对象，偏移到此文件描述符指定的某个对象。</p>
+<p>发言人   01:12:29<br>Remember, when you open a file, you get back a file descriptor. So it’s mapping this region of the virtual address space starting at start for length bytes to a region of the file denoted by this integer file descriptor. So it’s mapping length bytes in that file, starting at offset offset now. And then the user can specify different flags, what kind of protection they want for this, this, whether it’s private or whether it’s read only or read, write. And they can also specify the type of of object if you map an anonymous, if you use this flag in M map, then you get a demand zero page. That’s the anonymous file, in which case you don’t need to specify this file descriptor. And you can map that object as being private or shared, like we talked about before.<br>记住，当你打开一个文件时，你会得到一个文件描述符。因此，它将从长度字节开始的虚拟地址空间区域映射到由这个整数文件描述符表示的文件区域。所以它正在映射该文件中的长度字节，从现在的偏移偏移量开始。然后用户可以指定不同的标志，他们希望为此提供什么样的保护，无论是私有的还是只读的或读、写的。如果您映射匿名对象，他们也可以指定对象的类型，如果您在M map中使用此标志，那么您将获得零页面需求。这是匿名文件，在这种情况下，您不需要指定此文件描述符。你可以将该对象映射为私有或共享，就像我们之前谈到的那样。</p>
+<p>发言人   01:13:39<br>Now the kernel will, it will return a pointer to the start of this mapped area. Not necessarily, this start address is like a hint to the kernel. So if it can, it will try to map that area. But if that portion of the virtual address space is already contained in some already existing area, then it’ll pick an unused portion of the virtual address space to map.<br>现在内核将，它将返回一个指向此映射区域开始的指针。不一定，这个起始地址就像是对内核的提示。如果可以的话，它会尝试绘制那个区域的地图。但是，如果虚拟地址空间的该部分已经包含在某个已存在的区域中，则它将选择虚拟地址空间中未使用的部分进行映射。</p>
+<p>发言人   01:14:08<br>Okay, so what we’re doing really is we’re taking. And offset into some file specified by that FD argument and length number of bytes. And we’re associating that or mapping that into the same sized region of the virtual address space. So now if we do, if we read now again, nothing gets copied. It’s just a mapping so that if we were to read a portion of, let’s say we mapped an unused version, a portion of the virtual address space, and then using nmap, and then after m-map, we just started scanning through this portion in the virtual address space, say it’s an array. We’ve then mapped a big array as we read, each nonsexist language page will be swapped in automatically. It’ll trigger page fault, and it’ll be swapped in, and the value that it has will be will be determined by the contents of this portion of the file.<br>好的，所以我们正在做的实际上是我们正在采取的行动。并将其偏移量放入由该FD参数和长度字节数指定的某个文件中。并且我们将其关联或映射到虚拟地址空间的相同大小的区域。所以现在如果我们这样做，如果我们现在再读一遍，什么都不会被复制。这只是一个映射，因此，如果我们要读取一部分，比如说我们映射了一个未使用的版本，一部分虚拟地址空间，然后使用nmap，然后在m-map之后，我们就开始扫描虚拟地址空间中的这一部分，假设它是一个数组。当我们阅读时，我们映射了一个大数组，每个非性别歧视的语言页面将自动交换。它将触发页面错误，并且它将被交换，并且它的值将由文件这部分的内容确定。</p>
+<p>发言人   01:15:31<br>Okay, and then so one, here’s an example of how you can use MMA. To do, and this is kind of an interesting example where we’re copying a file from standard in to standard out without ever transferring data to user space. The normal sort of naive way to do this would be to read from a file, read from standard in, and then write to standard out. So 2 syscalls, 1 read and one write.<br>好的，那么，这里有一个如何使用MMA的例子。这是一个有趣的例子，我们将文件从标准输入复制到标准输出，而不将数据传输到用户空间。通常的天真方法是从文件中读取，从标准输入读取，然后写入标准输出。所以2个系统调用，1个读取和1个写入。</p>
+<p>发言人   01:15:58<br>We can actually do this using using 1 M map and then a single, right?<br>我们实际上可以使用1 m的地图和一个单一的地图来做到这一点，对吗？</p>
+<p>发言人   01:16:05<br>So what we do is we open a file, arc-v 1 is standard n? Or I’m sorry, we open a file that was passed in on the command line, we get its size, and then we call this m-map copy function to say copy, copy the byte, the size bytes from this file to standard out. So this m-map copy function does m-map using that file descriptor, sets it as read only private sets the size. And length means everything. At an offset of 0.<br>那么我们要做的就是打开一个文件，arc-v 1是标准的n？或者对不起，我们打开一个在命令行上传递的文件，我们得到它的大小，然后我们称之为m-map复制功能，将字节，大小字节从这个文件复制到标准输出。所以这个m-map复制函数使用该文件描述符执行m-map，将其设置为只读私有集合大小。长度意味着一切。偏移为0。</p>
+<p>发言人   01:16:55<br>And then we do one write cyca to standard out, passing it the pointer to the buffer that we want to copy, and of size bytes. So this will read bytes. The right call will read bytes in b, P1 after the other. And as that happens, they’ll be faulted in, and then it will write them. It will write them to the descriptor indicated by I, the one which is standard out.<br>然后我们执行一次写入cyca到标准输出，将指针传递给我们想要复制的缓冲区，大小为字节。所以这将读取字节。右边的调用将读取b、P1中的字节，然后依次读取。当这种情况发生时，它们会被指责，然后它会编写它们。它会将它们写入由I指示的描述符，这是标准输出。</p>
+<p>发言人   01:17:34<br>Okay, so that’s it for today. Hope you guys have a good weekend and see you next week.<br>好的，今天就到这里。希望你们周末愉快，下周见。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 019-Virtual Memory, Systems</div>
+      <div>http://example.com/2025/10/12/15213-019/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-020/" title="深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 020-Dynamic Memory Allocation, Basic Concepts</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-018/" title="深入理解计算机系统 018-Virtual Memory, Concepts">
+                        <span class="hidden-mobile">深入理解计算机系统 018-Virtual Memory, Concepts</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

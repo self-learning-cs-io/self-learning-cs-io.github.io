@@ -1,0 +1,762 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:12Okay, quick sound check. Can everybody hear me? Yep, okay. Good, anyway, let let’s get it going. Good afternoon or good evening or good morning or good night, wherever you are. So today’s l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 007-PageFaults">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-007/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:12Okay, quick sound check. Can everybody hear me? Yep, okay. Good, anyway, let let’s get it going. Good afternoon or good evening or good morning or good night, wherever you are. So today’s l">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:07.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.141Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 007-PageFaults - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 007-PageFaults"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          19k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          161 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 007-PageFaults</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:12<br>Okay, quick sound check. Can everybody hear me? Yep, okay. Good, anyway, let let’s get it going. Good afternoon or good evening or good morning or good night, wherever you are. So today’s lecture is going to be about Page Holt. In a particular we’re going to the plan is to cover or implement, you know, implement a nume. Virtual memory features using page faults.<br>好的，快速的声音检查。大家都能听到我说话吗？是的，好的。好的，不管怎样，让我们开始吧。无论你在哪里，下午好或晚上好或早安或晚安。所以今天的讲座将是关于页面Holt的。在某个特定情况下，我们的计划是覆盖或实施，你知道，实施一个nume。使用页面错误的虚拟内存功能。</p>
+<p>发言人   01:04<br>And the features that we’re going to be looking at are lazy allocation, which is the topic of the next lab. We’re going to look at the demand cropping right fork. Demand paging.<br>我们将要研究的功能是惰性分配，这是下一个实验室的主题。我们将关注需求的变化。请求分页。</p>
+<p>发言人   01:27<br>And then we met files or in that. And almost, you know, sort of a series operating system actually implements all these features. And if you look inside the Linux, you’ll see all these features actually are implemented in Xd 6. As it stands, none of them are implemented. And in fact, what a page fault does in XV 6, if a page fold happens in user phase, it phase basically kill the process. I mean, I interesting. And so in this lecture, we’re going to explore again what interesting things you could do in the page 4 pedr to actually implement these three features. So these lectures are a little bit less walking through code and understanding existing code, a little bit more design level in the sense we don’t even have code to look at.<br>然后我们遇到了文件或在那里面。几乎，你知道，一系列操作系统实际上实现了所有这些功能。如果你看一下Linux内部，你会发现所有这些功能实际上都是在Xd 6中实现的。就目前情况而言，它们都没有得到实施。实际上，在XV 6中，页面错误的作用是，如果在用户阶段发生页面折叠，则该阶段基本上会杀死进程。我的意思是，我很有趣。因此，在本次讲座中，我们将再次探讨在第4页pedr中可以做哪些有趣的事情来实际实现这三个功能。所以这些讲座少了一些代码讲解和理解现有代码，多了一些设计水平，感知我们甚至没有代码可以看。</p>
+<p>发言人   02:16<br>Another thing to support a dimension is a laser allocation is topic of the next lap. Hopefully it’ll push out today and copy and write fork. It’s going to be a topic of one of the labs and MF is going to be another topic of one of the subsequent labs. So this is going to is one of the interesting parts of an operating system. And we’re going to be spending quite a bit of time on it in the labs. Now, you know, before diving sort of into the details, it is probably helpful to you take a little bit of a step back. And so you can think about virtual memory. We having two major benefits.<br>支持维度的另一件事是激光分配，这是下一圈的主题。希望它今天能够推出并复制和编写fork。这将成为其中一个实验室的主题，而MF将成为后续实验室的另一个主题。所以这将是操作系统的有趣部分之一。我们将在实验室里花费相当多的时间在这上面。现在，你知道，在深入细节之前，你退后一步可能会有所帮助。所以你可以考虑虚拟内存。我们有两个主要好处。</p>
+<p>发言人   03:02<br>One is isolation. So isolation in the sense that virtually memory allows the operating system to give every application its own address base. And so it’s impossible for in one application to muck you or by accidentally or maliciously to modify another application to address space. It also provides isolation between the user and kernel address space, as we talked about quite a bit. And as you’ve seen in the page table lab. But sort of another view or another benefit of virtual memory that I alluded to a couple times earlier is that it provides a level of interaction.<br>一个是隔离。感知上的隔离使得虚拟内存允许操作系统为每个应用程序提供自己的地址库。因此，不可能在一个应用程序中弄伤您，也不可能意外或恶意地修改另一个应用程序以解决空间问题。它还提供了用户和内核地址空间之间的隔离，正如我们已经讨论过的那样。正如您在页表实验中所看到的。但是，我之前提到过的虚拟内存的另一种观点或好处是它提供了一定程度的交互。</p>
+<p>发言人   03:47<br>The processor or the instructions only use virtual addresses, but the kernel gets to sort of define the mapping from virtually to physical addresses. And that allows all kinds of interesting. Interesting features like the ones that we’re going to be talking about in this lecture. The second?<br>处理器或指令仅使用虚拟地址，但内核可以定义从虚拟地址到物理地址的映射。这允许各种有趣的事情发生。有趣的功能，比如我们将在本次讲座中讨论的那些。第二个？</p>
+<p>发言人   04:18<br>And the?<br>然后呢？</p>
+<p>发言人   04:24<br>So kernel has controls. This particular mapping from virtual to physical test space. And most so far in exercise, that mapping has to be quite boring in the fact in the kernel, it’s mostly a direct mapping.<br>所以内核有控制。这个从虚拟到物理测试空间的特定映射。到目前为止，在练习中，映射必须相当无聊，因为在内核中，它主要是直接映射。</p>
+<p>发言人   04:37<br>And there are a couple sort of interesting things that we do with x 6 keal do with this mapping. One, as we’ve seen, is the trampoline page lo the current of map 1 page into manyu address spaces. Another interesting case that we have seen is the Garth page through protective stack, both in the kernel and in the kernel space, both in the user space and kernel space. But if you sort of think about it, you know, so far that mapping, you know, has been relatively static. You know, you set it up once, you know, maybe per user, The kernel page table mapping we set up once in the beginning. And for prostitutes once said fork and sort of the colonel doesn’t really do anything else with this mapping. And what page folds gives us is actually to make these mappings dynamic. So I’m using page vats.<br>对于这个映射，我们可以用x 6 keal做一些有趣的事情。正如我们所看到的，蹦床页面是当前地图1页面到manyu地址空间的一部分。我们看到的另一个有趣的案例是通过保护堆栈在内核和内核空间，用户空间和内核空间中的Garth页面。但是如果你想一想，到目前为止，这个映射还是相对静态的。你知道，你设置一次，你知道，也许每个用户，我们在开始时设置一次内核页表映射。对于妓女来说，叉子和上校曾经说过这样的映射并没有真正做任何其他事情。而页面折叠给我们的实际上是使这些映射具有动态性。所以我正在使用页面桶。</p>
+<p>发言人   05:34<br>Yeah, we can change or the kernel can change the mapping.<br>是的，我们可以改变或者内核可以改变映射。</p>
+<p>发言人   05:45<br>So dynamically on the fly. And this turns out to be an extremely powerful mechanism. So if you can combine page tables and page faults, you have an enormous, the kernel has an enormous amount of flexibility. And the flexibility reader comes down because you can sort of change this level of the direction on the fly. And so what we’re going to be doing is basically looking at all kinds of usages of this dynamic remapping or dynamic changing of the page tables that gives us interesting features.<br>所以动态地飞行。这证明是一种极其强大的机制。因此，如果您可以将页表和页面错误结合起来，那么内核将拥有巨大的灵活性。灵活性读者降低了，因为您可以在飞行中改变这个方向的级别。因此，我们将要做的基本上是查看这种动态重映射或动态更改页表的各种用法，这些用法为我们提供了有趣的功能。</p>
+<p>发言人   06:25<br>So the first thing we may want to think about is a little bit is what information is needed? You know, sort of you’re in the page, fold happens. And, the kernel oils to respond to thectardis, you know what the theme is, it needs to actually be able to respond.<br>所以我们可能首先要考虑的是需要什么信息？你知道，就像你在页面上一样，折叠发生了。而且，对目标做出响应的内核油，你知道主题是什么，它需要真正能够做出响应。</p>
+<p>发言人   06:45<br>You know, sort of quite obviously you, we’d like to have the virtual dress of the virtual address with defaulting. Or the cost? The page fault? Would like the one to say?<br>你知道，有点明显，我们希望虚拟地址的虚拟礼服具有默认设置。还是成本？页面错误？想让那个人说吗？</p>
+<p>发言人   07:09<br>The folding virtual dress. And, you know, you’ve seen presumably some of these panic calls in your page fault block and know the curtain will actually has access to them. In fact, it prints them out when actually paint fold happens. And it happens to be sitting in the St foul register. So when a user application causes a paid fault, the page fault basically invokes the same track machinery that Robert discussed in the last lecture. It’s almost completely identical. But in the case of a page fault, it also will put the defaulting address into that St Val register. So that is one thing that we probably want to know.<br>折叠虚拟连衣裙。而且，你知道，你已经在你的页面故障块中看到过一些可能的恐慌电话，并且知道窗帘实际上可以访问它们。事实上，当实际进行油漆折叠时，它会将它们打印出来。而它恰好在St违规寄存器中。因此，当用户应用程序导致付费错误时，页面错误基本上会调用与Robert在上次讲座中讨论的相同的跟踪机制。这几乎是完全相同的。但在页面错误的情况下，它也会将默认地址放入该St Val寄存器中。所以这是我们可能想知道的一件事。</p>
+<p>发言人   08:00<br>The second thing that we probably want to know is the type of default.<br>我们可能想知道的第二件事是默认的类型。</p>
+<p>发言人   08:12<br>Because it may, we may want to respond different differently terms of a page fault due to a load instruction or a page fault due to store instruction, or page fault due to like a jump instruction. And so, in fact, if you look in the risk 5 documentation. Here’s the Risk five documentation in here in the S Causer editor that we was mentioned in the trap lecture, there are a number of.<br>因为可能的原因，我们可能希望以不同的方式响应页面错误，例如由于加载指令或由于存储指令导致的页面错误，或者由于跳转指令导致的页面错误。因此，事实上，如果您查看风险5文档。这是我们在陷阱讲座中提到的S Causer编辑器中的风险五文档，有许多。</p>
+<p>发言人   08:47<br>Causes that actually related to page faults. So again, if you look at number 13, it’s a load page fault. Number 15 is the store page fault, and the number 12 is in the instruction page fault. And so these are the in the S cause register and we get that information. And so there’s three different types.<br>与页面错误实际相关的原因。所以，如果你看一下数字13，这是一个加载页面错误。数字15是商店页面错误，数字12在说明页面错误中。所以这些是原因登记簿中的信息，我们得到了这些信息。所以有三种不同的类型。</p>
+<p>发言人   09:10<br>You know the read, right? And just to look at back, you know, the 1 S cost that actually was caused by the EC instruction to do actually a kernel transfer is number 8, right? So that’s the one that we saw in the trap lecture that we spend a lot of time thinking about in the trap lecture. But basically, all the other page faults or exceptions use the same mechanism to transfer from user space and kernel to kernel space. And once in the internal space, in the case of the page fault St register set, the S cause register set.<br>你知道读经，对吧？而且回顾一下，你知道，实际上由于EC指令进行内核转移而导致的1成本是8，对吧？这就是我们在陷阱讲座中看到的，我们在陷阱讲座中花了很多时间思考的那个。但基本上，所有其他页面错误或异常使用相同的机制从用户空间和内核空间传输到内核空间。并且一旦在内部空间中，在页面错误St寄存器集的情况下，S原因寄存器集。</p>
+<p>发言人   09:52<br>Then the third thing that we probably want to know is the instruction or to address the virtual address of the instruction. That cost the page fault.<br>那么我们可能想知道的第三件事是指令或指令的虚拟地址。这导致了页面错误。</p>
+<p>发言人   10:14<br>And anybody who remember know from the track lecture where where the instruction is or where the dress is. Anybody, is it? C? Yeah, exactly. And there was this EC supervisor exception program counter. There is where it is and where is that saved? As part of the trap handling code. In the trap frame? Yeah, it ends up in the trap frame, correct? There’s the trap frame.<br>任何记得的人都可以从跟踪讲座中知道指令在哪里或衣服在哪里。有人吗？C?是的，没错。并且有一个EC supervisor异常程序计数器。它在哪里，它在哪里得救？作为陷阱处理代码的一部分。在陷阱框架中？是的，它最终陷入了陷阱框架，对吗？这里有一个陷阱框架。</p>
+<p>发言人   10:49<br>EPC actually has the exceptional program counter. So if you sort of think about the hardware mechanism and what X 3 6 does, we have three pieces of information that probably extremely valuable to us when we get actually pay for, namely the drastic cost default, the type of default, and the exception program counter or like, where did it happen in user space? And the reason that we care a lot about the exception program counter correctly is because we probably want to repair in the handler. We’re going to repair the page table, and then we’re going to basically restart the same instruction. And, you know, hopefully after repairing the page fault or repairing the page tables, that instruction can just run without any trouble. And so it’s important that we can resume the instruction actually that we that cost default. Does that all make sense?<br>EPC实际上有例外程序计数器。因此，如果您考虑硬件机制和x6的作用，当我们实际支付时，我们有三条信息可能对我们非常有价值，即严重的成本默认值，默认值的类型和异常程序计数器或类似的东西，它在用户空间中发生了什么？我们非常关心异常程序计数器是否正确的原因是因为我们可能想要在处理程序中修复。我们将修复页表，然后我们将基本上重新启动相同的指令。而且，你知道，希望在修复页面错误或修复页表之后，该指令可以毫无问题地运行。因此，重要的是我们可以恢复实际成本违约的指示。这一切都感知吗？</p>
+<p>发言人   11:43<br>Okay, so now I want to look at also the basic mechanism and the basic information that the race 5 is actually giving us. And I want to look at a basically go through a list of features that will help us understand actually how we can use the patron handler to repair the page table and the interesting things. And so the first thing I want to look at is allocation. In a particular, you know, s break.<br>好的，现在我也想看看第五场比赛实际上给我们的基本机制和基本信息。我想看一个基本的功能列表，这些功能将帮助我们真正理解如何使用客户处理程序来修复页表和有趣的事情。所以我想看的第一件事是分配。在一个特定的，你知道的，s休息。</p>
+<p>发言人   12:25<br>So S break is a system call that X 3 6 provides that allows an application to basically grow its heap. To run the application starts you s break points here, you know, at the bottom of the heap, you know, at the top of the stack. And in fact, you know, it’s the same place where, you know, p size basically, you know, points to. So when S breakers called, for example, s breakers call if like 1, 2, 3, 4, 5, you know, the number of pages that, you know, you want to allocate, the e-brake system called basically bumps up this boundary. To something bigger. And that. And so what? That means that when the S break actually happens or the S system call is called, the kernel will allocate physical memory, map it into the address base of the user application, 0 to memory, and then basically return from the system call and after time just and the application can grow.<br>So S break是X 3 6提供的系统调用，允许应用程序基本上增长其堆。运行应用程序会在这里启动断点，你知道，在堆的底部，你知道，在堆栈的顶部。事实上，你知道，它是同一个地方，你知道，p大小基本上，你知道，指向。因此，当S breakers调用，例如，s breakers调用，如果像1、2、3、4、5这样，你知道，你想要分配的页面数量，称为e-brake的系统基本上会增加这个边界。为了更大的东西。还有那个。那又怎样？这意味着当S break实际发生或S系统调用时，内核将分配物理内存，将其映射到用户应用程序的地址库中，0到内存，然后基本上从系统调用返回，经过一段时间后，应用程序可以增长。</p>
+<p>发言人   13:32<br>You know that physical memory doesn’t work in memory that it needs or it might want by just calling multiple times to sbre the applications will decrease or shrink in its address phase by calling s break with a negative number, but I want to focus on the case where we’re growing in the address space and in x 6 as it is, the test break is eager, or thus what I’m going to call eager allocation. Namely, as soon as the. As break is called, the kernel will immediately allocate the physical memory that the application is asking for. And now it turns out that in practice, it’s actually hard for applications to predict how much memory they need. So typically, applications. Tend to over ask?<br>你知道物理内存在它需要的内存中不起作用，或者它可能只想通过多次调用来sbre，应用程序将通过使用负数调用sbreak来减少或缩小其地址阶段。但我想把重点放在地址空间不断增长的情况下，在x6的情况下，测试中断是急切的，或者我称之为急切分配。也就是说，一旦。当调用break时，内核将立即分配应用程序请求的物理内存。现在事实证明，在实践中，应用程序实际上很难预测它们需要多少内存。通常情况下，应用程序。倾向于过度询问？</p>
+<p>发言人   14:36<br>And so they ask a lot more than they really need and often, which means that basically the address phase will grow quite a bit, even with memory that’s actually never used by the application.<br>因此，他们要求的比实际需要的要多得多，这意味着基本上地址阶段将增长相当多，即使应用程序实际上从未使用过的内存也是如此。</p>
+<p>发言人   14:49<br>You might think like another stupid, how could that happen? Well, think about like if you write an application program and a typical application program, maybe you read some input, it has a matrix that the users for some computation. And often the application writer sort of plans for the worst case. It allocates memory for the biggest matrix that the application may never, ever need. But in the common case, the application may be compute with a much smaller, you know, input or a much smaller matrix. And so it’s quite common, in fact, for application programmers. And probably you think about your own application you’ve written to actually over ask and actually own their use. And we’d like to, in principle, not a big problem, but, you know, using actually virtual memory and page faults handlers, we can actually totally respond to that in sort of an intelligent manner and by basically doing lazy application.<br>你可能会像另一个愚蠢的人一样思考，这是怎么发生的？好的，想象一下，如果你编写一个应用程序，一个典型的应用程序，也许你会读取一些输入，它有一个矩阵，供用户进行一些计算。通常申请作者会为最坏的情况制定计划。它为应用程序可能永远不需要的最大矩阵分配内存。但在一般情况下，应用程序可能需要使用更小的输入或更小的矩阵进行计算。因此，事实上，对于应用程序员来说，这很常见。而且可能你会想到你自己写的应用程序实际上是在询问并拥有它们的使用。原则上，我们希望这不是一个大问题，但是，你知道，使用虚拟内存和页面错误处理程序，我们实际上可以以一种智能的方式，通过基本上做懒惰的应用程序来完全响应。</p>
+<p>发言人   15:59<br>And then the basic idea, very simple at S break. We’re basically going to do almost nothing. The only thing that we need to know, remember, is, of course, that we did grow the address space. So the only thing really we’re going to be doing is actually bumping up, you know, p size. You know, whatever with the number, set Ps to the new size plus you know n and we’ll is the amount of memory that’s allocated.<br>然后是基本的想法，在sbreak非常简单。我们基本上什么都不做。我们唯一需要知道的是，记住，当然，我们确实扩大了地址空间。所以我们真正要做的唯一一件事就是提高p大小。你知道，无论数字是多少，将Ps设置为新的大小加上n，我们就会得到分配的内存量。</p>
+<p>发言人   16:28<br>And then so, but we don’t allocate the kernel doesn’t allocate any physical memory at that particular point in time. It doesn’t 0 it, there’s absolutely nothing. Then at some point, the application will use or might use that my correctly, if it is actually one of the pieces of memory that it really needs. And that will cause a page vault.<br>然后，但是我们不分配，内核在那个特定的时间点也不分配任何物理内存。它没有0，绝对没有什么。然后在某个时候，应用程序将使用或可能会正确使用它，如果它实际上是它真正需要的内存之一。这将导致一个页面库。</p>
+<p>发言人   16:48<br>We didn’t map that memory actually into the page map yet. And so if we dereference a virtual address above this p size, but below Ps plus n, what we would like to be happening is that the kernel will allocate a page and you starts instruction.<br>我们实际上还没有将该内存映射到页面地图中。因此，如果我们取消引用一个高于p大小但低于Ps加n的虚拟地址，我们希望发生的是内核将分配一个页面并启动指令。</p>
+<p>发言人   17:08<br>So if we get a page fault and we see that the virtual address is bigger than Visa is below, sorry, is it a little pea size? For psats, then, we know that this must be a virtual address, and I guess above the stack. You know that this is an address that actually comes out of the heap, but for which the kernel hasn’t allocated any physical memory it. And so the response to this page fault, you know, could be reasonable, straightforward.<br>因此，如果我们得到一个页面错误，并且我们看到虚拟地址比下面的Visa大，抱歉，它有点豌豆大小吗？对于pats，我们知道这必须是一个虚拟地址，我猜在堆栈上方。你知道这是一个实际来自堆的地址，但内核没有为其分配任何物理内存。因此，对这个页面错误的响应，你知道，可以合理、直接。</p>
+<p>发言人   17:41<br>In the fault itself, we can allocate a page and using K alloc, allocate one page 0 to page. Map the page into the page tables or updating the page tables. And then basically restarting the structure. So for example, if it was low destruction or store instruction, that road we’re trying to read know from that not allocated a piece of memory that actually the process has. Now, after we mapped in this physical page, the restarted instruction should just work i.m. here, go ahead.<br>在故障本身中，我们可以分配一个页面并使用K alloc将one page 0分配给页面。将页面映射到页表中或更新页表。然后基本上重新启动结构。例如，如果它是低销毁或存储指令，我们试图读取的那条路就会知道，没有分配进程实际拥有的一段内存。现在，在我们映射到这个物理页面后，重新启动的指令应该可以正常工作。 在这里，继续。</p>
+<p>发言人   18:28<br>Right, so I was wondering, in the case where we’re doing eager allocation and there comes a point where a process consumes so much memory that it actually exhausts the physical memory resource. If we don’t do eager allocation, we do lazy instead, at what point would the application know that there’s no physical memory?<br>对，所以我想知道，在我们进行急切分配的情况下，有一个进程会消耗大量的内存，以至于它实际上耗尽了物理内存资源。如果我们不做急切分配，我们做懒惰，应用程序在什么时候会知道没有物理内存？</p>
+<p>发言人   18:51<br>A great question. Well, basically, you know, it almost looks for the application there. There’s this illusion of unlimited physical map memory.<br>一个很好的问题。基本上，你知道，它几乎在那里寻找应用程序。有一种无限自然地图记忆的错觉。</p>
+<p>发言人   19:00<br>You know, at some point, of course, you know, you know my view so much, you know the basic case, so use all the physical memory. And so if then it touches one more page, which there’s no physical memory present at that particular point in time, then you know, there’s a couple actions that the kernel can take. And I’ll talk about the more sophisticated ones later, What you’re going to be doing in the lazy lab is, you know, if the memory is up and there’s no more free memory used, return an error. Or actually, you kill the process in that particular case. And so because you’re out of memory, so there’s nothing the kernel can do. And at that point, you return or kill the process that you’re going to do in lazy lab. We’ll see later in this lecture, you could be more sophisticated than that.<br>你知道，在某些时候，当然，你知道我的观点，你知道基本情况，所以要使用所有的物理记忆。因此，如果它再触及一个页面，而在那个特定的时间点没有物理内存存在，那么你知道，内核可以执行几个操作。我稍后会讨论更复杂的，你在懒惰实验室将要做的是，你知道，如果内存已用完，并且没有更多的可用内存使用，则返回错误。或者实际上，在那种特定情况下，你杀死了进程。因为你内存不足，所以内核无法做任何事情。此时，你会返回或杀死你将要在懒惰实验室中进行的过程。我们稍后会看到，你可能会比这更复杂。</p>
+<p>发言人   19:48<br>And think this is generally brings up a topic that is, we have a collection of processes running on an operating system. There is a limited amount of physical memory. And the limited by physically memory must be shared in some way between the applications. And so I’ll talk a little bit much more about it in 1020 minutes.<br>并且认为这通常会带来一个话题，即我们有一个在操作系统上运行的进程集合。物理内存的数量是有限的。受物理内存限制的内存必须以某种方式在应用程序之间共享。所以我会在1020分钟内再多说一点。</p>
+<p>发言人   20:07<br>Okay, there is a question. Chat in the chat. Why is the condition virtual address? Virtual distance, boom.<br>好的，有一个问题。在聊天中聊天。为什么条件是虚拟地址？虚拟距离，砰。</p>
+<p>发言人   20:17<br>This start at 0, okay? Because there’s a question about this particular check here. So remember, we have our stack here, and we have our data here, and we have our text. We use a process. And basically we bumped up P size to something bigger.<br>这个从0开始，好吗？因为这里有一个关于这个特定支票的问题。所以请记住，我们在这里有我们的堆栈，在这里有我们的数据，还有我们的文本。我们使用一个过程。基本上，我们将P大小提高到更大的大小。</p>
+<p>发言人   20:46<br>We’ve noted up the group, but we haven’t allocated memory here yet. So this memory house is not being physically allocated yet. So just check, just checks if the address falls below p size and it actually is a valid, you know, address in the user address space. If it we’re above P size, that’s a programming error in the program, or the user application is starting to dereference a memory that actually doesn’t have. Hopefully that answered the question. Yeah, you okay, good.<br>我们已经记录了这个组，但我们还没有在这里分配内存。所以这个内存库还没有被物理分配。所以只需检查一下，只要检查地址是否低于p大小，并且它实际上是用户地址空间中的有效地址。如果我们的大小超过P，则是程序中的编程错误，或者用户应用程序开始取消引用实际上没有的内存。希望这回答了这个问题。是的，你没事，很好。</p>
+<p>发言人   21:13<br>So to get a little bit of a feel for what it actually means and this’ lazy allocation, that’s probably the only sort of programming or code things that we’re going to be doing today is let’s try to sort of sketch out or look at how it would look in code. And the two holes, you’ll see that it will be surprising easy. And through the more, it’s probably a big help for the lazy lab. And so hopefully that will help you get going pretty straightforwardly. And it allows us also to look at a couple.<br>因此，为了稍微了解一下它的实际含义和这个 “懒惰分配”，这可能是我们今天要做的唯一编程或代码工作，让我们尝试勾勒出或看看它在代码中的外观。而这两个洞，你会发现它会非常容易。而且通过更多的，这可能对懒惰实验室是一个很大的帮助。希望这将帮助你直截了当地前进。它也让我们可以看到一对。</p>
+<p>发言人   21:58<br>Page fault. I had a question actually regarding got a point in chat. Why do we actually need to kill the application? Couldn’t the operating system just to turn like an AR out memory, try and do something else? Let’s postpone that question to a little bit later. I know in the page vault we’re going to just kill the process. But, you know, we could be more sophisticated and pixel La real kernels are more sophisticated, okay? Although in the end, they might still kill it.<br>页面错误。我有一个问题实际上是关于在聊天中获得一个观点。为什么我们实际上需要杀死应用程序？难道操作系统不能像一个arout内存一样打开，尝试做其他事情吗？让我们把这个问题推迟到以后讨论。我知道在页面保管库中，我们将直接杀死该进程。但是，你知道，我们可以更加复杂，像素级的真实内核更加复杂，好吗？尽管最终他们可能仍然会杀死它。</p>
+<p>发言人   22:27<br>You know, if there’s no more memory, what whatsoever to be gotten? You know, there’s basically no choice.<br>你知道，如果没有更多的记忆，还有什么可以得到的？你知道，基本上没有选择。</p>
+<p>发言人   22:34<br>Okay, so the first thing we’re going do, we’re going to modify. So you remember that sys proc actually grows the address space with the application, allocates memory, and all that kind of stuff. We’re just not going to do that. We’re just going to set p size, you know, to p size plus n, so let’s assume that we’re only growing and not worry about shrinking for now, and that what we’re going to be doing. So this screws the virtual dress space buy in. And that’s all all we’re going to be doing. Let’s see if I made no programming mistakes. I did make a programming mistake, I guess I don’t have proc key here, so I my proc.<br>好的，我们要做的第一件事就是进行修改。所以你记得，sys proc实际上随着应用程序的增长而增长地址空间，分配内存等等。我们只是不打算这样做。我们只是要将p大小设置为p大小加n，所以让我们假设我们现在只是在增长，而不担心缩小，这就是我们要做的。所以这个螺钉虚拟着装空间购买。这就是我们要做的全部事情。让我们看看我是否没有编程错误。我确实犯了一个编程错误，我想我在这里没有proc键，所以我的proc。</p>
+<p>发言人   23:24<br>You so the program just runs, or at least we boot. I think if we do like Echo High, we’re going to get actually a paid fault. And the reason that we get a peat fold is because the shell, who’s going to fork, you know, echo and then, you know, the child’s going to exact echo, the shell actually allocates a memory.<br>你这样程序就可以运行了，或者至少我们启动了。我想如果我们喜欢回声高点，我们实际上会得到一个有偿的错误。我们得到泥炭褶皱的原因是因为贝壳，谁将会分叉，你知道，回声，然后，你知道，孩子会精确回声，贝壳实际上分配了记忆。</p>
+<p>发言人   23:44<br>And so the shell calls S break, and things are not looking good, But sort of interesting to look at information here. So your are it prints out the S cost register when the value in s cost and you see it’s 15, anybody remember what 15 is.<br>因此shell调用sbreak，事情看起来不太好，但看这里的信息有点有趣。所以你会打印出S成本寄存器，当s成本中的值时，你看到它是15，任何人都记得15是什么。</p>
+<p>发言人   24:06<br>You know from the table that I just showed you a little bit a while ago that actually used the right or store page fault, we see that this process free, It’s probably the shell and we actually see the exception program encounter.<br>你知道，从我刚才展示给你的表格中，实际上使用了正确的或存储页面错误，我们看到这个进程是免费的，它可能是shell，我们实际上看到了异常程序遇到的问题。</p>
+<p>发言人   24:19<br>It’s 1, 2, a 4, and we see the address given the virtual address in which we fault, which is 4008. And so let’s look at the, you know, we can look at the assembly of the shell, the main file. Nice of us, nice enough for us to actually generate that. And we can look at the address 12 a 4. And you know, we see indeed, you know, there there’s a story instruction, there’s doing instruction. And it looks like that’s where we’re faulting. So we scroll back a little bit and look at this assembly here. We see that actually this is in part of the implementation of malloc. So that seems totally reasonable, correct?<br>它是1，2，4，我们看到的是给定虚拟地址的错误地址，即4008。所以让我们来看看，你知道，我们可以查看shell的组装，主文件。我们很好，足够好让我们真正产生它。我们可以查看地址12和4。你知道，我们确实看到了，你知道，有一个故事指导，有做指导。看起来这就是我们的断层。所以我们回滚一点，看看这里的程序集。我们看到，这实际上是malloc实现的一部分。这似乎完全合理，对吗？</p>
+<p>发言人   25:04<br>Here’s the malloc implementation, not surprising that we presumably we used S break to get some memory for implementing the user malloc in.<br>这是malloc实现，不足为奇的是，我们大概使用了S break来获取一些内存，以便在中实现用户malloc。</p>
+<p>发言人   25:14<br>We’re basically initializing a free list of using the memory that we just gotten from the colonel and his line 12 a 4 z writes, you know, I guess it’s rights something in size. And but we’re writing to memory that actually hasn’t been allocated. And then the reason that we can see that the memory file not allocated is I think the shell actually has four pages of text and data. And we’re basically sitting just above the fourth page. In the fifth page, in fact, we’re sitting 8 B above it. That sort of makes sense.<br>我们基本上正在初始化一个免费列表，使用我们刚从上校那里得到的内存，他的第12行a 4 z写道，你知道，我猜它的大小是一定的。但是我们正在写入实际上尚未分配的内存。然后我们可以看到没有分配内存文件的原因是我认为shell实际上有四页文本和数据。我们基本上就坐在第四页的上方。在第五页，事实上，我们坐在它上面的8 B。这样就感知了。</p>
+<p>发言人   25:50<br>We look at the instruction again, where’s 1284? We see here that basically probably a 0 holds you 4008 is the additional offset you that we’re actually referencing. So that’s the default. Now what we like to do is do something slightly more sophisticated then we’re currently doing. And so let’s go to Proc Trap DOC.<br>我们再看看指令，1284在哪里？我们在这里看到，基本上可能0代表你4008是我们实际引用的额外偏移量。所以这是默认的。现在我们喜欢做的是比我们现在正在做的稍微复杂一些的事情。所以让我们转到Proc Trap DOC。</p>
+<p>发言人   26:28<br>And look at user trap, because this happens in user trap. Mu Trapp is a function that we, that Robert discussed a week ago and just go through the different causes and you perform some action. So we’re a little bit here. This line is S classes 8. And you know, that’s the point where we’re going to process system calls. Then there’s a line that checks whether there was any devising erupt and processes inside of the devising erupts. And if there’s none of those two happen, then basically we get this trap and the process of being killed. And basically what we need to do is, you know, we need to add some code here that, you know, checks for another case, right?<br>并查看用户陷阱，因为这发生在用户陷阱中。Mu Trapp是我们一周前罗伯特讨论过的一个函数，只需探讨不同的原因，然后你就可以执行一些操作。所以我们有点在这里。这一行是S类8。你知道，这就是我们要处理系统调用的时候。然后有一条线检查是否有任何设计的爆发以及设计爆发内部的过程。如果这两者都没有发生，那么基本上我们就会陷入这个陷阱和被杀死的过程。基本上我们需要做的是，你知道，我们需要在这里添加一些代码，你知道，检查另一个案例，对吧？</p>
+<p>发言人   27:11<br>Basically, I guess the case that we want to look at that is if our S cause is cause like our S cause, Yes, 15. We want to do something else. Does that make sense, so what do you want to do here?<br>基本上，我猜我们想要研究的情况是，如果我们的事业是像我们的事业一样的事业，是的，15。我们想做其他事情。那感知吗，那么你想在这里做什么？</p>
+<p>发言人   27:42<br>What is sort of the plan for attack you for these couple lines of code? We want to check if p size is more than the virtual address. Not in Estival perhaps? Oh, and this is the case then there something like UV malloc, I think it’s one way we could do it. So I’m going to cut some corners just for the demo. Presumably in the lab itself, you will need to do a little bit more work, but basically, here’s the sort of, I think, the freedom of segment of code that we need.<br>针对这几行代码，有什么攻击你的计划？我们想检查p大小是否超过虚拟地址。也许不是在夏季？哦，就是这种情况，然后有像紫外线malloc这样的东西，我认为这是我们可以做到的一种方式。所以我打算为演示削减一些角落。大概在实验室里，你需要做更多的工作，但基本上，我认为这是我们需要的代码片段自由。</p>
+<p>发言人   28:29<br>So let’s see where I was here. You trap. Let me just kind of paste it into it and we can look at it, you know, just a print statement for debugging. And basically what I’m going to do in this handler I’m going to allocate a physical page. If there’s no physical pace, meaning we’re out of memory, we’re going to kill the process for now.<br>让我们看看我在这里的位置。你的陷阱。让我将它粘贴到其中，我们可以查看它，你知道，只是一个用于调试的打印语句。基本上，我将在此处理程序中执行的操作是分配一个物理页面。如果没有物理速度，意味着内存不足，我们现在要杀死这个进程。</p>
+<p>发言人   28:56<br>If there is a physical page, we’ll 0 the page, and then we just map the page at the appropriate address in the address base of the user. In particular, we map it on the rounded down virtual address. So the faulting address is 4008 here, and so that’s 8 B into the fifth page, and we want to map that physical page at the bottom of the physical, the virtual page at 4000. So round it down to 4000. And then we map 4000 through this physical page. And then, of course, we have to set the usual permission bits, you know, the U bit to read it, right, if that makes sense. And I guess I can get rid of this line.<br>如果有一个物理页面，我们会将页面0化，然后只需将页面映射到用户地址库中的适当地址。特别是，我们将其映射到向下舍入的虚拟地址上。所以这里的错误地址是4008，所以这距离第五个页面有8 b，我们想要将该物理页面映射到物理页面的底部，虚拟页面为4000。所以把它四舍全入到4000。然后我们通过这个物理页面映射4000。然后，当然，我们必须设置通常的权限位，你知道的，U位来读取它，对吧，如果感知的话。我想我可以摆脱这条线。</p>
+<p>发言人   29:42<br>So let’s see. Let’s try it out. And I guess I made some mistakes.<br>让我们看看。让我们试一试。我想我犯了一些错误。</p>
+<p>发言人   29:54<br>I think that on the else, you don’t have an opening bracket at the bottom. Oh yeah? If no, I do have it. Do I need one more? Oh yeah? Oh, sorry, I on the else right here.<br>我认为在else上，你的底部没有一个开口括号。是吗？如果不是，我确实有。我还需要一个吗？是吗？哦，对不起，我在这里的其他方面。</p>
+<p>发言人   30:12<br>You don’t have an open bracket, right? Like lenses else print of user trap, unexpected cause. Hopefully help a lot with excellent.<br>你没有左括号，对吧？像镜头一样，其他用户陷阱打印，意外原因。希望对你有很大的帮助。</p>
+<p>发言人   30:28<br>So echo high. Now, of course, we’re going to be optimistic and we hope that works. I’ll tell you it won’t work, but we did get two paid faults, right? We got a paid for to 4008, you know, primarily we process them because we got another paid fault. And so then the only problem that we’ve left is there’s a UV MF complaining that. I was complaining that their home page we’re trying to unmap is actually not mapped. And what could that be? Why would you think even when we get this panic? Anybody?<br>回声如此之高。当然，现在我们会保持乐观，希望它能起作用。我会告诉你它不会起作用，但我们确实得到了两个付费错误，对吧？我们得到了4008的报酬，你知道，主要是我们处理它们是因为我们又得到了一个付费错误。所以我们剩下的唯一问题是有一个紫外线的MF抱怨。我抱怨说我们试图取消映射的他们的主页实际上没有被映射。那会是什么呢？即使我们感到恐慌，你为什么会这样想？有人吗？</p>
+<p>发言人   31:13<br>What memory is being UN mapped here? Most likely.<br>这里未映射的是什么记忆？最有可能的。</p>
+<p>发言人   31:21<br>The one that was lazily allocated, not actually allocated. Yeah, exactly. You know, the memory that was lazily allocated, but actually, you know, hasn’t been used yet. And so there is no physical page for that particular laser in memory. And so this case, when the Pte is 0 and there’s no mapping yet, it’s not really a panic. You know, there’s actually what we expect it could happen, right? And in fact, for that page, we just don’t have to do anything. We can just continue, go to the next page. Does that make sense, so let’s do that. And now thoses echo high and who we’ve two paid faults and mud hive works.<br>那个被懒散分配的，实际上没有分配的。是的，没错。你知道，那些被懒惰地分配的内存，但实际上，你知道，还没有被使用。因此，内存中没有该特定激光的物理页面。所以在这种情况下，当Pte为0并且还没有映射时，这并不是真正的恐慌。你知道，实际上这是我们所期待的，对吧？事实上，对于那个页面，我们不需要做任何事情。我们可以继续，进入下一页。这是否构成感知，所以让我们这样做。现在这些人回音很高，我们有两个付费错误和泥蜂巢工作。</p>
+<p>发言人   32:02<br>And so we’re basically you have sort of a very basic minimal lazy allocation scheme working. Any questions about this? Sorry, I didn’t really follow why you could just continue. Could you explain that again?<br>所以我们基本上有一个非常基本的最小懒惰分配方案。对此有什么问题吗？抱歉，我真的不明白为什么你可以继续。你能再解释一遍吗？</p>
+<p>发言人   32:21<br>Yeah, so the bug indicated right, that we had that we’re trying to free page that actually is not mapped and you know, how could that happen? Well, the only reason that could happen is because S break moved up p size, but never used the application, never used that memory. And so it actually has no mapping yet because it was actually not allocated, right? Because we’re leisurely allocating, we’re only allocating physical memory for those pages when we need it. If we didn’t need it, then there will be no mapping. And so it’s totally reasonable that actually is going to be case where there’s no mapping for a virtual dress because it actually has allocated yet. And for that case where you just have to do nothing, we can’t free the page, correct?<br>是的，所以这个错误表明了我们正在尝试释放实际上没有映射的页面，你知道，这是怎么发生的？可能发生的唯一原因是S break上移了p个大小，但从未使用过应用程序，从未使用过内存。所以它实际上还没有映射，因为它实际上没有分配，对吗？因为我们在悠闲地分配，所以我们只在需要时为那些页面分配物理内存。如果我们不需要它，那么就不会有映射。因此，实际上没有虚拟衣服的映射是完全合理的，因为它实际上已经分配了。在这种情况下，如果你什么都不用做，我们就不能释放这个页面，对吗？</p>
+<p>发言人   33:08<br>There is no free page. And so the best thing is to do continue and just go to the next page in the loop. Okay, that makes sense, thank you. Yeah, we didn’t know to continue. We are basically, you know, just kept going. Then we would actually free the page and that’d we can’t do it because there’s no page, that’s why it continues there makes sense?<br>没有免费的页面。所以最好的办法是继续前进，直接进入循环中的下一页。好的，这很感知，谢谢。是的，我们不知道继续下去。我们基本上，你知道，只是继续前进。那么我们实际上会释放页面，如果我们不能这样做，因为没有页面，这就是为什么它继续在那里制造感知？</p>
+<p>发言人   33:31<br>Another question in U VM on map, I assume the panic was that was there was there for a reason. So a more correct, a more reasonable implementation is to have two versions. And we would use the one that doesn’t panic. Yeah, because why was the UV m the panic there? Well, that was basically an invariant that used to be true for unmodified XV 6. Actually, unmodified exercises should never have a case where there’s user memory that was not bat. And so therefore, the pen goes up.<br>在地图上的uvm中的另一个问题，我认为恐慌是因为存在是有原因的。因此，更正确、更合理的实现是拥有两个版本。我们会使用不会惊慌的那个。是的，因为为什么紫外线会恐慌呢？好吧，这基本上是一个不变量，曾经对未修改的XV 6是成立的。实际上，未修改的练习不应该有用户记忆不是蝙蝠的情况。因此，这支笔就上升了。</p>
+<p>发言人   34:03<br>We now change the design effect 6, and so we have to justed, and this invariant is just not no longer true, so we got to remove the panic, and because the advantages is just not true. Legitimate, mainly. Not true anymore, I see. Thanks, that makes sense. So a couple comments, this will hopefully help a lot with the next lab. And in fact, this is like one of the three components of the lab of the next lab. So just one of the first things you have to do, and hopefully this will save you some time, maybe make up for all the pain that you went through in the pitfall lab.<br>我们现在更改了设计效果6，因此我们必须进行调整，而这个不变量不再是真实的，因此我们必须消除恐慌，因为优势并不真实。主要是合法的。不再是真的了，我明白了。谢谢，这很感知。所以一些评论，这将希望对下一个实验室有很大帮助。事实上，这就像是下一个实验室的三个组成部分之一。所以只是你必须做的第一件事情，希望这能节省你一些时间，也许可以弥补你在陷阱实验室中经历的所有痛苦。</p>
+<p>发言人   34:49<br>But clue not enough, right? So look what things are. You know, we made these changes, but more things are still probably broken. That one already was mentioned. I actually didn’t do to check whether actually the virtual address was below p size, correct, which we probably should do any other things that might be broken?<br>但线索还不够，对吧？看看这些东西是什么。你知道，我们做了这些改变，但更多的事情可能仍然存在问题。那个已经被提到了。我实际上没有检查虚拟地址是否低于p大小，正确，我们可能应该做任何其他可能被破坏的事情？</p>
+<p>发言人   35:17<br>Anybody?<br>有人吗？</p>
+<p>发言人   35:25<br>The number of bytes to grow the process by an S break is an int and not an unsigned int, so negative numbers could be used. Yes, and negative numbers confusion. That means shrinking the address space, right? And so we shrink the address space.<br>通过S break增长进程的字节数是int而不是unsigned int，因此可以使用负数。是的，负数混淆。这意味着要缩小地址空间，对吗？因此我们缩小了地址空间。</p>
+<p>发言人   35:38<br>We also have to be a little bit careful. So it turns out there’s a whole bunch of usual in an operating system and a whole bunch of different cases where in which we’re going to be looking at this particular page table entry. And for all those different cases, and we might actually have to modify xj 6 slightly. And that’s exactly what basically you go out is about is, you know, doing good enough job that basically you can pass user tests. And user test will stress a whole bunch of other cases that you will need to deal with.<br>我们也必须要小心一点。所以事实证明，在操作系统中存在许多常见的情况，以及许多不同的情况，我们将在其中查看这个特定的页表条目。对于所有这些不同的情况，我们实际上可能需要稍微修改xj 6。而这正是你走出去的基本意义，你知道，做得足够好，基本上你可以通过用户测试。用户测试会给你需要处理的一大堆其他情况带来压力。</p>
+<p>发言人   36:07<br>Okay? Any questions so far?<br>好吗？到目前为止有什么问题吗？</p>
+<p>发言人   36:18<br>Okay, let me, in that case, I want to talk about a bunch of other usages or cool things you can do once you have page faults and page tables and you update them dynamically. Another one that is almost trivial but commonly used, is what’s called zero field. Zero fuel on demand.<br>好的，让我说一下，在这种情况下，我想谈谈一堆其他的用法或很酷的事情，一旦出现页面错误和页表，你可以动态更新它们。另一个几乎微不足道但常用的是所谓的零场。按需零燃料。</p>
+<p>发言人   36:52<br>It turns out that in operating systems, there are many null pages. And so, for example, if you look at the address space and user space, x 6 doesn’t really is advanced. But like if you look at the layout of a binary or named out, there’s some text, that’s what’s called the data segment. And there’s typically also what’s something that’s called the BSS segment. And so when the compiler produces, the binary basically fills in these 3D segments, the text is, you know, the instructions know, the data is basically global variables that actually have a value that is not 0. So an initialized data.<br>事实证明，在操作系统中，存在许多空页面。因此，例如，如果你查看地址空间和用户空间，x6并不是真正先进的。但是，如果你看一下二进制文件或命名文件的布局，就会发现一些文本，这就是所谓的数据段。通常还有所谓的BSS段。因此，当编译器生成时，二进制文件基本上填充了这些3D段，文本是，你知道的，指令知道，数据基本上是全局变量，实际上有一个不是0的值。所以初始化数据。</p>
+<p>发言人   37:42<br>In b.z., basically a description that says, well, there’s a whole bunch of variables. And at least basically they’re Csis, and they all should be 0. And the reason that they’re basically not listed out or the memory is not right there in the file is because it’s going to saves a lot of, for example, if you declare big me in C, on the top of the file is a global variable, it automatically should be all zeros. Why allocate all that space in the file? Just note that basically for this particular variable, the content should be 0, and then basically on exec on a normal operating system on exec, we’ll look at these three.<br>在b.z.中，基本上是一个描述，说，嗯，有一大堆变量。至少基本上它们是csi，它们都应该是0。它们基本上没有列出或内存不在文件中的原因是因为它将节省很多，例如，如果你在C中声明big me，文件顶部是一个全局变量，它自动应该全是零。为什么要分配文件中的所有空间？请注意，基本上对于这个特定变量，内容应该是0，然后基本上在普通操作系统上的exec上，我们将查看这三个。</p>
+<p>发言人   38:22<br>Segments and that the usual thing that XV 6 does for text and data, but they’re Vs, you know, it will allocate, you know, a memory to hold the Vs and basically stick zeros in there. So we’ll. Allocate an address space, stick the data in there, stick it.<br>段和XV 6通常用于文本和数据的东西，但它们是Vs，你知道，它会分配一个内存来保存Vs，基本上会在那里粘贴零。所以我们会。分配一个地址空间，把数据粘在那里，把它粘在那里。</p>
+<p>发言人   38:40<br>And then, you know, basically, you know, the equivalent of the Bes, you know, all the global variables that basically 0 and there may be many, many pages. And all those pages basically have to have the count 0. So that’s a virtual dress space. And so typical trick, you know, to do is to say like, wow. I’ve got so many pages that need to have zero, but I’m going to do in physical memory, this is the virtual address space and it the physical address in memory, what I’m going to really do is I’m just going to allocate 1 0 page and fill up the zeros and basically map all the other pages to that one page. Saving myself lots, lots of physical memory, at least at startup.<br>然后，你知道，基本上，你知道，所有全局变量的等价物基本上都是0，可能有很多页面。所有这些页面的数量基本上必须为0。所以这是一个虚拟的着装空间。所以典型的把戏，你知道的，就是说 “哇”。我有很多页面需要有零，但我将在物理内存中做，这是虚拟地址空间，它是内存中的物理地址，我真正要做的是分配1 0页并填充零，基本上将所有其他页映射到该one page。为自己节省了大量的物理内存，至少在启动时如此。</p>
+<p>发言人   39:30<br>Of course, that mapping has to be a little care, dominant care. We can’t market know. We can not allow rights to it because everybody’s relying on the fact that it actually stays 0. So we just map it read only. And then at some point, when an application starts writing to one of, you know, the basically starts to, does a load or store to one of the pages that actually are part of the Bes. So because we want to get store 1 or two or various content in there, and we’re going to get AP 12.<br>当然，映射必须是一点谨慎，主导的谨慎。我们无法在市场上了解。我们不能赋予它权利，因为每个人都依赖于它实际上保持为0。所以我们只是将其映射为只读。然后在某个时候，当应用程序开始写入其中一个页面时，你知道的，基本上开始加载或存储其中一个页面，这些页面实际上是Bes的一部分。所以，因为我们想在那里获得1到2个或各种内容，我们将获得AP 12。</p>
+<p>发言人   40:06<br>And so what should we do on the page fault? In this particular case. Anybody?<br>那么对于页面错误，我们应该怎么做呢？在这种特殊情况下。有人吗？</p>
+<p>发言人   40:23<br>Go ahead, anybody idea what should we be doing? The page 12 here? I think we should make a new page and right 0 0 3 and destruction. Yeah, exactly. So let’s assume this were my drawing that actually the story instruction happened to the one at the top. And what we really want to do basically is allocate a new physical, a new page in memory. You know, calloc put zeros in there because that’s what we’re expecting. And then we can change the top mapping, right?<br>继续，有人知道我们应该做什么吗？第12页在这里？我认为我们应该重新开始一页，正确地0 0 3和破坏。是的，没错。所以让我们假设这是我的绘画，实际上故事说明发生在顶部的那一个。我们真正想做的基本上是在内存中分配一个新的物理页面。你知道，calloc放了零，因为这是我们所期待的。然后我们可以改变顶部的映射，对吗？</p>
+<p>发言人   40:53<br>For the one for this particular, because for this guy, let me assume that this one, we can change this mapping, you know, to be read, right, and pointed to the new page. And then, you know, basically show copy what? Update pp. And then we start construction.<br>对于这个特定的人，因为对于这个人，让我假设这个人，我们可以改变这个映射，你知道，要阅读，并指向新的一页。然后，你知道的，基本上显示什么副本？更新pp。然后我们开始建设。</p>
+<p>发言人   41:28<br>And that’s it, and why is this ineffective? Why do you think this is actually a good optimization? Why do operating systems do it?<br>就是这样，为什么这样效果不好？为什么你认为这实际上是一个很好的优化？为什么操作系统要这么做？</p>
+<p>发言人   41:49<br>Anybody? You don’t need it? You don’t need to use as much memory as the user requests, so it’s just better to fill it when it when you need it. Yeah, actually similar like lazy allocation, basically program say allocated to huge array of for the worst possible input, it’s a global array. It all has to be zeros, but maybe only a fraction is being used. What is the second advantage?<br>有人吗？你不需要它？你不需要使用用户请求那么多的内存，所以最好在需要时填满它。是的，实际上类似于懒惰分配，基本上程序说分配给大量最糟糕输入的数组，它是一个全局数组。这一切都必须是零，但可能只使用了一小部分。第二个优势是什么？</p>
+<p>发言人   42:28<br>Second advantage is you have to do less work in exec. And so the programming start quicker and basically better interactive performance because you don’t really have to allocate memory. You don’t really have a zero memory. You only have to allocate the 0 1 page and the rest of the Tu, you just mapping the page tables. You just have to write the PTA entry, Does that make sense? But are updates all right? So they will become slower because every time a page full will occur. And yeah, there’s absolutely good point. So we’re basically postponed some of the costs to later.<br>第二个优点是你必须在exec上做更少的工作。因此，编程开始更快，基本上更好的交互性能，因为您实际上不需要分配内存。你并没有真正的零记忆。你只需要分配0 1页和其余的Tu，你只需要映射页表。你只需要写PTA条目，感知吗？但最新进展没事吧？因此它们会变得更慢，因为每次都会发生页满的情况。是的，这绝对是一个很好的观点。所以我们基本上把一些费用推迟到以后。</p>
+<p>发言人   43:07<br>At the point that we do the paid fault and, you know, partially you’re lying. We’re hoping that maybe not all the pages are being used. But like, for example, if the page is 496, 4096 B, you know, basically we’re going to take one page for 4096 zeros, right? And so there’s some limitation there. But there’s a great point. You certainly have, we have added the cost of the page fault. How much is the castle for peaceful? How should we think about that? So comparable to store instruction or is much more expensive?<br>当我们做了有偿的错误，你知道，部分你在撒谎。我们希望可能不是所有页面都被使用。但是，例如，如果页面是496，4096 B，你知道，基本上我们将取one page为4096零，对吧？所以这里有一些限制。但有一个很好的观点。你肯定有，我们增加了页面错误的成本。这个城堡多少钱用于和平？我们应该如何思考这个问题？与存储指令相当还是更昂贵？</p>
+<p>发言人   43:48<br>More expensive, right? Yeah, why? Well, a store, well, just like need to require, it will take some time to get through the to Ram, but the fault will have to go to the kernel. Yeah, in fact, how many storage structures were there even in the trap handling code that Robert showed you last week or actually that you’re doing currently in the trap lab? Well, I at least like 100. Yeah, at least 100 throughs, the safer store registers. So there’s quite a bit. And so there’s the both the overhead of transferring from user space to kernel space as well.<br>更贵，对吧？是啊，为什么？嗯，一个存储，就像需要一样，它需要一些时间才能通过到内存，但故障必须转到内核。是的，实际上，Robert上周向您展示的陷阱处理代码中，或者您目前在陷阱实验室中进行的处理代码中，有多少个存储结构？好吧，我至少有100个。是的，至少有100个，更安全的商店注册。所以有相当多的。因此，从用户空间到内核空间的传输也有开销。</p>
+<p>发言人   44:31<br>Actually all the instructions that are being executed to say you can restore state. So the page fault is definitely not free. So the question that was asked earlier is a very good question.<br>实际上，所有正在执行的指令都表明您可以恢复状态。所以页面错误绝对不是免费的。所以之前提出的问题是一个非常好的问题。</p>
+<p>发言人   44:45<br>Okay, so let’s look at some more optimizations. What you do, these ones are sort of reasonable, boring, or maybe reasonable straightforward. And we’re going to hopefully get a little bit more, do a couple more exciting ones, see what is the next 1 I wanted to do? Next 1, it’s a very common one and many operating systems implemented. And in fact, it will also be one of the topics of one of the labs. So let’s do the next one, and that is copy on right fork. Or something’s called cow fork.<br>好的，让我们来看看更多的优化。你所做的事情，这些都是合理的、无聊的，或者可能是合理的直截了当。我们希望能获得更多，做一些更令人兴奋的事情，看看我接下来想做什么？接下来1，这是一个非常常见的操作系统，并实现了许多操作系统。事实上，这也将是其中一个实验室的主题之一。所以让我们做下一个，就是在右分叉上复制。或者叫牛叉的东西。</p>
+<p>发言人   45:36<br>And you, the observation is pretty straightforward. In fact, we made this observation a couple of times in the lecture, but when.<br>而你，观察非常简单。事实上，我们在讲座中观察了几次，但是当。</p>
+<p>发言人   45:48<br>Would say, you know, the shell that we were, in fact, we shot a second ago, like at the shell runs. And when I processes the command I’ve actually done the fork to create a child. And so the fork, you basically create a copy of the shell. And so we got a parent and we got a child. And then the child, almost one of the first things it does is an exec. Maybe you execute a couple of instructions and then actually execs, for example, to run Echo. And as we now know, I showing off in the last lap of the fork creates a complete duplicate of the shell address space and then exit.<br>会说，你知道，我们是shell，事实上，我们一秒钟前拍摄了，就像shell运行一样。当我处理该命令时，我实际上已经完成了分叉来创建一个孩子。所以分叉，基本上是创建了一个shell副本。所以我们有了父母，也有了孩子。然后是孩子，它做的第一件事几乎就是执行官。也许您执行了几条指令，然后实际上执行了一些操作，例如运行Echo。正如我们现在知道的那样，我在分叉的最后一圈炫耀创建了shell地址空间的完整副本，然后退出。</p>
+<p>发言人   46:25<br>The first thing basically does, you know, throws out away and then replaces it with an address space, you know, containing echo. And so it seems to slightly wasteful, right?<br>第一件事基本上是，你知道，抛出并将其替换为包含echo的地址空间。所以这似乎有点浪费，对吧？</p>
+<p>发言人   46:35<br>Like so we, let’s say we have our parent virtual dress space. And then here we have the child. And what we’re actually doing, and here’s physical memory. And in the normal case in XV 6 or in unmodified XV 6, you know, there’s a bunch of like, there were 4 pages. We saw the shell has one 54. And you know, when we start, when fork runs, basically can you duplicate with those 4 pages 1, 2, 3, 4, and copies all the content, you know, from those pages, the parenting to the child? And, you know, then as soon as exit happens, basically, we’re going to free these pages. And I look at new pages that actually have the content of echoing it.<br>就像这样，假设我们有我们父母的虚拟着装空间。然后在这里，我们有了孩子。以及我们实际在做的事情，这里是物理记忆。在正常情况下，在XV 6或未修改的XV 6中，你知道，有很多页。我们看到贝壳有一个54。你知道，当我们开始，当分叉运行时，基本上你能复制这4个页面1、2、3、4，并复制所有内容，你知道，从这些页面，育儿到孩子？而且，你知道，一旦退出发生，基本上，我们将释放这些页面。我看的新页面实际上有与之呼应的内容。</p>
+<p>发言人   47:28<br>So a group optimization 1 that actually tends to be very effective for this particular sequence is that so we, if the parent has these four mappings in its address space, going from whatever to 0 goes here, the first one goes there and whatever, you know, instead, you know, when we create the child address space, instead of creating, copying, and allocating new physical memory, what we can do is just share the physical pages that the parent actually already has allocated.<br>因此，对于这个特定序列实际上非常有效的一组优化是，如果父节点在其地址空间中有这四个映射，从这里到0，第一个到那里等等，你知道，相反，你知道，当我们创建子地址空间时，我们可以做的不是创建、复制和分配新的物理内存，而是共享父级已经分配的物理页面。</p>
+<p>发言人   48:00<br>And so we can just set the Ptes, which the child, you know, to the same, pointing to the same physical pages as in the parent. And we’re going to be a little bit careful, again, Greg, because if the child wants to modify one of these pages, that update should not be visible to the parent because we want strong isolation between the parent and the child. So we need to be a little bit more careful.<br>所以我们可以设置Ptes，孩子，你知道，指向与父母相同的物理页面。我们要小心一点，格雷格，因为如果孩子想要修改这些页面之一，父级不应该看到该更新，因为我们希望父级和孩子之间有很强的隔离。所以我们需要更加小心。</p>
+<p>发言人   48:21<br>And so to be a little bit more careful, and what we can do is just map those pages both in the child and in the parent read only.<br>因此，要更加小心，我们可以做的就是将这些页面在子页面和父页面中都进行只读映射。</p>
+<p>发言人   48:32<br>And then, of course, we’re going to get a page-fault some point because the parent is going to run where the child is going to run. And maybe, you know, the child did, a parent will do a story instruction to maybe save the data to some global variable or somewhere. And at that point, the that will cause a page fault because, you know, we’re writing to a page that is map view only to get a page fault. And so what do we need to do?<br>然后，当然，我们会在某个点上出现分页错误，因为父母将在孩子将要跑的地方跑。也许，你知道，孩子做了，父母会做一个故事说明，也许会将数据保存到某个全局变量或某个地方。在那个时候，这将导致页面错误，因为你知道，我们写入一个地图视图页面只是为了得到一个页面错误。那么我们需要做什么？</p>
+<p>发言人   48:58<br>Well, we need to make a copy of the page. And so let’s assume that it’s the child that actually does the story instruction. So we allocate a new page, the copy, the content of the page that were folded on into this new page. We map that page into the child. And this time we can map, read, write, because it’s now a private page only, you know, visible in the child’s address space. In fact, the page that will actually be folded on. We can also now my app read right into the parent. And so we copy the page, map it. And restart the instruction.<br>好的，我们需要复制一份页面。因此，让我们假设实际进行故事教学的是孩子。因此，我们分配一个新页面，该页面的副本，折叠到这个新页面上的页面内容。我们将该页面映射到孩子身上。这次我们可以映射、阅读、写作，因为它现在只是一个私人页面，你知道，在孩子的地址空间中可见。实际上，将要折叠的页面。我们现在也可以直接将我的应用程序读入家长。因此，我们复制该页面并将其映射出来。并重新启动指令。</p>
+<p>发言人   49:45<br>And restarting instructions really means of doing user rent the same way to return to user space in last week’s lecture. Does this make sense? Any questions about this plan? Sorry, when you say we map the parents virtual address to we also read write, how do we find it out? Is it the same as the child? Because the dress space of the child is a duplicate of the parent dress space if we vat in a particular virtual address, since the address spaces are equal, the same virtual address both in the parent’s address space and in the child’s address space. Makes sense, thank you.<br>重新启动指令实际上意味着以与上周讲座相同的方式进行用户租赁以返回用户空间。这有感知吗？对这个计划有什么问题吗？对不起，当你说我们将父虚拟地址映射到我们也读写时，我们如何找到它？和那个孩子一样吗？因为如果我们在特定的虚拟地址中使用vat，那么孩子的着装空间是父代着装空间的副本，因为地址空间相等，所以在父代地址空间和子代地址空间中都有相同的虚拟地址。让感知，谢谢。</p>
+<p>发言人   50:36<br>Another question? Yeah, for, let’s say, like some parentless process, maybe like the first one that launches, does it use its pages? Does it set just read permissions or does it start off with read, write, and when it forks, it modifies up to you? In fact, this is also one lab you will copy and write after the legacy lab. And you have some freedom. You know, the easy thing to do is there’s also method read only. You will get a page fault and then you’ll do whatever you normally also would do in the copy and write. So you can use the same mechanism in both cases. There’s no reason to actually specialize or do something separate for the first process.<br>另一个问题？是的，比如说，就像一些没有父母的过程，也许像第一个启动的过程，它会使用它的页面吗？它只设置读取权限，还是从读取、写入开始，当它分叉时，它会由你来修改？事实上，这也是一个你将在传统实验室之后复制和编写的实验室。你有一些自由。你知道，最容易做的事情是还有只读方法。你会得到一个页面错误，然后你会在复制和写入中做任何你通常也会做的事情。因此，您可以在两种情况下使用相同的机制。没有理由实际专门化或为第一个过程做一些单独的事情。</p>
+<p>发言人   51:30<br>Okay, so I also have a question. Given that we like kind of copy whole tables, sorry, whole pages around pretty often, does, does any like memory hardware implement like a specific instruction? Because basically memory hardware will usually just have like some data lines to say, read me or store test memory. But we have like, oh, copy page A to page B, yeah, there’s actually 86, for example, has hardware instructions for copying range of memory base 5 doesn’t. But of course, you in and a very high performance implementation, all these recent rights will be pipelined and know hopefully run at the speed of the memory bandwidth. Note that actually, in principle, we might be looking at we’re saving correct on loads of stores or copies because in this particular picture, I made only one copy. And in the unmodified case, we would have copied all four pages. And so hopefully, you know, this is just like strictly better, both in terms of memory consumption and in terms of performance.<br>好的，我还有一个问题。鉴于我们喜欢复制整个表格，抱歉，经常是整个页面，是否像内存硬件一样实现特定指令？因为基本上内存硬件通常只有一些数据线来读取我或存储测试内存。但是我们有，把A页复制到B页，是的，实际上有86，例如，有用于复制5个内存基范围的硬件指令。但当然，在一个非常高性能的实现中，所有这些最近的权限将被流水线化，并希望以内存带宽的速度运行。请注意，实际上，原则上，我们可能会考虑在大量商店或副本上保存正确，因为在这张特定图片中，我只制作了一个副本。在未修改的情况下，我们将复制所有四页。所以希望，你知道，这在内存消耗和性能方面都完全更好。</p>
+<p>发言人   52:48<br>You affordable just be faster.<br>你负担得起的只是更快。</p>
+<p>发言人   52:54<br>I have a quick question. When when the page fault occurs and when see that like it was essentially like we were trying to write to a read only the address, how does the kernel tell? Like this is a situation where it’s copy on write fork versus just a situation where the memory it was trying to like was marked as read only for some legitimate reason other than copy on write fork. Is it just kind of an invariant that if it’s user memory, then it will be mapped, read, write, unless it was a result of the copy on port? Yeah, right? Yeah, it so, so it is a an invariant that needs to be maintained in the kernel and the keel must recognize in some way that this is a copy and write page, if you will. And so I’m very glad you asked the question because turns out, you know, the risk five hardware, almost all page table hardware actually has support for this.<br>我有个简短的问题。当页面错误发生时，当看到它基本上就像我们试图写入只读地址时，内核如何判断？就像这种情况，它在写分叉时是复制的，而在写分叉时，它试图喜欢的内存由于某些合法原因被标记为只读，而不是在写分叉时复制。它是否只是一种不变式，如果它是用户内存，那么它将被映射、读取、写入，除非它是端口复制的结果？是的，对吧？是的，它是这样的，所以它是一个需要在内核中维护的不变量，并且龙骨必须以某种方式识别这是一个复制和写入页面，如果你愿意的话。所以我很高兴你问这个问题，因为事实证明，风险五硬件，几乎所有的页表硬件实际上都支持这个。</p>
+<p>发言人   53:45<br>We didn’t mention it earlier, but here’s our usual know whatever two levels or multilevel page table use our Pte. And if you’re looking at Pte, you know, I talked about the bits, you know, 1 0 through 7, but not about these 2 b are W, and they are reserved for supervisor software. So the supervisor software, this is the kernel, can use these bits at its zone free will. And so one thing one could do is like, say, decide that bit. A basically means this is a copy and write page or copy and write fault. And so when the kernel programs, you know, these page tables for copy and write, it can just put on Pts you for these particular pages.<br>我们之前没有提到它，但这是我们通常知道的两层或多层页表使用我们的Pte。如果你正在看Pte，你知道，我谈论了位，你知道，从10到7，但不是关于这2 b是W，它们是为主管软件保留的。因此，主管软件 (这是内核) 可以在其区域自由使用这些位。所以人们可以做的一件事就是，比如说，决定那一部分。基本上意味着这是一个复制和写入页面或复制和写入错误。所以当内核程序，你知道，这些页表用于复制和写入，它可以直接为这些特定的页面添加内容。</p>
+<p>发言人   54:36<br>The bit, you know, set the bit, copy and write so that when the page fold happens and we see that the copy and the right bit is shift, then we just go off and do this. And otherwise, we do something else. For example, maybe it’s a lazy allocation. Does that make sense, you? And in fact, in one you, one of the things you will be doing is probably use that bit, You know, she a copy and write bit in Pte. There’s one more Ringle that will show up in the copy.<br>位，你知道的，设置位，复制并写入，这样当翻页发生时，我们看到复制和正确的位移位，然后我们就离开并执行此操作。否则，我们就做其他事情。例如，也许这是一个懒惰的分配。这很感知，你呢？事实上，在你的生活中，你将要做的事情之一可能就是使用那个部分，你知道，她是一个副本，然后在Pte中写出来。还有一个铃声会出现在副本中。</p>
+<p>发言人   55:11<br>And the right web is that there’s some currently in Xg 6, Basically a physical page more or less only belongs to one process, with the exception of the trampoline page, which is a pampling page. We’re never free. So that is not really in a particular big issue. But for these pages, you know, now we have multiple processes or multiple address pages pointing to the same physical address. And so for example, if the parent exits right away, we got a little bit and be careful, correct? Because can we read that page immediately if the parent exits?<br>而正确的网络是Xg 6中目前有一些基本上是一个物理页面，或多或少只属于一个进程，除了蹦床页面，这是一个加料页面。我们永远不会自由。所以这并不是一个特别的大问题。但对于这些页面，你知道，现在我们有多个进程或多个地址页面指向同一个物理地址。例如，如果父母立即离开，我们会有一点，要小心，对吧？因为如果父代退出，我们可以立即阅读该页面吗？</p>
+<p>发言人   55:50<br>Maybe not because there may be multiple children processes. Yeah, there may be child using that page. And so we, if the colonel would free that page, we’re going to be in trouble. Because basically, if you look at KK 3 actually writes all kinds of ones on three page. And so then the child runs with that page. You know, all kinds of bizarre things are going to happen. So what should the role be now for freeing?<br>可能不是因为可能有多个子进程。是的，可能有孩子在使用该页面。所以，如果上校释放了那个页面，我们就会有麻烦。因为基本上，如果你看kk3实际上在三页上写了各种各样的内容。然后孩子就在那一页上奔跑。你知道，各种奇怪的事情都会发生。那么现在释放的角色应该是什么？</p>
+<p>发言人   56:23<br>Free if you don’t have children, I guess. Yeah, maybe a better way or sort of a more general version of that statement is to say, well, what we really need to do is we need to ref count. Every physical page. And when we free the page, we decrease the ref count by one. And if the ref count reaches 0, then actually we can free the page. And so you will have to introduce some additional data structure or some meta information in the copyright, right?<br>如果你没有孩子，我想是免费的。也许更好的方式或更一般的版本是说，我们真正需要做的是我们需要参考计数。每个物理页面。当我们释放页面时，我们将引用计数减少一。如果引用计数达到0，那么我们实际上可以释放该页面。因此，您将不得不在版权中引入一些额外的数据结构或一些元信息，对吗？</p>
+<p>发言人   56:55<br>Why have you actually do that ref counting? Where can we store this? Because this, if we have have to recount every single page, that could be a lot. Yeah, well, for every physical page of memory, we have to do a ref count here. You can get away a little bit less, but for simplicity in the lab, we’re going to do for every one, for every 4096 B, we need to maintain a reference count. Couldn’t we write that down in those other two free bits and say that more than 4?<br>你为什么要进行ref计数？我们可以把它存储在哪里？因为如果我们必须重新计算每一页，那可能会很多。是的，对于内存的每个物理页面，我们必须在这里进行参考计数。你可以稍微少一些，但为了在实验室中简单起见，我们将为每个4096 b进行操作，我们需要保持一个参考计数。我们不能把它写在另外两个空闲位中，然后说超过4个吗？</p>
+<p>发言人   57:37<br>Not unreasonable, But you know, if you report multiple times, that’ll be too bad, right? After three times here or four times, you can’t do the optimization anymore. Yeah, you know, there’s some freedom here also. Do you really need to use that bit to specify if it’s a copy on write? Because the kernel could also maintain some information about the processes that yeah, you could, you could do anything, some other meta information along with the process address space to say basically, well, virtual addresses between this and that are text addresses. So we have a page fold there and it must be copyright or something. And in fact, one of the later labs, you will certainly extend the meta information that X 6 maintains exactly for that reason.<br>这不是不合理的，但是你知道，如果你多次报告，那就太糟糕了，对吧？在这里三次或四次之后，您就不能再进行优化了。是的，你知道，这里也有一些自由。你真的需要使用那个位来指定它是否是一个写副本吗？因为内核也可以维护一些关于进程的信息，你可以做任何事情，一些其他的元信息以及进程地址空间，基本上说，这个和那些文本地址之间的虚拟地址。所以我们在那里有一个折页，它必须是版权或其他东西。实际上，在后来的一个实验中，您肯定会扩展X 6为此原因维护的元信息。</p>
+<p>发言人   58:34<br>There’s a bit of freedom here. And when you start implementing these lives. Any further questions about this?<br>这里有一点自由。当你开始实施这些生命时。对此还有什么疑问吗？</p>
+<p>发言人   59:04<br>Okay, then let’s go through the next one. This is something that’s called demand paging. Another very popular one that most operating systems implemented.<br>好的，那么让我们继续下一个。这就是所谓的请求分页。另一个非常受欢迎的，大多数操作系统都实现了。</p>
+<p>发言人   59:17<br>And so it just goes back basically to exec. So currently in unmodified x 3, 6x 3 6 actually loads the text segment and the data segment from file and maps it in eagerly in basically into the page table. And basically the same Mots that we made for lazy and zero field is that, well, what we could do is like, why do it eagerly and why not?<br>因此，它基本上回到了exec。因此，目前在未修改的x3，6x3 6中，实际上是从文件中加载文本段和数据段，并急切地将其映射到基本上的页表中。基本上，我们为懒惰和零场所做的相同的动机是，我们可以做的是，为什么要急切地做，为什么不呢？</p>
+<p>发言人   59:55<br>Let’s wait a little while until to see if actually the application really meet those particular set of instructions.<br>让我们等一会儿，看看应用程序是否真的满足这些特定的指令集。</p>
+<p>发言人   01:00:02<br>Know the binary might be very big, and instead of actually loading it all in, you know, from disk tends to be expensive operation. Maybe the data segment is much bigger than really than the typical use case requires. We don’t really have to do that. And so instead of an exec, instead of actually, you know, we allocate the virtual address space, we’ll allocate the address space for the text and the data. That’s it in the file, but in the Ptes, and we’re going to not map them at all, You know, we’re just going to keep in the P for one of these pages. You know, we’re just going to not set the validate so the valid pages to 0. And of course, know we’re not going to get our first paid fault if we do this in exec. And let’s say we modify x 6 to do this, when will our first big fault happen?<br>知道二进制文件可能非常大，而不是实际从磁盘加载所有文件往往是昂贵的操作。可能数据段比典型用例需要的要大得多。我们其实不必这样做。因此，我们不是分配一个exec，而是实际分配虚拟地址空间，我们将为文本和数据分配地址空间。这在文件中，但在Ptes中，我们根本不会映射它们，你知道，我们只会在P中保留其中一个页面。你知道，我们只是不设置验证，因此有效页面为0。当然，如果我们在exec中这样做，我们不会得到我们的第一个付费错误。假设我们修改x 6来做这件事，我们的第一个大错误什么时候会发生？</p>
+<p>发言人   01:01:00<br>What’s the first instruction that is being run for user address? Or user program? Where does a user program start? Is it loading the initial code in U VM in it? Yeah, okay. We were just keeping that piece correct.<br>针对用户地址运行的第一个指令是什么？还是用户程序？用户程序从哪里开始？它是否加载了U VM中的初始代码？是的，好的。我们只是想让那篇文章保持正确。</p>
+<p>发言人   01:01:19<br>That’s the whole point of like modifying exec and not called UV m in it, where and? So most, you know, when we actually, if you remember from Ford Grant or something like that, the place where an application starts is actually address 0. My picture is a little bit, you know, he’s leading here, but here’s text here, 0 goes up to some number. And basically the first instruction, whatever sits here, that’s the first instruction that we’re going to actually not address. That’s the first instruction. We’re going to get a page fold out, right? Because we have not loaded it.<br>这就是修改exec而不在其中调用紫外线m的全部意义，在哪里和？所以，你知道，当我们实际上，如果你还记得福特格兰特或类似的话，应用程序开始的地方实际上是地址0。我的照片有点，你知道，他在这里领先，但这里有文字，0上升到某个数字。基本上第一条指令，无论这里是什么，那都是我们实际上不会处理的第一条指令。这是第一条指令。我们会得到一个折页，对吗？因为我们还没有加载它。</p>
+<p>发言人   01:02:02<br>So what to do on the page-fault? Well, what we’re going to do in the page-fault is basically we’ll load this is what’s one of these on demand pages? We have to remember somewhere earlier that, you know, this corresponds to some, this corresponds to some file. And maybe what we’re going to do in the pixel handler is read, you know, that block or page from file. Into memory? Map that memory. Into the page table. And restart the structure.<br>那么在页面错误上该怎么做？好的，我们在页面错误中要做的基本上是我们将加载这些按需页面中的一个是什么？我们必须在早些时候记住，你知道，这对应于一些文件，这对应于一些文件。也许我们在像素处理程序中要做的是从文件中读取那个块或页面。进入记忆？映射那个记忆。进入页面表。然后重新启动结构。</p>
+<p>发言人   01:02:56<br>And then we’re off and running, right? And so we’re going to get, you know, in the worst case, if the user program uses all of its text, uses all of its data, and we’re going to get a page fault for every page, you know, in the program. But, you know, we get lucky and the program doesn’t use all of its data segment or doesn’t use all of its tech segment. Then, you know, we might say some memory and we should make exec much quicker and be a little bit more interactive. And as soon as the program starts, boom, it’s running. But when we hardly have to do any work in exec. Does that optimization make sense?<br>然后我们就出发跑步了，对吧？所以在最坏的情况下，如果用户程序使用它所有的文本，使用它所有的数据，我们就会得到程序中每个页面都有一个页面错误。但是，你知道，我们很幸运，程序没有使用它所有的数据段或技术部分。那么，你知道，我们可能会说一些内存，我们应该让exec更快，更具互动性。一旦程序启动，它就开始运行了。但是当我们几乎不必在exec中做任何工作时。这种优化有感知吗？</p>
+<p>发言人   01:03:42<br>Okay, so there’s sort of a slight extension to demand paging.<br>好的，所以对请求分页有一些轻微的扩展。</p>
+<p>发言人   01:03:51<br>So this is the second part of the min paging. Yeah, sorry, right? Is there more?<br>所以这是最小分页的第二部分。是的，对不起，对吧？还有更多吗？</p>
+<p>发言人   01:04:05<br>Part 2, the paging is principle. There’s a little bit of a problem here that we haven’t really discussed. It might be the case, or maybe you defile that we’re actually reading or the text and data segment or even bigger than what actually is in physical memory. If multiple applications started with demand paging, maybe there’s some of their binaries is basically bigger than it actually ISS a physical memory?<br>第二部分，寻呼的原理。这里有一个我们还没有真正讨论过的小问题。可能是这种情况，也可能是你玷污了我们实际阅读的文本和数据段，甚至比物理内存中实际存在的要大。如果多个应用程序以请求分页开始，也许它们的二进制文件基本上比物理内存更大？</p>
+<p>发言人   01:04:28<br>And so the typical thing, you know, but if you go down is the then painting route is to actually, if you run out of memory. So if Cali returns zero, if out of memory. So for example, you know, you can page, you get a page fault at some page that needs to be paged in from the file system, but you don’t have any more free pages. You need to do something. And so the typical, and this comes back to an earlier question example, the same is true for lazy or what to do if you run out of memory. So if you run out of memory, one option that you clearly have is to eviction a pitch.<br>所以典型的事情，你知道的，但是如果你走下去时，绘画的路线实际上是，如果你的记忆耗尽了。所以如果Cali返回零，如果内存不足。例如，你知道，你可以分页，你会在某个需要从文件系统分页的页面上出现页面错误，但你没有更多的空闲页面了。你需要做点什么。因此，典型的情况是，这又回到了之前的问题示例，同样适用于懒惰或内存不足时该怎么办。因此，如果您内存不足，您显然拥有的一个选择是驱逐一个推销。</p>
+<p>发言人   01:05:19<br>You can, for example, instead of you can, for example, invict a page and write it to the file back. So for example, if it’s a data page that got modified, you can write it back through the file system. And then once you evick the page, then you have a new free page. And you can put the use that you know here, the new here, the just three page. To satisfy the fault that you had. And then basically restart the instruction again.<br>例如，您可以代替，例如，调用一个页面并将其写入文件中。因此，例如，如果它是一个被修改的数据页，您可以通过文件系统将其写回。一旦你点击了这个页面，你就有了一个新的免费页面。你可以在这里使用你所知道的东西，新的东西，只有三页。满足你的错误。然后基本上再次重新启动指令。</p>
+<p>发言人   01:05:58<br>And again, the restart, the structure is a little bit more complicated because the whole machinery to basically do use Aet started and transferred back to user space, etc.. And so this is a typical operating system. And we’ll do this. And of course, the key question is like, what page do you vict? Which one to choose? So what are some candidates? What would be a reasonable policy for choosing a page to evit least recently used? Yeah, so this is the most commonly used strategy, least recently used.<br>再次，重新启动，结构有点复杂，因为基本上使用Aet的整个机器已经启动并转移回用户空间，等等。所以这是一个典型的操作系统。我们会做到这一点。当然，关键问题是，你浏览哪个页面？选择哪一个？那么有哪些候选人呢？如何合理地选择一个页面来回避最近最少使用的页面？是的，这是最常用的策略，最近最少使用。</p>
+<p>发言人   01:06:45<br>LRU? That is page that’s typically is thrown out. There’s a couple sort of twists typically for small optimizations to do. If you have tovi the page and you have a choice between a dirty page and a non-starter page. So dirty page ISS, a page where it was a store to and under the pages page that basically only has been read but not written to.<br>嗯？这是通常被抛出的页面。对于小型优化，通常需要进行一些曲折的操作。如果您有tovi页面，并且可以在脏页面和非起始页面之间进行选择。如此脏的页面是一个页面，它是一个存储到页面和页面下面的页面，基本上只被读取而没有写入。</p>
+<p>发言人   01:07:11<br>Which one would you prefer Devi first? A 3 1, because you would have to write the dirty one at some point anyway. So again, actually MC double check there. I said 30 because 30 pages would need to be written to memory at some point. Yeah, that’s true. But then maybe now you have to write it twice, You know, once you write it, maybe it’s modified it later again. So actually typically going, oh, I see, okay, operating system is exactly the opposite.<br>你更喜欢先Devi哪一个？一个3 1，因为你无论如何都必须在某个时候写脏的那个。所以，实际上MC在那里进行了双重检查。我说30是因为在某个时候需要将30页写入内存。是的，确实如此。但是也许现在你必须写两次，你知道，一旦你写了，也许以后再修改它。所以实际上通常会，哦，我明白了，好吧，操作系统恰恰相反。</p>
+<p>发言人   01:07:47<br>They choose a page that actually has not been written or is not dirty because you don’t have to do anything. You can just reuse it. You can just take market if it’s present in P in page table 1, your market there is non-valid, and then you’re done, and then you can reuse that page in another page table. So the preference template is to take pages that have been not, you know, non dirty ones first.<br>他们选择一个实际上没有写过或不脏的页面，因为你不需要做任何事情。你可以重复使用它。如果市场出现在页表1的P中，您的市场无效，那么您就可以只获取市场，然后您就可以在另一个页表中重复使用该页面。因此，首选模板是首先选择那些没有脏的页面。</p>
+<p>发言人   01:08:13<br>Can I just ask for a clarification on the 30 pages? So I know like in a cache, when we have memory, and then we say, okay, a line is dirty because it hasn’t been written to memory, but what about a page in memory? Like what does it correspond to, like how is it 30, Where does it have to be written back to, it just exists in memory, right? Isn’t that the whole whole thing? Like it doesn’t exist anywhere else really? So when can it be dirty? Yeah, okay, so for example, if it the main page, file page, actually we’ll talk about this in a second, like in the next, maybe prefet a little bit too much.<br>我能要求澄清这30页吗？所以我知道就像在缓存中一样，当我们有内存时，然后我们说，好的，一行是脏的，因为它还没有被写入内存，但是内存中的一个页面呢？比如说它对应什么，比如说它是30，它必须写回哪里，它只存在于内存中，对吧？这不就是整件事吗？就像它在其他任何地方都不存在一样？那么什么时候可以脏呢？是的，好的，所以例如，如果它是主页，文件页面，实际上我们一会儿就会讨论这个，比如在下一章，可能有点过多了。</p>
+<p>发言人   01:08:51<br>If with memory map files, you map a file into memory. Yeah, and then the restore to it, then you would di that page. Okay? So that only applies when like a page actually respond, not just the sub memory, but also to a file or something else, exactly, okay?<br>如果使用内存映射文件，则将文件映射到内存中。是的，然后恢复它，然后你就可以删除那个页面了。好吗？这样只在页面实际响应时才适用，不仅仅是子内存，还包括文件或其他内容，确切地说，好吗？</p>
+<p>发言人   01:09:09<br>Okay, that makes sense, yeah. Okay, so just just to make one or more, two more points related to this, if you look at this, the Ptes again, so we saw this RW bit, and you’ll notice there actually is a bit 7, that is the dirty bit. So when the paging hardware, when the hardware ever writes, you know, through a page and watches at the dirty bits, so the operating system later can see you, this actually page can easily see this page’s actually written to. And similarly, there is a, an, a bit that stands for Xs. And so whenever a page is either written, written either, or written, the access bit will be set. And why is that useful to know?<br>好吧，那感知，是的。好的，只是为了提出一个或多个与此相关的点，如果你再看看这个，Ptes，所以我们看到了这个RW位，你会注意到实际上有个7，那是肮脏的部分。因此，当分页硬件写入时，您知道，通过页面并监视脏位，以便操作系统稍后可以看到您，实际上这个页面可以很容易地看到这个页面的实际写入情况。同样地，有一个，一个，一个代表Xs的bit。因此，每当一个页面被写入、写入或写入时，访问位将被设置。为什么知道这一点有用？</p>
+<p>发言人   01:10:06<br>In what way could that help the kernel? Well, the ones that haven’t been accessed, you can eviction, right? Yeah, what we saying that if you want to implement these recently used, if you find a page that basically hasn’t been accessed in some periods of time, you know, it actually hasn’t been recently used. So it actually is a candidate for eviction. While the pages that have the access bit set are not really candidates for eviction. So the a bit is typically used or the actual bit is typically used to actually implement this LRU strategy.<br>这对内核有什么帮助呢？嗯，那些还没有被访问的，你可以驱逐，对吧？是的，我们所说的是，如果你想实现最近使用的这些，如果你发现一个页面在某些时间基本上没有被访问过，你知道，它实际上最近没有被使用。所以它实际上是驱逐的候选人。而设置了访问位的页面并不是真正的驱逐候选。因此，通常使用a位或实际位来实际实施此LRU策略。</p>
+<p>发言人   01:10:44<br>Okay, but would you have to reset the accessed bits to not accessed every once in a while or exactly? That’s exactly what the typical operating system will do. And if they don’t do it, maybe for all memory, they SHR for memory, you know, there’s some, a famous algorithm for this is called the clock algorithm. That is like one way of doing it.<br>好的，但是您是否需要将访问位重置为每隔一段时间或确切地访问一次？这正是典型的操作系统会做的事情。如果他们不这样做，也许对于所有的内存，他们SHR内存，你知道，有一个著名的算法叫做时钟算法。这似乎是一种做法。</p>
+<p>发言人   01:11:11<br>Sorry, why would you need to set it? Why would you need to reset it? Well, if you want to know whether a patient is recently used, you need and you make a periodic decision, then say maybe every 100 milliseconds or whatever, every second-consecutive know, you clear the a bit. If it then gets accessed in the next 100 milliseconds, you know, it was used in the last 100 milliseconds. And the pages that don’t have the axis bit set were not used in the elasticity of the milliseconds. And so then you can counter of like how intentionally they’re and what is and to really basically the stepping stone to be able to sort of sophisticate the how are you implementation? Okay, I want to talk about one more. That’s the last one, actually, that you also will be implementing in one of the labs, and that is memory map files.<br>抱歉，你为什么需要设置它？你为什么需要重置它？好的，如果你想知道病人最近是否被使用，你需要并定期做出决定，然后说可能每100毫秒或其他时间，每秒钟连续知道，你清除一点。如果它在接下来的100毫秒内被访问，你知道，它在过去的100毫秒内被使用过。并且没有设置轴位的页面没有用于毫秒的弹性。所以你可以反驳他们是多么有意，什么是真正的踏脚石，以便能够完善你是如何实现的？好的，我想再谈一个。实际上，这是最后一个，你也将在其中一个实验室中实现，那就是内存映射文件。</p>
+<p>发言人   01:12:21<br>And the idea is that here we have our address space. What we really want to do is basically be able to load a whole file or parts of the file into the address space so that we can just manipulate, you know, the content of the file using load restore instructions. Instead of read else, you can write. And to be able to support that, a typical operating system with most modern operating systems could provide a system call called Nmap. And basically MF takes a virtual dress or pixel and virtual dress length protection from flood show what I’m going to talk about, and then a file descriptor of an open file and then offset. And basically what it says is like you should, you know, map, you know, this file descriptor if this is addressed in the virtual address file descriptor starting from offset, you know, in the file F, you know, map that in at the at the virtual alters VA and do that we have some protection and read, write, etc.. And so let’s say, read, write, then you know the kernel when the way the kernel implements nmap is you if it does it eagerly, which is like most assist, don’t do it eagerly, who basically copy read all the bytes starting from offset laying bytes starting from offset into memory sets up the Ptes to point to the physical memory for where the large blocks are located. And basically from then on the application can use loaded storage instructions to actually modify the file in the Navy when the we’re all done, there’s typically a corresponding a map called that a map length that allows the application to say like, okay I’m done with this particular file and at the point of the unmap, and we need to write back the dirty blocks.<br>这个想法是，这里我们有自己的地址空间。我们真正想做的基本上是能够将整个文件或文件的部分加载到地址空间中，这样我们就可以使用加载恢复指令来操作文件的内容。与其阅读其他东西，你可以写作。并且为了能够支持这一点，配备大多数现代操作系统的典型操作系统可以提供称为Nmap的系统调用。基本上，MF采用一个虚拟的衣服或像素和虚拟的衣服长度保护免受洪水秀的影响，然后是一个打开的文件描述符，然后是偏移量。基本上它说的就像你应该，你知道，映射，你知道，如果这个文件描述符在虚拟地址文件描述符中从偏移量开始，你知道，在文件F中，你知道，映射到虚拟alters VA上，这样我们就有了一些保护和读、写等功能。所以让我们说读，写，然后你知道内核实现nmap的方式是，如果它急切地做，就像大多数协助一样，不要急切地做，他们基本上是复制从偏移开始的所有字节，从偏移开始放置字节到内存中，设置Ptes指向大块所在的物理内存。基本上，从那时起，应用程序可以使用加载的存储指令来实际修改海军中的文件，当我们全部完成时，通常会有一个对应的地图，称为地图长度，允许应用程序说，好的，我已经处理完这个特定的文件了，在取消映射的时候，我们需要回写脏块。</p>
+<p>发言人   01:14:32<br>And we can easily figure out which blocks are diary because they have to be set into Pte. Now, of course, in any memory, sophisticated memory implementation, this is all done lazily. You just don’t map the file immediately. You just keep a record somewhere on the site saying like, well, you, this Pte really belongs to this particular file descriptor. So there some information maintained on the site, which is typically called an instruction called the VMA or the virtual memory area.<br>我们可以很容易地找出哪些区块是日记，因为它们必须被设置为Pte。当然，现在在任何内存中，复杂的内存实现，这一切都是懒散地完成的。你只是不立即映射文件。你只需要在网站上的某个地方保留一个记录，比如说，这个Pte确实属于这个特定的文件描述符。因此，网站上维护了一些信息，这些信息通常被称为指令，称为VMA或虚拟内存区。</p>
+<p>发言人   01:15:07<br>And for example, if we define file F, that would be one VMA. And in a VMA, we record in the file descriptor, the off, etc., where the actual content of that memory should lift. And so when we get a page fault for particular address that sits in this you VMA, and we can go off and the kernel can read it from disk and bring it into memory. And in response to an earlier question is like one of the reasons that this dirty bit is important because at the UN map, you have to write back the dirty blocks. Does this make sense? Have question? Maybe this is a more general issue, but could it ever be an issue of, say, multiple processes or memory mapping the same file and secondary storage and then be like, like synchronization issues? Yeah, good question.<br>例如，如果我们定义文件F，那将是一个VMA。在VMA中，我们在文件描述符、off等中记录该内存的实际内容应该提升的位置。因此，当我们得到位于这个特定地址的页面错误时，我们可以离开，内核可以从磁盘读取它并将其放入内存。作为对之前问题的回应，这就像是这个脏位很重要的原因之一，因为在联合国地图上，你必须写回脏块。这有感知吗？有疑问吗？也许这是一个更普遍的问题，但它是否可能是多个进程或内存映射相同的文件和辅助存储的问题，然后像同步问题一样？好问题。</p>
+<p>发言人   01:16:01<br>So what is the semantics in units in general? Like what happens if multiple processes you read or write to the same file using read or to write system calls?<br>那么，一般单位的语义是什么？比如，如果多个进程使用读取或写入系统调用来读取或写入同一文件，会发生什么情况？</p>
+<p>发言人   01:16:18<br>Does Unix guarantee anything? That’s undefined. Yeah, he’s like, no, the reason the rights will show up in some order or the rights will show up in some order. So if two prostitutes to write to the same block off a file, either the first process writes go or the second process writes go one of the two. So here’s basically the same thing. You, we don’t really have to guarantee anything. If you wanted to a more sophisticated Unix operating system support file walking where you can lock files and then you can properly synchronize. But by default, there’s no synchronization or no synchronization at this level.<br>Unix能保证什么吗？这是未定义的。是的，他说，不，权利会以某种顺序出现或者权利会以某种顺序出现的原因。因此，如果两个妓女写入一个文件的同一个块，第一个进程写入去或第二个进程写入去其中一个。所以基本上是一样的事情。你，我们真的不需要保证任何事情。如果你想要一个更复杂的Unix操作系统支持文件行走，你可以锁定文件，然后可以正确同步。但默认情况下，此级别没有同步或没有同步。</p>
+<p>发言人   01:17:01<br>That makes sense? I’m sorry, what is length and what is flags of Lax? Length is length of the area you want to map with a thousand number of bytes. Pros rewrite X flags. You know, you’ll see that when you do the unmap. This has to do with whether the area is map private or shared. If it’s map shared, then it can be shared among multiple processes.<br>这就是感知？对不起，什么是长度，什么是松懈的旗帜？Length是您要使用千字节映射的区域的长度。专业人士重写X标志。你知道，当你取消映射时，你会看到这一点。这与该区域是地图私有还是共享有关。如果它是地图共享的，那么它可以在多个进程之间共享。</p>
+<p>发言人   01:17:35<br>Any further questions about this?<br>对此还有什么疑问吗？</p>
+<p>发言人   01:17:41<br>If some other process modify the file in disk, that means that this will not be reflected here, right? That’s correct, unless I think if it’s maps shared, then you’re supposed to reflect those changes, right? But then they would be using the same file descriptor, right? I’m hay on the exact, you know, semantics of and that when things are shared and what exactly happens there? Okay, I guess so. I guess in like idiomatic ACI in the shared, they would have to reflect it. But if a process just like actually open the same file name completely set separately, I think it could be an unsyncopated. If it’s shared, that’s correct.<br>如果其他进程修改了磁盘中的文件，这意味着这里不会反映出来，对吗？这是正确的，除非我认为如果它是共享的地图，那么你应该反映这些变化，对吧？但是他们将使用相同的文件描述符，对吗？我对确切的语义很了解，当事物被共享时，那里到底发生了什么？好吧，我想是的。我想在共享的惯用语中，他们必须反映它。但如果一个进程就像实际上打开完全分开设置的相同文件名，我认为它可能是一个未切分的。如果它是共享的，那是正确的。</p>
+<p>发言人   01:18:31<br>Okay, so this after the file system lab, you actually do memory map flops, and then that will be our last, you know, virtual memory sort of laugh unless you decide at the end to do more virtual memory features or exercises, whatever you want to do. Anyway. So the main source basically conclude this lecture, the, you know, sort of the summary.<br>好的，所以在文件系统实验室之后，你实际上做了内存映射触发器，然后这将是我们最后一次，你知道的，虚拟内存的笑声，除非你在最后决定做更多的虚拟内存功能或练习，无论你想做什么。无论如何。所以主要来源基本上总结了这次讲座，你知道的，有点摘要。</p>
+<p>发言人   01:18:55<br>You know, we have loop in the past, sort of in great detail, exactly, you know, how page tables work. And we’ve done a couple lap, one lap, the page tables, we’ve looked a lot at like how traps work, you know, page faults. And it turns out, you know, if you combine the two. You know, you can implement very powerful and elegant. Virtual memory of features and went through a whole list of them, mostly focusing on the ones that are actually going to be implementing in future labs. But, you know, this is only a subset or sample of the ones that, you know, some operating systems implement and typical operating systems implement all the ones that actually we discussed today. If you look at Linux and has all of them and many more interesting other tricks. But this hopefully gives you a good sense, you know, sort of have the power of virtual memory once you dynamically can change the page tables in the page fold headline.<br>你知道，我们过去有过循环，非常详细，确切地说，页表是如何工作的。我们已经完成了几圈一圈的页表，我们已经研究了很多陷阱是如何工作的，你知道的，页面错误。结果证明，如果你把这两者结合起来。你知道，你可以实现非常强大和优雅的功能。虚拟内存的功能特性并浏览了整个列表，主要关注那些将在未来实验室中实际实现的特性。但是，你知道，这只是一些操作系统实现的子集或样本，典型的操作系统实现了我们今天讨论的所有操作系统。如果你看看Linux，它拥有所有这些以及更多有趣的其他技巧。但这希望能给你一个很好的感知，你知道，一旦你可以动态更改页页标题中的页表，就会拥有虚拟内存的强大功能。</p>
+<p>发言人   01:20:00<br>At 25. So maybe there’s a good point to stop. But if you have any questions, you feel free to ask them. And if not, wish you good luck finishing the trap Fl. And I hope it’s not as painful as the or not as hard as the Page Table Lab. Sorry, I had it on the question.<br>在25。也许有一个很好的停止点。但是如果你有任何问题，可以随时问他们。如果没有，祝你好运，完成陷阱。我希望它不会像页表实验那样痛苦或困难。抱歉，我已经回答了这个问题。</p>
+<p>发言人   01:20:23<br>When you map in the previous slide, when you map the whole file, or like when you put it into memory and it turns out to be longer than length. Then what happens? So if the file doesn’t fit in the virtual address space? Oh, I guess so. Like length is how much of the file we want is because like we want to map like 10 B out of the file descriptor starting and offset off. Oh, okay, okay, I see. So if the file is longer than we’re not gonna put all of it into memory. Yeah, we can always, yeah, exactly. Okay, I see, thank you.<br>当您在上一张幻灯片中映射时，当您映射整个文件时，或者当您将其放入内存时，结果它比长度长。然后发生了什么？那么，如果文件不适合虚拟地址空间？我想是的。Like长度是我们想要文件的多少，因为我们想要映射文件描述符的开始和偏移的10 B。哦，好的，好的，我明白了。因此，如果文件比我们要长，我们就不会将所有文件放入内存。是的，我们总是可以的，没错。好的，我明白了，谢谢。</p>
+<p>发言人   01:21:15<br>So I guess, so we talked about it under like the man paging part 2, but is that like a general procedure we would use in any of these techniques if we discover that we’re out? Yeah, as decombent legal mechanisms like so even in lazy allocation, we run at the point where there’s no memory available anymore to allocate to the page. And we support demand paging or whatever, usually eviction, some page, typically using LRE. And one way to think about it is that in a steady state, the operating system basically runs with all memory in use at any time and. One unusual memory. And so when we start something new, we have to make some room. And L or U is basically the way to do it, makes sense?<br>所以我猜，所以我们在第2部分的分页部分谈到了这个问题，但是如果我们发现我们外出了，这是否像是我们在任何这些技术中都会使用的一般程序？是的，就像解除了弯曲的法律机制一样，即使在惰性分配中，我们也会在没有可用内存分配给页面的情况下运行。我们支持按需分页或其他方式，通常是逐出某个页面，通常使用LRE。有一种思考方式是，在稳定状态下，操作系统基本上随时在使用所有内存的情况下运行。一个不寻常的记忆。所以当我们开始新的事情时，我们必须腾出一些空间。而L或U基本上就是这样做的方式，制造感知？</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 007-PageFaults</div>
+      <div>http://example.com/2025/10/18/6S081-007/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-008/" title="操作系统工程 008-Interrupts">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 008-Interrupts</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-006/" title="操作系统工程 006-Lab Q&amp;A">
+                        <span class="hidden-mobile">操作系统工程 006-Lab Q&amp;A</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,777 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:02All, why don’t we get started? If people want to turn on the camera again or willing to do that would be great. Create sort of class atmosphere the best as we can. Okay, so this is going to">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 019-Kernels and High-Level-Languages">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-019/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:02All, why don’t we get started? If people want to turn on the camera again or willing to do that would be great. Create sort of class atmosphere the best as we can. Okay, so this is going to">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:19.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.145Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 019-Kernels and High-Level-Languages - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 019-Kernels and High-Level-Languages"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          26k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          217 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 019-Kernels and High-Level-Languages</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:02<br>All, why don’t we get started? If people want to turn on the camera again or willing to do that would be great. Create sort of class atmosphere the best as we can. Okay, so this is going to talk to anybody about this paper, the benefits and cost of writing a Unix kernel. And I love the language.<br>所有，我们为什么不开始呢？如果人们想再次打开相机或愿意这样做，那将是很棒的。尽我们所能创造最好的班级氛围。好的，所以这将与任何人谈论这篇论文，编写一个Unix内核的好处和成本。我喜欢这种语言。</p>
+<p>发言人   00:24<br>This is basically a paper that was partly written because of So 0 8 1 or 828. And there’s a paper that you we’ve written you, Robert and I, and the main person who was the main lead author was Cody Cutler, who was a T 8. This class, many, many times, it’s always a little bit, you know, I don’t really enjoy after particularly talking about, you know, papers that we work on our shelves. But, you know, you know, this paper came about basically of 0 8 1 an 828. And so I’m going to do some slides this time instead of actually writing on a whiteboard. And so really the source of this paper is this question.<br>这基本上是一篇部分是因为0 8 1或828而写的论文。还有一篇论文，是罗伯特和我写的，主要作者是科迪·卡特，他是一名T 8。这堂课，很多很多次，总是有一点，你知道，在特别谈论我们书架上的文件之后，我真的不喜欢。但是，你知道，你知道，这篇论文基本上是从0 8 1和828开始的。所以这次我打算做一些幻灯片，而不是在白板上写。因此，这篇论文的真正来源就是这个问题。</p>
+<p>发言人   01:04<br>And what language should you write kernel? And this is a question that many, many of you asked. Students in the past 808 or 8 asked that many, many, many times, partly because you have bugs in the operating system or your kernel. And you’re like, well, if I would written in there’s other language, then maybe I would not have those bugs. And so this is a question that often comes about and turns out, you know, in the operating system community at large, you know, this is sort of a hotly debated question, but not that many facts is actually make sort of any informed discussion. And what we’ll see at this at the end of this lecture or during this lecture, or you as you read the paper, you know, we don’t really have a crisp answer to this question, but we have sort of, you know, this paper contributes you a bunch of data that you a lot you to have a sort of a little bit more of an indd Toth discussion about what, what is a good programming language for the kernel? So that was really the origin of this paper.<br>你应该用什么语言写内核？这是一个很多人都问过的问题。在过去的808或8中，学生问了很多很多次，部分原因是操作系统或内核中有错误。你会说，好吧，如果我用其他语言写的话，也许我就不会有那些bug了。所以这是一个经常出现的问题，你知道，在整个操作系统社区中，你知道，这是一个备受争议的问题，但实际上并没有那么多事实进行任何知情讨论。我们将在这个讲座结束时或在这个讲座中看到的，或者当你阅读报纸时，你知道，我们对这个问题并没有一个清晰的答案，但我们有点，你知道，这篇论文为你提供了一堆数据，让你有更多关于什么是内核的好的编程语言的深入讨论？这就是这篇论文的真正起源。</p>
+<p>发言人   02:16<br>And the source of this paper is basically you guys. So try to answer this question. We wrote a new kernel, and we did it in language with automatic memory management. That means with garbage collectors. So you don’t actually have to call free.<br>这篇论文的来源基本上就是你们。所以试着回答这个问题。我们编写了一个新内核，并用自动内存管理语言完成了它。这意味着垃圾收集器。所以你实际上不必打电话免费。</p>
+<p>发言人   02:38<br>There is a class of books. So that’s one of the properties that a high level language typically has. And so we wanted to have, we picked a language that has that. And we follow basically the traditional monolithic unit organization so that we could do a sort of a fair comparison. And in fact, some ways you can think about what we built is something like x.c. 6, much, much more, more features and more high performance. I mean, as you know XV 6 has all kinds of quadratic algorithms or linear search type algorithms. And of course, if you want to achieve high performance, you can’t have those. So that was the origin, this paper and the original why we built biscuit, you know, trying to answer that question or at least shed some light.<br>有一类书籍。所以这是高级语言通常具有的属性之一。所以我们想要，我们选择了一种具有这种语言的语言。我们基本上遵循传统的单一单位组织，以便我们可以进行公平的比较。事实上，你可以用一些方法来思考我们所建造的东西，就像x.c. 6、更多、更多功能和更高性能。我的意思是，如你所知，XV 6有各种二次算法或线性搜索类型的算法。当然，如果你想实现高性能，你不能拥有它们。这就是起源，这篇论文和我们制造饼干的最初原因，你知道的，试图回答这个问题或者至少揭示一些线索。</p>
+<p>发言人   03:25<br>So I’m first going to talk a little bit about sort of more general background. A lot of questions over email or sort of trying to get a little bit more context. And then we’ll dive into Biscuit in more detail. Feel free to jump in with questions is at any particular point in time, as I said, paper was motivated by questions that you asked. And so, you know, please, please ask, keep asking questions. So as you just sort of the setting of this paper is you, a lot of kernels are written C and you know, actually 6 is written in C, your programming in C, but most popular kernels that, you know, sit on your desktop or your phone are written in Windows lindex Linux to all the various forms of Bds. And the reason they written written you see is that you provide you a lot of control if you have seen in the labs complete control from memory allocation and freeing, there’s almost no implicit code, you know, you can almost sort of imagine when you’re reading the C code like what the corresponding risk 5 instructions are You have direct E memory, you know, you can read and write, you know, the Pte bits, you know, or the registers of devices, and you know, see yourself, you come sort of very few dependencies, you know, there’s no large runtime that you actually have to have, you know, be able to run AC program, you can always run almost immediately on the bay hardware and you’ve seen that like when X 3, 6 boots, you know, basically few lines of assembly, and then basically you’re running C code, So there are all the sort of good virtues of C and you know, one reason that we like CA lot, but CEO has some downsides, you know, it has improved over the last sort of decades writing security code is difficult, know there types of bugs that can often be exploited, whether it is buffer overruns, which are probably the most well known one like you’re riding behind in the past, an array bound or you’re writing know below.<br>所以我首先要谈谈更一般的背景。通过电子邮件或尝试获得更多背景信息来回答很多问题。然后我们会更详细地介绍饼干。在任何特定的时间点，随意提出问题，正如我所说，论文的动机是你问的问题。所以，你知道，请问，继续问问题。所以，就像你这篇论文的背景是你自己，很多内核都是用C写的，你知道，实际上6是用C写的，你用C编程，但最流行的内核，你知道，坐在你的桌面上或你的手机是用Windows lindex Linux编写的，适用于所有不同形式的Bds。他们写的原因是，如果你在实验室中看到内存分配和释放的完全控制，你会得到很多控制，几乎没有隐式代码，你知道，你几乎可以想象当你阅读C代码时，相应的风险5指令是什么，你有直接E内存，你知道，你可以读写，你知道，Pte位，或者设备的寄存器，你知道，看看你自己。你只有很少的依赖项，你知道，你实际上不必拥有大的运行时间，你知道，能够运行交流程序，你总是可以几乎立即在海湾硬件上运行，你已经看到了这一点，就像当x3、6启动时，你知道，基本上只有几条装配线，然后基本上你在运行C代码，所以有C的所有优点，你知道，我们喜欢CA的一个原因，但首席执行官也有一些缺点，你知道，在过去的几十年里，它已经有所改进，编写安全代码很困难，知道有各种类型的错误经常被利用，无论是缓冲区溢出，这可能是最著名的错误，就像你过去一样骑在后面，一个数组绑定或者你在下面写知道。</p>
+<p>发言人   05:35<br>You know your stack, you usually have free books where you’re free to memory, but it’s still in use and so somebody scribbles on it and know you may scribble something bad on it. And generally when threads are sharing, memory is is typically difficult to the site. Know one actually memory can be free.<br>你知道你的堆栈，你通常有免费的书籍，在那里你可以自由地存储，但它仍在使用中，所以有人在上面乱涂乱画，知道你可能在上面乱涂乱画不好的东西。通常情况下，当线程共享时，内存通常对站点来说是困难的。知道一个人的记忆实际上是免费的。</p>
+<p>发言人   05:56<br>Some of these bugs, you know, don’t really show up that some of the bug manifests himself exclusively in XV six, some less so, you know, you know XV 6 is very little dynamic memory allocation. You know, almost everything is sort of pre-allocated right up front, but buffer overruns and usually after three books, you know, different do show up. And so in fact, if you look at Cves, these are the there’s a website where there’s an organization that keeps sort of control that checks and keeps a record of all sort of the security exploits. And you investigate that, you find that in 2017 when we were doing this paper, that there were 40 Linux kernel books that can actually, to an attacker running, take complete control over the machine. Clearly, you know, those are series of bucks and those bugs came out of buffer overruns and other type of memory safety bucks. So, you know, that’s sort of too bad.<br>有些bug，你知道的，并没有真正表现出来，有些bug只表现在XV 6中，有些则不太明显，你知道，XV 6很少动态内存分配。你知道，几乎所有东西都是预先分配的，但是缓冲区溢出，通常在三本书之后，你知道，不同的东西会出现。因此，事实上，如果你看一下Cves，这些是一个网站，有一个组织保持控制，检查和记录所有类型的安全漏洞。并且你调查了一下，你发现在2017年当我们写这篇论文的时候，有40本Linux内核书籍实际上可以让攻击者完全控制机器。显然，你知道，这些是一系列的费用，这些错误来自于缓冲区溢出和其他类型的内存安全费用。所以，你知道，这有点太糟糕了。</p>
+<p>发言人   07:00<br>You know, that, you know, if you write code in C, you know, that actually is hard, even though for people that do this should professionally and to actually get this right. And of course I’m sure you’ve seen these in the La probably certainly I remember from some of the Piazza questions, you know, the number of you run into this, you usually have three bugs in particular in the copy and write lab, they showed up a bunch of times. So, you know, so one reason that a high level language would be attractive is that high level lounge provides memory safety. And so all these bugs or DCV exploits that I mentioned on the previous slide would not be, would not be possible. You could just, you know, if they happen, either would result in a panic, you know, because, you know, the runtime would I say like, oh, you’re riding past the rate, you can’t do that or you’re just you couldn’t manifest itself at all, you know, because the languages will allow you to write that kind of code. So there are, of course, other benefits to a high level language, which often is also mentioned by students in this class when they’re doing the labs.<br>你知道，如果你用C编写代码，那实际上是很难的，即使对于那些做这件事的人来说应该专业并且真正做到这一点。当然，我相信你在洛杉矶见过这些，可能我记得在一些广场问题上，你知道，你遇到这个问题的数量，你通常会有三个错误，特别是在复制和写入实验室，它们出现了很多次。所以，你知道的，高级语言吸引人的一个原因是高级休息室提供了记忆安全。因此，我在上一张幻灯片中提到的所有这些错误或DCV漏洞利用都不可能实现。你知道，如果它们发生了，它们中的任何一个都会导致恐慌，因为，你知道，运行时我会说，哦，你已经超过了速率，你不能这样做，或者你根本无法表现出来，你知道的，因为这些语言将允许您编写这种代码。当然，高级语言还有其他好处，这也经常被这门课的学生在做实验时提到。</p>
+<p>发言人   08:11<br>In addition to type safety, you know, there’s the automatic memory management of regards collector. So freeing is easy. You just don’t have to think about it. The bar selected does all the work for you. It’s good for current-sensing know it has good abstractions, you know, whether it’s like in Go, it’s interfaces or some other, you know, classes or some other form of, you know, that forces you or encourage you to actually write modular code.<br>除了类型安全之外，你知道，还有关于收集器的自动内存管理。所以解放很容易。你只是不需要考虑它。选择的栏将为您完成所有工作。它对电流感应有好处，知道它有很好的抽象性，你知道，无论是在Go中，它是接口还是其他一些，你知道，类或其他形式的，你知道，这迫使你或鼓励你实际编写模块化代码。</p>
+<p>发言人   08:36<br>The downsides? And you might be wondering like, oh, well, if you know, there’s so many upsides to high level languages, you know, why not? You know, why’s Xg 6 not written in, you know Java Go Python or whatever? And the reason is no or Linux, the reason is there’s poor performance, you know, there’s a cost, you know, to actually high level language. You know, sometimes this is referred to as the high level language tax.<br>缺点？你可能会想，如果你知道高级语言有很多好处，为什么不呢？你知道，为什么Xg 6不是用Java Go Python或其他什么写的？原因是没有或Linux，原因是性能差，你知道，实际上高级语言是有成本的。你知道，有时这被称为高级语言税。</p>
+<p>发言人   09:01<br>And, you know, these are basically, you know, if you do an array bound, an array index know you have to check the bounce, you know, you have to check no pointers. You have to have more expensive casts and, you know, garbage collection itself. There’s also not free. You know, there’s going to be some cycle spent, you know, tracking down which objects are free and which are allocated. And, you know, that’s the cost. So that’s, you know, sort of from the performance site. And a lot of the paper focuses on this.<br>而且，你知道，这些基本上，你知道，如果你进行数组绑定，数组索引知道你必须检查反弹，你知道，你必须检查没有指针。你必须有更昂贵的强制转换和垃圾回收本身。也不是免费的。你知道，会有一些周期花在追踪哪些对象是免费的，哪些对象是分配的。而且，你知道，这就是成本。所以，你知道，有点来自表演网站。很多论文都集中在这一点上。</p>
+<p>发言人   09:31<br>And then in principle, you know, often, you know, perceived that there sort of incompatibilities with Linux, with kernel programming. You no direct memory access, you know, because principle could violate type safety, no handwritten assembly. You need some handwritten assembly in a kernel and where it’s the context switch between 2 fres or like to get off the ground when the machine boots in.<br>然后原则上，你知道，经常，你知道，察觉到与Linux和内核编程有些不兼容。你不能直接访问内存，因为原则可能违反类型安全，不能手写程序集。你需要在内核中使用一些手写程序集，并且在机器引导时，上下文在2个fres或类似的东西之间切换。</p>
+<p>发言人   09:59<br>You know, you know, the language may have a particular plan for a concurrency or parallelism that might not line up, you know, with plan that the kernel needs for concurrently and parallelism. You know, we’ve seen, for example, in scheduling lecture. One Fred passes a lot to another Fred. Or, you know, there’s sort a couple you, there’s patterns of currency management that are sort of unusual, unusual of programs, but they do show up in kernels.<br>你知道，语言可能有一个特定的并发或并行计划，可能与内核需要并发和并行的计划不一致。你知道，我们已经看到，例如，在安排讲座时。一个弗雷德把很多东西传给了另一个弗雷德。或者，你知道，有一些你，货币管理模式有点不寻常，不寻常的程序，但它们确实出现在内核中。</p>
+<p>发言人   10:32<br>So the goal basically of this you paper was to sort of measure the high level language trade offs, you know, explore the total effects of using high level loans instead of C, you know, both in terms of safety programmability, but also for performance cost.<br>所以你这篇论文的基本目标是衡量高级语言的权衡，探索使用高级语言而不是C语言的总体影响，你知道，无论是在安全可编程性方面，还是在性能成本方面。</p>
+<p>发言人   10:47<br>And of course, if you’d like to do this, you know, this kind of an experiment, you know, you need to do that sort of a production grade kernel. You can’t do that on XV 6 because it’s so slow that basically you probably wouldn’t learn anything if the program occurs written in slow. And C, you know, you’re written in slowing Go, you know, it doesn’t really tell you much about, you know, the C versus Go question. It just says like, well XV 6 is slow. And so you want to look to do that in a more, you know, high performance, you know, oriented kernel or the kernel is designed for high performance. And so one of the things that was surprising because like many of you asked this, your predecessor asked this. You would imagine, well, this question must be answered in the literature. And, you know, that turns out that actually isn’t.<br>当然，如果你想做这个，你知道，这种实验，你需要做那种生产等级的内核。你不能在XV 6上这样做，因为它太慢了，如果程序是用慢速编写的，基本上你可能什么也学不到。而C，你知道，你是用慢走来写的，你知道，它并没有真正告诉你很多关于C vs走的问题。它只是说，像XV 6很慢。因此，您希望在更高性能的内核中实现这一点，或者内核是为高性能而设计的。因此，有一件令人惊讶的事情，因为就像你们中的许多人问的那样，你们的前任也问过这个问题。你会想象，这个问题必须在文献中得到回答。而且，你知道，事实证明实际上不是这样。</p>
+<p>发言人   11:31<br>It is there’s quite a number of studies that look into the question of like high level language trade offs in the context of user programs. But you, as you know, the kernel is quite a bit different from user programs. So for example, memory management, careful memory management is really important this’ different types of concurrency. You may be slightly different.<br>有相当多的研究探讨了高级语言在用户程序环境中的权衡问题。但是如你所知，内核与用户程序有很大不同。例如，内存管理，仔细的内存管理非常重要，这是不同类型的并发。你可能会略有不同。</p>
+<p>发言人   11:52<br>So we wanted to do it in the context of a kernel, and we couldn’t actually really find any sort of papers that really answer this. The closer you could come to is there are many kernels written in high level language. And there’s a long history doing that, dating back even to sort of the early list machines. And but many of the sort of recent versions of these kernels I’m not really written with the idea of evaluating this high level language tax question, but really to explore new OS designs or new OS architectures. And so none of them sort of really measure directly, sort of do a head to head comparison and keep the structure the same so that you can really focus on this issue of the language as opposed to some other issues. In fact, we used to read, I know, some of these papers actually in the past.<br>所以我们想在内核的上下文中做到这一点，但实际上我们找不到任何真正回答这个问题的论文。你越接近这个问题，就会有很多用高级语言编写的内核。而且做这件事有着悠久的历史，甚至可以追溯到早期的列表机器。但是这些内核的许多最新版本，我并不是真的为了评估这个高级语言税务问题而写的，而是为了探索新的操作系统设计或新的操作系统架构。因此，他们都没有真正直接测量，进行正面比较并保持结构相同，这样你就可以真正专注于语言问题而不是其他问题。实际上，我知道我们过去常常阅读其中一些文件。</p>
+<p>发言人   12:59<br>So it turns out one reason maybe that there was not a lot of ton of work that actually answered.<br>所以结果证明一个原因可能是没有很多吨的工作真正回答了这个问题。</p>
+<p>发言人   13:05<br>These were a ton of papers that answered this question is it’s actually tricky to do it. You know, basically, if you really do it right, you know, you want to compare it with a production grade C kernel means like something like Linux or something like Windows or whatever. But then you have to build a production, creates a kernel. And clearly for a small team, that is very hard to do. And, you know, there’s lots and lots of Lin kernel developers. They make many, many changes, you know, week by week, day by day, and so it’s going to be hard to, you know, to do the same thing and build an equivalent, you know, type of thing. So you have to settle for something slightly less then. So the best thing we could do or the best we could come up to do is to build a high level build kernel, a high level language, know, keep most of the important aspect the same as level lindas the performance, optimize the performance until it’s roughly similar to Linux, even though maybe it’s not identically exactly identical features, but it gets into the same ballpark and then, you know, measured a high level how much trade offs.<br>这些是回答这个问题的吨论文，实际上这很棘手。你知道，基本上，如果你真的做得对，你知道，你想把它与生产级C内核进行比较，比如Linux或Windows等。但是你必须构建一个生产环境，创建一个内核。显然对于一个小团队来说，这很难做到。而且，你知道，有很多很多的Lin内核开发人员。他们会做很多很多的改变，你知道的，每周一次，日复一日，所以要做同样的事情并构建一个等效的东西是很困难的。所以你必须满足于稍微低于这个标准的东西。因此，我们可以做的最好的事情或者我们可以想到做的最好的事情就是构建一个高级构建内核，一种高级语言，知道，保持大多数重要方面与级别林达相同的性能，优化性能直到它与Linux大致相似。即使它可能不是完全相同的特征，但它进入了同一个范围，然后，你知道，测量了高水平的权衡。</p>
+<p>发言人   14:15<br>And of course, you know the risk, you know, this approach is that, you know, the kernel that we build, you know, actually is slightly different than Linux, you know, it’s not going to be exactly like Linux and so, you know, you got to, you’ve got to be very careful when drawing any conclusions and know there’s one reason why you can’t sort of give a really crystal clear answer to this question that basically this paper poses, but we can hopefully get a little bit more deeper insight than basically, you know, saying almost nothing about it.<br>当然，你知道风险，你知道，这种方法是，你知道，我们构建的内核实际上与Linux略有不同，你知道，它不会完全像Linux，所以，你知道，你必须，在得出任何结论时，你必须非常小心，并且知道有一个原因为什么你不能对这个问题给出一个非常清晰的答案，基本上这篇论文提出了这个问题，但我们希望可以得到比基本上更深入的见解，你知道，对此几乎什么也没说。</p>
+<p>发言人   14:44<br>Does this make sense so far, any questions? That’s sort of the context, you know, of this paper. And you know why we went actually often did it.<br>到目前为止，这感知吗？有问题吗？这就是这篇论文的背景。你知道为什么我们经常去做。</p>
+<p>发言人   14:55<br>Okay, so there were questions like talk a little bit about the methodology. So basically, you know, the setup here, the left side, you know, we have our, there’s going to be, you know, biscuit you, we’re. In our particular case, we wrote for this paper, we wrote a kernel ago. It provides roughly a similar subset of the system called the Linux provides, but the way, but they have the same arguments, same coloring, vens, and we run basically the same applications on top of that interface. So one of the applications is ngx, which is a web server. And so the idea is that, you know, we run the same application both on Biscuit and Linux. The application will generate the same system called traces with exactly the same arguments. And both Biscuit and Linux, you know, performed all the necessary operations that are invoked by those system calls.<br>好的，所以有一些问题，比如谈谈方法论。所以基本上，你知道，这里的设置，左边，你知道，我们有我们的，你知道，我们有饼干。在我们的特定情况下，我们为这篇论文写了一个内核。它提供了一个大致类似于Linux系统的子集，但它们具有相同的参数、相同的着色方式，并且我们在该接口上运行基本相同的应用程序。其中一个应用程序是ngx，它是一个web服务器。所以这个想法是，你知道，我们在饼干和Linux上运行相同的应用程序。应用程序将使用完全相同的参数生成称为traces的相同系统。饼干和Linux都执行了这些系统调用所调用的所有必要操作。</p>
+<p>发言人   16:02<br>And then we can sort of, you know, look at, you know, the differences basically between the high level language kernel and Linux and sort of talk about like, you know, what are the tradeoffs? So sort of the core of the methodology. And again, you know, because Linux and bisco are not going to be exactly identical, you know, there’s going to be know some differences, but you know that we spend a lot of time in this case trying to, you know, make the comparison as scarce possible.<br>然后我们可以，你知道，看看，高级语言内核和Linux之间的基本区别，有点谈论，你知道，有什么权衡？这可以说是方法论的核心。再一次，你知道，因为Linux和bisco不会完全相同，你知道，会有一些差异，但你知道，在这种情况下，我们花了很多时间试图使比较尽可能少。</p>
+<p>发言人   16:32<br>Where, where possible, as we could think of making it. So a lot of you asked this question, which high level language you use?<br>在可能的情况下，我们可以想到制造它。所以很多人问这个问题，你使用哪种高级语言？</p>
+<p>发言人   16:41<br>You know, for this kind of work, we pick go. And for a couple of reasons, it is a statically compiled language. So unlike Python, there’s no interpreter. And the reason that we’d like you have to compile because that basically compiles actually high performance code. In fact, the particular Go compiler is pretty good. So basically, you know, it’s sort of a high performance language. Further, the more you know the Go design, there’s actually intended it for systems programming. The kernel is a form assistive programming, so that needs a good match and for example, aspect of why it’s a good for programming. It’s actually easy to call assembly or other foreign code. It has good support for some currency, you know, quite flexible.<br>你知道，对于这种工作，我们选择走。由于几个原因，它是一种静态编译的语言。所以与Python不同，它没有解释器。以及我们希望您必须编译的原因，因为这基本上可以编译高性能的代码。事实上，特定的Go编译器非常好。所以基本上，你知道，它是一种高性能语言。此外，你对Go设计了解得越多，它实际上就是用于系统编程的。内核是一种辅助编程形式，因此需要良好的匹配，例如，为什么它适合编程的方面。调用程序集或其他外来代码实际上很容易。它对某些货币有很好的支持，你知道，相当灵活。</p>
+<p>发言人   17:27<br>And then another reason that we wanted to use it because it has a garbage collector. So like one of the things that you think about a high level language and one of the virtues of the high level language is that you don’t have to do memory management. And garbage collectors typically in a central role in. Provides a central role in that sort of memory management story?<br>我们想要使用它的另一个原因是它有一个垃圾收集器。就像你认为高级语言的一件事一样，高级语言的优点之一就是你不必做内存管理。垃圾收集器通常在核心角色中发挥作用。在那种内存管理故事中提供了核心角色？</p>
+<p>发言人   17:49<br>By the time we started this paper or we started this project, rust was not very popular or Rush was actually not very stable and mature at that point. And you actually could write a real kernel in it. In retrospect, Now we do it again. You may would write it in rushed because it’s also designed for systems programming. It has a small runtime, produces good code, although one thing that actually might may still make it very interesting to go for Go is that Russia takes the starting assumption that that if you want to high performance systems programs, then you can’t do that with a garbage collector. And in fact, the rush type system is set up in a very clever way, in a very interesting way, so that actually a garbage collector is not necessary.<br>当我们开始这篇论文或开始这个项目时，生锈并不是很受欢迎，或者在那个时候，匆忙并不是非常稳定和成熟。你实际上可以在其中编写一个真正的内核。回想起来，现在我们再次这样做。你可能会匆忙地编写它，因为它也是为系统编程设计的。它有一个小的运行时，产生了很好的代码，尽管实际上可能仍然让它变得非常有趣的一件事是，Russia首先假设如果你想要高性能的系统程序，那么你不能用垃圾回收器来做到这一点。实际上，匆忙类型系统是以一种非常聪明、非常有趣的方式设置的，因此实际上不需要垃圾收集器。</p>
+<p>发言人   18:40<br>And in some ways, we really were interested in answering this question, like, what is the cost of garage collection in a high level language, you know, on kernel programming? And it really impossible to use, or what is that cost? In some ways, you sort of rough sidestep that question and just look it up here. A language without garb’s collection, they have to know thing about this particular cost. Any questions about this? In terms of the programming language we decided to use? Or lots of email questions related to this topic.<br>在某种程度上，我们真的对回答这个问题很感兴趣，比如在高级语言中，车库收集的成本是多少，你知道，在内核编程中？它真的无法使用，或者它的成本是多少？在某些方面，你可以粗略回避这个问题，然后在这里查找。一种没有服装收藏的语言，他们必须了解这个特定的成本。对此有什么问题吗？就我们决定使用的编程语言而言？或者很多与此主题相关的电子邮件问题。</p>
+<p>发言人   19:13<br>So this is a theoretical question that maybe doesn’t have an immediate answer. But if the Linux kernel were to be written in Rust, not Go and like optimized in the same capacity, would it be able to achieve higher performance then then the kernel, then C, like a Linux C kernel? I doubt it would be okay. Hard to just speculation correct? Because we haven’t done this experiment. My sense is we be not higher performance than C, but probably roughly in the same ballpark because I see so low level you can presumably whatever you would do in rush you could also have done a seat.<br>所以这是一个理论上的问题，可能没有立即的答案。但是，如果Linux内核以生锈的方式编写，而不是以相同的容量进行优化，那么它是否能够比内核获得更高的性能，然后是C，就像Linux内核一样？我怀疑这会没事。很难只猜测正确吗？因为我们还没有做这个实验。我的感知是我们的性能并不比C高，但可能大致相同，因为我看到的水平很低，你可以想象你在匆忙中会做什么，你也可以坐下来。</p>
+<p>发言人   20:04<br>Does that make sense, Yes, thank you. Okay, okay, so let’s move on them. Unless there are any other further questions about this. Again, feel free to interrupt.<br>那感知吗？是的，谢谢。好的，好的，让我们继续前进。除非对此还有其他问题。再次，请随意打断。</p>
+<p>发言人   20:19<br>And you know, this is a bit of a discussion based lecture. Is intended to sort of stimulate intellectual interest? And so jump in if you have anything to think about this topic? So actually, before, you know, maybe a question I want to ask, maybe I’ll come back to that at the end of the lecture, closer to the end of the lecture.<br>你知道，这是一个基于讨论的讲座。是为了激发智力兴趣吗？所以如果你对这个话题有什么要思考的，就跳进来吧？所以实际上，在你知道之前，也许我想问一个问题，也许我会在讲座结束时回到这个问题，接近讲座结束时。</p>
+<p>发言人   20:44<br>Partly, you know, the whole reasoning. We want to use a high level language is to fully serve it in classroom books. And one of the questions you should ask yourself, where there bugs, you know, in the labs that you have that would have been avoided if you had a high level language, you know? So, you know, think back, you know? I’m sure you can come up with some bugs that cost you a lot of time and a lot of pain. And you could ask yourself for those kind of bugs, you know, if if the XV 6 were written in the labs were to be done in another high level programming language, what if life you, your life be a lot easier? You have had a lot more spare time to do other things. So let’s keep that question in your head and, you know, we’ll hopefully return to that at the end of the lecture.<br>部分地，你知道，整个推理。我们想要使用一种高级语言，是为了在教科书中充分服务于它。你应该问自己一个问题，实验室里哪里有bug，如果你有一门高级语言，就可以避免这些bug，你知道吗？所以，你知道，回想一下，你知道吗？我相信你可以想出一些花费你很多时间和痛苦的错误。你可以问问自己这些错误，你知道，如果XV 6是在实验室里写的，用另一种高级编程语言完成，如果你的生活会容易得多？你有更多的空余时间做其他事情。所以让我们把这个问题放在你的头脑中，你知道，我们希望在讲座结束时回到这个问题。</p>
+<p>发言人   21:28<br>But if you have opinions right away, that’s fine too. Okay, so let me talk a little bit about biscuit and you know how it sort of works. And sort of the surprises were the things that we ran into while building this kit, you know, things that we anticipated and some things that we actually did not anticipate.<br>但如果你马上有意见，那也没关系。好的，让我谈谈饼干，你知道它是如何工作的。而惊喜是我们在构建这个套件时遇到的事情，你知道，我们预料到的事情和一些我们实际上没有预料到的事情。</p>
+<p>发言人   21:48<br>So the usual programs, there’s a classic kernel, monolithic kernel in the same way that Linux or Xt 6 is. And so there’s user space and there’s kernel space, User space programs are, you know, whatever, you know, your compiler GCC or in space with paper, you know, it’s mostly web server, some other benchmarks. And the usual programs are actually all written in C, although it could be principal in any language, you know? But since they are just a benchmark, we took C versions and most of the programs are multi credited. So unlike in Xg 6 where basically there’s one Fre per user program, in Biscuits, actually you support multiple usual level threats and for basically for every user level of Ft, there’s a corresponding kernel fret in the kernel. And these kernel FS are actually implemented by Go itself and Go calls, these Go routines. But you can think about go routines just as ordinary frets in the same way that actually 6 has and the Colonel Andel has frets. The Go routines are sort of similar.<br>所以通常的程序，有一个经典的内核，单体内核，就像Linux或xt6一样。因此，有用户空间和内核空间，用户空间程序，你知道，无论什么，你知道，你的编译器GCC或有纸的空间，你知道，它主要是web服务器，其他一些基准测试。通常的程序实际上都是用c语言编写的，尽管它可以是任何语言的主体，你知道吗？但由于它们只是一个基准，我们采用了C版本，大多数程序都是多重认证的。因此，与Xg 6不同的是，每个用户程序基本上只有一个free，在饼干中，实际上您支持多个通常级别的威胁，并且对于每个用户级别的Ft，内核中都有一个相应的内核烦恼。这些内核FS实际上是由Go本身和Go调用实现的，这些Go例程。但是你可以把日常生活想象成普通的烦恼，就像6号和安德尔上校一样。Go例程有点类似。</p>
+<p>发言人   22:59<br>The main difference correctly, is that in exocytic S, the threats are implemented by the kernel itself. And in this case, the Go runtime basically provides them to Go runtime, schedules them, go run them, have support for like things like sleep and wake up or condition variables. There’s slightly different sleep and wake up, but there’s some condition variable synchronization mechanism. And there’s a whole bunch of other, you know, things primitives in the go run them. And it just provided by the Go language itself and have not been implemented, you know, by Biscuit itself. We just get them from the Go runtime.<br>主要的区别在于，在胞外威胁中，威胁是由内核本身实现的。在这种情况下，Go运行时基本上提供它们来运行时，调度它们，Go运行它们，支持像睡眠和唤醒或条件变量这样的东西。睡眠和唤醒略有不同，但有一些条件变量同步机制。还有一大堆其他的东西，你知道的，在go中运行它们的原语。它只是由Go语言本身提供，还没有被实现，你知道，通过饼干本身。我们只是从Go运行时获取它们。</p>
+<p>发言人   23:29<br>The Go runtime itself runs directly on the Bay hardware. And I’ll talk a little bit about that more in the lecture.<br>Go运行时本身直接在托架硬件上运行。我将在讲座中更多地谈论这个问题。</p>
+<p>发言人   23:41<br>But like you think about this is the machine boots. The first thing it actually boots is the Go runtime. That causes a little bit of complications because runtime normally runs in user space as a usual level program and assumes that the Kern, there’s a kernel there for which you can ask some services, for example, needs to allocate memory to for its heap. And so there’s a bit. I’ll talk a little bit about that. There’s a little bit of shim code that biscuit has basically trick know the go run and into believing that it runs on top of the operating system, even though it’s running on the bayr hardware. And basically you get to the boot and then the kernel itself, you know, it’s very similar.<br>但是，就像你想象的那样，这是机器靴子。它实际上启动的第一件事是Go运行时。这会导致一些复杂性，因为运行时通常像普通级别程序一样在用户空间中运行，并假设那里有一个内核，您可以请求一些服务，例如，需要为其堆分配内存。所以有一点。我将稍微谈一下这个话题。有一些填充代码，饼干基本上知道了运行规则，并相信它运行在操作系统之上，即使它运行在bayr硬件上。基本上你进入了启动程序，然后是内核本身，你知道，它非常相似。</p>
+<p>发言人   24:19<br>You just think XV 6. I think there’s a good model, except that it’s a little bit more elaborate and more high performance you that has a veral memory system that, for example, implements M map the lot that you’re doing this week, you know, it has a file system, except there’s more high performance file system. It has a couple of drivers, you know, it has a disk driver, it has a network driver, it has a network stack, so a little bit more complete, and you know, when you can see that is it has like 58 system calls, you know, in like can’t remember how much XV 6 S, but it’s probably in the order of 1819 or something like that. And the total lines of code is 28000 and X 6 is like not in, I think below 10000. So you know, there’s more features, any questions about sort of the high level overview.<br>你只是认为XV 6。我认为有一个很好的模型，除了它有一个非常复杂和高性能的记忆系统，例如，它实现了你本周要做的很多事情，你知道，它有一个文件系统，除了有更高性能的文件系统。它有几个驱动程序，你知道，它有一个磁盘驱动程序，它有一个网络驱动程序，它有一个网络堆栈，所以稍微完整一些，当你可以看到它有58个系统调用，你知道，在类似的情况下，我不记得有多少XV 6 s，但它可能是1819或类似的顺序。代码行总数为28000行，而X 6就好像没有，我想低于10000行。所以你知道，还有更多功能，关于高级概述的任何问题。</p>
+<p>发言人   25:08<br>Oh, sorry, I wanted to ask about the interface. So the interface is just like index physic, right? So the processes, they have to put something in some register and then they call the equal call or whatever it is. Yeah. I’ll talk a little bit more about this, but it’s exactly the same, like there’s no difference. Okay, I see, thank you.<br>哦，对不起，我想问一下界面。所以界面就像索引物理一样，对吧？因此，这些过程必须在某个寄存器中放置一些东西，然后称之为相等的呼叫或其他什么。是的。我再谈一点，但它们完全一样，就像没有区别一样。好的，我明白了，谢谢。</p>
+<p>发言人   25:33<br>So some of the future, you know, already, you mentioned them a little bit maybe maybe talking about so is multicore go with group support for concurrency? And so, you know, the biscuit is multicore in the same way that X 6 sort of has at least limited support for multi-core. In biscuit, we have a little bit more fine grade synchronization or coordination than actually in X 6. It has threads, usual level threats backed up by kernel Freds, which XV 6 doesn’t have, and has a journal file system, a much higher performance like thinkin.<br>所以未来的一些方面，你已经提到过了，也许可能会讨论一下，多核是否与并发的组支持相一致？所以，你知道，饼干是多核的，就像X 6至少对多核的支持有限一样。在饼干中，我们比在X 6中实际上有更精细的同步或协调。它有线程，由内核Freds支持的通常级别的威胁，这是XV 6所没有的，并且有一个日志文件系统，像thinkin一样具有更高的性能。</p>
+<p>发言人   26:07<br>You called the Ex three paper, sort of like, you know, the HD three journaling file system. It has, you know, quite a reasonable, sophisticated virtual memory system, you know, using Vmas. And, you know, it can support Nmap and all that stuff. It has a complete TCP stack, good enough to actually talk to other network servers across the internet. And it has two drivers.<br>你把前三篇论文叫做 “高清三日志文件系统”。它有一个相当合理、复杂的虚拟内存系统，你知道，使用Vmas。而且，你知道，它可以支持Nmap和所有这些东西。它有一个完整的TCP堆栈，足以与互联网上的其他网络服务器进行实际通信。它有两个司机。</p>
+<p>发言人   26:31<br>We have high performance drivers. You like a 10 Gb Ni in next lap, you can actually implement a little driver for a very, very simple nick. And this is a much more high performance and sophisticated driver and a pretty sophisticated disk driver, you know, more sophisticated than the virtual IO disk driver that you’ve sort of seen or you might have looked at in the labs. That screw?<br>我们有高性能的驾驶员。如果您喜欢下一圈10 gb的Ni，您实际上可以为一个非常非常简单的nick实现一个小驱动程序。这是一个更高性能、更复杂的驱动程序和一个相当复杂的磁盘驱动程序，你知道，比你在实验室里看到或看过的虚拟IO磁盘驱动程序更复杂。那个螺丝钉？</p>
+<p>发言人   27:07<br>So in terms of the user programs, as I mentioned before, if a user program runs with its own page table, user kernel memory isolated by hardware. So there’s a user kernel bit, basically. And every user, Fred, has a corresponding kernel, Fred, so that, for example, when a user, Fred, makes a system call, it’ll continue running on the corresponding kernel thread. And if the system called blocks, then another user thread in the same address. And the user address space might actually be scheduled by the kernel.<br>因此，就用户程序而言，正如我之前提到的，如果用户程序以自己的页表运行，则用户核心内存由硬件隔离。所以基本上有一个用户内核位。而每个用户Fred都有一个相应的内核Fred，因此，例如，当用户Fred进行系统调用时，它将继续在相应的内核线程上运行。如果系统调用blocks，那么同一地址中的另一个用户线程。并且用户地址空间实际上可能由内核调度。</p>
+<p>发言人   27:39<br>And as I mentioned earlier, kernel threads are provided by the go around time, and so they’re go routines. So if you’re Everett usual, have you ever written a usual level application in Go and you’re using Go? You use the Go call to create a thread. Those those go routines are the ones that were actually being used by the biscuit kernel.<br>正如我之前提到的，内核线程是在go时间提供的，因此它们是go例程。所以，如果你是常人Everett，你是否曾经在Go中编写过普通级别的应用程序并使用Go？你使用Go调用创建一个线程。那些go例程是饼干内核实际使用的例程。</p>
+<p>发言人   28:02<br>So talking about system calls, you know, in this question that was just asked. So it works exactly as roughly, you know, as in XV 6. You know, the user grant Putin arguments in the registers using a little library, you know, that provides system call interface. Then the user threats execute a Sy enter call. You know, this biscuit runs on an x 86 processor, No, on the risk processor. So the assembly instructions for actually entering their system kernel are slightly different than on the risk five, on the risk five, but you roughly similar to the risk 5. And then the control passes through the kernel thread that was running that user threat, and then the kernel thread executes the system call and returns using C exit.<br>所以谈论系统调用，你知道，在这个刚刚被问到的问题中。所以它的工作原理大致相同，你知道，就像在XV 6中一样。你知道，用户使用一个小的库在寄存器中授予Putin参数，它提供了系统调用接口。然后，用户威胁执行Sy enter呼叫。你知道，这个饼干运行在x86处理器上，不，在风险处理器上。因此，实际进入系统内核的汇编指令与风险五略有不同，但与风险五大致相同。然后控制通过运行该用户威胁的内核线程，然后内核线程执行系统调用并使用C退出返回。</p>
+<p>发言人   28:51<br>So roughly similar thing, you know, is a track frame that’s being built and all that kind of stuff. Okay? Any questions so far before I dive into sort of the more sort of you things that were unexpected or expected but were a little bit more challenging than or different than things would go than in XV 6?<br>大致相似的东西，你知道的，是正在建造的履带架和所有类似的东西。好吗？在我深入探讨一些意想不到或预料到的事情之前，到目前为止，还有什么问题比XV 6中的事情更具挑战性或不同吗？</p>
+<p>发言人   29:14<br>I have a question, I guess. I think Go wants you to use channels more than, mutual locks, I guess. So would you like, would there be like, would the design of some things in Xb 6 be like, could use as channels instead of holding the lock for something? Yeah, so this is great, great question. So I’ll come back to it a little bit at the end further down and we have some slides about like what features of Go did we use in disk?<br>我猜我有一个问题。我想，Go希望你更多地使用频道，而不是相互锁定。那么你愿意吗，Xb 6中某些事物的设计是否可以用作通道，而不是为某些事物锁定？是的，这是一个非常好的问题。所以我会在最后再回来一点，我们有一些幻灯片，关于我们在磁盘中使用了哪些Go功能？</p>
+<p>发言人   29:46<br>But you know, in the end, actually, we didn’t end up using channels that much. We mostly use locks and condition variables. So in some sense, closer to or like the way X 6 looks than it actually one, then you would do it with channels. We did experiment actually with designs of the file system that were much more channel heavy. And but it didn’t work out that great. We got that performance. So we switch back to sort of more sort of civil style synchronization as X 3 6 does, or Linux use.<br>但你知道，最终，实际上，我们并没有那么多地使用频道。我们主要使用锁和条件变量。因此，在某些感知中，更接近或喜欢X 6的外观而不是实际的外观，那么您可以使用通道来完成。我们实际上进行了实验，设计了更多的文件系统，使其更注重频道。但是结果并没有那么好。我们得到了那种表现。因此，我们切换回更多的民用风格同步，就像x3 6或Linux使用的同步一样。</p>
+<p>发言人   30:21<br>Okay, so there were a couple sort of little puzzles or implementation challenges as we went through. One, we got to get the run then to work on the bare metal and, you know, required you, we wanted to make a course like zero modifications through the runtime where as little as possible so that you go with a new version of the runtime. We could just use it. And in fact, through years, you know, that we worked on this or the Cody worked on this, we upgraded runtime many, you know, number of times and it was turned out to be a good thing and it turned out not to be too difficult actually to get it to work on the bare metal. You know, going generally is designed pretty carefully to sort of be mostly OS agnostic because they want to be able to run into many operating system so it doesn’t rely on a ton of OS features and we were basically emulated the features that actually needed it and mostly, you know, those were the features that actually just get off the go, run them to get started. And once it started, it runs huge happily.<br>好的，在我们经历的过程中，有一些小难题或实现挑战。首先，我们必须先运行然后在裸机上工作，你知道，这需要你，我们希望在尽可能少的情况下通过运行时进行零修改，以便你使用新版本的运行时。我们可以直接使用它。事实上，多年来，你知道，我们或科迪公司一直在做这个工作，我们升级了运行时很多，你知道，很多次了，事实证明这是一件好事，而且实际上让它在裸金属上工作并不太困难。你知道，通常情况下，操作系统是经过精心设计的，几乎与操作系统无关，因为他们希望能够运行许多操作系统，所以它不依赖于吨操作系统功能，我们基本上模拟了实际需要的功能，大多数情况下，你知道，这些功能实际上刚刚开始运行它们即可开始使用。一旦它开始运行，它就会快乐地运行。</p>
+<p>发言人   31:25<br>We have sort of range the go routine, run different applications, know normally in Go program, correct? There’s all one single application. And here now we’re using Go routines to actually run different user, different user applications. And but you, these user applications have to run with different page tables. And the little, you know, wrinkle here is that, you know, the we don’t control or basically doesn’t control the schedler because we’re using the Go runtime unmodified. So we’re using the Go runtime scheduler.<br>我们有一些范围的go例程，运行不同的应用程序，通常知道Go程序，对吗？都只有一个应用程序。现在我们正在使用Go例程来实际运行不同的用户，不同的用户应用程序。但是你，这些用户应用程序必须使用不同的页表运行。这里的小皱纹是，你知道，我们不控制或基本上不控制schedler，因为我们使用未经修改的Go运行时。所以我们使用Go运行时调度器。</p>
+<p>发言人   31:57<br>And so in the scanner, we can’t switch page tables. And so what x 6, basically what the basically does is very similar to X 6. It actually switches heat stables when it changes from kernel user space or the other way around. So when an entry and exit of the kernel, you know, we switch page tables. And that means like in X 3, 6. And then when you need to copy data from user space to kernel space or the other way around, you have to do that sort of using those copying and copy out functions that we also have an extra 6. So basically, you do the page table walking software.<br>因此，在扫描仪中，我们无法切换页表。所以x6，基本上它的基本功能与x6非常相似。当它从内核用户空间或相反的方式发生变化时，它实际上会切换热稳定。所以当内核的进入和退出时，你知道，我们会切换页表。这意味着像在x3，6中一样。然后，当您需要将数据从用户空间复制到内核空间或相反时，您必须使用那些我们还有额外6的复制和复制功能来完成。所以基本上，你做页表遍历软件。</p>
+<p>发言人   32:34<br>Another sort challenge, or a little challenge was the devising erupts and I go normally runs in user mode, you know, doesn’t really get interrupts from the hardware, but we’re using it on the bare metal. And so we’re going to get interruption time, clock interrupt interruption, the network driver, interruption, the disk driver, etc., you know, from the view art. And so we need to deal with that. And there’s also no notion and go, you know, if we’re know switching off interrupts, like while holding a lock, you know that because we’re just she locking user applications.<br>另一个类型的挑战，或者说一个小挑战是设计爆发，我通常在用户模式下运行，你知道，并不会真正受到硬件的中断，但我们正在裸机上使用它。因此，我们将从视图艺术中获得中断时间，时钟中断，网络驱动程序，中断，磁盘驱动程序等。所以我们需要处理这个问题。而且也没有任何概念和行动，你知道，如果我们知道关闭中断，比如在把锁打开时，你知道，因为我们只是她锁定用户应用程序。</p>
+<p>发言人   33:08<br>And so we have to be a little bit careful with how to actually write device interrupt. Basically the way we did it is we do almost nothing in the device interrupt up. We don’t take any locks out. Basically, we don’t allocate any memory. The only thing we do is basically sending a flag somewhere that I wasn’t interrupt and then wake up really functional go routine to actually deal with the interrupt. And that go routine, of course, you know, can use all the Go features that it want because does it run in the context of an interrupt, analy runs in the context of a normal, normal Go routine?<br>因此，我们必须在实际编写设备中断时稍微小心。基本上，我们的做法是在设备中断时几乎不进行任何操作。我们不开锁。基本上，我们不分配任何内存。我们所做的唯一的事情基本上就是在我没有中断的地方发送一个标志，然后唤醒真正有用的go例程来实际处理中断。而且那个go例程当然可以使用它想要的所有Go功能，因为它是否在中断的上下文中运行，分析是否在正常的Go例程的上下文中运行？</p>
+<p>发言人   33:45<br>Then one thing that surprises was more of a surprise. You know, the first three things we completely anticipated that we would have to deal with when building biscuit. The hardest one that actually surprised us and we learned a lot about it, was this puzzle of heap exhaustion. So I’m going to talk mostly for a little while about heap exhaustion and you know what it is, you know how it comes about and you know how we solved it, but maybe before diving into that, any questions so far?<br>然后惊喜的一件事更多的是惊喜。你知道，我们完全预料到在制作饼干时必须处理的前三件事。最让我们惊讶的是这个堆精疲力竭的难题，我们也学到了很多。所以我将主要谈论一段时间关于堆耗尽，你知道它是什么，你知道它是怎么发生的，你知道我们是如何解决的，但也许在深入研究之前，有什么问题吗？</p>
+<p>发言人   34:19<br>So crystal clear. Okay, so let’s talk a little bit about the exhaustion. I’m not going to go with full depth is in the paper, but Lisa give you the flavor of like what the problem is.<br>如此晶莹剔透。好的，让我们谈谈关于疲惫的一些事情。我不会深入讨论论文中的内容，但Lisa会给你一个问题的味道。</p>
+<p>发言人   34:40<br>So the heap exhaustion, let’s say the blue box here is the kernel again. And you know, the kernel has a heap from which it allocates dynamically memory In x 6, we don’t have such a heap because we don’t have a memory allocator in the kernel. Every statically allocate it, any other kernel will have a heap. So that, you know, you can call malloc, you know, and 3 in the kernel. And, you know, the things that actually get allocated on the heap are, for example, you know, socket objects or file descriptor objects or process objects like, you know, struct proc, you know, struct FD, all the structures that we basically statically located in XV 6 normal kernels, they dynamically allocate them.<br>所以堆耗尽，假设这里的蓝色盒子又是内核。你知道，内核有一个堆，它在x6中动态分配内存，我们没有这样的堆，因为我们在内核中没有内存分配器。每次静态分配它，任何其他内核都将有一个堆。这样，你知道，你可以在内核中调用malloc，然后调用3。而且，你知道，实际上在堆上分配的东西是，例如，你知道，套接字对象或文件描述符对象或进程对象，比如，你知道，struct proc，你知道，struct FD，所有我们基本上静态位于XV 6正常内核中的结构，他们动态地分配它们。</p>
+<p>发言人   35:26<br>So when you open a new file descriptor, it will be a file descriptor object. You allocate it into heap. And so the problem is that if you’re running many applications, you know, they might open many file descriptors, may have many sockets, and they sort of start filling the heap basically slowly. And so, and the issue is that at some point, like the heat is full, there’s no space anymore for allocating a new object. So when an application ask, for example, opens a new fileva scriptor, and there’s like, no, a new processor, like there’s new floor I and the current wants to allocate a truck proc in the heap, usually like there’s no space anymore.<br>因此，当您打开一个新的文件描述符时，它将是一个文件描述符对象。你把它分配到堆里。所以问题是，如果您正在运行许多应用程序，它们可能会打开许多文件描述符，可能有许多套接字，并且它们基本上开始缓慢地填充堆。因此，问题在于，在某个时刻，就像热量已经满了一样，不再有空间分配新的物体。所以当一个应用程序询问，例如，打开一个新的文件脚本器，然后有一个新的处理器，就像有了新的楼层I，当前想要在堆中分配一个卡车proc，通常就像没有空间了。</p>
+<p>发言人   36:02<br>And what do you do that? You know, what is the, you know, how do you deal that particular case? And this is typically, you know, this is maybe in common cases, doesn’t show up that often, but like if you’re pushing machines hard, you may have, you know, a couple heavy consumer processes running usual level processes. You might end in this situation where basically all the available memory is just in use and your heap is just full and no processes.<br>你会怎么做？你知道，什么是，你知道，你是如何处理这个特定案件的？这通常是，你知道，这可能是常见情况，并不经常出现，但是就像你在努力推动机器一样，你可能会有几个繁重的消费者流程运行常规级别的流程。你可能会在这种情况下结束，基本上所有可用内存都在使用中，而你的堆已经满了，没有进程。</p>
+<p>发言人   36:28<br>Is calling me he free yet? You know, because they’re all running and trying to allocate more, you know, resources for their, for their particular jobs.<br>叫我他有空吗？你知道，因为他们都在运行并试图为他们的特定工作分配更多的资源。</p>
+<p>发言人   36:40<br>And so all kernels face this problem, whether it’s like AC kernel or a biscuit or anything. And in kernel must solve this particular problem. The reason they sort of showed up for us as a serious issue in biscuit was because in many kernels.<br>因此，所有的内核都面临这个问题，无论是交流内核还是饼干或任何东西。并且在内核中必须解决这个特定的问题。它们对我们来说似乎是饼干中的一个严重问题的原因是因为在许多内核中。</p>
+<p>发言人   37:01<br>You can return an error on malloc. In fact, x 3 6 does that correct? Once in a while. But the Go runtime, when you call new to allocate a Go object, there’s no error condition. You know, new succeeds, and so there’s no way to fail it. So let’s talk a little bit about possible ways to solve this problem.<br>您可以在malloc上返回错误。实际上，x3 6正确吗？偶尔。但是在Go运行时，当您调用new来分配Go对象时，没有错误条件。你知道，新事物会成功，所以没有办法让它失败。所以让我们来谈谈解决这个问题的可能方法。</p>
+<p>发言人   37:23<br>You know, we’ve seen it actually in X 6 or once in a while, like you remember the bcache if x 6 can’t find a new block, a free block to use to restore disk block in, and actually sometimes it just panics. Now there’s a clearly is a completely undesirable solution and there’s not a real solution. So there’s like why we call it the strongest solution?<br>你知道，我们实际上在x6或偶尔看到过它，就像你还记得bcache，如果x6找不到一个新的块，一个可用的块来恢复磁盘块，有时它只是恐慌。现在有一个显然是完全不受欢迎的解决方案，也没有真正的解决方案。所以这就是为什么我们称之为最强解决方案的原因？</p>
+<p>发言人   37:49<br>The other sort of strumming solution is to when you call, let’s say you allocate a new piece of memory, you go to call alloc to new to actually allocate it. You could actually you wait for memory in the allocator going to maybe one proposal to do turns out not to be a good proposal. And the reason it’s not a good proposal is that you made debt lock.<br>另一种解决方案是当你调用时，假设你分配了一块新的内存，你去调用alloc到new来实际分配它。你实际上可以等待分配器中的内存去做一个提案，结果证明这不是一个好的提案。这个建议不好的原因是你锁定了债务。</p>
+<p>发言人   38:10<br>You know, assume the following scenario. You’re holding some, let’s say the kernel has one big kernel lock and you call malloc, you know, you wade into the memory allocator, then basically no other other process can run and you would have a sort of deadlock type. And your next project that would actually try to run, for example, to free some memory, you know, couldn’t run the next deadlock. Of course, this is if you have a big ke, big ke lock that there’s an obvious problem, you know that even if you have a very small, you fine grain locking, it is easy to run into a situation where basically the person or the process that’s waiting in the allocator is holding some lock that somebody else needs to actually free the memory. And that can get you basically in this deadlock situation.<br>你知道，假设以下情况。你持有一些，假设内核有一个大的内核锁定，你调用malloc，你知道，你进入内存分配器，然后基本上没有其他进程可以运行，你会有一种死锁类型。而你的下一个项目实际上会尝试运行，例如释放一些内存，你知道，无法运行下一个死锁。当然，如果你有一个很大的ke，那么有一个明显的问题，你知道即使你有一个非常小的，你细粒度的锁定，很容易遇到这样的情况，基本上在分配器中等待的人或进程持有一些其他人需要释放内存的锁。这可以让你基本上陷入僵局。</p>
+<p>发言人   38:54<br>And so astronom 3 is to basically fail or when you there’s no memory and a there’s a pointer like a null pointer, you check with the null-a pointer, If it’s a null pointer, you fail and you sort bail out. But bailing out is actually not that sort of straightforward. The process might actually have allocated memory already. You need to get rid of that. You may have done some partial disk operations, like, for example, if you do a multidiscip file system, the operation, maybe you have done some of it, but not all of it. You have to bail out of that. And so it turns out you actually get very, it’s very hard to get it right in sort of interesting, you know, when digging into this and trying to think about how to solve this problem.<br>所以astronom 3基本上会失败，或者当你没有内存并且有一个指针 (如空指针) 时，你会检查空指针，如果它是空指针，你会失败并解决问题。但救助实际上并不是那么简单。进程可能实际上已经分配了内存。你需要摆脱它。你可能已经做了一些部分的磁盘操作，例如，如果你做一个多文件系统，这个操作可能已经做了一些，但不是全部。你必须摆脱这种情况。事实证明，当你深入研究并尝试思考如何解决这个问题时，实际上很难做到，有点有趣。</p>
+<p>发言人   39:40<br>Linux sort of uses both of these solutions and a both actually have trouble or troubles And indeed, you know, kernel developers actually have difficulty to actually get this all straight. If you’re very interested in this. And we want to see some interesting discussion about this. Google for too Small to fail. And then there’s a little article that talks about some of these complications, you know, of freeing memory or waiting in the allocator and the problem that it can cause.<br>Linux在某种程度上使用了这两种解决方案，但实际上两者都有麻烦，而且你知道，内核开发人员实际上很难完全理解这一切。如果你对此非常感兴趣。我们希望看到一些有趣的讨论。谷歌太小了，不能失败。然后有一篇小文章讨论了一些复杂性，你知道，释放内存或在分配器中等待以及它可能导致的问题。</p>
+<p>发言人   40:10<br>Now turns out for us, you know, so strongman 2 would be sort of the solution that you can imagine doing. But for us, it just mentioned earlier is basically it was not possible because new just can not return, can not fail, it just always succeeds. So we got to range in some way that just can not happen. Plus, neither of these two solutions actually particularly ideal. So we wanted to come up with something that was potentially better.<br>现在对我们来说，你知道，强人2将是你可以想象的解决方案。但对我们来说，前面提到的基本上是不可能的，因为新的不能返回，不能失败，它总是成功。所以我们必须以某种不可能发生的方式进行射程。另外，这两种解决方案都不是特别理想。所以我们想想出一些可能更好的东西。</p>
+<p>发言人   40:36<br>Any questions so far about the setup around heap exhaustion before I talk about like, so how the way Biscuit does it?<br>在我谈论之前，到目前为止，对于堆耗尽的设置有任何问题，那么饼干是如何做到的呢？</p>
+<p>发言人   40:48<br>Does this problem make sense?<br>这个问题有感知吗？</p>
+<p>发言人   40:58<br>I we’ll interpret the signings as yes and keep going, but I feel feel to interrupt anytime.<br>我会将签约解释为是并继续进行，但我觉得随时都可以打断。</p>
+<p>发言人   41:06<br>Okay, so what is the biscuit solution? At a high level, the biscuit solution is going like almost straightforward, but basically does like when you execute a system called like say you read or fork before jumping actually into the forex system call like right at the beginning of the forex system call if you will, like in the system called dispatcher in X 3 6. Then first thing it does actually it calls reserve and basically reserves enough memory to be able to execute the system call. So as there free memory enough that whatever amount memory that action the system call needs the reservation will be big enough that actually it will succeed. So so once the system call goes off and successful in reserving memory, it will actually run all the way through and we will never leave the problem that we won’t be enough memory or heat exhaustion. And if there’s not enough memory at the point you want to do the recitals, then basically just wait here.<br>好的，那么饼干解决方案是什么？在高层次上，饼干解决方案几乎是直截了当的，但基本上像当你执行一个名为的系统时，比如你在阅读或分叉之前实际上跳入外汇系统调用，就像在外汇系统调用的开头一样，就像在X 3 6中称为调度员的系统中一样。然后它实际上做的第一件事就是调用reserve，基本上保留足够的内存来执行系统调用。因此，由于有足够的可用内存，无论系统调用操作需要多少内存，预留空间都将足够大，实际上它将成功。因此，一旦系统调用结束并成功保留内存，它实际上将一直运行下去，我们永远不会留下内存不足或热量耗尽的问题。如果你想要进行朗诵的地方没有足够的内存，那么基本上就在这里等着。</p>
+<p>发言人   42:10<br>But at the beginning of the system called the system called doesn’t hold any locks. It doesn’t hold any resources yet. So it actually is perfectly fine wage there. So there’s no risk of deadlock. And Wild’s waiting, you know, it can, of course, you know, doing it can call the kernel can actually eviction CA is, you know, try to reduce the basically make free of hip space maybe as, you know, you have seen, maybe kill a process that to force a memory to actually be freed. And then once memory is available and the kernel decides, well, you know, I can meet the reservation, then it will let the system call basically go off and runs and basically executes whatever needs to be done and then at the very end, you know, when the system follows down, it’s like, okay I’m done. And all the memory that was reserve basically goes back to the pool available for subsequent system calls.<br>但在系统开始时，调用的系统不持有任何锁。它还没有持有任何资源。所以那里的工资实际上是非常好的。所以不存在死锁的风险。和野生的等待，你知道，它可以，当然，你知道，做它可以调用内核实际上可以驱逐CA是，你知道，尝试减少基本上免费的臀部空间，也许正如你所看到的那样，可能杀死一个进程，以强制释放内存。然后，一旦内存可用并且内核决定，你知道，我可以满足保留，那么它将让系统调用基本上关闭并运行，基本上执行需要做的任何事情，然后在最后，你知道，当系统跟随下来时，就像，好吧，我完成了。所有被保留的内存基本上都会回到可供后续系统调用的池中。</p>
+<p>发言人   43:03<br>And so there’s a couple nice properties about this particular solutions. There’s no checks necessary in the kernel itself. You never have to check, you know, whether memory, memory allocation can fail, which is particularly in our case good because you know, go, they can fail. There’s no error handling code and necessary at all. And there’s no risk for deadlock because you are avoiding in the very beginning without when you actually hold no blocks, of course. So there’s all wonderful.<br>所以这个特定的解决方案有几个很好的特性。在内核本身中没有必要进行检查。你永远不必检查，你知道，内存分配是否会失败，这在我们的情况下特别好，因为你知道，去，它们可能会失败。没有错误处理代码，而且完全没有必要。并且没有死锁的风险，因为你在一开始就避免了，当然，当你实际上没有持有任何块时。所以一切都很美妙。</p>
+<p>发言人   43:29<br>Well, the only thing is like how there’s a challenge, of course, how do you do the re, how do you compute how much memory a system call might need to execute it? So that was sort of a puzzle. It’s important that the M1 you could do is like you can reserve like half memory or something like that, like something ridiculous amount of memory for every system call. But that means you limit the number of system calls you can execute concurrently. So you want to sort of, you know, do a pretty good job at actually computing a bound of the amount of memory that the system call might need. So the way. We ended up doing this and turned out like sort of the high level language helped us here.<br>嗯，唯一的问题就是有一个挑战，当然，你如何做到，你如何计算一个系统调用可能需要多少内存来执行它？所以这有点像一个谜题。重要的是，你可以做的M1就像你可以为每个系统调用保留一半的内存或类似的东西一样，就像一些荒谬的内存量一样。但这意味着您限制可以同时执行的系统调用数量。所以你想要，你知道，在实际计算系统调用可能需要的内存量边界方面做得相当不错。就是这样。我们最终这样做了，结果发现高级语言在这里帮助了我们。</p>
+<p>发言人   44:22<br>Turn out like Go is actually pretty easy to statically analyze. In fact, to Go runtime and Go infrastructure ecosystem comes comes with a whole bunch of packages to analyze Go code. And we use those packages basically to compute.<br>像Go一样的转弯实际上很容易进行静态分析。事实上，Go运行时和Go基础设施生态系统附带了一堆用于分析Go代码的软件包。我们基本上使用这些软件包进行计算。</p>
+<p>发言人   44:39<br>Amount of memory that the system called neat. So you can think about the certain, let’s say, like, you know, you have the read system call where, you know, you know, we could look at the call graph of the system call, you know, calls the function f, calls the function g, calls a function h, or blah, blah, blah, might continue with a whole bunch. And then, you know, at the end of sort of binds to stack again and then goes back to the returns the user space. And basically what we can do is like, you know, allocate, you know, or figure out like what the maximum depth, you know, of this, this whole graph is at any particular time. And then basically for that maximum depth, you know, compute, you know, how much, you know, life, memory, each of these, you know, functions need. So like if this function calls a new, you know, that allocate some memory, you know, we know what kind of objects there are. It’s a high level language or we can compute what the size of that object is. You know, we can just add them up and it gives us some number S that says like the total amount of memory or the maximum amount of memory that can be live at any particular point in time for that call graph.<br>系统称为 “整洁” 的内存量。因此，您可以考虑某些情况，比如说，您知道，您有读取系统调用，您知道，我们可以查看系统调用的调用图，您知道，调用函数f，调用函数g，调用函数h，或者可能会继续说一大堆。然后，你知道，在最后再次绑定堆栈，然后返回用户空间。基本上我们可以做的就是，你知道，分配，你知道，或者计算出这个整个图表在任何特定时间的最大深度。然后基本上对于最大深度，你知道，计算，你知道，这些函数需要多少，你知道，生命，内存。所以，如果这个函数调用一个新的，你知道，分配一些内存，你知道，我们知道有什么样的对象。这是一种高级语言，或者我们可以计算该对象的大小。你知道，我们可以把它们相加，它会给我们一些数字，比如内存总量或在调用图的任何特定时间点可以存活的最大内存量。</p>
+<p>发言人   45:43<br>And the reason is, you know, it’s slightly tricky. It’s not as simple as this because, for example, a function h, you might allocate some memory and then pass it back to Jeep into age finishes. And but you know, g actually know gets the memory that H is allocated. And this is called escaping. The memory escapes from, you know, from H 2G, and it turns out that there are standard algorithms for doing sort of this escape analysis to see, determine which variables escape to the color. And in that case, you basically whatever memory was allocated by age. And that’s a still of life, we have to add to whatever G is so, you know, has to be added into S, a quick question about us.<br>原因是，你知道，这有点棘手。这并不像这样简单，因为例如，一个函数h，你可以分配一些内存，然后将其传递回吉普车到年龄结束。但是你知道，g实际上知道H被分配的内存。这被称为逃避。内存从h2g中逃逸，事实证明，有标准的算法可以进行这种逃逸分析，以查看、确定哪些变量逃逸到颜色中。在这种情况下，基本上你的记忆是按年龄分配的。这是一种静生活，我们必须添加到G中，所以你知道，必须添加到S中，这是一个关于我们的快速问题。</p>
+<p>发言人   46:29<br>So let’s assume we’re in some function like depending on different workloads that the function is expected to have, there might be different memory, memory amounts allocated. So what is there like a worst case? What memory allocation process?<br>所以让我们假设我们在某个函数中，根据函数预期拥有的不同工作负载，可能有不同的内存，分配的内存量。那么最坏的情况是什么呢？内存分配是什么过程？</p>
+<p>发言人   46:44<br>Yeah, that’s basically it sort of consumer scheme, correct me, you know, we compute the tool compute basically the worst possible depth function calls and you know, for that the worst case it analyzes how much memory that reach system call might need. You know, in practice it might, the system call might need a lot less, but to be conservative, we have to allocate the we plan for the worst case and so we’ve come to a couple important points here because some system calls for example, execute a for loop that’s dependent on an argument to the system call And so you can actually statically figure out what the bound is. And so a number of cases, we annotated the code to say like, well, this is the maximum bound of this loop, and you can assume it’s no more than that, and you use that to actually compute this number s similarly, you know, for example, if you have a recursive function, who knows how deep the recursion is. And that might also be dependent on a dynamic variable or an argument through system call. And in fact, we treat biscuits in some places to basically avoid recursor of function calls sort of actually if it possible to do this, you know, to do this kind of analysis, so this kind of analysis is not for free. It’s not completely automatic. It takes a couple days of work for, in this case, Cody, to go through, look at all these loops and annotate, you know, there are a couple other sort go specific issues that you have to deal with slices, you know, they might double in slice if you add an element to the slice and so we imitate the slices with some maximum capacity, but it was all sort of doable. So a couple days of work and you know, using this tool, then you can sort of get a number out that there’s reasonable good in terms of computing and maximum amount of memory that a particular system called needs and so this is basically how we basically biscuit solves this particular problem.<br>是的，这基本上是一种消费者方案，纠正我，你知道，我们计算工具基本上计算最坏可能的深度函数调用，你知道，对于最坏的情况，它会分析到达系统调用可能需要多少内存。你知道，在实践中，系统调用可能需要少得多，但为了保守，我们必须分配我们计划最坏情况的资源，因此我们在这里有几个重要的点，因为一些系统调用，例如，执行一个依赖于系统调用参数的for循环，这样你就可以静态地确定界限是什么。因此，在许多情况下，我们对代码进行了注释，例如，这是此循环的最大限制，您可以假设它不超过该限制，然后您可以使用该限制来实际计算此数字，例如，如果你有一个递归函数，谁知道递归的深度有多深。这也可能取决于动态变量或通过系统调用的参数。事实上，我们在某些地方对饼干进行处理，基本上是为了避免函数调用的递归，实际上如果可能的话，可以进行这种分析，所以这种分析不是免费的。这不是完全自动的。在这种情况下，科迪需要几天的工作来浏览所有这些循环并注释，你知道，还有一些其他特定的问题你必须处理切片，你知道，如果您向切片添加元素，它们可能会在切片中翻倍，因此我们模仿具有最大容量的切片，但这都是可行的。所以需要几天的工作，你知道，使用这个工具，你可以得到一个在计算和最大内存量方面合理良好的数字，这是一个特定系统需要的，所以这基本上就是我们基本上如何解决这个特定问题的饼干。</p>
+<p>发言人   48:54<br>Oh sorry, what else are people using this tool for? Like they’re not, they’re not milling a, what are they using it for? Well, for static analysis packages, yeah, go compiler journal who use it for all kinds of optimizations know? And do static analysis, the goco to figure out way for the best way to compile it. I see, I see, okay, thank you. And so this is one of the cool things about this is a package, you know, that the compiler happens to use, you know, but we could use it too. You’ll see later on. And we also use it for a couple of other features. It’s very convenient to have. Okay?<br>哦，对不起，人们还用这个工具做什么？就像他们不是在碾磨，他们用它做什么？好的，对于静态分析包，是的，去编译器日志谁使用它进行各种优化知道吗？并进行静态分析，通过goco找出最佳编译方法。我知道了，好的，谢谢。所以这是一个软件包很酷的事情之一，你知道，编译器碰巧使用它，但我们也可以使用它。你稍后会看到。我们还将它用于其他几个功能。这很方便。好吗？</p>
+<p>发言人   49:40<br>Okay, in terms of the implementation, basically, it was basically very similar to other kernels who are like in a six-speed, more high performance. You know what, we adopted many of the optimizations or cleverness that the Linux kernel has you, at least for the system calls that we were trying to do. You know, you use large pages for kernel text to avoid Tob costs. We have per CPU nick transmit queues to avoid synchronization between port. We have an RCU and we’ll talk a little bit more about the directory. Cache is basically lock free or read lock free directory CA. At the end of the semester, we’ll talk about RCU in more detail, but you know, this could have some too.<br>好的，就实现而言，基本上，它基本上与其他内核非常相似，后者喜欢六速，性能更高。你知道吗，我们采用了Linux内核中的许多优化或技巧，至少对于我们试图进行的系统调用是这样的。你知道，你使用大页面作为内核文本来避免Tob成本。我们有每个CPU的传输队列，以避免端口之间的同步。我们有一个RCU，我们将更多地谈论目录。缓存基本上是无锁或无锁读取的目录CA。在学期结束时，我们将更详细地讨论RCU，但你知道，这也可能会有一些。</p>
+<p>发言人   50:29<br>You know, sort of the usual type of optimization that actually you need to get done to get high performance. And the main lesson I think we learned is that Go was not standing in the way of implementing these optimizations. And there’s optimization could be that were implemented in CD and Linux. We basically implemented the same optimization, but where we implemented it, bingo. And so the language itself is not a hurdle or a problem. In fact, it’s conducive to actually implementing these optimization. It was a lot of work to implement these optimizations, but that was irrespective of the language.<br>你知道，实际上你需要完成的通常类型的优化才能获得高性能。我认为我们学到的主要教训是，去并没有阻碍实施这些优化。并且可以在CD和Linux中实现优化。我们基本上实现了相同的优化，但是在我们实现它的地方，宾果游戏。因此，语言本身并不是障碍或问题。事实上，这有利于实际实施这些优化。实现这些优化需要大量的工作，但这与语言无关。</p>
+<p>发言人   51:09<br>Okay, so that brings me sort of to the ventilation, which is really what motivation of the whole paper was, which is like trying to get a handle on the benefits and the cost of high level language. Basically, the affiliation is sort of split it in two parts. First talking about the benefits and then talking about the costs. So, so three questions of, first of all, you know, there’s a question like, didn’t, did we cheat? You know, maybe we avoided all the expensive high level language features that Go offers. The second question, of course, does the high level simplify the basic code? Would it prevent some of these exploits that I mentioned earlier on in the lecture?<br>好的，这让我想到了通风，这实际上是整篇论文的动机，就像试图掌握高级语言的好处和成本。基本上，隶属关系被分成两部分。首先谈论收益，然后再谈论成本。所以有三个问题，首先，你知道，有一个问题是，我们没有作弊吗？你知道，也许我们避免了Go提供的所有昂贵的高级语言功能。第二个问题，当然，高级是否简化了基本代码？它会阻止我之前在讲座中提到的一些漏洞利用吗？</p>
+<p>发言人   51:51<br>First, this new high level language features. We just wanted to see whether we were sort of similar in terms of other big Go projects in terms of feature showed up. You know, we could say like all the kernels seems to be doing sort of roughly the same tos of the same features in sort of similar ways. So we used actually the same static analysis tool or package to basically analyze a whole bunch of two big pieces of Go shopper that are on GitHub.<br>首先，这种新的高级语言的特点。我们只是想看看我们在功能方面是否与其他大型项目相似。你知道的，我们可以说所有的内核似乎都在以相似的方式做大致相同的功能。因此，我们实际上使用了相同的静态分析工具或包来基本上分析了在GitHub上的两大部分去购物者。</p>
+<p>发言人   52:17<br>You know, there are millions of lines of code. One is, you know, the Go runtime itself and all its packages and the system called Moby. And then we just basically plot it for sort of the number high level language features, how many times they were used per 1000 lines. So this graph shows that. So usually around that x AES are the language features.<br>你知道，有数百万行代码。其中一个是，你知道的，Go运行时本身及其所有软件包以及名为mobby的系统。然后我们基本上就把它绘制为高级语言特性的数量，每1000行使用它们的次数。所以这个图表显示了。所以通常在那个x AES周围是语言特征。</p>
+<p>发言人   52:36<br>You know, basically allocations correspond to calling new and sort of this corresponds to memory that it will be dynamically allocated by the garbage collector, you know, maps or like hash tables, slices or dynamic arrays. And here’s the channels synchronization. As you can see, we use them very little, but so does the Go runtime and movie. Clearly, the feature that we liked most was multifunction return, so being able to return multiple values, you know, we use closures, we didn’t use finalizer, use defer a little bit, you know, there’s a bunch of, you know, go routines that we do create we use interfaces type assertions to convert from one type to another in a type safe manner and importing many packages so the kernel sell build out of any packages and not like for one big single program. So if you look at this, you know, some features, you know, basically users less than go along and Mobi and sometimes, you know, basically loses some features more or roughly in the not in any sort of distinctly different way. So the main conclusion from this is basically uses the high level of features that actually go offers and doesn’t sidestep them. To basically get good form.<br>你知道，基本上分配对应于调用新的内存，这种内存将由垃圾回收器动态分配，你知道，像地图或哈希表、切片或动态数组。这是频道同步。正如你所看到的，我们很少使用它们，但Go运行时和电影也是如此。很明显，我们最喜欢的功能是多函数返回，因此能够返回多个值，你知道，我们使用闭包，我们没有使用终结器，使用一点延迟，你知道，有很多，go例程，我们创建的例程使用接口类型断言以类型安全的方式将一种类型转换为另一种类型，并导入许多软件包，因此内核出售任何软件包的构建，而不是单一的大型程序。所以如果你看一下，你知道，有些功能，你知道，基本上用户较少，有时，你知道，基本上会失去一些功能，而不是以任何明显不同的方式。因此，从中得出的主要结论基本上是使用了实际提供的高级功能，并且不会回避它们。基本上要得到好的形式。</p>
+<p>发言人   54:01<br>How did you, how are you able to count all of this? Did you use the static analysis tool? You basically use a static package. Static analysis is package and then wrote a little program that uses a static analysis. Packages go over every statement in these programs and look at what kind of type of statement it is, and then where you get the arguments and see how the arguments are being used. And that gives you a sense of that, how that allows you to count these features.<br>你怎么做到的，你怎么能计算出所有这些？你使用静态分析工具了吗？你基本上使用静态包。静态分析是打包的，然后编写了一个使用静态分析的小程序。包会检查这些程序中的每个语句，并查看它是哪种类型的语句，然后从哪里获取参数，并查看如何使用参数。这给了你一个感知，如何让你计算这些功能。</p>
+<p>发言人   54:37<br>Okay, so the next thing is a little bit subjective. The high level and simplified, basically code I.<br>好的，接下来的事情有点主观。高层次和简化，基本上是代码I。</p>
+<p>发言人   54:47<br>Think it generally did, and I’ll argue with one or two examples explicitly. Not having GC allocation is actually very nice. Maybe I can make the point like if you think of an XV six or like you do an exit, on the point of exit, there’s a lot of data structures that need to be freed or return to the kernel. And so the later process can use using the garbage collection is really easy. You know, the garbage collection takes care of all of it. You know, you don’t really have to do much. So if you allocate a free unit address base, you know the a VMA that corresponds to a bit address space, we will be automatically freed by the garbage collector too.<br>我认为它通常是这样的，我会明确地用一两个例子来争论。没有GC分配实际上是非常好的。也许我可以指出，如果你想到一个XV六或者像你做一个退出，在退出点，有很多数据结构需要被释放或返回内核。因此，后续进程可以使用垃圾回收非常容易。你知道，垃圾收集会处理所有的事情。你知道，你真的不需要做太多。所以如果你分配了一个空闲的单元地址库，你知道对应于一个位地址空间的VMA，我们也将被垃圾回收器自动释放。</p>
+<p>发言人   55:22<br>So, you know, just simple, as I mentioned earlier, the multi return values were really nice in terms of programming style, closures were nice, maps were great. You know, you don’t have the mini places Xb 6, for example, you loop up something in linear hashing, but if you have hash tables or maps as a first class or object or abstraction and programming language, you would never do that. I just write us a map and the runtime will take care of doing everything efficiently. So in effect, I think a qualitatively, you know, it feels you get simpler code, but as clearly qualitatively, you know, just to give a little bit more of a concrete example where really where sort of high level language particular garage collector shines, you know, when there’s a lot of concurrency between when there’s concurrency between the and the Freds have share a particular share data item. And so for example, here’s the sort of simplest case, you know, where you can boil down this question to, let’s say you allocate some dynamically an object like a buffer, the ephora fret, you know, and that process, that buffer. And there’s another thread that also process that buffer into something with this buffer. And when both frets are done, you know, the buffer needs to be 3. They can be used for later linear kernel operations.<br>所以，你知道，就像我之前提到的那样，多返回值在编程风格方面真的很好，闭包很好，地图也很棒。你知道，你没有迷你地方Xb 6，例如，你用线性哈希循环一些东西，但是如果你有哈希表或映射作为第一类、对象或抽象和编程语言，你永远不会这样做。我只是写了一张地图，运行时会高效地处理所有事情。因此，实际上，我认为从质量上讲，你知道，它感觉你得到了更简单的代码，但从质量上讲，你知道，只是给一个具体的例子，其中真正的高级语言特别是车库收集器闪耀，你知道，当之间有很多并发时，当和Freds之间有并发共享特定的共享数据项时。例如，这是一种最简单的情况，你知道的，你可以将这个问题归结为，假设你动态分配一些对象，比如缓冲区，即现象，你知道的，以及那个过程，即缓冲区。还有另一个线程也使用这个缓冲区将该缓冲区处理成某些东西。当两个烦恼都完成时，你知道，缓冲需要为3。它们可以用于以后的线性核函数操作。</p>
+<p>发言人   56:40<br>And the question is like, who should do this, who’s in charge, and there’s a little bit difficult to coordinate in, see, because, you know, you have to have some way of deciding that actually the buffer is actually not being used.<br>问题是，谁应该做这件事，谁负责，协调起来有点困难，因为你知道，你必须有一些方法来决定实际上缓冲区是否没有被使用。</p>
+<p>发言人   56:54<br>If you use a garbage collector, there’s nothing to decide. You know, basically both threads run when they’re done with the buffer, no threat is pointing to that buffer anymore, the garbage collector will trace starting from the threats stacks and will not account on buffering any of the Fred stacks. And therefore the garbage collector will free the memory at some point later. And so in garbages collected language teacher just’s not have to think about this problem at all.<br>如果你使用垃圾收集器，没有什么要决定的。你知道，基本上两个线程在完成缓冲区时运行，不再有威胁指向该缓冲区，垃圾回收器将从威胁堆栈开始跟踪，并且不会考虑缓冲任何Fred堆栈。因此，垃圾回收器将在稍后的某个时候释放内存。因此，在收集的垃圾中，语言老师根本不需要考虑这个问题。</p>
+<p>发言人   57:20<br>So one way you could try to solve this problem in Chrom liness like C, you put reference counts on the objects. You know, the reference counts, of course, have to be protected by locks perhaps, or by some atomic operations. And then when the Re counter reaches 0, then you can dereference it and it turns out like, you know, locks and reference guns are actually slightly expensive You if you want a high performance, you know, concurrency and schedule up to watch the course.<br>因此，您可以尝试在像C这样的Chrom中解决这个问题的一种方法，即在对象上放置引用计数。你知道，引用计数当然必须通过锁或一些原子操作来保护。然后当计数器达到0时，你可以取消引用它，结果发现，你知道，锁和参考枪实际上有点贵，如果你想要高性能，你知道，并发和安排观看课程。</p>
+<p>发言人   57:50<br>And then that actually can be a bottleneck. And we’ll see that later in you a couple weeks, we read a paper that actually talks about this very explicitly. And so people tend to, if you want to do high performance and get good parallelism, people tend to avoid them. And in fact, in particular, the scenario that we try to avoid them is like in read lock, you would like to make at least reading sort of lock free so you don’t have to pay the cost. And so, for example, here’s your code fragment that we do that.<br>然后这实际上可能成为一个瓶颈。我们稍后会在几周后看到，我们读到一篇论文，非常明确地谈到了这一点。因此，如果你想实现高性能并获得良好的并行性，人们倾向于避免使用它们。实际上，特别是我们试图避免的情况就像在读取锁定中一样，您希望至少读取锁定无锁，这样您就不必支付费用。所以，例如，这是您的代码片段，我们可以这样做。</p>
+<p>发言人   58:16<br>Here we have a get function that basically you reads the head of a queue and returns the whatever is at the head of the queue. It does it basically in a lock free manner, you know, uses an atomic in a load to actually read the head, but it doesn’t actually take a lock out. Then the writer, you know, does take locks out. So this is like block free, but the writer is not block free.<br>这里我们有一个get函数，基本上您可以读取队列的头部并返回队列头部的任何内容。它基本上以无锁的方式完成，你知道，使用加载中的原子来实际读取磁头，但实际上并没有锁定。那么作家，你知道，确实会把锁取出来。所以这就像块免费，但作者并不是块免费的。</p>
+<p>发言人   58:41<br>This is a very common style in the Linux kernel. And so the writer actually, you know, take out the lock, you know, whatever looks at the head. Maybe this is the pop function and pop at the head from the queue. And then, you know, for example, you could reuse it and then unlocks we 3 have.<br>这是Linux内核中非常常见的风格。因此，作者实际上，你知道，打开锁，你知道，无论头部看到什么。也许这是pop函数，并且从队列的头部弹出。然后，你知道的，例如，你可以重复使用它，然后解锁我们拥有的3。</p>
+<p>发言人   59:02<br>You see there’s a little bit difficult know when do you actually free the head? Because it could be the case that’s a lot concurrent threat that just before you did the tectonic store, you know, this guy actually came through and basically got a pointer to that particular object. So once you’re done with this atomic store, you can’t actually free the pointer because, you know, could be another Fred actually has to point it to it. And if you free it right here, you could actually have use after free buck and so. We’ll see in a couple lectures.<br>你看到有一点点困难，要知道你什么时候真正释放头部？因为在你做构造存储之前，可能存在很多并发威胁的情况，你知道，这个人实际上通过并基本上得到了指向该特定对象的指针。所以一旦你完成了这个原子存储，你就无法真正释放指针，因为你知道，可能是另一个弗雷德实际上必须指向它。如果你在这里释放它，你实际上可以在免费降压之后使用它。我们将在几次讲座中看到。</p>
+<p>发言人   59:34<br>This Kern has a very clever solution for this, which is called read copy update, or RCU. And basically what it does is it defers freeing of memory until it really knows it’s safe. And it has a very clever scheme to actually decide how to when it’s safe. But that scheme does come with all kinds of comes with restrictions, and programmers actually have to obey some set of rules that you must follow for sort of RCU critical sections, as they’re called. For example, you can’t call, you can, you can’t go to sleep in an RCU critical section or schedule. And so it turns out, although the Williams kernel uses is extremely successful, the bit error prone, it requires careful program to get it right.<br>这个Kern有一个非常聪明的解决方案，称为读取副本更新或RCU。基本上它的作用是推迟释放内存，直到它真正知道它是安全的。它有一个非常聪明的方案来决定何时安全。但是这个方案确实带来了各种限制，程序员实际上必须遵守一些规则，对于所谓的RCU关键部分，你必须遵循这些规则。例如，你不能打电话，你不能在RCU的关键部分或时间表中睡觉。结果证明，尽管威廉姆斯内核使用的是非常成功的，但容易出错，需要仔细编程才能正确使用。</p>
+<p>发言人   01:00:16<br>And in the case of a garbage collector language like, you know, go, this is again, this is like a non issue because the garbage collector will actually determine when actually something is not in use anymore and then only then free it. And so there’s nothing really, you know, there’s no restrictions on the programmer just taken care of by the cars collected. So that’s sort of an example of, you know, where sort of more maybe quantitatively or more, you know, explicit, you can see sort of the advantage of garbage collected language.<br>对于像go这样的垃圾回收器语言，这不是问题，因为垃圾回收器实际上会确定什么时候不再使用了，然后才释放它。所以真的没有什么，你知道的，对程序员没有任何限制，只是由收集的汽车照顾。所以这是一个例子，你知道，更多的可能是定量的或更明确的，你可以看到垃圾收集语言的优势。</p>
+<p>发言人   01:00:46<br>Okay, turn to the c.v.s., you know, I sort of mentioned this already. We went through all these Cvs and you sort of s-peptide manually and then try to decide whether to actually go and fix the problem. If we’re living, then we couldn’t figure it out. We looked at the fix, the patch that addresses, if we couldn’t really figure out like what the outcome would go or how it manifest, how we could see how we implemented the fixed, but couldn’t decide whether to actually go, would avoided the problem or not. There were a number of logic bug in the Cv’s and so presumably, you know, go, you made the same logic bug as in C and the outcome would be the same, but then there were about 40 memory safety bugs usually after three or double free or out of bounds and in, you know, 8 of these you just disappear because the garbage collector came care of them as I described in the last couple of slides. And then for the two cases, you know, we would have generated panic because you for example, would go outside of an array bound and of course panic is not good, you know, the kernel crashes, but it’s probably better than a security exploit. And so, so in 40 cases, it kind of basically the high level language helped us.<br>好的，转向c.v.s.，你知道的，我已经提到过了。我们检查了所有这些Cvs和您手动排序的s-肽，然后尝试决定是否实际去解决问题。如果我们在生活，那么我们无法理解。我们查看了修复程序，即解决问题的补丁，如果我们无法真正弄清楚结果会是什么或者它是如何表现的，我们如何看到我们如何实现修复，但无法决定是否真正去解决问题。在Cv中存在许多逻辑错误，所以大概，你知道，去吧，你犯了和C相同的逻辑错误，结果也一样，但是通常在三个或两个自由或超出范围之后，大约有40个内存安全错误，你知道，其中8个你就消失了，因为垃圾回收器来处理它们，正如我在最后几张幻灯片中所描述的那样。然后对于这两种情况，你知道，我们会产生恐慌，因为例如，你会超出数组界限，当然恐慌并不好，你知道，内核崩溃，但它可能比安全漏洞更好。因此，在40个案例中，基本上高级语言对我们有所帮助。</p>
+<p>发言人   01:02:00<br>Okay, so that’s the quality, the benefits. So now I want to talk a little bit about, the performance cost. I love language text. Before doing that, let me ask if there’s any more questions.<br>好的，这就是质量，就是好处。所以现在我想谈谈性能成本。我喜欢语言文字。在这样做之前，让我问一下是否还有其他问题。</p>
+<p>发言人   01:02:21<br>Okay I’m going to go through them. I’m not sure I we’ll make it through all 6 because I want a couple minutes at least at the end to come back to the starting point of the lecture, the base question. So the setup in terms of experiments. Basically runs on raw hardware. So these experiments are on little physical machines, not on top of qmu. This is a 4 core 2.8 GHz Intel processor, 16 GB Ram, but hyperfest disabled.<br>好的，我要通过它们。我不确定我能否完成全部6个，因为我想在演讲结束时至少花几分钟回到演讲的起点，也就是基本问题。所以在实验方面的设置。基本上在原始硬件上运行。所以这些实验是在小型物理机器上进行的，而不是在qmu之上。这是一个4核2.8ghz英特尔处理器，16 GB内存，但禁用了hyperfest。</p>
+<p>发言人   01:02:54<br>We use free applications, web server, key value store in the mail server benchmark. Know of these applications stress the kernel will intensively so they run execute system calls and the kernel must do a lot of work. And you can see that because the most of the time excelling these applications is spent in the kernel.<br>我们在邮件服务器基准测试中使用免费应用程序、web服务器、键值存储。知道这些应用程序会给内核带来压力，所以它们会运行执行系统调用，内核必须做很多工作。你可以看到，因为这些应用程序的大部分时间都花在内核上。</p>
+<p>发言人   01:03:15<br>So first question is like, is Linux even or is basically even in the neighborhood of you production call the kernel or industrial quality kernel?<br>所以第一个问题是，Linux是甚至或基本上甚至在你的生产环境中称之为内核还是工业级内核？</p>
+<p>发言人   01:03:24<br>And so what we did, we compared the app for Biscuit and Linux. For Linux, we used 4.9. Linux is a little bit out of date now because the papers, of course, are a couple of years old again. But of course, when we Linux, we have to disable all kinds of features that Biscuit uses or doesn’t provide. I mean, so like page table isolation, reping, you know, all kinds of, you know, long list of features, you know, actually bis that will provide XV 6 provides and we disable them Linux to make the comparison as far as possible. And of course, you know, there’s some features are hard to disable. You know, we were not able to disable those, but you know, we try to get as close as possible and then, you know, we measured basically the throughput and you as you can see, you know, the biscuits is almost always slower always slower than Linux, You know, on male bench, you know, it’s about to get whatever, 10% on ngx is a little bit more, you know, the red is a little bit of 10, 15%, but you should just use these numbers very, very grain salt because they’re not identical, it’s not an apples to apples comparison, but to sort of first order, they’re roughly in the same ballpark. At least, you know, they’re not like 2x, 3x, 4x or 10x off, so maybe it is worthwhile to actually be able to do and actually to draw some conclusions out of it.<br>所以我们做了什么，我们比较了饼干和Linux的应用程序。对于Linux，我们使用了4.9。Linux现在有点过时了，因为论文当然又过时了几年。当然，当我们使用Linux时，我们必须禁用饼干使用或不提供的各种功能。我的意思是，像页表隔离，reping，你知道的，各种各样的，你知道的，一长串的特性，你知道的，实际上bis将提供XV 6提供，我们禁用它们Linux以尽可能地进行比较。当然，你知道，有些功能很难禁用。你知道，我们无法禁用这些，但是你知道，我们试图尽可能接近，然后，你知道，我们基本上测量了吞吐量，你可以看到，饼干几乎总是比Linux慢，你知道，在男性板凳上，你知道，它即将得到什么，在ngx上10% 稍微多一点，你知道，红色是10，15%，但你应该使用这些数字非常非常谷物盐，因为它们并不相同。这不是一个苹果与苹果的比较，但就第一顺序而言，它们大致相同。至少，你知道，它们不像2x、3x、4x或10x那样，所以也许真正能够做并从中得出一些结论是值得的。</p>
+<p>发言人   01:04:48<br>So, so then we sort of looked at like, you know, we looked basically profiled the code and tried to bucket, you know, the cycles that were spent by the code. Particularly, we’re looking at which cycles were actually in the garbage collector, which cycles were actually in the prolo function calls. And the problem will actually and go do about of work, you know, to ensure that the stack is large enough so you don’t run after stack, right?<br>所以，然后我们有点像，你知道，我们基本上分析了代码并试图存储代码花费的周期。特别是，我们正在查看哪些周期实际上在垃圾回收器中，哪些周期实际上在prolo函数调用中。而问题实际上会继续进行工作，以确保堆栈足够大，这样你就不会在堆栈之后运行，对吧？</p>
+<p>发言人   01:05:16<br>Barrier cycles. This is actually one in garbage collection mode. You know, the garbage collector turns on right barriers to basically track pointers between different spaces and the safety cycles, you know, which are safety cycles are the cycles spent on.<br>障碍循环。这实际上是一个垃圾回收模式。你知道，垃圾回收器会打开正确的屏障，基本上跟踪不同空间之间的指针和安全周期，你知道，安全周期就是花费在安全周期上的周期。</p>
+<p>发言人   01:05:37<br>Rebound checks, things like that. No point of checks. And so if you look at these applications here, the numbers, so 3% of the execution time was actually spent in sort of GC cycles. And I’ll talk a little bit about why that’s low, but it is the case that the car collector is running while running these applications. So it’s not the case that we measured the applications. You know, we get so much memory, you just could run without running data.<br>反弹支票，诸如此类的事情。没有检查的意义。因此，如果你看这里的这些应用程序，数字，3% 的执行时间实际上花在了GC周期上。我将稍微谈一下为什么它很低，但情况是汽车收集器在运行这些应用程序时正在运行。所以我们测量应用程序并不是这种情况。你知道，我们有这么多的内存，你可以在没有运行数据的情况下运行。</p>
+<p>发言人   01:06:07<br>The crux collector, surprisingly, actually the prologue cycles turn out to be the highest. And this is basically you the way the scheme that they were using that time for checking the kernel or the stack of a Fre needed or go routine needed to be grown or not. And this is something that actually you to go disasters that pointed and thought probably easier to get lower.<br>令人惊讶的是，序言周期实际上是最高的。这基本上就是他们使用的方案用于检查内核或堆栈所需的Fre或go例程是否需要增长的方式。这实际上是你去灾难的东西，它指向并且认为可能更容易降低。</p>
+<p>发言人   01:06:28<br>Very little time actually in the barrier. And so 2 to 3% in the safety cycles. And so in some sense, you know, this is good news, you know, not you, The tax is not gigantic.<br>实际上在屏障里的时间很少。因此，安全周期中的2% 至3%。所以在某些感知，你知道，这是个好消息，你知道，不是你，税收并不巨大。</p>
+<p>发言人   01:06:42<br>Of course, this number could be much higher because this is completely dependent on how many, how big, you know, the heap is or how big the number of live objects is, because the garbage collector will have to trace all the live objects to actually deter which objects are not light. And so if you know, there’s a lot of live objects, you know, the garbage collector will have to trace more objects. And so it’s completely sort of linear with the number of live objects.<br>当然，这个数字可能要高得多，因为这完全取决于堆的数量、大小或活动对象的数量，因为垃圾回收器必须跟踪所有活动对象以实际阻止哪些对象不是轻的。因此，如果你知道有很多活动的对象，你知道，垃圾回收器将不得不跟踪更多的对象。因此，它与活的物体数量完全呈线性关系。</p>
+<p>发言人   01:07:07<br>So we did some other experiments. Zoom had a little bit where we basically allocated a ton of light data, like 2 million V notes. Think about this as 2 million I notes, and then the amount of sort of headroom or like change the amount of headroom that the garbage collector has now for free memory and then impact, then measure the cost. And this is the table here. So we have like 6 to 40 MB of light data, and then we’re running with different memory sizes. And so one says, okay, there’s 320 MB of data. So the ratio of life to free is 2.<br>所以我们做了一些其他的实验。Zoom有一点点的地方，我们基本上分配了吨的光线数据，比如200万个笔记。想象一下200万个我的笔记，然后改变垃圾回收器现在对可用内存和影响的净空余量，然后测量成本。这是这里的桌子。所以我们有6到40 MB的光数据，然后我们使用不同的内存大小运行。所以有人说，好吧，有320 MB的数据。所以生命与自由的比率是2。</p>
+<p>发言人   01:07:42<br>And you see that in that case, the great imps, those Sears overhead for garbage collector, because the garbage collector needs to run a lot because it doesn’t have much headroom. But you know, if you basically, if the three memories about twice, you know, you combine enough memories, the free memories twice, you know, that of the life memory, then the garbage collection overhead is not actually that created like in the 9 range. So basically to keep the GC overhead, like sort of Rapha team around below 10%, you need about three times the heap size in terms of physical memory.<br>你会看到，在这种情况下，那些伟大的小不点，那些垃圾回收器的开销，因为垃圾回收器需要运行很多，因为它没有太多的净空空间。但是你知道，如果你基本上，如果三个记忆大约两次，你知道，你将足够的记忆，自由记忆两次，你知道，生活记忆的那一次，那么垃圾收集的开销实际上并不是像9范围内的那样产生的。因此，基本上为了保持GC的开销，就像Rapha团队一样，低于10%，你需要大约三倍的物理内存堆大小。</p>
+<p>发言人   01:08:19<br>Any questions about this?<br>对此有什么问题吗？</p>
+<p>发言人   01:08:23<br>I had a question about the right barriers. What are those? Do you, is it like you set some permissions? Okay, no, it’s not. So if I know, if you remember the lecture from a little while ago, the appellant paper where we talked about the to and from spaces and garbage collector runs, then you have to check whether the pointer is in the from space, right? Because it’s in the from space, you have to copy it. And basically the right barriers are very similar. This is the same sort of type idea where you need to check every pointer to see if actually it actually points in the space that actually you need to garb collect that’s it, right barrier.<br>我有一个关于正确障碍的问题。那些是什么？你，是你设置了一些权限吗？好吧，不，不是这样的。所以，如果我知道，如果你还记得刚才的演讲，我们谈论了空间和垃圾回收器运行的上诉人论文，那么你必须检查指针是否在空间中，对吗？因为它在太空中，你必须复制它。基本上，正确的障碍非常相似。这是同样的类型想法，你需要检查每个指针，看看它是否实际上指向了你需要收集的空间，就是它，右边的屏障。</p>
+<p>发言人   01:09:11<br>Sorry, so like the free memory, what is, what is it exactly? Like?<br>抱歉，就像空闲内存一样，它到底是什么？就像？</p>
+<p>发言人   01:09:16<br>How does it work that the life is more than free? Oh, okay, so you buy some amount of memory and life memory is actually memory that was used by these V nodes, and then there was another 3 and a 20 MB was just free. And so when this application allocated more, you know, VNO, they first came out of the free memory until the free memory was full occurred, and then concurrently the garbage collector was running and. So we run it in like free configuration. In one configuration, basically the amount of free memory twice as sort of the heat life memory. And so that means that the garbage collector has a lot of sort of headroom to do sort of concurrently while running with the application. And if there’s a lot of headroom, in this case from a free memory, then the garbage collection overheads are not that high, around 10% instead of 34%.<br>生命不仅仅是自由的，它是如何运作的？哦，好的，所以你购买一定数量的内存，生命内存实际上是这些V节点使用的内存，然后还有另外3个和20个MB是免费的。所以当这个应用程序分配更多的资源时，你知道，VNO，它们首先从空闲内存中出现，直到空闲内存已满，然后垃圾回收器同时运行。所以我们在免费配置中运行它。在一种配置中，基本上可用内存量是热寿命内存的两倍。这意味着垃圾回收器在运行应用程序时有很大的并行空间。如果有很大的净空余量，在这种情况下是空闲内存，那么垃圾收集的开销就不是很高，大约是10% 而不是34%。</p>
+<p>发言人   01:10:07<br>Okay, I see, I see, thank you. You think about it like there’s a little bit of slack, you know? So for the garbage collector to do its work, right, I thought that it’s like total 320 of that was confused. No, no, total is 320 plus 640. And the last line is 640 plus 1280, Okay, thank you.<br>好的，我明白了，谢谢。你认为它有一点松弛，你知道吗？所以对于垃圾收集器完成它的工作，对吧，我认为总共320个是混乱的。不，总数是320加640。最后一行是640加上1280，好的，谢谢。</p>
+<p>发言人   01:10:29<br>I’m going to skip this. Actually, let me talk a little bit of pause. This, you know, this is a the go garbage collector is a concurred garbage collector and short pauses, it stops the world very short period of time basically to enable right barriers and then basically the application keep on running while the garbage collector doesn’t work and it’s incremental as like the one that we discussed a couple weeks ago where basically every call to new, that’s a little bit of garbage collection work. And so every time that you do a little bit of garbage collection work, you know, there’s some delay now that’s being cost correct and so we measured.<br>我要跳过这个。实际上，让我暂停一下。这个，你知道，这是一个go垃圾收集器，它是一个一致的垃圾收集器和短暂停，它在很短的时间内停止了世界，基本上是为了实现正确的障碍，然后基本上应用程序继续运行，而垃圾回收器不起作用，它是增量的，就像我们几周前讨论的那样，基本上每次调用新的，这是一点点垃圾收集工作。所以每次你做一点垃圾收集工作时，你知道，现在有一些延迟，这是成本正确的，所以我们进行了测量。</p>
+<p>发言人   01:11:09<br>We took one application and looked at the sort of the maximum pause time. So the maximum time that an application could be stopped because the guard collector needs to do some work.<br>我们取了一个应用程序，并查看了最长暂停时间的排序。因为警卫收集器需要执行一些工作而可以停止应用程序的最长时间。</p>
+<p>发言人   01:11:20<br>And it turned out to be, you know, the max single pass of 150 microseconds. That’s in the case of the web server that was using the TCP stack. And basically a large part of the TCP connection table needed to be marked before you continuing. And that took 150 microseconds, the maximum total pause time for a single ngx and Http request is the sum of a number of single passes and the maximum pass in total for a single request, what, 582 microseconds?<br>结果证明，你知道，最大单次通过时间是150微秒。这是在使用TCP堆栈的web服务器的情况下。在继续之前，基本上需要标记大部分的TCP连接表。这花费了150微秒，单个ngx和Http请求的最大总暂停时间是单个通过次数和单个请求的最大通过次数的总和，什么，582微秒？</p>
+<p>发言人   01:11:51<br>So basically, when the request comes into the machine during, you know, there was a total delay of 582 microseconds to actually execute that request and just happened very, very seldom, only 0.3% of the requested times actually had do more than 100 microseconds. And so, you know, that’s not good if you’re trying to achieve like an SLA or we’re basically the long time and request takes small. But now if you look at know Google papers are bad, like in the tail of scale, like, you know, how long, long this request takes, you know, they’re talking about the new order of, you know, tens of milliseconds or milliseconds or 10 milliseconds. And so probably the programs that these particular programs that actually have a past time with maximum price to pass down the 582 microseconds is sort of within the budget. It’s not ideal, but it’s not not crazy. And so that basically says that they’re the really, but the amazing success that the Go designers did actually a terribly good job actually implementing their garbage collector, or impressively good job, and is one of the things that we’ve noticed, you know, while doing this project, like every time we upgraded the Go runtime, the next runtime, it came with a better garbage collector.<br>基本上，当请求进入机器时，实际上执行该请求总共有582微秒的延迟，而且很少发生，只有0.3% 的请求次数实际上超过了100微秒。所以，你知道，如果你试图像一个sa一样实现目标，或者我们基本上需要很长时间，并且要求很小，那就不好。但现在，如果你看看谷歌的论文不好，就像在规模的尾部，就像，你知道，这个请求需要多长时间，你知道，他们在谈论新的顺序，你知道，几十毫秒、几毫秒或10毫秒。因此，这些特定程序可能实际上具有最高价格的过去时间传递582微秒的程序可能在预算之内。这不是理想的，但也不是疯狂的。这基本上表明他们是真正的成功，但Go设计师在实现他们的垃圾收集器方面做得非常好，或者说做得非常好，这是我们在做这个项目时注意到的事情之一。就像我们每次升级Go运行时一样，下一个运行时，它都配备了更好的垃圾回收器。</p>
+<p>发言人   01:13:11<br>And actually, these numbers got better and better. Okay, one more sort of technical detail that I want to go over so far.<br>实际上，这些数字变得越来越好。好的，还有一个技术细节我想详细介绍一下。</p>
+<p>发言人   01:13:23<br>You know, like the first comparison between Linux and Biscuit, you know, it’s not really fair because Biscuit in and Linux and implement slightly different features. So we did one more experiment where we basically try to code up two kernel paths completely identical, both in Linux and in like in C and in Go. And we looked at the code path and sort of verify that basically, you know, it implements exactly the same thing and looked at the assembling structures to really see what the differences are. There are going to be some differences because there is going to pay the safety checks. But look, just in terms of basic operation, that at least the code paths are sort of identical in terms of functionality. And we did that for two code pass. And it was a difficult to do. It was a painstaking drop we did for two or coded did it actually for 2, and then we compare them.<br>你知道，就像Linux和Biscuit之间的第一个比较一样，你知道，这并不公平，因为Biscuit和Linux实现了略微不同的功能。所以我们又做了一个实验，基本上我们尝试在Linux、C和Go中编码两个完全相同的内核路径。我们查看了代码路径，并验证了基本上，你知道，它实现了完全相同的东西，并查看了组装结构，以真正看到区别是什么。会有一些差异，因为要支付安全检查。但是看，就基本操作而言，至少代码路径在功能方面是相同的。我们这样做了两次代码通过。这很难做到。这是一个艰苦的过程，我们为两个做了，或者实际上为两个编码了，然后我们比较它们。</p>
+<p>发言人   01:14:18<br>And so here the results from one of them.<br>所以这里是其中一个结果。</p>
+<p>发言人   01:14:20<br>This is a pipe ping pong, you know, sort of test. You know, you ping pong, you buy the cross the pipe. And we just looked at the code path through the kernel to actually get that byte from one end to the pipe to the other end, the pipe. And in the total amount of code in gold is like this is one point thousand lights. Code. In C, it’s 1.8 thousand lines code. There’s no allocation, no Gcs. So those things are just different.<br>这是一个乒乓球管子，你知道的，有点像测试。你知道吗，你乒乓球，你买十字管。我们只是查看了通过内核的代码路径，以实际将字节从一端到达管道，到达管道的另一端。而在黄金代码的总量中，这就像是1千盏灯。代码。在C中，它是18000行代码。没有分配，没有Gcs。所以这些事情只是不同而已。</p>
+<p>发言人   01:14:46<br>We also looked at the runtime like where the most time spent and in both coast paths, you know, same top 10 instructions showed up. So sort of there’s some confidence that the code paths really are closer. You can get to make them similar.<br>我们还查看了运行时，例如花费最多时间的地方，以及在两条海岸线上，你知道，出现了相同的前10个指令。因此，有一点信心，即代码路径确实更接近。你可以让它们变得相似。</p>
+<p>发言人   01:15:01<br>And then we would look at basically the amount of operations you can do per second. And, you know, as you see here, you know, basically, you know, the Go is a little bit slower. The C implementation and the ratio is about one point 15% slower. And that’s sort of you if you look at the pro local safety checks, you know, these are all the instructions that the C code does not have to execute. That turned out to be sort of 16% more assembly instructions. And so that sort of roughly sort of sort of makes sense. So, you know, the main conclusion is go is slower, but pretty competitive, you not ridiculously slower. And that seems in line with the early results of where we did these Linux to bisc comparisons directly.<br>然后我们将看看基本上每秒可以执行的操作数量。而且，你知道，就像你在这里看到的，你知道，基本上，你知道，Go有点慢。C实现和比率大约慢了一分15%。如果你看一下本地安全检查，你就知道，这些都是C代码不必执行的指令。事实证明，这增加了16% 的汇编指令。因此，这大致有点使感知。所以，你知道，主要结论是去较慢，但相当有竞争力，你不是慢得可笑。这似乎与我们直接将Linux与bisc比较的早期结果一致。</p>
+<p>发言人   01:15:47<br>Okay, so let me zoom a little bit further. Let me skip this because I want to talk a little bit about this sort of the question that we asked in the beginning, you know, or should one use a high level M for a new kernel? And maybe like instead of answering, I have some thoughts about this here on this slide. You know, that’s some conclusion that we draw and know it’s not a crisp conclusion.<br>好的，让我放大一点。让我跳过这个，因为我想谈谈我们在开始时提出的这类问题，你知道，还是应该使用高级的M来开发新的内核？也许不像回答，我在这张幻灯片上有一些想法。你知道，这是我们得出的一些结论，并且知道它不是一个清晰的结论。</p>
+<p>发言人   01:16:09<br>There’s some considerations. So maybe to take a step back and to ask yourself the question like, what would you have prefer? You know, would you prefer to write, you know, actually 6 in the YC or would you prefer to use a high level limits, for example, like go? And particularly in answering this question, what kind of bug would you have avoided? Or maybe you have to have some time during this lecture to think about like what bugs you had. And I would love to hear, you know, what you experience, know how you think switching to a high level lens would have changed your experience. Or if you have any thoughts on this question at all. Let me pause you for a little bit so that you can think about this and maybe chime in.<br>有一些考虑。所以也许退后一步，问自己这样的问题，你会更喜欢什么？你知道，你是更喜欢在YC中编写6，还是更喜欢使用高级别限制，例如像go？尤其是在回答这个问题时，你会避免哪种bug？或者在这个讲座中你需要一些时间来思考你有哪些bug。我很想听听，你知道，你经历了什么，你认为切换到一个高层次的镜头会如何改变你的经历。或者如果你对这个问题有任何想法。让我暂停一下，这样你就可以思考一下，也许可以插嘴。</p>
+<p>发言人   01:16:59<br>I have had a couple of times when I did the thing where I create an object in a function and then return a pointer to it, and then I do stuff with a point. And then I realized that the object is gone. Yeah, so there’s a classic example of so views have free case, correct? Yeah, the second time I realized it faster than the first time. It’s definitely true. You’ve seen a couple of times in those books and you get better at them. Any other thoughts on this, you know, other experiences that people have had, Think about your worst box, the box that took the most time. Language would have been helped.<br>我有几次这样做的时候，我在函数中创建一个对象，然后返回一个指向它的指针，然后我用一个点做一些事情。然后我意识到那个物体不见了。是的，有一个经典的例子，视图有免费的情况，对吗？是的，我第二次比第一次更快地意识到它。这绝对是真的。你在那些书里看过几次，而且你会做得更好。关于这一点的任何其他想法，你知道的，人们曾经有过的其他经历，想想你最糟糕的盒子，那个花了最多时间的盒子。语言会有所帮助。</p>
+<p>发言人   01:17:43<br>I think it definitely like, like some of the bugs were absolutely terrible to deal with, but at the same time, like in this context, I definitely appreciated having to work with such a low level languages C because it helped me to really gain a very like a deep understanding of what’s actually going on inside the operating system, like how it’s working with memory, like it’s definitely refreshing to like not have all of that abstracted away and to actually see exactly what’s going on. That makes a lot of sense. Any other, any other people who have opinions on this?<br>我认为这绝对像是，就像一些错误绝对很难处理，但与此同时，就像在这种情况下，我非常感激使用如此低级的语言C，因为它帮助我真正深入了解操作系统内部实际发生的事情，比如它是如何与内存一起工作的，就像不把所有这些抽象掉，真正看到正在发生的事情绝对是令人耳目一新的。这很感知。任何其他人对此有意见吗？</p>
+<p>发言人   01:18:20<br>I think I also made a lot of bugs in which I was. Writing after the end of a string or something like that. But then I wasn’t getting any useful feedback about it. And then very strange things happened that I couldn’t explain. So yeah, that showed up in lab one. There was a bunch of streams operations, like when you were parsing directories and things like that, It showed up in multiple labs. Okay, no I’m not surprised. Okay, that’s a great example. Like, you know, it’s very nice actually.<br>我想我也犯了很多错误。在字符串的末尾写入或类似的内容。但后来我没有得到任何有用的反馈。然后发生了非常奇怪的事情，我无法解释。所以是的，这出现在第一实验室。有很多流操作，比如当你解析目录之类的东西时，它会出现在多个实验室中。好的，不，我并不感到惊讶。好的，这是一个很好的例子。就像，你知道，这实际上非常好。</p>
+<p>发言人   01:19:00<br>I have real string objects. One thing on my end is that I found myself lacking whenever I needed something like a map and I just, I cringed every time I needed to do a for loop over something and then find. However, I will say it like coming from a high level programming background, this was my first real exposure to something like C, so going off of a Noah’s point, it kind of helped me to understand really what it means that like this code that I’m writing is actually running on the CPU and everything is from the perspective of the CPU.<br>我有真正的字符串对象。我的一个目的是，每当我需要像地图这样的东西时，我发现自己缺乏，每次我需要做一个for循环然后找到东西时，我都会畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏畏难。然而，我会说这就像是来自高级编程背景，这是我第一次真正接触到像C这样的东西，所以偏离了诺亚的观点，它帮助我真正理解了我编写的代码实际上是在CPU上运行的，并且一切都是从CPU的角度来看的。</p>
+<p>发言人   01:19:36<br>Any other? Thoughts? Oh, actually, remember, it was specifically the difference between save string copy or just string copy. One of them was putting, was using the null terminator and that was, yeah, come C bug.<br>还有吗？思想？哦，实际上，请记住，它具体是保存字符串复制或只是字符串复制之间的区别。其中一个正在使用空终结者，那就是，是的，来C错误。(nby.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.by.)</p>
+<p>发言人   01:20:04<br>Well, so you know, first of, you know, thanks for the input. Of course, we’re not going to change x 3 6 to go or any high level limits exactly for the reasons that, you know, I think a number of you like. No, I mean, you actually mentioned the goal still hides too much. And in this particular class, the whole purpose is just really trying to understand everything, everything sort of between the CPU, the system called interface. And so for example, go of course, heights, fres, and, you know, we don’t want to hide that. We want to explain to you actually how frets are implemented. And so we would not want to hide this from so certainly future years, you know, or actually six or these guys will all keep on using, see? But like if you implement a new kernel and the goal is not, you know, educating students in bath kernels, but the goal is to write like a sort of a safe, high performances, keirnan, you know, there’s sort of, you know, some things you conclude from the study I’ve done that we’ve done, you know, memory or performance is really paramount.<br>嗯，你知道，首先，你知道，谢谢你的投入。当然，我们不会改变x 3 6的极限或任何高水平的限制，确切地说，你知道，我认为你们中的一些人喜欢的原因。不，我的意思是，你实际上提到了目标仍然隐藏了太多。在这个特定的课程中，整个目的只是试图理解CPU之间的一切，称为接口的系统。例如，当然去，高度，新鲜，你知道的，我们不想隐藏它。我们想向您解释真正的烦恼是如何实现的。所以我们不想隐藏这一点，所以未来几年，你知道，或者实际上六个，这些人都会继续使用，看到了吗？但是，如果你实施了一个新的内核，目标不是，你知道，教育学生使用沐浴内核，而是目标是编写一种安全，高性能的keirnan，你知道，有点，你知道，你从我所做的研究中得出的一些结论是，你知道，记忆或表现真的很重要。</p>
+<p>发言人   01:21:07<br>You can’t like sacrifice 50%, then you should probably use C if you want to minimize memory use. You probably should use C 2 if safety is important or security is important. And probably the high level language is the way to go. And probably in many cases, performance is merely important as opposed to absolute, you know, paramount. And in many cases, I think, you know, a high, low and high level language is a perfectly reasonable thing to do for kernel.<br>你不能喜欢牺牲50%，那么如果你想最小化内存使用，你应该使用C。如果安全很重要或安全很重要，你可能应该使用c2。可能高级语言是一条可行的道路。而且可能在许多情况下，性能仅仅是重要的，而不是绝对的，你知道的，最重要的。在许多情况下，我认为高级、低级和高级的语言对于内核来说是完全合理的。</p>
+<p>发言人   01:21:30<br>Probably one thing I’ve learned or probably we, Cody, Robert, and I have learned from this whole project is like, why programming languages are programming language. And you can use it to be built kernel. So you can build the user applications. It’s not really sting anything in really in the way.<br>可能我从整个项目中学到了一件事，也可能是我们科迪、罗伯特和我从中学到的，就是为什么编程语言是编程语言。你可以用它来构建内核。这样你就可以构建用户应用程序了。这并不是真正的刺痛任何东西。</p>
+<p>发言人   01:21:50<br>Okay, you know, I think it’s time to wrap up, but you know, if you have any more questions, you know, feel free to hang around, ask them. If you have to go somewhere else. Good luck with finishing the m.m. lab. And for those of you are leaving campus for Thanksgiving, safe travels, and hope to see you after Thanksgiving and Monday’s lecture after Thanksgiving.<br>好的，你知道，我想是时候结束了，但是你知道，如果你还有任何问题，你知道，随意闲逛，问他们。如果你必须去别的地方。祝你好运，完成了m.。 实验室。对于那些要离开校园去感恩节的人，请安全旅行，并希望感恩节后和感恩节后的Mond讲座再见到你们。</p>
+<p>发言人   01:22:17<br>Thank you I was curious, how did you implement it? Like I said, you were doing that just on the hardware. So like when you start out, how do you start out? You know, there’s basically a little shim code that sets up enough of the hardware so that when this is, you know, asks for or when the Go function, go runtime mask for memory for the heap that we can actually respond. And that was one of the main things that actually go runtime actually relies on, right? I guess I was like you said that you then use a virtual machine for that. So we did, of course, you know, we developed, okay, motion development was on q.u..<br>谢谢，我很好奇，你是如何实现它的？就像我说的，你只是在硬件上做这件事。就像当你开始的时候，你如何开始？你知道，基本上有一个小的填充代码，可以设置足够的硬件，以便当这需要时，或者当Go函数时，go运行时掩码为堆提供内存，我们可以实际响应。这实际上是运行时所依赖的主要因素之一，对吧？我想我就像你说的那样，你可以使用虚拟机来完成这个任务。所以我们做了，当然，你知道，我们开发了，好的，运动开发是在q.u.</p>
+<p>发言人   01:23:03<br>Of course, in the end, we actually had to get it running on their raw hardware. It also costs there a bunch of problems. You know, the bootloader different, there’s a bunch of boot code that you actually need to write that you don’t have to write if you run it on qmu and that kind of stuff. But most of the development is all done in q.u..<br>当然，最终，我们实际上不得不让它在他们的原始硬件上运行。这也会带来很多问题。你知道，引导加载程序不同，你实际上需要编写一堆引导代码，如果在qmu上运行它，你就不必编写这些代码之类的东西。但大部分开发都是在q.u.完成的。</p>
+<p>发言人   01:23:17<br>In fact, you know, if you want to actually show running bisitun q.u., and it looks very similar to x 6, you know, the only thing it does like social your prompt, there’s no window system, nothing like that, okay? I see.<br>事实上，你知道，如果你想真正展示正在运行的bisitun q.u.，它看起来非常类似于x6，你知道，它唯一像社交提示一样，没有窗口系统，没有那样的东西，好吗？我明白了。</p>
+<p>发言人   01:23:31<br>So like what happens if you if you make a mistake in the book, code doesn’t boot, you know, basically nothing happens, You know, it’s completely nothing, how do you know? You will know because you know, okay, what will happen is, of course, you don’t see a print statement like in X 3, 6, or the first thing we print it like, you know, x 3, 6, hello or something, or XV 6 is booting. You won’t see anything like that. And so you will see nothing. And then, you know, you will have to track down and guess, you know, what the problem might be, okay? So you do it by looking, okay, a little bit. You can write synchronously to the UAR, you know, you can put like, you know, stupid characters, you see, put them in random places in the code and hopefully that you see something.<br>就像如果你在书中犯了一个错误会发生什么，代码无法启动，你知道，基本上什么都没发生，你知道，完全没什么，你怎么知道？你会知道的，因为你知道，好的，会发生的事情是，当然，你不会看到像x3、6这样的打印语句，或者我们打印它的第一件事，比如，你知道，x3、6、你好或其他东西，或者XV 6正在启动。你不会看到那样的东西。所以你什么也看不到。然后，你知道，你将不得不追踪并猜测，你知道，问题可能是什么，好吗？所以你可以通过看，好吧，一点点。你可以同步编写到UAR，你知道，你可以把愚蠢的字符放在代码的随机位置，希望你能看到一些东西。</p>
+<p>发言人   01:24:21<br>This is interesting, thank you. I wanted to ask when you, so I know like you implemented the go some of the calls the go run time would make, that you can not make because you’re implementing the kernel itself. Is there any like, did you just implement just all of that in assembly or did you say, okay, like some of this we can still do and go like we can bring, go a bit closer and then do assembly only what’s necessary, sorry, or to just say like once the Go runtime ends, like that’s assembly, that’s where the 1500 lines of assembly came from in Biscuit.<br>这很有趣，谢谢。我想问一下你什么时候实现的，所以我知道你实现了go运行时会发出的一些调用，但你不能发出这些调用，因为你正在实现内核本身。是否有类似的东西，你是刚刚在汇编中实现了所有这些，还是你说，好吧，就像其中一些我们仍然可以做，然后像我们可以带的那样，走得更近一点，然后只做必要的汇编，抱歉，或者只是说一旦Go运行时结束，就像组装一样，这就是1500条组装线的来源。</p>
+<p>发言人   01:25:01<br>You know, that is basically the code to sort of, you know, get everything ready to be actually able to run the code runtime. Now, some of that we could have implemented C, but we didn’t want to do that because we didn’t want to use any C, so we were an assembly. Many of it actually required assembly because it’s in the booting part, right? But I guess some of the part that’s not the So I’m, you know, I know that some just you can not avoid some boot code and assembly, but could you, could you have transformed some of the assembly to go or did you go to the absolute we did wrote a whole bunch of gold that basically runs very early on and you know, some of the go go is quite careful, doesn’t do any memory allocations. That makes sense, we tried to write as much as possible so I can can like I have to look at the code exactly, you know, to be able to answer your question specifically, you can look at the Git repo. But yeah, we tried to write everything and go.<br>你知道，这基本上是一种代码，你知道，准备好一切，以便能够运行代码运行时。现在，我们可以实现其中一些C，但我们不想这样做，因为我们不想使用任何C，所以我们是一个程序集。其中许多实际上需要组装，因为它在引导部分，对吧？但我猜有些部分不是，所以我，你知道，我知道有些部分你无法避免一些启动代码和程序集，但是你能吗，你是否已经将一些程序集转换为go，或者你是否使用了绝对方式，我们编写了一堆基本上非常早期运行的黄金，你知道，一些go非常小心，不进行任何内存分配。这很感知，我们尝试尽可能多地编写，这样我就可以像必须精确地查看代码一样，你知道，为了能够具体地回答你的问题，你可以查看Git存储库。但是，是的，我们试着写下一切然后继续前进。</p>
+<p>发言人   01:26:03<br>And then one like kind of unrelated small question I had, what does Go do with its goal routines that makes it possible to run like hundreds, thousands of them? Because you can not just spin up 100000 p threads, right, it depends. Okay, so long. And so the main issue is that, you know, you need to allocate your stack and the Go runtime actually allocate stacks incrementally and so grows them dynamically as you run your Go Go routine. This is where this program code is for. When you make a function call, you see if there’s enough space to actually make the function call. And if not, it will grow just that dynamically for you.<br>然后我有一个类似无关的小问题，Go对它的目标例程做了什么，使得它可以像运行数百个或数千个这样的例程？因为你不能仅仅旋转100000个线程，对吧，这取决于情况。好吧，这么久。所以主要问题是，你知道，你需要分配堆栈，Go运行时实际上会逐步分配堆栈，并在你运行Go例程时动态增长它们。这就是该程序代码的用途。当您进行函数调用时，您会查看是否有足够的空间来实际进行函数调用。如果没有，它会为你动态地增长。</p>
+<p>发言人   01:26:47<br>And often in PFAS implementations, allocating threads a little bit more heavy weight because. Actually programming Linux, you know, basically the correspond corresponding kernel f is actually allocated to. And they tend to be more heavyweight then. I see is the sketch, is the scheduling of all the routines done completely in user space or does it help itself with some kernel stuff? It’s mostly done in user space.<br>并且通常在PFAS实现中，分配线程稍微加重一些，因为。实际上，在Linux编程中，你知道，基本上对应的内核f实际上被分配给了。而且他们往往更重量级。我看到的是草图，所有例程的调度是完全在用户空间中完成的，还是有一些内核的东西可以帮助自己？这主要是在用户空间完成的。</p>
+<p>发言人   01:27:26<br>So to go run then allocates a bunch of kernel frets, you know, they call them, I think, m fres. And on top of that, it implements the go routines also. It’s so it has like a couple kernel threads that it shares to all Go routines based on which one’s running. Yes, oh, that makes a lot sense. Yeah, is there, like any c C++ equivalent? Like could you, could you do something like that to save to save some memory? Yeah, people have done, you know, implemented like high performance, you know, you see, see libraries or threat libraries that way you can create you like thousands of familiar Fts or millions of Fts, you know, to be similar style.<br>所以去运行然后分配一堆内核烦恼，你知道，他们称之为，我想，m fres。除此之外，它还实现了go例程。所以它有几个内核线程，根据运行的例程共享给所有Go例程。是的，那很感知。是的，有，像任何c C ++ 的等价物吗？你能不能做一些类似的事情来节省一些内存？是的，人们已经实现了高性能，你知道，你知道，看到库或威胁库，这样你就可以创建成千上万个熟悉的或数百万个的类似的风格。</p>
+<p>发言人   01:28:14<br>Okay, you guys have a good break. Have a hello YouTube, see you next week. Oh, two weeks. Go? Ahead, okay, sorry.<br>好的，你们休息得很好。你好啊，YouTube，下周见。哦，两周。走吧？前进，好的，对不起。</p>
+<p>发言人   01:28:31<br>So I had a maybe basic question about the shims and I guess I think also maybe because I’m just not familiar with kind of specifically what like a runtime is. And I guess like my confusion comes from the fact that like from a mental model of how like XV 6 and C works is that C compiles. C is a compiled language. And so it goes directly to assembly or machine code. And so it kind of just runs on the CPU. And so I guess like there is no need for a shim for like an XV 6 OS. But I guess my understanding this goes also a compiled language, so it also goes to like assembly. So why is there a need for like a shim in this case?<br>所以我有一个关于垫片的基本问题，我想也可能是因为我不熟悉具体的运行时是什么。我想我的困惑来自于这样一个事实，即类似于XV 6和C工作方式的心理模型，即C编译。C是一种编译语言。因此它直接进入汇编或机器代码。所以它有点只是在CPU上运行。所以我想像XV 6 OS这样的东西不需要垫片。但我猜我的理解也是一种编译语言，所以它也类似于汇编。为什么在这种情况下需要像垫片一样的东西呢？</p>
+<p>发言人   01:29:13<br>Like why? Why is, is there maybe is there a shim for like Xb 6 or you know what, what is different here? And like, why are there, why are there things that can’t just be done on the CPU? Yeah, great question.<br>喜欢为什么？为什么，有没有像Xb 6这样的垫片，或者你知道吗，这里有什么不同？为什么有些事情不能在CPU上完成？是的，很好的问题。</p>
+<p>发言人   01:29:25<br>So I think the answer to your question is that the Go runtime provides all kinds of features that like, you know, you don’t have right in running when you’re running CE and Xb 6. So the Go runtime provides frets. Go runtime provides scheduler. The Go runtime, you know, provides hash tables, The Go runtime provides a garbage collector that actually needs to run at runtime, right? And like, there’s no Gar collector in Xg 6, and we implement the threads and for example, to support the garbage lecture, it needs a heap where to allocate memory from. And so ask the operating system underlying operating system, please give me you some memory so I can use it as a heap and basically the shim layer implements exactly that kind of functionality that Go runtime needs to do its job at runtime.<br>所以我认为你的问题的答案是，Go运行时提供了各种功能，比如，你知道，当你运行欧洲合格认证和Xb 6时，你没有权利运行。所以Go运行时提供烦恼。Go运行时提供调度程序。Go运行时，你知道，提供哈希表，Go运行时提供实际需要在运行时运行的垃圾收集器，对吗？而且，在xg6中没有Gar收集器，我们实现了线程，例如，为了支持垃圾讲座，它需要一个堆来分配内存。因此，请询问操作系统底层操作系统，请给我一些内存，这样我就可以将其用作堆，基本上，填充层实现了运行时需要在运行时完成其工作的那种功能。</p>
+<p>发言人   01:30:24<br>Think, yeah, I guess have it slightly makes sense? I guess like a follow up question is. Maybe this is a dumb question, but like? Like, can’t we just compile the run time down? Machine code is compil, okay? So like, you know, the runtime itself is also compiled, but it’s like part of the program that needs to run always when you’re running run go code, it has to be there.<br>想想，是的，我想这有点感知吗？我想这是一个后续问题。也许这是一个愚蠢的问题，但是像？就像，我们不能直接编译运行时间吗？机器代码编译好吗？所以，你知道，运行时本身也是编译的，但它就像程序的一部分，需要在你运行go代码时始终运行，它必须在那里。</p>
+<p>发言人   01:30:53<br>Like even like C has a small runtime, you know, if you think about like, you know, we have like printf is part of machinery of the seed runtime or like straight operations are part of the CD run tag, right? And they’re compiled too. But you know, there’s a bunch of like small number of functions that the C runtime has, but the runtime is so small compared to like the Go runtime that, you know, has to support many, many more features because the programs Go programs rely on that.<br>就像C有一个小的运行时一样，你知道，如果你想想，你知道，我们有printf是种子运行时机器的一部分，或者像直接操作是CD运行标记的一部分，对吧？它们也被编译。但是你知道，C运行时只有一堆少数函数，但是与Go运行时相比，运行时非常小，你知道，必须支持许多更多的功能，因为程序Go程序依赖于它。</p>
+<p>发言人   01:31:17<br>I see, I see, and I guess like last question would maybe be is like, is it, it kind of sounds like that in this case, the Go runtime or like actually the shim in this case is almost taking on some of the functionality that would normally like it’s almost like it’s like a mini, it’s almost kind of like it’s like like a mini OS layer like in terms that it’s just like another layer that’s performing low level system functionality like reasonable? Yeah, you can all think like maybe one way you can think about is exercise also has a very, very minimal shim, you know, maybe like when the boots correct, the first thing A does actually allocate some stack so that you can actually call the C main function. And you can think about that, that little fragment of code, which only a couple statements, it was the same layer for XV 6. And once you know you refer a couple of instructions, you’re actually C code and everything is fine. And the shim layer, if we were to go around that, is slightly bigger because there’s a bunch of more features that need to be set up before the go around them can actually happily execute. Okay, yeah, that, that’s helpful, that makes sense.<br>我明白了，我明白了，我想最后一个问题可能会是，是不是，在这种情况下听起来有点像，Go运行时或在这种情况下，实际上垫片几乎承担了一些通常会像迷你一样的功能，这几乎就像一个迷你操作系统层，就像另一个执行低级系统功能的层一样，合理？是的，你们都可以认为，也许有一种思考方式是锻炼也有一个非常非常小的垫片，你知道，也许就像当靴子正确时，第一件事实际上是分配一些堆栈，这样你就可以实际调用C主函数。你可以考虑一下，那个小代码片段，只有几个语句，它是XV 6的同一层。一旦你知道你引用了几个指令，你实际上是C代码，一切都很好。而填充层，如果我们要绕过它，会稍微大一些，因为在绕过之前需要设置更多的功能，它们才能真正愉快地执行。好的，是的，那很有帮助，这很感知。</p>
+<p>发言人   01:32:21<br>Cool, thank you, you’re welcome, happy Thanksgiving. Yeah, you too. Oh, I had a question about the ping pong program that I forgot to ask, so I remember we also did a ping pong program in one of the labs and it was not 100 or sorry, 1000 lines of code. Why is Because like 1, I think, you know, are you referring to lab one where you do the ping pong or a bite to crush a pipe?<br>很酷，谢谢，不客气，感恩节快乐。是的，你也是。哦，我有一个关于乒乓球计划的问题，我忘了问，所以我记得我们在其中一个实验室里也做了一个乒乓球计划，它不是100或对不起，1000行代码。为什么？因为像1，我想，你知道，你指的是实验室一，在那里你可以进行乒乓球或咬碎管道？</p>
+<p>发言人   01:32:50<br>Yeah, okay, so that’s the user side of the benchmark, the kernel side correctly is the other side of it, and basically, you know, the what we did is implement the kernel pass in identical manner. Okay, so like, you know, you executing the start of the system call saving variables in the stack frame, you know, calling into looking up the pipe, you know, and then running maybe the scalar to wake up, you know, the receiver and that whole co path, you know, on the kernel site, we try to implement it identically in C and go, but the benchmark is basically the same as your benchmark that you implemented actually in lab one, the usual level side of it, right? Right? Okay, that makes sense. So, so does that mean that like, I mean, I think that if you do that in x vys it would be significantly less than 1000 lines of code?<br>是的，好的，所以这是基准测试的用户端，内核端正确地是它的另一侧，基本上，你知道，我们所做的是以相同的方式实现内核传递。好的，就像，你知道，你执行系统调用的开始，在堆栈帧中保存变量，你知道，调用查找管道，然后运行标量来唤醒接收器和整个路径，你知道，在内核站点上，我们尝试在C和go中完全相同地实现它，但是基准测试基本上与您在实验室一中实际实现的基准测试相同，通常是水平方面，对吗？对吧？好吧，那很感知。那么，这是否意味着，我是说，我认为如果你在x vys中这样做，它会明显少于1000行代码？</p>
+<p>发言人   01:33:44<br>If like, take all the current code, this is 5000 lines of assembly instructions work. I don’t know, I will have to look at it. But you know, you’re going. You can use the track frame code, your statistical dispatch going to the FD layer, correct the file descriptors, then a little bit of pipe code then so copying and copy out, then the scheduler, and then basically all and then bailing out again or returning. Yeah, okay, that makes sense. There’s a, you know, I don’t know how the top my head, how long the lines of code that is, but you know, there’s right got.<br>如果喜欢，请使用所有当前代码，这是5000行汇编指令的工作。我不知道，我得看看。但你知道，你要去。你可以使用跟踪帧代码，你的统计调度到FD层，更正文件描述符，然后一点点管道代码，然后复制和复制，然后调度程序，然后基本上全部，然后再次退出或返回。是的，那很感知。有一个，你知道的，我不知道我头顶上的代码行有多长，但是你知道，正确的有多少。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 019-Kernels and High-Level-Languages</div>
+      <div>http://example.com/2025/10/18/6S081-019/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-020/" title="操作系统工程 020-Networking">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 020-Networking</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-018/" title="操作系统工程 018-Virtual Machines">
+                        <span class="hidden-mobile">操作系统工程 018-Virtual Machines</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

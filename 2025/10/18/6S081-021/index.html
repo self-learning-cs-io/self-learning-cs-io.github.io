@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:01All right, anyone hear me? Good? All right, today we got meltdown.好的，有人听到了吗？很好？好吧，今天我们崩溃了。 发言人   00:10The reason why we were reading this paper is that security has kind of been a topic all">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 021-Meltdown">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-021/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:01All right, anyone hear me? Good? All right, today we got meltdown.好的，有人听到了吗？很好？好吧，今天我们崩溃了。 发言人   00:10The reason why we were reading this paper is that security has kind of been a topic all">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:21.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.145Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 021-Meltdown - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 021-Meltdown"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          22k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          182 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 021-Meltdown</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:01<br>All right, anyone hear me? Good? All right, today we got meltdown.<br>好的，有人听到了吗？很好？好吧，今天我们崩溃了。</p>
+<p>发言人   00:10<br>The reason why we were reading this paper is that security has kind of been a topic all along and comes up a lot in the design of the kernels that we talked about in the class. And as we know, the main strategy we’ve talked about for what it means for a kernel to provide security is isolation, in the sense that you user programs can’t read data from the kernel, and user programs can’t read other users data from other user programs. And the specific techniques that we’ve seen operating systems use in order to get isolation are things like the user supervisor mode and the hardware, and the page tables and the hardware, as well as just sort of well designed kernel software like the system calls, are all defensive about how they use user supplied pointers. But it’s worth thinking about looking at examples of how this kind of stuff goes wrong. In fact, kernels try hard to provide isolation and security. But there are problems that come up. And this paper is one of the most interesting problems that’s come up with operating system security in recent times.<br>我们阅读本文的原因是安全性一直是一个话题，并且在我们在课堂上讨论的内核设计中出现了很多。正如我们所知，我们讨论过的内核提供安全的主要策略是隔离，感知是您的用户程序不能从内核读取数据，而用户程序也不能从其他用户程序读取其他用户的数据。我们看到操作系统为了获得隔离而使用的特定技术是用户主管模式和硬件，页表和硬件，以及设计良好的内核软件，如系统调用。他们都对如何使用用户提供的指针持防御态度。但值得思考的是，看看这类事情是如何出错的例子。事实上，内核努力提供隔离和安全。但也出现了一些问题。这篇论文是最近出现的操作系统安全最有趣的问题之一。</p>
+<p>发言人   01:28<br>Meltdown came out, was published at the beginning of 2018, so not too long ago. And a lot of people like me found it surprising and actually pretty disturbing. Pretty disturbing attack on user kernel isolation. It really undermined faith or sort of this very basic assumption that page tables, that the hardware supplies just get you isolation. And that’s the end of the story. And this attack does not support that view at further.<br>崩溃出现了，于2018年初发布，所以不久之前。很多像我一样的人觉得这令人惊讶，实际上相当令人不安。对用户内核隔离的非常令人不安的攻击。它真的破坏了信仰或这个非常基本的假设，即页表，硬件供应只是让你孤立。这就是故事的结局。而这次攻击并不进一步支持这种观点。</p>
+<p>发言人   02:02<br>It was an example of one of a number of recent examples of what’s called a micro architecte sural attack, an attack that involves. Exploitation of hidden implementation details inside the CPU that are often not even known how Cpu’s work. But people guess and they’re able to make successful attacks based on correct guesses about hidden details of CPU implementation. Meltdown turns out to be fixable and seems to be pretty completely fixed. But nevertheless, people, it sort of set people up to fear that there might be an open ended supply of similar micro architectural and attacks. So it’s pretty important.<br>这是最近许多所谓的微架构师攻击的一个例子，这种攻击涉及。利用CPU内部隐藏的实现细节，这些细节通常甚至不知道Cpu的工作方式。但是人们猜测，他们能够根据对CPU实现的隐藏细节的正确猜测来进行成功的攻击。熔毁是可以解决的，而且似乎已经完全解决了。但是，人们，这有点让人们担心可能会有类似微架构和攻击的开放式供应。所以这很重要。</p>
+<p>发言人   02:53<br>Recent event worth understanding. Let me start by just. Laying out the basic core of the attack. And we’ll talk about what’s going on here. But this is a somewhat simplified version of the code in the paper for how the attack works.<br>最近的事件值得理解。让我从刚才开始。确定攻击的基本核心。我们会谈论这里发生了什么。但这是论文中代码的一些简化版本，用于描述攻击的工作方式。</p>
+<p>发言人   03:14<br>The basic idea is that you’re an attacker, and for one reason or another, you’re able to run software on some computer that has some secrets that you’d like to steal. You’re not allowed to directly get at the secrets, but they’re in memory, maybe memory or another process’s memory, but you’ve been able to run a process, maybe because you logged in a time sharing machine, like an Athena machine, or maybe because you bought time on some hosting service. And so what the attack allows you to do is run a program in which you declare a buffer in your own memory. So this buff is just ordinary user memory that’s accessible.<br>基本的想法是，你是一名攻击者，由于某种原因，你能够在一台计算机上运行软件，而该计算机上有一些你想窃取的秘密。你不允许直接获取秘密，但它们在内存中，可能是内存或另一个进程的内存中，但你能够运行一个进程，可能是因为你登录了一个分时共享的机器，就像一台Athena机器，或者可能是因为你在某些托管服务上争取了时间。所以攻击允许你做的是运行一个程序，在其中声明你自己内存中的缓冲区。所以这个buff只是普通的用户记忆，可以访问。</p>
+<p>发言人   03:54<br>You have the virtual address in the kernel of something that you’re interested in stealing. And you issue what I’m writing out here is sort of a, you know, a mix of C and assembler. But what I mean in line 3 is that you have the address of the kernel, virtual address of the data you want to steal and register 1 and R 1. And on line 3, just imagine that this is instructions to Deere Ference. Register one and load its results into register 2. That’s the instruction that we’re going to run. And then there’s an instruction that. Just gets the low bit of register too.<br>你在内核中有一个你有兴趣窃取的虚拟地址。你发出的我在这里写的东西有点，你知道，是C和汇编程序的混合。但我在第3行的意思是，你有内核的地址，你想要窃取的数据的虚拟地址，并注册1和R 1。在第3行，想象一下这是指示指令。寄存器1并将其结果加载到寄存器2中。这就是我们要运行的指令。然后有一个指示。也只是获取寄存器的低位。</p>
+<p>发言人   04:37<br>This attack, this particular version of this attack reads just a single bit, just one low bit of one memory location from the kernel and multiply that 4096. And since it’s either zero or 1, that means that R2 real will end up being 0 4096. And then we simply read the contents of our buffer, which is a buffer user memory. We simply read either buffer of zero or buffer of 4096. And that’s the basic attack.<br>这个攻击的特定版本只从内核中读取一个内存位置的一位低位，并乘以4096。由于它不是零就是1，这意味着R2实数最终将是0 4096。然后我们只需读取缓冲区的内容，这是一个缓冲区用户内存。我们简单地读取零缓冲区或4096缓冲区。这就是基本攻击。</p>
+<p>发言人   05:11<br>So one question is, why doesn’t this just directly work? Like line 3? It’s reading this kernel address. Can we just read addresses from the kernel? No, no, we all have faith that the answer can’t possibly be yes. We can’t possibly be able to just directly read from the kernel if we’re in user space and the machinery that we know the CPU somehow is invoking to make this not work out is that when we use a kernel virtual address, that implies a lookup in the page table, and there’s permission bits in the page table, and we’re just assuming that the operating system has not set the flag in the page table. Entries for kernel virtual addresses has not set that flag that allows users to use those addresses.<br>所以一个问题是，为什么这不能直接起作用？像3号线？它正在读取这个内核地址。我们能从内核中读取地址吗？不，不，我们都相信答案不可能是肯定的。如果我们在用户空间中，我们不可能直接从内核读取，而我们知道CPU以某种方式调用的机器使其无法工作，则当我们使用内核虚拟地址时，这意味着在页表中查找，页表中有权限位，我们只是假设操作系统没有在页表中设置标志。内核虚拟地址条目尚未设置允许用户使用这些地址的标志。</p>
+<p>发言人   06:01<br>That’s the Pte you flag on the risk 5, and that therefore this instruction must fail, must cause a page fault. And indeed, if we ran this code, this instruction would cause a page fault. And if we try to, if we added a code after this to say, print the value in register 3, we get a page fault on line 3, and we’d never get to the print statement and we’d find we couldn’t directly seal data out of the kernel.<br>这是您在风险5上标记的Pte，因此此指令必须失败，必须导致页面错误。实际上，如果我们运行这段代码，这条指令会导致页面错误。如果我们尝试在此之后添加一个代码，说打印寄存器3中的值，我们在第3行得到一个页面错误，我们永远无法到达打印语句，我们会发现我们无法直接将数据密封到内核中。</p>
+<p>发言人   06:31<br>Nevertheless, this sequence turned out to be useful, as the paper shows.<br>然而，正如论文所示，这个序列证明是有用的。</p>
+<p>发言人   06:36<br>One thing that. Paper assumes, which is no longer really true for the most part, is that the kernel is mapped into every user processes address space, that is every when a user, when user codes running a full set of kernel Ptes is present in the page table, but they have the Pte U bit clear, so user code will get a fault if it tries to use it a kernel virtual address. So all those mappings in at the time this paper was written, all those mappings were there when executing in user space they just couldn’t be used by user code or they cause a fault they were used by user code and the reason why people by operating system designers mapped both kernel and user addresses when you run a user code is that made system calls quite a bit faster because that meant that when a system call happened, you didn’t have to switch page tables and switching page tables, you just usually takes time itself, and also typically causes CPU caches to be flushed, which makes subsequent codes slower, so people have got a boost by mapping both user and kernel mappings always in user space. But this actually, this attack relies on that habit.<br>有一件事。论文假设内核被映射到每个用户进程的地址空间，这在大多数情况下不再是真的，也就是说，当用户代码运行一组完整的内核Ptes出现在页表中，但它们具有Pte U位清晰时，因此，如果用户代码试图使用内核虚拟地址，它将会出错。所以在撰写本文时，所有这些映射，所有这些映射在用户空间中执行时都存在，它们无法被用户代码使用或导致错误，它们被用户代码使用，以及操作系统设计人员映射两者的原因运行用户代码时的内核和用户地址使得系统调用速度加快，因为这意味着当发生系统调用时，您不必切换页表和切换页表，您通常只需要花费时间，并且通常还会导致CPU缓存被刷新，这使得后续代码变慢，因此人们通过始终在用户空间中映射用户和内核映射来获得提升。但实际上，这种攻击依赖于这种习惯。</p>
+<p>发言人   08:00<br>Okay, so I’m going to explain what’s going on here that makes this code useful. But before I do that, any, any questions about? Any questions about this code fragment? I was actually wondering if you could repeat what you just said about kernel to user mapping didn’t really register.<br>好的，我将解释是什么使得这段代码有用。但在我这样做之前，有什么问题吗？对于这个代码片段有什么问题吗？我实际上想知道你是否可以重复你刚才所说的内核到用户的映射没有真正注册。</p>
+<p>发言人   08:22<br>Okay, let’s see the. You know how in XV 6, when you’re execu, when the process is executing in user space, if you look at the page table, that page table has mappings for the user addresses and for like the trampoline page, trap print page, and nothing else. So that’s how XV 6 works. The page table that this paper assumes we’re different from that.<br>好的，让我们看看。你知道在XV 6中，当你在执行程序时，当进程在用户空间中执行时，如果你查看页表，该页表有用户地址和像蹦床页面、陷阱打印页面等的映射。这就是XV 6的工作原理。本文假设我们与那个不同的页表。</p>
+<p>发言人   08:52<br>In the time this paper was written, most operating systems would have a complete set of kernel mappings in the page table while user code was running. And so all those page table entries would be there. All the kernel page table entries would be there when user code was running. But since the Pte you bit was clear on each of those page table entries, user code 1, to actually be able to use a kernel virtual address, but the mappings were there. And the reason for that is that when you do a system call, you didn’t have to switch page tables because do system call into the kernel and boom, now you’re using the same page table, but now you can use all those kernel Ptes because you’re in supervisor mode and that’s a bunch of time getting into and out of the kernel brain system called. So everybody, everybody used that technique. Indeed, that was almost certainly what Intel had in mind for how you should write an operating system, okay? So that for the whole paper that structure is assumed for the attack, of course, getting rid of it was the most immediate solution to this problem, but at the time the paper was written all those kernel mappings were present in user space.<br>在撰写本文时，大多数操作系统在用户代码运行时，页表中都有一套完整的内核映射。因此，所有这些页表条目都将在那里。当用户代码运行时，所有的内核页表条目都将存在。但是由于每个页表条目 (用户代码1) 上的Pte您位是明确的，因此实际上能够使用内核虚拟地址，但映射在那里。这样做的原因是，当你进行系统调用时，你不必切换页表，因为系统会调用到内核和boom中，现在你正在使用相同的页表，但是现在你可以使用所有这些内核Ptes，因为你处于主管模式，这是进出内核大脑系统的大量时间。所以每个人都使用了这种技术。的确，这几乎肯定是英特尔在考虑如何编写操作系统时想到的，好吗？因此，对于整个论文来说，攻击假设的结构，当然，摆脱它是解决这个问题的最直接的方法，但在撰写论文时，所有这些内核映射都存在于用户空间中。</p>
+<p>发言人   10:13<br>Other questions? So you need to know the address that you want to get. Yeah that’s right. And. You know, so that’s a good point. You need to know the kernel virtual address. And that’s actually maybe no joke. You might think that would make the attack harder.<br>其他问题？所以你需要知道你想要获取的地址。是的，没错。而且。你知道的，这是一个很好的观点。你需要知道内核虚拟地址。也许这不是开玩笑。你可能会认为这会使攻击更加困难。</p>
+<p>发言人   10:42<br>But first of all, a point of philosophy in security have to assume that the attacker has infinite time and patience, that if they’re after some valuable secret, they are probably willing to spend like a couple of months trying to steal that secret or longer, right? Because you know, it’s going to be somebody’s password that like protects all kinds of valuable stuff, maybe money or, you know, secret email. So that means, for example, the attacker probably has time to try every single kernel address, right? Looking for whatever precious data they’re after, Maybe a password or the attacker may have time to like study, to look through the kernel code and look through typical compiled kernels, find addresses, and maybe put print statements in their kernels to examine the structure of data and kernel memory until they understand how the kernel works well enough to be able to get an address here.<br>但首先，安全哲学的观点必须假设攻击者有无限的时间和耐心，如果他们在追求一些有价值的秘密，他们可能愿意花费几个月的时间试图窃取那个秘密或更长时间，对吗？因为你知道，它将是某人的密码，可以保护各种有价值的东西，也许是金钱或秘密电子邮件。这意味着，例如，攻击者可能有时间尝试每个内核地址，对吗？寻找他们想要的任何宝贵数据，也许是密码，或者攻击者可能有时间进行研究，浏览内核代码并查看典型的编译内核，找到地址，也许可以将print语句放在内核中，以检查数据和内核内存的结构，直到他们理解内核如何很好地工作，以便能够在此处获取地址。</p>
+<p>发言人   11:40<br>Now, actually, because this game has been going on other versions of this game, the security game have been going on for a long time.<br>现在，实际上，因为这个游戏已经在这个游戏的其他版本上进行了，安全游戏已经进行了很长时间。</p>
+<p>发言人   11:48<br>Colonel’s actually defend themselves against attacks that involve guessing kernel addresses. And one of the things that was actually mentioned in this paper is this called thing called kernel address space layout randomization. So modern kernels actually load the kernel at a random address in order to make it harder to guess colonel kernel virtual addresses. And they did this before this, long before this paper came out, because it was helpful in defeating other attacks.<br>上校实际上为自己抵御了涉及猜测内核地址的攻击。本文中实际提到的事情之一就是所谓的内核地址空间布局随机化。因此，现代内核实际上会在随机地址加载内核，以使猜测内核虚拟地址变得更加困难。而且他们在这之前，在这篇论文出来之前很久就这样做了，因为它有助于击败其他攻击。</p>
+<p>发言人   12:22<br>So this is the game, but. We have to assume that the attacker, in the end, the attacker will probably win this game. Okay? So we’ll just assume the attacker either knows a juicy colonel virtual address to look at or can guess one, or is willing to exhaustively try every address. And the paper suggests that that’s a plausible strategy once you have meltdowns.<br>这就是游戏，但是。我们必须假设攻击者最终可能会赢得这场游戏。好吗？因此，我们假设攻击者要么知道要查看的多汁的上校虚拟地址，要么可以猜测出来，要么愿意穷尽地尝试每个地址。这篇论文表明，一旦你出现崩溃，这是一种可行的策略。</p>
+<p>发言人   12:54<br>So what’s going to happen? So we’re wondering, how can this code be possibly be useful to an attacker? And the answer has to do like if the way Cpu’s worked was just what you read in the CPU manual, this attack clearly is nonsense, like it’ll fault at instruction 3 and that’ll be the end of it. But it turns out Cpu’s work in far more complex ways than is in the manual. And the way the reason the attack works is because of some CPU implementation details. And there’s actually two main things that the attack relies on. One is an implementation trick of Cpu’s called speculative execution, which I’ll talk about first and the other implementation trick.<br>那么会发生什么呢？所以我们想知道，这段代码怎么可能对攻击者有用？答案必须像你在Cpu手册中读到的那样，这种攻击显然是无稽之谈，就像它会在指令3中出错一样，那将是它的结束。但事实证明，Cpu的工作方式比手册中复杂得多。攻击起作用的方式是因为一些CPU实现细节。实际上，攻击依赖于两个主要因素。一个是Cpu的实现技巧，称为投机执行，我将首先讨论另一个实现技巧。</p>
+<p>发言人   13:42<br>The attack relies on is the way Cpu’s do caching. Okay, so first speculative execution. Let me, I have a code example for that also. And for the moment I’m not talking about security, the speculative execution and the stuff is just a technique to improve the performance of CPU and sort of optimization trick that Cpu’s use. So imagine that we, we’re just running this code. This is a somewhat contrived example, but it’s sort of illustrates what speculative execution is all about.<br>攻击所依赖的是Cpu缓存的方式。好的，所以首先是推测性的执行。让我，我也有一个代码示例。目前，我不是在谈论安全性，推测执行和那些东西只是一种提高CPU性能的技术和Cpu使用的优化技巧。想象一下，我们只是在运行这段代码。这是一个有些人为的例子，但它在某种程度上说明了投机执行的意义。</p>
+<p>发言人   14:25<br>Suppose I have address and some and say register 0. And just because the logic, my program, the address is either valid or not valid, maybe it contains 0. If under some circumstances, like we haven’t initialized my data yet. So there’s this, we’ll assume there’s a valid variable that’s sitting in memory somewhere. And so before using the address here, this address and register 0 here on line 4, we’re going to test, we’re going to load valid from memory. And we’re only going to use the address if valid is set to 1 and a valid is set to 0, which not going to use the address at all. And if valid is set to one, then we’re going to dereference the address.<br>假设我有地址和一些，并且说寄存器0。仅仅因为逻辑，我的程序，地址要么有效要么无效，也许它包含0。如果在某些情况下，比如我们还没有初始化我的数据。所以，我们假设有一个有效的变量在内存中的某个地方。因此，在使用这里的地址之前，这个地址和第4行的寄存器0，我们将进行测试，我们将从内存中加载有效的。并且我们只会在 “有效” 设置为1且 “有效” 设置为0时使用地址，这根本不会使用该地址。如果valid设置为1，那么我们将取消对地址的引用。</p>
+<p>发言人   15:03<br>And you load the data at points 2 and register two, add one to it, and it doesn’t really matter. We’re going to do something with that data. We loaded, in this case, add one to it, set register 3 equal to the data plus one, all right, in a simple CPU implementation in line 2 here, you have got to load. That’s a variable sitting in memory in Ram. And we have to issue some kind of this is going to be line 2 is going to be some sort of load instruction that reads valid out of Ram, all else being equal, if we actually have to load it from Ram, that’ll take hundreds of cycles on our, say, 2 GHz machine, like any load that actually has to go to Ram will take hundreds of cycles.<br>你在点2加载数据并注册两个，再添加一个，这并不重要。我们将对这些数据做一些事情。我们加载了，在这种情况下，向它添加一，设置寄存器3等于数据加一，好的，在这里的第2行有一个简单的CPU实现，你必须加载。那是内存中的一个变量。我们必须发出某种形式的指令，这将是第2行某种形式的加载指令，从Ram中读取有效的内容，其他条件相同，如果我们真的必须从Ram中加载它，这将需要数百个周期，比如说，2 GHz机器，像任何实际必须去Ram的负载一样，将需要数百个循环。</p>
+<p>发言人   15:52<br>The machine, you know, can execute an instruction up to an instruction every cycle. So if we actually had to wait a couple of hundred cycles here, we’d be the machine would be sitting there idling for hundreds, hundreds of cycles, sort of wasting its time. And because that’s a significant, significant slowdown, if all everything went well, we’d be able to execute an instruction every cycle instead of every couple hundred cycles.<br>你知道，机器每个周期可以执行一条指令，直到一条指令。所以，如果我们实际上必须在这里等待几百个周期，我们会让机器在那里空转数百个周期，有点浪费时间。而且因为这是一个显著的、显著的减速，如果一切顺利，我们将能够在每个周期执行指令，而不是每几百个周期执行一次。</p>
+<p>发言人   16:20<br>All all serious modern Cpu’s do use something called branch prediction. So this if statement as a branch, if we’d actually turned it into machine instructions, we’d see there was a branch here. And it’s a conditional branch based on this test of whether register one is equal to one. And what Cpu’s do is they use what’s called branch prediction. That is, for every branch, more or less, the CPU essentially remembers a cache of information about each of the branches in your program, or at least each recently executed branch, and remembers, oh, did that branch, was the branch taken or not taken? And if the CPU doesn’t have enough information to predict, so that’s a prediction based on the last time you executed the branch. Even if the CPU doesn’t have a prediction, it may still just go ahead and execute the instructions, either that the branch takes you to or the fall through instructions assuming the branch wasn’t taken. That is even before the CPU knows whether this conditional is true.<br>所有严肃的现代Cpu都使用一种叫做分支预测的东西。因此，如果将这个if语句作为一个分支，如果我们实际上将它转换为机器指令，我们会看到这里有一个分支。它是基于寄存器1是否等于1的测试的条件分支。而Cpu的作用是使用所谓的分支预测。也就是说，对于每个分支，CPU基本上或多或少会记住有关程序中每个分支的信息缓存，或者至少是每个最近执行的分支，并记住，哦，那个分支是被执行还是没有被执行？如果CPU没有足够的信息来预测，那么这是基于您上次执行分支的预测。即使CPU没有预测，它仍然可能继续执行指令，要么是分支将您带到，要么是失败指令假设分支没有被执行。甚至在CPU知道这个条件是否成立之前。</p>
+<p>发言人   17:26<br>It’ll choose one way or the other and start executing down that path, Even though it might be the wrong path, it doesn’t know yet.<br>它会选择一种方式或另一种方式，并开始执行该路径，即使它可能是错误的路径，它还不知道。</p>
+<p>发言人   17:34<br>And so in this case, maybe before this load completes and before it, the value of valid is known, the CPU may start executing instruction for do the load with whatever value is sitting at R 0, which may or may not be a valid pointer. And once that load yields something, maybe even add one to it and set register 3 equal to that value. And then maybe a long time later when this load at line 2 finally completes. And we now we know what the value invalid is, the CPU will then dot know it kept track of the fact that it executed lines 4 and 5 without really knowing whether that was proper. If valid is one, then that’s fine, and it just keeps going. If valid is 0, then the CPU has enough cleverness to cancel the effects of its execution of line 4 and 5 and restart execution and the proper place after the branch at line 7 and this execution of code before you know whether you really should be executing it is called speculation.<br>因此，在这种情况下，可能在此加载完成之前和之前，有效值已知，CPU可能开始执行指令，使用任何值位于R 0处的加载，这可能是有效指针，也可能不是有效指针。一旦加载产生一些东西，甚至可能向其添加一个并将寄存器3设置为等于该值。然后也许很长一段时间后，当第2行的加载最终完成时。现在我们知道无效值是什么，CPU就会知道它跟踪了执行第4行和第5行的事实，而不知道这是否正确。如果有效是一，那没关系，它就会继续下去。如果有效为0，则CPU有足够的聪明来取消其执行第4行和第5行的效果，并重新开始执行并在第7行分支后的适当位置，并且在您知道是否真正应该执行代码之前执行它被称为推测。</p>
+<p>发言人   18:46<br>And again, the point is performance. If the CPU guesses right, then I got a big head start executing these instructions and didn’t have to wait for the expensive memory load. Any questions about what this means?<br>再次强调，重点是表现。如果CPU猜测正确，那么我就有了一个很大的优势，开始执行这些指令，而不必等待昂贵的内存负载。有什么问题吗？</p>
+<p>发言人   19:09<br>Okay, this machinery, the hardware, the transistors, and the CPU for speculation or extremely complex, there’s a huge amount going on in the CPU to make this work, none of which is published, right? It’s all Intel internal stuff, not in instruct, not in the machine manual. So surrounding meltdown and attacks like it is a huge amount of speculation about what’s probably going on inside the CPU in order to make such and such attack work or not work. Back to speculation, though.<br>好的，这些机器、硬件、晶体管和用于推测或极其复杂的CPU，CPU中有大量的工作要做，但都没有发布，对吗？这都是英特尔内部的东西，不在说明中，也不在机器手册中。因此，围绕崩溃和攻击的大量猜测是关于CPU内部可能发生了什么，以使这样的攻击工作或不工作。但回到猜测。</p>
+<p>发言人   19:55<br>One thing that’s going on is that in order to undo speculative, failed speculative, mispredicted, speculative execution, the machine keeps shadow versions of registers. Essentially, it’ll assigned to registers 2 and register 3, but it’s assigned kind of a temporary registers. If the speculation succeeds, then those registers, those shadow registers, become the real registers. If it fails, then those shadow registers are discarded, The CPU discards the shadow registers. And so these two assignments are 2. And R 3 would just be as if they never happened. So in this code, we need to think about what happens if register 0 is a valid pointer and what happens if it’s not a valid pointer?<br>发生的一件事是，为了撤销投机性、失败的投机性、错误预测的投机性执行，机器保留了寄存器的影子版本。本质上，它将分配给寄存器2和寄存器3，但它被分配了一种临时寄存器。如果推测成功，那么那些寄存器，那些影子寄存器就会成为真正的寄存器。如果失败，那么这些影子寄存器将被丢弃，CPU将丢弃影子寄存器。所以这两个任务是2。而R 3就好像它们从未发生过一样。因此，在这段代码中，我们需要考虑如果寄存器0是有效的指针会发生什么，如果它不是有效的指针会发生什么？</p>
+<p>发言人   20:49<br>If we’re speculatively executing line 4 and register 2 is a valid pointer, then it turns out the CPU will actually do the load and loaded at least the transient version of register 2, so actually go out. Try to fetch what R 0 points do, and that will certainly work. If R 0, if the data R 0 is pointed to, is sitting in the cache. And I don’t know if the CPU will do the load if it misses in the cache and has to load from Ran, it might.<br>如果我们推测执行第4行并且寄存器2是一个有效的指针，那么事实证明CPU实际上会执行加载并至少加载寄存器2的瞬态版本，所以实际上会出去。尝试获取r0点的功能，这肯定会起作用。如果R 0，如果数据R 0被指向，就在缓存中。我不知道如果CPU在缓存中错过并且必须从运行中加载，它是否会执行加载。</p>
+<p>发言人   21:27<br>But maybe the more interesting question for us for this attack is what happens if register 0 is not a valid pointer? In that case, if we’re speculatively executing here, the machine can’t fault at this point because we’re speculatively executing, the machine doesn’t know. It may know that R 0 was an invalid, that this speculatively executed instruction tried to use an invalid pointer, an invalid address, but it can’t page fault because it’s not sure whether this execution is, that is, a correct speculative execution or a misspecification. And so it’s only so it can’t actually raise a fault on line 4 until after valid. The value of valid is known, and after this branch, this speculate a predicted branch, after we know, after the machine knows what the condition is, if machine, if the machines at line 4 sees o register 0 is an invalid address, and then valid turns out to be one, then and only then does the machine actually generate the page fault. If R 0 was an invalid address, then valid turns out to be 0, the machine does not generate a page fault, so the decision about whether default is deferred possibly for hundreds of cycles until the value of valid is known and the technical term for the point at which we know whether an instruction was correctly speculatively executed rather than being thrown away is called retirement.<br>但是对于这次攻击，也许更有趣的问题是，如果寄存器0不是有效的指针会发生什么？在这种情况下，如果我们在这里推测执行，机器此时不会出错，因为我们在推测执行，机器不知道。它可能知道R 0是一个无效的指令，这个推测执行的指令试图使用一个无效的指针，一个无效的地址，但它不能分页错误，因为它不确定这个执行是正确的推测执行还是错误指定。因此，只有在生效之后，它才能在第4行实际发出故障。有效值是已知的，在这个分支之后，这会推测一个预测的分支，在我们知道机器知道条件是什么之后，如果机器，如果第4行的机器看到o寄存器0是无效地址，那么有效结果是1，然后，并且只有到那时，机器才实际生成页面错误。如果R 0是无效地址，则有效地址为0，则机器不会生成页面错误，因此，关于是否默认的决定可能被推迟数百个周期，直到有效值已知，并且我们知道指令是否被正确地执行而不是被丢弃的技术术语称为退休。</p>
+<p>发言人   23:15<br>So we say an instruction is speculative, and at some point it’s retired. And that’s what we know. It’s either going to be thrown away or was real and be. Its effect should be committed to the visible state of the machine. And the rule is that. An instruction can only be retired. First of all, it’s finished executing, loading memory, or adding one to something. And every instruction before it that was executed before it has also retired. So, you know, this line 4 can’t be retired until the load of valid completes and the condition is is evaluated, only then can be retired. So if it’s going to fall, it may it’s going to fall possibly hundreds of instructions after it did the memory load.<br>所以我们说一条指令是推测性的，在某个时候它就会被淘汰。这就是我们所知道的。它要么会被扔掉，要么是真实存在的。其效果应致力于机器的可见状态。规则是这样的。一个指令只能被废弃。首先，它已经完成了执行、加载内存或者添加一个内存。以及在它之前执行的每一条指令也已经退役。所以，你知道，在有效加载完成并评估条件之前，第4行不能退役，只有这样才能退役。因此，如果它要下降，它可能会在内存加载后下降可能数百条指令。</p>
+<p>发言人   24:05<br>We’re tempted to do the memory load. And as a critical detail for this attack? There’s an even more if, let’s see if the, if the address in R 0 is invalid and has no mapping in the page table at all, then I actually don’t know what happens.<br>我们很想做内存加载。作为这次攻击的关键细节？还有一个更重要的问题，让我们看看，如果R 0中的地址无效并且在页表中根本没有映射，那么我实际上不知道会发生什么。</p>
+<p>发言人   24:32<br>If the address in R 0 has a page table mapping, but there’s no permission for it, that is, the PTU flag is not set. Then what Intel machines actually do is load that data and assign it into the transient register to. And where it can be used by the speculative execution of line phi. So even if R 0 was that address for which we don’t have permission because it’s a kernel address, we’ll still see, is value loaded into R 3 real? And it’s value plus one, Sorry, we won’t see it, but it will be loaded into R2 real. And that plus one into R 3. And then when this load is retired, the machine will realize, aha, that was an invalid load because the page table entry didn’t allow it. And so we’re going to raise a fault, cancel the execution of the subsequent instructions, and cancel the effects of this instruction, undo the modification to R2 real and R 3 real.<br>如果R 0中的地址具有页表映射，但没有对此的权限，即未设置PTU标志。那么英特尔机器实际做的就是加载这些数据并将其分配到瞬态寄存器中。以及在phi线的推测执行中可以使用它的地方。因此，即使R 0是我们没有权限的地址，因为它是内核地址，我们仍然会看到，加载到R 3中的值是否真实？并且它的值加一，抱歉，我们看不到它，但它将被加载到R2 real中。再加上1，再加上R 3。然后当此加载退出时，机器将意识到，啊哈，这是一个无效的加载，因为页表条目不允许这样做。因此，我们将发出一个错误，取消后续指令的执行，并取消此指令的效果，撤销对R2 real和r3 real的修改。</p>
+<p>发言人   25:35<br>So in this example, there’s two speculations going on. One is we’re speculating about where the machine is, speculating about where this branch went, and just saying, oh, one way or the other. I’m just going to give that a shot speculatively. In addition Ares, speculative execution after each load or essentially speculating about whether the machine is speculating about whether that load completes successfully. And in the case of a load, Intel machines always just go on if data could be provided because it’s in the cache and at least the page table entry exists, permissions are not, the machine will speculatively continue to execute and only on retirement of the load will it actually generate the fault and that’ll cause the speculation to be canceled. All right, any questions about this stuff?<br>所以在这个例子中，有两个猜测。一个是我们猜测机器在哪里，猜测这个分支去了哪里，然后只是说，哦，一种方式或另一种方式。我只是想推测一下。此外，每次加载后都会推测执行，或者基本上推测机器是否在推测该加载是否成功完成。在加载的情况下，如果可以提供数据，英特尔机器总是继续运行，因为数据在缓存中，并且至少页表条目存在，权限不存在，机器将继续推测执行，只有在负载退役时才会实际产生故障，这将导致推测被取消。好的，有什么问题吗？</p>
+<p>发言人   26:39<br>I’m a little confused about the second speculation, which is loading R 0 into R2 real? So does that mean that like the value of R 0 is loaded into R2 and the flags are checked later? Yes, yes, so what happens? Yes, that’s exactly right. So what actually happens is that during the speculative phase. Whatever it is that R 0 do, if it points to anything, if R 0 points to anything, then the data at that memory location will be loaded into R2 real later when this load is retired.<br>我对第二个猜测有点困惑，即将r0加载到R2 real中？那么这是否意味着像r0的值被加载到R2中并稍后检查标志？是的，那么发生了什么？是的，完全正确。所以实际发生的是在投机阶段。无论r0做什么，如果它指向任何东西，如果r0指向任何东西，那么该内存位置的数据将在此加载退役后加载到R2 real中。</p>
+<p>发言人   27:24<br>And then the permissions will be checked. And if we didn’t have permission to do that load, then all subsequent instructions effects will be canceled. Like all these modifications registered, it will be undone. And default will be raised with the state of the machines and registers as they were just before instruction for. That’s interesting, yes.<br>然后将检查权限。如果我们没有加载的权限，那么所有后续的指令效果都将被取消。像所有这些注册的修改一样，它将被撤销。和default将使用机器和寄存器的状态引发，就像它们在指令之前一样。这很有趣，是的。</p>
+<p>发言人   27:52<br>Yes, I also have a question. Is there no possible way to restrict the CPU from checking permissions before doing speculative load? I mean, is there a way to cause the machine to do the check before the load? Yes, I guess more concretely, like the only reason this is a problem, or one of the ways is that we’re just loading a page that if we can be aware that it has permissions that are going to like be bad somehow, right? We’re accessing a page that we don’t, we shouldn’t be able to access the can, the speculative execution be canceled given that we can read these permissions? Yes, yes, that’s yeah.<br>是的，我也有一个问题。有没有可能的方法来限制CPU在进行推测性加载之前检查权限？我的意思是，有没有办法让机器在装载前进行检查？是的，我想更具体地说，就像这是一个问题的唯一原因，或者其中一种方式是我们只是在加载一个页面，如果我们能够意识到它具有某种程度上会变得糟糕的权限，对吧？我们正在访问一个我们没有访问的页面，我们不应该能够访问这个页面，假设我们可以读取这些权限，那么推测执行将被取消？是的，是的，就是这样。</p>
+<p>发言人   28:45<br>Well, there’s two answers. One is that’s not the way the Intel chips Cpu’s actually worked, and the other answer is yes, it would have been, I believe it would have been easy for them to have done and enforce the check, even for speculative loads, so that even in speculation register 2 would never have been written. So, I mean, and indeed, it turns out that you may have noticed the paper mentioned that the meltdown seems not to work on AMD Cpu’s, even though AMD Cpu’s the instruction manual is the same as for Intel Cpu’s. Essentially, that is around the same instruction set and the instructions mean the same things. The attack doesn’t work on AMD Cpu’s and it’s widely believed that the reason is that AMD Cpu’s, even when speculatively executing, if you don’t have permission to read this address, won’t even speculatively load the value into R2 reals and that’s why the attack didn’t work on AMD Cpu’s and recent Intel Cpu’s apparently have adopted that approach and they actually won’t won’t speculatively load if they don’t have permissions.<br>有两个答案。一个是这不是英特尔芯片Cpu的实际工作方式，另一个答案是是的，我相信他们会很容易完成并执行检查，即使对于投机性负载，因此，即使在推测寄存器2也永远不会被写入。所以，我的意思是，事实上，你可能已经注意到这篇论文提到，崩溃似乎不适用于AMD Cpu，尽管AMD Cpu的使用手册与英特尔Cpu的相同。基本上，这是在相同的指令集周围，指令意味着相同的事情。攻击对AMD Cpu都不起作用，人们普遍认为原因是AMD的Cpu，即使在推测执行时，如果您没有读取此地址的权限，甚至不会推测地将值加载到R2雷亚尔中，这就是为什么攻击在AMD Cpu上不起作用，最近英特尔Cpu显然已经采用了这种方法，如果他们没有权限，他们实际上不会推测地加载。</p>
+<p>发言人   30:06<br>And as far as I know, there’s no particular sacrifice and performance, I think the information was all there, but for just I don’t know, just say maybe a few gates, they decided only to apply it on retirement. That’s very interesting. Yeah, let me just warn you this. There’s a lot of guesswork here. And I believe what I’m saying is true, but in Intel and AMD have not been very revealing about, but what’s going on?<br>据我所知，没有特别的牺牲和表现，我认为信息都在那里，但我不知道，只是说可能有几个门，他们决定只在退休时应用它。这非常有趣。是的，让我警告你这一点。这里有很多猜测。我相信我说的是真的，但在英特尔和AMD方面并没有透露很多信息，但发生了什么？</p>
+<p>发言人   30:43<br>Okay, there’s a, there’s a some terminology here that’s important. What you read in the manual for the CPU that says, oh, you know, an ad structure takes two registers and adds them and puts them in a third. That’s stuff. That aspect of the design is called architectural. Sort of the advertise behavior, textural, the advertised behavior of the machine. And so the advertised behavior of the machine is that if you load from an address, so you’re permissions for you’ve got a page fault of period and you’re not allowed to load. And that’s in distinction to what the machine’s actually doing, which is called micro architectural. That is, actually the machine has speculative executions doing all these crazy things without telling you.<br>好的，这里有一些重要的术语。你在CPU手册中读到的内容是，哦，你知道，广告结构需要两个寄存器并将它们添加到第三个寄存器中。就是这些东西。这个设计方面被称为建筑。类似于广告行为，纹理，机器的广告行为。因此，机器所宣传的行为是，如果你从一个地址加载，那么你的权限就是你有一个页面错误的时期，不允许加载。这与机器实际在做的事情有所区别，这被称为微架构。也就是说，实际上机器有投机性的执行，在没有告诉你的情况下做所有这些疯狂的事情。</p>
+<p>发言人   31:34<br>And the intent of the CPU designers when they design all these complex architectural optimizations is that they be transparent that, yeah, you know, it’s doing all this stuff internally, but it looks the results you get from programs are the same results you get from a simpler machine that just did the straightforward thing that was in the manual, right? They’re intended to be transparent. And so, you know, for example, at some level, what Intel is doing here is transparent. Yeah, maybe they don’t check for permissions when you do the memory load, but if there was a problem on retirement, it’s going to undo all these effects. And so you’ll never see that memory you weren’t supposed to see. Gosh, that looks just like what the manual said. You’re not allowed to load stuff you don’t have permission for. So this distinction is.<br>当CPU设计师设计所有这些复杂的架构优化时，他们的意图是透明的，是的，你知道，它在内部做所有这些事情，但是看起来你从程序中得到的结果和你从一台更简单的机器上得到的结果是一样的，它只是做了手册中直接的事情，对吧？它们旨在保持透明。因此，你知道，例如，在某种程度上，英特尔在这里做的是透明的。是的，也许当您进行内存加载时，他们不会检查权限，但如果退休时出现问题，它将撤消所有这些影响。所以你永远不会看到你不应该看到的记忆。天哪，这看起来就像手册上说的那样。你不被允许加载你没有权限的东西。所以这种区别是。</p>
+<p>发言人   32:26<br>A lot of what this attack is playing on knows the attack knows a lot about what’s going on inside. Okay, other questions about speculative execution?<br>这次攻击所涉及的很多事情都知道，攻击对内部发生的事情了解很多。好的，还有其他关于投机执行的问题吗？</p>
+<p>发言人   32:48<br>Okay I’m going to put that aside for a moment and talk about another piece of microarchitec.<br>好的，我要把那个放在一边，谈谈另一块微架构。</p>
+<p>发言人   33:00<br>And that’s caches. And these, again, I mean, everybody knows caches are there, but they’re supposed to be more or less, more or less transparent. And let me draw a picture of the caches I think are relevant to the cache structure that I think is most relevant to the meltdown.<br>那就是缓存。而这些，我的意思是，每个人都知道缓存在那里，但它们应该或多或少透明。让我画一张我认为与缓存结构相关的缓存图片，我认为这与崩溃最相关。</p>
+<p>发言人   33:22<br>First of all, you have the core, which is the part of the machine that parses instructions and has registers, and has an addition unit and a division unit, whatever the sort of execution part of the machine. And then whenever it needs to do a load or a store. It talks to the memory system. And the memory system has a bunch of caches. In particular, in the machines we’re talking about, there’s a data cache called the level 1 data cache that is maybe, you know, 64 kB in size or something. Not very big, but it’s extremely fast if the data you need is in the L 1 cache, it’ll get back to you in a couple of cycles. And the structure of the L 1 caches, it has a bunch of lines, what are called lines, each of which holds probably 64 B of data. The lines are indexed, it’s a table, really the cache, the lines are indexed by virtual address, If a virtual address is in the cache, then the CA holds the data for that virtual dress, and in addition, as it turns out.<br>首先，你有核心，它是机器中解析指令和寄存器的部分，还有加法单元和除法单元，无论机器的执行部分是什么。然后每当它需要进行装载或存储时。它与记忆系统对话。并且存储系统有一堆缓存。特别是在我们谈论的机器中，有一个称为1级数据缓存的数据缓存，其大小可能是64 kB左右。不是很大，但是如果你需要的数据在L 1缓存中，它会非常快，它会在几个周期内返回给你。以及L 1缓存的结构，它有一堆行，所谓的行，每个行可能保存64 B的数据。行被索引，它是一个表，实际上是缓存，行由虚拟地址索引，如果虚拟地址在缓存中，则CA保存该虚拟衣服的数据，此外，事实证明。</p>
+<p>发言人   34:45<br>It’s believed that L 1 cache entry contains a copy of the permissions taken from the page table entry that corresponds to this virtual address. There’s a whole, this is a table when the when the court issues a load instruction, the first thing that happens is that the hardware looks in the L 1 cache and see if there’s a cache entry whose virtual address matches the requested. The address we’re trying to load from it. And if so, we can just the machine just returns this data from the cache. We’re done very quickly.<br>据信，L 1缓存条目包含从对应于该虚拟地址的页表条目中获取的权限的副本。这是一个整体，这是一个表，当法庭发出加载指令时，发生的第一件事是硬件查找L 1缓存并查看是否有一个虚拟地址与请求匹配的缓存条目。我们试图从中加载的地址。如果是这样，我们可以只让机器从缓存中返回此数据。我们很快就完成了。</p>
+<p>发言人   35:22<br>If the data is not in the L 1 cache, then the next step is that we, the rest of the memory system is, is addressed with physical addresses. So at this point, we’re going to need a physical address.<br>如果数据不在L 1缓存中，则下一步是使用物理地址对内存系统的其余部分进行寻址。所以在这一点上，我们需要一个物理地址。</p>
+<p>发言人   35:34<br>If we missed the L 1 cache, this translation lookaside buffer is a cache of page table entries. So we’re going to look up the virtual address that the program issued in the translation lookaside had buffer. It may not be there, in which case now we got a lot of work to do because we’ve got to load the relevant page table entry from memory.<br>如果我们错过了L 1缓存，这个翻译的后备缓冲区是页表条目缓存。所以我们将查找程序在翻译中发出的虚拟地址，该地址有缓冲区。它可能不存在，在这种情况下，我们现在有很多工作要做，因为我们必须从内存中加载相关的页表条目。</p>
+<p>发言人   35:54<br>But let’s assume we hit in the translation lookaside buffer. We can now at the needed physical address, typically there’s another cache, another much bigger cache that’s physically index index with the physical address. And so we might now that we have the physical address, we can look at this cache. And if we miss there, then we have to send the physical address after the Ram system takes a long time. But when we finally get data back, then we can populate the level 2 cache and populate the level 1 cache with the stuff we got back from Ram and return the data back to the core. So this is caching.<br>但让我们假设我们击中了翻译后备缓冲区。我们现在可以在所需的物理地址处，通常还有另一个缓存，另一个更大的缓存与物理地址进行索引。因此，现在我们可能已经有了物理地址，我们可以查看这个缓存。如果我们错过了那里，那么我们必须在Ram系统花费很长时间后发送物理地址。但是当我们最终获取数据时，我们可以填充2级缓存，并用我们从Ram获取的东西填充1级缓存，并将数据返回到核心。所以这是缓存。</p>
+<p>发言人   36:43<br>Just by the by, the hit in L 1 cache probably takes a few cycles. Hit in the L 2 cache probably takes a dozen or two cycles and a miss that requires you to go around probably takes you a couple hundred cycles. These cycles are, you know, less than, say, half a nanosecond on a 2 GHz machine. So it’s extremely advantageous to have caching. I mean, if you didn’t have caching, you would be sacrificing a factor of a couple of hundred and perform. So these are just absolutely critical to decent performance, these caches. Now? This cache is the L 1 cache. Well, it turns out both these caches can contain, if we’re running in user space, both these caches and the operating systems.<br>仅仅通过，L 1缓存中的命中可能需要几个周期。在L 2缓存中命中可能需要十几个或两个周期，而错过一个需要你四处走动的可能需要几百个周期。这些周期，你知道，在2 ghz的机器上不到半纳秒。所以使用缓存是非常有利的。我的意思是，如果你没有缓存，你将牺牲几百个因素并执行。因此，这些缓存对于良好的性能是绝对关键的。现在？此缓存是L 1缓存。事实证明，如果我们在用户空间中运行，这两个缓存都可以包含这些缓存和操作系统。</p>
+<p>发言人   37:35<br>Meltdown was aimed at. Both of these caches can contain both user data and kernel data. The L 2 cache can contain kernel data because. It’s physically addressed and there’s just no problem.<br>熔毁是针对的。这两个缓存都可以包含用户数据和内核数据。L 2缓存可以包含内核数据，因为。它是物理解决的，没有问题。</p>
+<p>发言人   37:50<br>The L 1 cache is a little bit trickier. It’s virtually addressed when we change page tables, The contents of the L 1 cache are no longer valid because we change page tables. That means that the meaning of virtual addresses change, so you’d have to flush the L 1 cache if you change page tables. Although there’s more complex tricks that can allow you to avoid that. And so, but the fact that these operating systems in the days of this paper didn’t change page tables when changing between user space and kernel space because both were mapped, meant that we didn’t have to flush the L 1 cache, and that meant the L 1 cache would have both user and kernel data in it. And that made some calls even faster.<br>L 1缓存有点棘手。当我们更改页表时，L 1缓存的内容不再有效，因为我们更改了页表。这意味着虚拟地址的含义会发生变化，因此如果您更改页表，则必须刷新L 1缓存。虽然还有更复杂的技巧可以让你避免这种情况。因此，但事实上，在本文所述的日子里，这些操作系统在用户空间和内核空间之间进行更改时并没有更改页表，因为两者都被映射了，这意味着我们不必刷新L 1缓存，这意味着L 1缓存将同时包含用户和内核数据。这使得一些电话通话速度更快。</p>
+<p>发言人   38:30<br>If you call a system call and a system call returns, there’s still going to be likely still to be useful user data in the cache. We never changed page tables or change the meanings of these addresses. Anyway, so there’s likely to be kernel data.<br>如果你调用系统调用，系统调用返回，缓存中仍可能有有用的用户数据。我们从未更改过页表或更改这些地址的含义。总之，可能会有内核数据。</p>
+<p>发言人   38:48<br>Even though you’re running a user space, there’s likely to be kernel data in the L 1 cache. And it’s these permissions which are copied out of the TLB Cop, out of page table entries. It tells the machine that, oh, even though the data is in the cache, you’re not allowed to see and it raise it, raise a page fault butt.<br>即使您正在运行用户空间，也可能在L 1缓存中有内核数据。这些权限是从TLB Cop中复制出来的，是从页表条目中复制出来的。它告诉机器，哦，即使数据在缓存中，你也不允许看到，它会引发页面错误。</p>
+<p>发言人   39:12<br>So this is a good time to mention that even though the intent of micro architectural optimizations is that they be completely transparent. That can’t possibly be true, because the whole point of these microarchitectural optimizations is almost always to improve performance. And so they will you guaranteed to be at least visible in terms of performance. That is, you could tell if your machine has a cache or not, because if it doesn’t have a CA, it’ll run a couple hundred times slower, right? In addition, you can tell whether the data you’re trying to fetch, if you’re capable of measuring time accurately enough and you do a load, you can tell if the load returned in a couple cycles, the data must have been cached. If the load returned after 100 times that the data probably had to be loaded from Ram. And so the differences are profound. And if you can measure time to a few naseef ands or even tens of nanoseconds, you can tell the difference.<br>所以现在是提到即使微架构优化的目的是使它们完全透明的好时机。这不可能是真的，因为这些微架构优化的全部目的几乎总是为了提高性能。因此，您可以保证它们至少在性能方面可见。也就是说，你可以判断你的机器是否有缓存，因为如果它没有缓存，它的运行速度会慢几百倍，对吧？此外，你可以判断你试图获取的数据是否足够准确，如果你能够足够准确地测量时间并进行加载，你可以判断加载是否在几个周期内返回，数据必须已被缓存。如果数据可能必须从Ram加载100次后加载返回。因此差异是深刻的。如果你能将时间测量到几个纳秒甚至几十纳秒，你就能看出区别。</p>
+<p>发言人   40:14<br>So in the performance level, the microarchitecture not transparent, and all the things we talk about, like branch prediction caches or whatever, all that stuff is at least indirectly visible through timing.<br>因此，在性能级别上，微架构是不透明的，我们谈论的所有事情，比如分支预测缓存或其他什么，所有这些东西至少通过计时间接可见。</p>
+<p>发言人   40:31<br>And so, of course, many people, even though the microarchitecture design is sort of in any detailed level secret to Intel, it’s just their private business how they implement this. In fact, it’s all along been of extremely intense interest to a lot of people because it affects performance a lot. So compiler writers, for example, know a lot about microarchitecture because most, many, many compiler optimizations are implicitly exploiting people’s good guesses about what the machine’s actually doing inside. And indeed, CPU manufacturers publish optimization guides that reveal some of the micro architectural Ral tricks, but they rarely go into much detail, certainly not enough detail to really understand sort of exactly why Meltdown works. So the microarchitecture is sort of sit somewhere between supposed to be transparent and visible and hidden sort of partially of, you know, certainly a lot of people are interested and a lot of people know all kinds of random things about it. Okay, so the reason why this cache stuff is interesting for Meltdown, first of all, any any questions about about caching?<br>因此，当然，很多人，即使微架构设计在任何细节层面上对英特尔都是秘密的，这只是他们的私人事务，他们如何实现它。事实上，它一直受到很多人的极大关注，因为它对性能的影响很大。因此编译器编写者，例如，对微体系结构了解很多，因为大多数编译器优化都在隐式地利用人们对机器内部实际操作的良好猜测。事实上，CPU制造商发布了优化指南，揭示了一些微架构技巧，但他们很少详细介绍，当然也没有足够的细节来真正理解崩溃的确切原因。所以微架构有点介于应该是透明的和可见的之间，有些则是隐藏的，你知道，肯定有很多人感兴趣，很多人知道关于它的各种随机事情。好的，那么为什么这个缓存的东西对崩溃很有趣，首先，有关于缓存的任何问题吗？</p>
+<p>发言人   41:58<br>Okay, let me talk then. About the sort of main way that the paper uses caching, the paper talks about this technique called flush and reload.<br>好的，那我来谈。关于该论文使用缓存的主要方式，该论文讨论了这种称为刷新和重新加载的技术。</p>
+<p>发言人   42:18<br>And what flush and reload is up to is that it’s answering the question, did a particular piece of code? Use the memory at a particular address. And it’s not directly a security exploit because it only works for memory that you can get at. So if you’re user coding and you have some memory, that’s your memory and you’re allowed to use it, you can. And you call one of your own functions, or then you be able to tell.<br>刷新和重新加载的目的是它回答了这个问题，特定的代码片段做了吗？使用特定地址的内存。而且它不是直接的安全漏洞，因为它只对你能获取的内存起作用。因此，如果您正在进行用户编码并且您有一些记忆，那就是您的记忆，您可以使用它。然后你调用自己的一个函数，或者你能够分辨。</p>
+<p>发言人   42:52<br>You can use flush and reload to tell whether the function, your function that you just executed, used your memory. You can’t directly use this attack, or it’s not an attack. You can’t use this technique to figure out if some other process use that process as private memory. Although because processes sometimes share memory. You may still be able to do well. The right way to put it is you can only find out about memory you’re allowed to access. So to answering the question, did a particular function use this memory?<br>你可以使用刷新和重新加载来判断你刚刚执行的函数是否使用了你的内存。你不能直接使用这种攻击，或者它不是攻击。你不能使用这种技术来确定是否有其他进程将该进程用作私有内存。虽然因为进程有时共享内存。你可能仍然能够做得很好。正确的方式是你只能找到你可以访问的内存。那么为了回答这个问题，某个特定的函数使用了这个内存吗？</p>
+<p>发言人   43:30<br>Step 1? Is we’re going to flush losing? We’re interested in address X? We want to flush the cash. We want to make sure the cash doesn’t contain memory at location X, and it turns out that for our convenience, intel supplies and instruction called Cl flash. And you give it an address and it will get rid of it, will ensure that that location is not cached in any of the caches. And so that’s super convenient. Even if the machine didn’t provide this instruction that it turns out there’s ways of getting rid of stuff from the cache.<br>第一步？我们会输掉吗？我们对地址X感兴趣？我们想冲洗现金。我们想要确保现金在X位置不包含内存，事实证明，为了我们的方便，英特尔供应和指令称为Cl闪存。你给它一个地址，它会删除它，将确保该位置不会缓存在任何缓存中。所以这非常方便。即使机器没有提供这个指令，事实证明，也有办法从缓存中清除东西。</p>
+<p>发言人   44:15<br>Like for example, if you know the CA holds 64 kB, then it’s likely to be the case that if you load 64 kB of random memory, just load instructions, that those will be loaded into the cache. And after you’ve loaded 64 kB of new data into the cache, everything that used to be in it must be gone because the cache can only hold 64 kB or whatever it may be. So even without this nifty instruction, you can still flash everything in the cache.<br>例如，如果您知道CA包含64 kB，那么很可能如果您加载64 kB的随机内存，只需加载指令，这些指令将被加载到缓存中。在您将64 kB的新数据加载到缓存中之后，以前在其中的所有内容都必须消失，因为缓存只能容纳64 kB或其他内容。所以即使没有这个漂亮的指令，你仍然可以闪烁缓存中的所有内容。</p>
+<p>发言人   44:47<br>Then step 2 is you’re interested in whether some particular piece of code uses the data at x, you just call that code, whatever it is, and it does what it does, maybe uses X, maybe doesn’t. And now you want to tell if x is actually in the cache. Because if it is, since you fluster from the cache, if it’s in the cache, now it must be that f causes to be loaded unless something else is going on.<br>那么第二步是你对某个特定的代码是否使用了x处的数据感兴趣，你只需要调用那个代码，不管它是什么，它做的是什么，可能使用X，也可能不使用。现在你想知道x是否真的在缓存中。因为如果是，因为你从缓存中慌乱，如果它在缓存中，现在必须是f导致加载，除非有其他事情发生。</p>
+<p>发言人   45:14<br>So you need, you want to do a load, but you want to know how long the load takes. So, but you know, we’re only talking about nanoseconds, like 5 nanoseconds versus 100 nanoseconds here.<br>所以你需要，你想做一个加载，但你想知道加载需要多长时间。所以，但是你知道，我们只是在谈论纳秒，比如5纳秒与这里的100纳秒。</p>
+<p>发言人   45:24<br>How can we measure time that accurately? Tough assignment. However, again, the Cpu’s come to our AE. They in fact provide an instruction which gives you cycle granularity time. And it’s called Rdts C, so we’re just going to execute the Rd TSC instruction, which tells us essentially the number of cycles that have elapse since the machine cycles that have elapsed since the machine started. And since it’s probably a 2 GHz machine, that means that the precision we have here is half a NAS, just pretty small. And now we’re going to load.<br>我们如何才能如此准确地测量时间？艰巨的任务。然而，Cpu再次来到我们的AE。它们实际上提供了一条指令，为您提供循环粒度时间。并且它被称为Rdts C，因此我们将只执行Rd TSC指令，该指令基本上告诉我们自机器启动以来已经经过的周期数。而且由于它可能是一台2 ghz的机器，这意味着我们在这里的精度只有半个纳兹，只是相当小。现在我们要加载。</p>
+<p>发言人   46:07<br>We’re just going to say junk equals star X, and we’re going to load the data at location x and get the time again. And look at the difference, right? B minus a. If b minus a is 5 or 6 or 7 or something, that means that this load hidden in the cache. And that means that this function used the data.<br>我们只是说垃圾等于星X，我们将在位置x加载数据并再次获取时间。看看区别，对吧？B减a。如果b减去a是5、6或7或左右，这意味着此负载隐藏在缓存中。这意味着该函数使用了数据。</p>
+<p>发言人   46:38<br>If b minus A is 150, then that means that x wasn’t in the cache. And you know that that probably means that F, that may mean that F didn’t never used X, that’s not quite that cut and dry because f might have used x and then use something else that conflicted with x in the cache and caused X to be kicked out of the cache. But, you know, for simple situations, a very large value of B minus A means if didn’t use it in a small value of b minus A means that F did use that data. So this is not an attack yet because again, we have to be able to access this memory.<br>如果b减去A是150，那么这意味着x不在缓存中。而且你知道这可能意味着F，这可能意味着F从未使用过X，这并不完全是枯燥的，因为f可能使用了x，然后在缓存中使用了与x冲突的其他东西，导致X被踢出缓存。但是，你知道，对于简单的情况，B的值非常大减去a意味着如果没有使用它，b的值减去A意味着F确实使用了该数据。所以这还不是一次攻击，因为我们必须能够访问这个内存。</p>
+<p>发言人   47:25<br>This is our memory. Any questions about flush plus reload?<br>这是我们的记忆。对flush plus reload有什么问题吗？</p>
+<p>发言人   47:40<br>All right, I think that’s all the preliminaries. Let’s go back to Meltdown. So this is a more full version. I showed you a sort of core meltdown at the beginning. This is a more complete meltdown.<br>好的，我想这就是所有的预赛。让我们回到熔毁的问题。所以这是一个更完整的版本。我一开始就向你展示了一种核心崩溃的情况。这是一个更彻底的崩溃。</p>
+<p>发言人   47:59<br>And so we actually have now, have I added the flush and reload part Again, we’re going to declare this buffer. And the idea is that depending on, we’re going to be just fetched in 1 b from the kernel, and we’re going to multiply that 1 b by 4096. So we’re hoping to use flush plus reload to see that either buff of 0 is in the cache or buff of 4090 6 cents in the cache. And the reason for the large separation there is that apparently this hardware has a pre-federal it. So if you load one thing from memory, it’ll like load the next couple things that from memory to the next couple cache lines. And so we can’t have the two different cache lines that we’re going to apply flash and reload to be particularly close, need them to be far enough apart that even hardware prefetching won’t cause confusion. So we put them a whole page apart, the flesh part, now that we just call the c.l. flu instruction, make sure that the relevant parts of our buffer are not cached now.<br>所以我们现在实际上已经再次添加了刷新和重新加载部分，我们将声明这个缓冲区。这个想法是，根据情况，我们将只从内核中获取1 b，然后将该1 b乘以4096。因此，我们希望使用刷新加重新加载来查看缓存中的0增益或缓存中的4090 6美分的增益。而大分离的原因是，显然这些硬件具有前联邦化的特性。所以如果你从内存中加载一件东西，它会把接下来的几件东西从内存中加载到接下来的几行缓存中。因此，我们不能让我们要应用闪存和重新加载的两个不同的缓存线特别接近，需要它们相距足够远，即使硬件预取也不会引起混淆。所以我们把它们分开一整页，即肉部分，现在我们只叫它c.l。 流感指令，请确保缓冲区的相关部分现在没有缓存。</p>
+<p>发言人   49:18<br>We’re exploiting this. Line 7 is not, maybe may or may not be necessary. What’s going on here is we’re exploiting this sort of arere going to be exploiting the gap in time between you.<br>我们正在利用它。第7行可能不必要，也可能不必要。这里发生的是我们正在利用这种领域，我们将利用你们之间的时间差距。</p>
+<p>发言人   49:36<br>We’re doing this load line 10, It’s a load of the kernel address, so it’s going to fault, but we’re hoping to be able to execute another couple of instructions speculatively before this instruction is retired and before it actually raises the fault and cancels these instructions, right? If the fault, if this load would be to retire, say at this point, that would be too early for us because it’s going to turn out we actually need line 13 to be speculatively executed in order to complete the attack. So we want to make sure that this load isn’t retired for as long as possible in order to delay the fault and to delay the speculative cancellation.<br>我们正在执行这个负载行10，这是内核地址的负载，所以它会出错，但我们希望能够在这条指令退役之前，在它实际引发错误并取消这些指令之前，推测地执行另外几条指令，对吧？如果出现故障，如果这个负载要退役，比如说在这一点上，那对我们来说就太早了，因为结果是我们实际上需要推测地执行第13行才能完成攻击。因此，我们希望确保此负载不会尽可能长时间地退役，以延迟故障和推测性取消。</p>
+<p>发言人   50:20<br>Now, we know instructions aren’t retired until all previous instructions have retired. That’s one of the rules. So at line 7. I’m imagining that we’re going to launch some expensive instruction that doesn’t complete for a long time. You know, maybe it loads something else that’s known to have to come from Ram. So it’ll take a few hundred cycles, or maybe it does a divide or a square root or something, who knows what? Something that takes a long time and won’t be retired for a long time and therefore will cause this load not to be retired for a long time. Giving these instructions time to execute speculatively.<br>现在，我们知道指令不会被停用，直到所有先前的指令都已停用。这是规则之一。所以在第7行。我想象着我们将推出一些昂贵的指令，但很长一段时间都不完成。你知道，也许它加载了其他已知来自Ram的东西。所以它需要几百个周期，或者可能会进行除法或平方根之类的，谁知道呢？需要很长时间并且不会长时间退役的东西，因此会导致此负载长时间不退役。给这些指令时间进行推测执行。</p>
+<p>发言人   50:55<br>Okay, right now we’re assuming again, we have a virtual address in the kernel. We’re going to execute line 10. Line 10 won’t raise a fault until that we know it’s going to raise a fault, it won’t raise a fault until it retires, but we’re intending, we believe we set things up so it won’t retire for a while since it hasn’t retired. And because on Intel Cpu’s, the data is returned, even if you weren’t allowed to see it, the data return for speculative execution, even if you didn’t have permission. That means that we can speculatively execute the machine will speculatively execute line 11 and get the low bit of kernel data now multiplied by 4096.<br>好的，现在我们再次假设，我们在内核中有一个虚拟地址。我们将执行第10行。第10行在我们知道它会产生故障之前不会产生故障，在它退休之前不会产生故障，但我们打算，我们相信我们已经设置好了，所以它不会在一段时间内退休，因为它还没有退休。因为在英特尔Cpu上，即使您不被允许查看数据，数据也会返回，即使您没有权限，数据也会返回以进行推测执行。这意味着我们可以推测性地执行机器将会推测性地执行第11行并获得内核数据的低位乘以4096。</p>
+<p>发言人   51:40<br>Line 13 is itself a load. It’s another load using an address, basically the address of buffer plus the contents of R2. We know it’s going to get canceled because we know this will fault, we know the actual write to R 3 real will be canceled, but line 13 will cause. Some data from buffer to be looted into the cache, even if it doesn’t end up affecting register 3, line 13 is going to cause something to be loaded into the cache. And in this case, depending on whether the low bit is 0, 1 line 13 cause the actual cache to contain either buffer 0 or buffer 4096. Then then that, that even though R2 real and R 3 reals are canceled, change in the cache because it’s supposed to be hidden microarchitectural state, it will actually be the cache will be changed.<br>第13行本身就是一个负载。这是使用地址的另一种加载，基本上是缓冲区的地址加上r2的内容。我们知道它将被取消，因为我们知道这会出错，我们知道对r3 real的实际写入将被取消，但第13行将导致。一些来自缓冲区的数据被掠夺到缓存中，即使它最终不会影响寄存器3第13行，也会导致某些内容被加载到缓存中。在这种情况下，根据低位是否为0，第13行会导致实际缓存包含缓冲区0或缓冲区4096。那么，即使取消了R2 real和r3 real，缓存中的更改，因为它应该是隐藏的微架构状态，实际上缓存将会被更改。</p>
+<p>发言人   52:44<br>Finally, at some point, the fault will happen and we need to sort of recover after the fault it, it’s just a page fault. And it turns out you can or user process can register a page fault handler and get control back after a page fault. The paper mentions a couple of other ways of being able to continue after the fault.<br>最后，在某个时候，错误会发生，我们需要在错误发生后进行某种程度的恢复，这只是一个页面错误。事实证明，您可以或用户进程可以注册一个页面错误处理程序，并在页面错误后重新获得控制权。这篇论文提到了几种能够在故障后继续运行的其他方法。</p>
+<p>发言人   53:05<br>And so now all we have to do is figure out whether it was buff of 0 or buffer 4096 that was loaded into the cache. And now we can do the reload part of flush and reload, you know, read the accurate time load buff of 0, be the time again, load buff of one the time again, and compare the two differences in time. And whichever one of these took the shorter amount of time is likely to indicate whether the low bit of the kernel data was 0 or 1. And then if we report that, repeat that, you know, a couple of billion times, we can scan all of kernel memory. But in this example, if b minus a is smaller than C minus b, doesn’t that mean that buff of 0 was cached? Let’s see if I got this wrong. B minus a, yeah, means that buff of 0 was CA. Oh yeah, you’re right, yeah.<br>所以现在我们所要做的就是弄清楚加载到缓存中的是buff为0还是buffer 4096。现在我们可以进行刷新和重新加载的重新加载部分，你知道，读取准确的时间加载增益为0，再次加载，再次加载一个，并比较两个时间差异。并且其中任何一个花费的时间越短，就可能表明内核数据的低位是0还是1。然后，如果我们报告这一点，重复这一点，你知道，几十亿次，我们就可以扫描所有内核内存。但是在这个例子中，如果b减去a小于C减去b，这是否意味着0的buff被缓存了？让我们看看我是否错了。B减a，是的，意味着0的增益为CA。是的，你说得对，是的。</p>
+<p>发言人   54:10<br>Now we’re cooking. Good catch. Oh sorry, do you need for before we had an if before like line 9, do we need it if now or is it is it still. The If was to help me illustrate legitimate reasons for speculative execution, keep computing, even though we don’t know whether the branch took or not.<br>现在我们正在做饭。好的捕捉。哦，对不起，在我们之前需要像第9行这样的如果之前，我们现在需要它还是仍然需要它。如果是为了帮助我说明推测性执行的合理原因，请继续计算，即使我们不知道分支是否成功。</p>
+<p>发言人   54:44<br>Here, the real core of the speculation is that we don’t know if this load will fault. And so we’re the machine is speculatively executing past the load on the theory that it’s probably on most loads don’t fault, right? Or even though they may take a long time, like a load could take hundreds of cycles. So we’d love to be able to. So the machine will speculatively execute past a load, even though it doesn’t, not knowing whether it’s going to fault or not. And if the load did fall, it will then undo all this speculative execution.<br>在这里，猜测的真正核心是我们不知道这个负载是否会出错。所以我们的机器在推测上执行超过负载的理论，它可能在大多数负载上没有故障，对吗？或者即使它们可能需要很长时间，比如一个负载可能需要数百个循环。所以我们希望能够。因此，机器将推测性地执行超过负载，即使它不知道它是否会出错。如果负载确实下降，它将撤销所有这些推测性执行。</p>
+<p>发言人   55:18<br>There’s a speculative execution comes up any time you have a long running instruction that may or may not succeed. So like divide. So we know whether it’s going to be divided by zero or not. No instructions after a divider, also speculative. Anyway, the speculation, the real critical speculation starts here. Now, in fact, we tried in order to make the attack likely to be more successful, we sort of ensured that speculation starts here. This is the real speculation we care about.<br>每当您有一个长时间运行的指令，可能会成功，也可能不会成功时，就会出现推测性执行。就像分割一样。所以我们知道它是否会被零除。分割器后没有指示，也是投机性的。无论如何，真正批判性的猜测从这里开始。现在，事实上，我们试图让攻击更成功，我们确保猜测从这里开始。这才是我们真正关心的猜测。</p>
+<p>发言人   56:01<br>Other questions?<br>其他问题？</p>
+<p>发言人   56:07<br>This example we’ve only read 1 b. Is there some like really small, simple modification that we could make to read like a full register size of bits? Yeah, run this 64 times, one for each bit. Why is it not possible to just read 64 b at a time? Well, well, you need the buffer. The size of this buffer has to be 2. To the number of bits you’re reading times 4096 or something. So 64 b is too big because we don’t have enough memory to make a buffer that big the way this is set out. But I waited it. 64 b too much? You can certainly read 8 b at a time and have this buffer size be 256 times 4096.<br>这个例子我们只读了1 b。有没有一些像真的小而简单的修改，我们可以读取像位的完整寄存器大小？是的，运行这个64次，每个位一次。为什么一次只能读取64 b？嗯，嗯，你需要缓冲。此缓冲区的大小必须为2。你正在阅读的位数乘以4096或其他数字。所以64 b太大了，因为我们没有足够的内存来制作一个如此大的缓冲区。但我一直在等待。64 b太多了？你当然可以一次读取8个字节，并且这个缓冲区大小是256倍4096。</p>
+<p>发言人   57:11<br>The paper actually argues in a. The paper observes that since the most of the time it’s here in the plus plus reload, if you read a byte at a time, then figuring out what the bits of that byte are takes 256 flu and reloads. Right, one. One for each possible value. If you load a bit at a time, then each bit takes just one flu plus reload, or sort of 2, 2 probes or two flu plus reloads. So if you read a bit at a time, then you end up only doing 16 flu plus reloads. If you read a byte at a time, you end up doing 256 flu plus reloads. So the paper says that it’s faster to do it a bit at a time than a byte at a time, which seems a little counterintuitive.<br>这篇论文实际上是在争论a。该论文观察到，由于大多数情况下它在加号重新加载中，如果你一次读取一个字节，那么弄清楚这个字节的位是需要256次流感和重新加载。对，一个。一个代表每个可能的值。如果您一次加载一个位，则每个位只需要一个流感加重新加载，或者2个探针或两个流感加重新加载。所以如果你一次读一点，那么你最终只会做16次流感加重新加载。如果你一次读取一个字节，你最终会进行256次流感加重新加载。所以这篇论文说，每次做一点比每次做一个字节更快，这似乎有点违反直觉。</p>
+<p>发言人   58:09<br>Seems to be true?<br>似乎是真的？</p>
+<p>发言人   58:19<br>Other questions?<br>其他问题？</p>
+<p>发言人   58:28<br>So where would this or where would this program have to be run from? Is there like any particular location on the like machine? Like does it have to be or like where would you bite it? I guess is there like where would this program be run from? Can it be like a user for?<br>那么这个程序应该从哪里运行呢？在类似的机器上有特定的位置吗？它必须是什么样子，或者你会在哪里咬它？我猜这个程序会从哪里运行？它可以像一个用户吗？</p>
+<p>发言人   58:49<br>That depends on what kind of access you have to the machine and where the data is that you want to steal. And you know. Who knows, right? But one example is supposing you’re logged into an Athena dial up machine with a couple hundred other users, and you want to steal somebody’s password and your patient you use. And let’s assume that Athena is now a couple of years ago, and Athena is running a version of Linux that mapped the kernel into every user’s every process’s address space. Then you can use Meltdown to get out, you know, bit by bit or everything in the kernel, including, say, the IO buffers and the network buffers and stuff. And if somebody’s typing their password, if you’re lucky or patient and somebody’s typing your password, and you load all of kernel memory, you’re going to see that password in kernel memory. And because, in fact, the kernel probably maps like XV 6 maps all of physical memory, that means you can probably read all physical memory, that is, all of all other processes, memory using this technique on a time sharing machine.<br>这取决于您对机器的访问权限以及您想窃取的数据位于何处。你知道的。谁知道，对吧？但一个例子是，假设你登录到一台有几百个其他用户的Athena拨号上网机器，并且你想窃取某人的密码和你使用的病人。假设Athena是几年前的事了，而Athena运行的是Linux的一个版本，它将内核映射到每个用户的每个进程的地址空间。那么你可以使用崩溃来一点一点地退出，或者内核中的所有东西，包括IO缓冲区和网络缓冲区等。如果有人在输入他们的密码，如果你很幸运或有耐心，有人在输入你的密码，并且你加载了所有的内核内存，你将在内核内存中看到这个密码。而且，实际上，内核可能像XV 6一样映射所有的物理内存，这意味着你可能可以在分时共享机器上使用这种技术读取所有的物理内存，即所有其他进程的内存。</p>
+<p>发言人   59:57<br>So I can see what’s everybody’s in text editor or contents or whatever I like. Now you have to. That’s a way you could use it if you’re using a time sharing machine for other situations you know, would be different.<br>所以我可以在文本编辑器或内容或任何我喜欢的东西中看到每个人的内容。现在你必须。这是一种你可以使用它的方式，如果你在其他情况下使用分时机，你知道，会有所不同。</p>
+<p>发言人   01:00:14<br>In time, sharing is not that pervasive anymore, but the sort of killer scenario would be some kind of cloud computing thing where you’re using a cloud provider like Amazon and, you know, which runs many customers on the same machine. And, you know, depending on the details of how they set up their virtual machine monitor or container system or whatever it may be, if you buy time from Amazon, then you may be able to peer into the memory of other customers software running on the same Amazon machine, maybe. So I think that’s the really, and that’s how people would actually use this probably actually another time that it might be useful is your browser. When you’re browsing the web, your browser actually runs a lot of code in it that is not trusted, that is supplied by the random website. So you visit maybe in the form of plugins, maybe in the form of JavaScript that’s loaded into your browser and compiled by the browser and executed. And it is possible that this attack could be carried out by.<br>随着时间的推移，共享不再普遍，但杀手级的场景将是某种云计算的事情，你使用像亚马逊这样的云提供商，你知道，在同一台机器上运行许多客户。而且，你知道，根据他们如何设置虚拟机监视器或容器系统的细节，如果你从亚马逊购买时间，那么你可能能够窥视在同一台亚马逊机器上运行的其他客户软件的内存，也许如此。所以我认为这就是真正的，这就是人们实际使用这个的方式，可能另一次可能有用的是你的浏览器。当你浏览网页时，你的浏览器实际上运行了很多不受信任的代码，这些代码是由随机网站提供的。因此，您可能以插件的形式访问，也可能以JavaScript的形式访问，它会加载到浏览器中并由浏览器编译并执行。而且这次攻击有可能由以下人员进行。</p>
+<p>发言人   01:01:22<br>Code that you run in your browser when you browse the web that you may not, even though it’s running there loaded from websites, and they would steal whatever stuff is sitting on your laptop. I don’t know if the details of that quite work out, but has anyone demonstrated an attack through either JavaScript or like web-based? I don’t know, I don’t know. I feel certainly people were worried about WebAssembly. I don’t know whether the attack was literally possible for JavaScript. I know that maybe the sticking point was the accurate time I that you couldn’t quite get this nanosecond timing, so you couldn’t quite execute Flash plus B load now, you know, whether somebody with a bit more cleverness could figure out a way to do it, I don’t know. We have assembly is much closer to just running machine code. I don’t know exactly how the details worked out, but you know, boy, was it something people rapidly thought about?<br>当您浏览网页时，您在浏览器中运行的代码可能不会被加载，即使它正在运行，也会从网站上加载，并且他们会窃取您笔记本电脑上的任何东西。我不知道细节是否有效，但有人展示了通过JavaScript或基于web的攻击吗？我不知道，我不知道。我觉得人们肯定担心网络组装。我不知道这次攻击对于JavaScript来说是否真的可能。我知道可能关键点是准确的时间，你无法完全获得这个纳秒时间，所以你现在无法完全执行闪存加B加载，你知道，是否有更聪明的人能想出一种方法来做到这一点，我不知道。我们的汇编更接近于仅仅运行机器代码。我不知道具体细节是如何解决的，但是你知道，孩子，这是人们迅速想到的吗？</p>
+<p>发言人   01:02:25<br>Okay, it turns out the attack doesn’t always work Like, and for reasons that I don’t think the authors never explained or only speculated about. And you can see, I don’t know if you can see this, well, maybe you can’t see this, but if you turn to the last page of their paper, you’ll see the output of actual the, you know, they mounted the attack on their own machines and extracted a bunch of data from their own, the kernel on their own machine. And if you look closely, you’ll see there’s a huge all these lines, or just xxxxxxxx all these lines xx’s with dots. These are places where they didn’t manage to extract anything where meltdown failed, even though they repeated it many times. And you can tell they must have been know they were.<br>好的，事实证明攻击并不总是有效，其原因我认为作者从未解释或只是推测。你可以看到，我不知道你是否能看到这个，也许你看不到这个，但是如果你翻到他们论文的最后一页，你会看到实际的输出，你知道，他们在自己的机器上发起攻击，并从自己的机器上的内核中提取了一堆数据。如果你仔细观察，你会看到所有这些行都有一个巨大的，或者只是xxxxxxxx所有这些行都有点。在这些地方，他们没有设法提取任何崩溃失败的东西，即使他们多次重复它。你可以看出他们一定被知道了。</p>
+<p>发言人   01:03:12<br>The paper’s version of this attack was retrying many, many times because, for example, section 6.2 that talks about performance says that in some cases, the rate at which they could extract data was only 10 B per second, which means they were sitting there trying again and again and again. And after thousands of times, they finally that managed to get some data. That is, that flush plus reload indicated that the two cache lines at different load time. So there’s something unexplained going on about why it’s quite frequent for meltdown to actually fail. I get some data like I actually got real data here, but there was also a bunch of data that they didn’t get and. I don’t know if people, as far as I know, people are not really sure what all the conditions are about when it succeeds and when it doesn’t.<br>这篇论文的攻击版本重试了很多次，因为，例如，第6.2节谈到性能时说，在某些情况下，他们可以提取数据的速度只有每秒10 b，这意味着他们坐在那里一次又一次地尝试。经过数千次之后，他们终于获得了一些数据。也就是说，刷新加重新加载表示两个缓存行在不同的加载时间。所以有一些无法解释的事情发生，为什么崩溃实际上失败的情况非常频繁。我得到了一些数据，就像我在这里得到了真实的数据一样，但也有一些数据他们没有得到。我不知道人们是否，据我所知，人们并不确定什么时候成功，什么时候失败，所有的条件都是什么。</p>
+<p>发言人   01:04:00<br>You know, the most straightforward possibility is that if the kernel data is in the L 1 cache, the meltdown succeeds. And if the kernel data is not in the L 1 cache, it doesn’t succeed. That’s very easy to believe that that could be what’s going on. Because if it’s not in the L 1 cache, then there’s a whole bunch more machinery involved in a speculative load. And it’s easy to imagine that the CPU for a speculative load that’s maybe not known if it’s even needed, would not bother doing all the work required to load stuff from Ram. But it’s not quite that simple. And you can tell it’s not quite that simple because the paper says that sometimes when they were tried many, we tried many times, it finally worked. So there’s some more complex condition, maybe a race effectively erase inside the CPU, under which it occasionally works, even for data that’s not in the cache.<br>你知道，最直接的可能性是，如果内核数据在L 1缓存中，崩溃会成功。如果内核数据不在L 1缓存中，则不会成功。很容易相信这可能就是正在发生的事情。因为如果它不在L 1缓存中，那么在推测负载中会涉及更多的机器。很容易想象，用于推测负载的CPU可能不知道它是否需要，不会费心做从Ram加载内容所需的所有工作。但这并不那么简单。你可以看出这并不那么简单，因为论文说，有时当它们被尝试了很多次，我们也尝试了很多次，它最终成功了。因此，有一些更复杂的情况，也许是在CPU内部有效地擦除种族，在这种情况下，它偶尔会起作用，即使对于不在缓存中的数据也是如此。</p>
+<p>发言人   01:05:06<br>The end of the paper is actually also, if you didn’t get that for worth reading, because it does explain a sort of more real world like we wanted to find out this particular thing, You know this like we know there’s password stored in our Firefox’s password manager. We wanted to get them out on to steal them using belt down. You know, what are all the how do you find out what the address is, for example? They sort of lay out a complete attack. I mean, a complete attack done by academics, not real attack groups, but nevertheless, and fill in many of the pragmatic details.<br>论文的结尾实际上也是，如果你没有得到值得一读的内容，因为它确实解释了一种更真实的世界，就像我们想找出这个特定的东西一样，你知道这就像我们知道在Firefox的密码管理器中存储了密码。我们想让他们出去，用皮带下来偷他们。你知道，比如说，你是如何找出地址的？他们似乎展开了一场彻底的进攻。我的意思是，学者所做的完全攻击，而不是真正的攻击团体，但无论如何，并填写许多实用的细节。</p>
+<p>发言人   01:05:40<br>The final thing I want to talk about is fixes, which we’ve already touched on a little bit. When this paper came out, it got a lot of attention. There was actually another second paper by an overlapping set of people about a different attack that also use different, different kind of speculation inside Cpu’s called Spectre. So the pair of the paper was came out at about the same time and was very exciting. And so people hustled.<br>我想谈的最后一件事是修复，我们已经谈了一点。当这篇论文出来的时候，它得到了很多关注。实际上，还有另一篇论文是由一群重叠的人写的，关于一种不同的攻击，这种攻击也在Cpu内部使用了不同的猜测，叫做 “幽灵”。所以这对报纸大约在同一时间出了，非常令人兴奋。所以人们在忙碌。</p>
+<p>发言人   01:06:11<br>People realize that, boy, this is extremely damaging because now what we’re talking about is that, you know, isolation has been broken, right? Know hardly. So basically you hardly even think about it anymore, but you know, this thing, this is a technique for breaking page table protections, which is how we enforce isolation between user and kernel LS, deeply fundamental attack, or at any rate, undermines a extremely important piece of security in a very general way, right? It seems like you could read anything. So people really, really hustled to deploy fixes for this and the immediate fix that a lot of operating systems installed within weeks of this paper coming out and sometimes had already installed this thing called Kaiser, which is now called kpti in Linux.<br>人们意识到，男孩，这是极其有害的，因为现在我们谈论的是，你知道，孤立已经被打破了，对吧？几乎不知道。所以基本上你几乎不再考虑它了，但是你知道，这个东西，这是一种打破页表保护的技术，这是我们如何在用户和内核之间强制隔离，深层次的基础攻击，或者无论如何，以一种非常普遍的方式破坏了一个极其重要的安全保障，对吗？看起来你什么都能读。因此，人们真的非常努力地为此部署修复程序，并且在本文发布后的几周内，许多操作系统安装了即时修复程序，有时已经安装了名为Kaiser的东西，现在在Linux中称为kpti。</p>
+<p>发言人   01:07:03<br>And it’s is pretty straightforward idea. The idea is just like not put the kernel mappings in the user page table and instead as in Xb 6, switch page tables during system calls. So in user space, you just have user mappings. You make a system call. There’s some kind of trampoline arrangement, like in XV 6, and you switch page tables to a page table that has the kernel mappings in order to execute the kernel. And that causes this attack do not work in that because.<br>这是一个非常简单的想法。这个想法就像不在用户页表中放置内核映射一样，而像在Xb 6中一样，在系统调用期间切换页表。因此，在用户空间中，您只需要用户映射。你进行一个系统调用。有某种蹦床排列，就像在XV 6中一样，您需要将页表切换为具有内核映射的页表，以便执行内核。导致这次攻击的原因在这方面不起作用。</p>
+<p>发言人   01:07:39<br>You switch page tables. This the virtual address in R 1. It’s not only no longer valid, it’s no longer meaningful because there’s no translation for it. And so the CPU doesn’t know what to do with it, like this virtual address won’t be cached, it’s not even in the TLB, so there’s just no way for the kernel to decide what memory corresponds to this virtual address when this attack is executed in user space.<br>您切换页面表格。这是R 1中的虚拟地址。它不仅不再有效，而且不再有意义，因为它没有翻译。因此，CPU不知道如何处理它，比如这个虚拟地址不会被缓存，它甚至不在TLB中，因此当在用户空间执行此攻击时，内核无法决定这个虚拟地址对应的内存。</p>
+<p>发言人   01:08:13<br>Because virtual, this kernel virtual address no longer means anything. It’s ISS, not illegal, it’s just meaningless. And so that would cause the attack not to work.<br>因为是虚拟的，所以这个内核虚拟地址不再意味着任何东西。这是非法的，不是非法的，只是毫无意义。这将导致攻击不起作用。</p>
+<p>发言人   01:08:23<br>The downside of this Kaiser fix is that now systems calls are more expensive because switching page tables now. If you don’t do anything, switching page tables causes the TLB to be flushed, because now all those virtual addresses in the TLB are the wrong virtual addresses that don’t correspond to this page table anymore, and it causes the L 1 cache to be flushed because it’s virtually addressed and so on, made on some machines, the switching page table is made system calls considerably slower. But recent machines actually have this trick called pcid. You can look up, but basically makes a seed. You can avoid flashing these caches on a page table switch, although it still takes some time.<br>这个Kaiser修复方案的缺点是现在系统调用更加昂贵，因为现在可以切换页表。如果您什么都不做，切换页表会导致TLB被刷新，因为现在TLB中的所有虚拟地址都是错误的虚拟地址，不再对应于此页表，并且它会导致L 1缓存被刷新，因为它实际上是被寻址的等等。在某些机器上进行，切换页表会使系统调用变得相当慢。但是最近的机器实际上有这个叫做pcid的技巧。你可以抬头看，但基本上会种子。您可以避免在页表交换机上刷新这些缓存，尽管这仍然需要一些时间。</p>
+<p>发言人   01:09:08<br>And if you poke around to the web looking for people, there was a lot of worry at the time that this split, that this two page table idea would be unacceptably slow. And in fact, it didn’t really turn out to be a serious problem. And if you poke around, you’ll see that people to guesses about typical workloads know how much it impacts overall performance of typical workloads, which after all, don’t spend all their time entering an X name kernel, it’s like 5%. So it wasn’t such a bad deal. Do any questions about this Kaiser?<br>如果你在网上四处寻找人，当时有很多担心这种分裂，这个两个页面表的想法会慢得无法接受。事实上，这并不是一个严重的问题。如果你四处看看，你会发现人们猜测典型工作负载知道它对典型工作负载的整体性能有多大影响，毕竟，不要把所有时间都花在输入X名称内核上，大约是5%。所以这并不是一个糟糕的交易。对这个凯撒有什么问题吗？</p>
+<p>发言人   01:09:52<br>The people adopted this pretty rapidly. In fact, there had been, Colonel Said, had already adopted it because it defended against some other attacks. There’s also a reasonable hardware fix that I believe Intel is actually made in recent processors that AMD had already made.<br>人们很快就接受了这个。事实上，上校说，已经有一些人采用了它，因为它抵御了其他一些攻击。还有一个合理的硬件修复，我相信英特尔实际上是用AMD已经制造的最新处理器制造的。</p>
+<p>发言人   01:10:09<br>And that’s basically to because the, in fact, the permission, this’s a structure of the cache. When an instruction loads something from the L 1 cache, like this kernel data, we’re trying to attack the permissions. Or people believe that the permissions are sitting right there in the cash entry. And so there’s no trouble with the CPU checking the permissions at that point. And indeed AMD Cpu’s and perhaps modern Intel Cpu’s, we’ll actually do the permission check very early and won’t return this data. They won’t even return it to the core if the permission checks don’t work out. So there’s none of this.<br>这基本上是因为，事实上，权限，这是缓存的结构。当一条指令从L 1缓存中加载某些内容时，比如这个内核数据，我们正在尝试攻击权限。或者人们认为权限就在现金的条目中。因此，此时CPU检查权限没有问题。实际上，AMD Cpu和现代英特尔Cpu，我们实际上会尽早进行权限检查，并且不会返回此数据。如果权限检查不起作用，他们甚至不会将其返回到核心。所以这些都没有。</p>
+<p>发言人   01:10:51<br>Speculative instructions are able to see forbidden data. So I don’t know if you know the answer this question. It’s probably just a speculative, but no pun intended. But why do you think Intel would do this like this? Seems like, okay? Because to me it seems like it was a discussion, should we check permissions on transient instructions? And they were just like, no, why bother? Well, I mean, just a simple check, but why bother indeed?<br>推测性指令能够看到被禁止的数据。所以我不知道你是否知道这个问题的答案。这可能只是一个推测，但没有双关语的意图。但是你认为英特尔为什么会这样做呢？看起来像，好吗？因为对我来说，这似乎是一场讨论，我们应该检查瞬态指令的权限吗？他们就像，不，为什么要这么费心？嗯，我的意思是，只是一个简单的检查，但为什么还要费心呢？</p>
+<p>发言人   01:11:21<br>Stuff’s transparent, right? I mean, the user’s not going to be able to see the data either way, doing the check early, you know, that’s like some gates on a pretty critical path, right?<br>东西是透明的，对吧？我的意思是，用户无论如何都无法看到数据，在早期进行检查，你知道，这就像一些门在相当关键的路径上，对吗？</p>
+<p>发言人   01:11:31<br>You know, the core L 1 data cache path is extremely performance critical, and if you can shave a few transistors off the. Critical path here between issuing instruction and getting the data back. You know, that may may allow you to have a slightly faster cycle time and run programs faster. And so it’s got to be the case that, well, I don’t know, got to be the case. But it’s easy to imagine that it would have cost them transistors to actually enforce the permissions early because after all, they still need all the stuff at retirement. It’s not like doing it early would save them some work later on. They still, they still have to defer the fault until retirement.<br>你知道，核心L 1数据缓存路径对性能非常关键，如果你能减少几个晶体管。发出指令和获取数据之间的关键路径。你知道，这可能会让你的周期时间稍微快一些，运行程序更快。所以必须是这样，嗯，我不知道，必须是这样。但是很容易想象，早期实施权限实际上会花费他们晶体管的成本，因为毕竟，他们在退休时仍然需要所有的东西。这并不意味着提前做会在以后为他们节省一些工作。他们仍然需要把过错推迟到退休。</p>
+<p>发言人   01:12:17<br>So all that stuff’s still there. I’m just guessing that it didn’t seem like it would have any advantages and would have been like a little bit of extra work. And either way, completely invisible, you know, theoretically invisible at the architectural level.<br>所以所有的东西都还在那里。我只是猜测它似乎没有任何优势，就像是一点点额外的工作。无论哪种方式，在建筑层面上都是完全不可见的，你知道的，理论上是不可见的。</p>
+<p>发言人   01:12:36<br>Did any kernel decide to like revert this Kaiser, fix now that like Intel has fixed the CPU to improve performance? Again, I know it’s optional on a lot of kernels. I’m not totally sure what’s going on with the Intel fix. I’m fairly sure that they have this fix out there. But exactly, you know, I don’t really know what’s going on.<br>有没有内核决定像恢复这个凯撒，现在修复了英特尔已经修复了CPU以提高性能？再说一遍，我知道它在很多内核上是可选的。我不确定英特尔的修复是怎么回事。我相当确定他们已经有了这个解决方案。但确切地说，你知道，我真的不知道发生了什么。</p>
+<p>发言人   01:13:02<br>I think the Linux Ke, you can just ask, you know, which Hartford fixes have been implemented and Linux change the mitigation that it enables depending on what actually the hardware tells it. So also, so you can you can actually do that, like you can read enough info about the processor as the kernel to know whether what to do, but you can run run on your laptop. There’s a Linux command that you actually on like which is what it tells you exactly, you know, what fixes have been implemented, what things are mitigated in hardware. Because there’s a wide range of these, you know, spectral application attacks.<br>我认为Linux可以，你可以问，你知道，哪些哈特福德修复已经实施，Linux会根据实际硬件的指示改变它所启用的缓解措施。因此，您也可以实际做到这一点，就像您可以阅读有关处理器作为内核的足够信息，以了解是否要做什么，但您可以在笔记本电脑上运行。有一个你实际使用的Linux命令，它会告诉你确切的情况，你知道已经实施了哪些修复，哪些事情在硬件上得到了缓解。因为有各种各样的这些，你知道的，光谱应用攻击。</p>
+<p>发言人   01:13:40<br>Are you saying that Linux will actually use the combined page table if the CPU? Yes, cool. Yeah, I think it it was 99%. I have checked recently. I believe that’s the case.<br>你是说Linux实际上会在CPU上使用组合页表吗？是的，很酷。是的，我认为是99%。我最近检查过了。我认为情况就是这样。</p>
+<p>发言人   01:14:04<br>Sorry, so what were people doing? Like, like how did they find find this? What were they trying to do? What are they trying to do? Trying to break into computers? No, well. Who knows what they were really trying to do?<br>抱歉，那么人们在做什么？他们是怎么找到这个的？他们试图做什么？他们想做什么？试图闯入计算机？不，好吧。谁知道他们真正想做什么？</p>
+<p>发言人   01:14:21<br>I mean, the papers are written by a various academics. Maybe, you know, their research is finding security problems for the bad guys. One thing to vote event for a long time is they wanted to break address space randomization and they had earlier tapers, you know, the different schemes trying to make great interplays. So like one group of, you know, one stream of researchers that were in this area, I had that as a background. I think the project zero people came from a completely different angle. I see, thank you, people. I think Robert said before, people have been working in this area for decades, you know, trying to find bugs that they can exploit, understand?<br>我的意思是，论文是由各种学者撰写的。也许，你知道，他们的研究是为坏人寻找安全问题。长期以来，投票事件的一件事是他们想要打破地址空间的随机化，并且他们早些时候已经逐渐减少，你知道，不同的方案试图进行很好的交互。因此，就像一组，你知道，在这个领域的研究人员，我有这样的背景。我认为项目零人员来自完全不同的角度。我明白了，谢谢大家。我认为罗伯特之前说过，人们已经在这个领域工作了几十年，试图找到他们可以利用的虫子，明白吗？</p>
+<p>发言人   01:15:17<br>So I guess how they use is a hard question to answer, but like, how likely is it that there’s another like meltdown out there? Because it seems like extremely likely, okay? It’s the fundamental thing with micro architecture, like exposing changes didn’t. That’s right, I think part of what’s going on is that the CPU manufacturers have, you know, for decades and decades have been, you know, adding more and more and more optim I, there’s many, many, many sort of cool little tricks inside the microarray for making things go faster. And, you know, now, and people didn’t worry that much or it just wasn’t on the radar that this could be like a serious security problem. And so now people are not very aware that this stuff could be a serious security problem. But we’re now in a position where we’re living with, you know, 30 years of clever ideas inside the Cpu’s. And so indeed, a bunch of since this paper came out, and indeed before this paper came out, kind of a bunch of this style of attacks have come to light exploiting various different.<br>我猜他们是如何使用的是一个很难回答的问题，但是，还有另一种类似崩溃的可能性有多大？因为这似乎极有可能，好吗？这是微架构的基本问题，就像暴露变化并没有做到。没错，我认为正在发生的一部分是CPU制造商，你知道，几十年来，你知道，添加越来越多的optim，有很多，在微阵列中，有许多很酷的小技巧可以让事情更快地进行。而且，你知道，现在人们并不太担心，或者只是没有注意到这可能是一个严重的安全问题。所以现在人们不太清楚这些东西可能是一个严重的安全问题。但我们现在所处的位置是，你知道，在Cpu内部有30年的聪明想法。因此，自从这篇论文发表以来，实际上在这篇论文发表之前，已经有很多种利用各种不同方式的攻击被曝光。</p>
+<p>发言人   01:16:33<br>Micro architectural. Thingies and the CPU is. So I think this is going to be a while before is all the Hrs you look to the security conferences in the last, you know, two years, basically every year, every conference is basically session on like exploit, expect execution properties and see if they can make attacks work. Maybe a larger question is you whether the situation is, well, you know, there’s, you know, 15 or 20 or 30 things that sort of have to be worked out and then will be done, or whether there’s some much higher level.<br>微建筑。东西和CPU是。所以我认为这将是一段时间之前，你看安全会议的所有时间，你知道，两年，基本上每年，每次会议基本上都是关于像利用一样的会议，期望执行属性，看看他们是否可以使攻击起作用。也许更大的问题是你是否这种情况是，你知道，你知道，有15、20或30件事情必须解决，然后才能完成，或者是否有一些更高的水平。</p>
+<p>发言人   01:17:18<br>Approach gone wrong. You know that we all, I mean, this is probably way too pessimistic, but, you know, people had a lot of faith in isolation as an idea that it’s like a totally reasonable thing to we assume that isolation works and we’ll design stuff like cloud computing and, you know, running JavaScript in the browser and all this stuff under the assumption, which is not actually true, but was close enough, believed to be close enough to true, that isolation will just, you know, cause there not to be serious security problems and that’s actually probably still doable, but this whole bag of micro architectural and taxes not made that story seem more convincing, that’s for sure. Just to add on to that I’m not sure the profs levels of expertise with like CPU design. To what extent can CPU design be made straightforwardly without a microarchitecure preserving its high performance? Performance?<br>方法出错了。你知道我们所有人，我的意思是，这可能太悲观了，但是，你知道，人们对孤立有很大的信心，认为孤立起作用是完全合理的，我们会设计像云计算这样的东西，在浏览器中运行JavaScript以及所有这些假设下的东西，这实际上并不是真的，但已经足够接近了，相信足够接近真实，隔离只会导致不严重的安全问题，这实际上可能仍然可行，但这一大堆的微建筑和税收并没有让这个故事看起来更有说服力，这是肯定的。只是为了补充一点，我不确定教授在CPU设计方面的专业水平。在没有保持高性能的微架构的情况下，CPU设计可以在多大程度上直接进行？性能？</p>
+<p>发言人   01:18:24<br>People believe the stuff nicely, security too. But yeah, well, some of this clearly can be fixed, like this meltdown thing. I mean, there is a fix. Actually, check the permissions. That probably doesn’t sacrifice any performance for some of the other attacks that have come up. It’s not clear that you could fix them without sacrificing.<br>人们很好地相信这些东西，安全也是如此。但是，有些问题显然是可以解决的，比如这个崩溃的事情。我的意思是，有一个修复。实际上，检查权限。这可能不会对已经出现的其他一些攻击牺牲任何性能。目前还不清楚你能否在不牺牲的情况下修复它们。</p>
+<p>发言人   01:18:46<br>I mean, some of this very, very deep, like the fact that we’re sharing. There’s a lot of sharing, like in a time sharing or cloud environment, there was just a lot of sharing. So for example, supposing there’s a disk drive or a network on your cloud server, gosh, you might be able to get information about the other people on that cloud server simply by watching how their traffic interferes with your traffic, disk traffic, or network traffic or memory traffic or something. So there’s some sort of, you know, I don’t know whether that’s practical. Maybe it’s not.<br>我的意思是，其中一些非常非常深刻，就像我们正在分享的事实。有很多共享，比如在分时共享或云环境中，只有很多共享。因此，例如，假设您的云服务器上有一个磁盘驱动器或网络，天哪，您可能只需观察其他人的流量如何干扰您的流量、磁盘流量、网络流量或内存流量等，就可以获得有关该云服务器上其他人的信息。所以有某种，你知道的，我不知道这是否实用。也许不是。</p>
+<p>发言人   01:19:22<br>Although, you know, for many, many things in which people said, boy, that attack just doesn’t seem to be practical. You know, it’s turned out to be practical enough. I think, and so a lot of this microarchitectural stuff maybe could be cleaned up without performance loss, or maybe can’t be cleaned up without performance loss. But I think it’s a much more serious problem than just we’re going to applies some fixes the long way.<br>虽然，你知道，对于很多人说的很多事情，男孩，这种攻击似乎并不实际。你知道的，事实证明这是足够实用的。我认为，因此很多微架构的东西可能可以在没有性能损失的情况下清理，或者可能无法在没有性能损失的情况下清理。但我认为这是一个更严重的问题，而不仅仅是我们要应用一些长期的修复方法。</p>
+<p>发言人   01:19:52<br>The places in the most acute is cryptography. There’s been many, many years of people looking into these kind of clever, often cash timing based ways of sensing. Bits out of keys and other people’s cryptographic L, you know, people running. I’m running a cryptographic and encryption on the same machine as you. Can you guess anything about my key by watching by doing CA timing? Answer is absolutely, and it’s not like a microarchitecture bug. It’s just a consequence of sharing often.<br>最尖锐的地方是密码学。已经有很多很多年的人在研究这种聪明的，通常是现金的基于时间的感知方式。用密钥和其他人的加密数据，你知道，人们在运行。我正在和你在同一台机器上运行加密和加密。你能通过观看CA计时来猜出我的钥匙的任何信息吗？答案是绝对的，而且它不像微体系结构的错误。这只是经常分享的结果。</p>
+<p>发言人   01:20:35<br>Anyway, I don’t know how all this is going to play out, but it’s not. It’s not straightforward. I mean, this curious part is when people made progress on just measuring the like Em radiation from a CPU and figuring out what instructions are run and what data is in it with machine learning with like some accuracy, you know, not 100%, not nearly, but like a scary amount of accuracy because anything over 0 is scary.<br>无论如何，我不知道这一切会如何发展，但事实并非如此。这并不简单。我的意思是，这个奇怪的部分是，当人们在测量CPU的类似Em辐射并确定运行的指令以及其中包含的数据方面取得了进展，机器学习精确度很高，你知道，不是100%，也不是接近100%。但是像一个可怕的准确性，因为任何超过0的东西都是可怕的。</p>
+<p>发言人   01:21:07<br>Yeah, we all live in, you know, that’s all.<br>是的，我们都生活在这样的环境中，你知道，仅此而已。</p>
+<p>发言人   01:21:12<br>Well, there’s a boundary between attacks that are. There’s some threshold between attacks that are like possible, but, you know, gosh, just seems like that would be too expensive or awkward or painful or whatever complex to carry out and attack. It really could be carried out. And of course, we only should defend against the second class because the first class is often too expensive to defend against. But as the value of stuff contain the computers gets larger and attackers get more clever, get more closer access to shared environments kind of threshold about which attacks are. Feasible enough to defend against changes?<br>攻击之间是有边界的。可能的攻击之间有一定的门槛，但是，你知道，天哪，这似乎太昂贵、尴尬或痛苦，或者实施攻击太复杂了。它确实可以进行。当然，我们只应该防御第二类，因为第一类通常过于昂贵而无法防御。但随着物品价值的增加，计算机变得越来越大，攻击者变得越来越聪明，越来越接近共享环境，这就是攻击的门槛。足够可行来抵御变化？</p>
+<p>发言人   01:21:58<br>All right I’m done with the lecture, but I’m happy to take more questions if any people have. Thank, thank you. Oh, I actually had a question about the cash. So the L one CA it, it’s per CPU, right? Yes, and nail too, is it shared?<br>好的，我已经讲完了，但是如果有人提问，我很乐意回答更多的问题。谢谢，谢谢。哦，实际上我有一个关于现金的问题。所以L个CA，它是每个CPU的，对吗？是的，还有钉子，它是共享的吗？</p>
+<p>发言人   01:22:25<br>Well, this picture is different for each CPU for different models of CPU etc. The habit today is looks, looks is a little bit more complex than this. Typically, you have multiple cores, 2 or 4 or 8 or 64 or something. Each one has a L 1 cache that’s quite close to the CPU, but it’s small, fast, and small. Each chord typically also has a bigger L 2 cache that’s, you know, and it’s sort of dedicated to that CPU. And then? And then there’s often a shared L 3 cache, often, but not always.<br>嗯，这张图片对于每个CPU以及不同型号的CPU等都是不同的。今天的习惯是外表，外表比这更复杂一些。通常，你有多个核心，2个或4个或8个或64个左右。每一个都有一个与CPU非常接近的L 1缓存，但它小、快、小。每个和弦通常还有一个更大的L2缓存，你知道的，它有点专用于那个CPU。然后呢？然后经常有一个共享的L 3缓存，经常但不总是如此。</p>
+<p>发言人   01:23:14<br>And another approach is to make the summation of the L 2 caches sort of convenient for all the Cpu’s to use so that I have super high speed access to my L 2 cache, but I can get at other people, so a slightly bigger penalties. So the effect cache size is larger. So you often three C, either three level caches or or sort of joint two second level caches. And typically, the L 2 and L 3 are physically addressed.<br>另一种方法是使L 2缓存的总和便于所有Cpu使用，以便我可以超高速访问我的L 2缓存，但我可以得到其他人，因此会受到更大的惩罚。因此，效果缓存大小会更大。所以你经常有三个C，要么是三级缓存，要么是联合两个二级缓存。通常，L 2和L 3是物理寻址的。</p>
+<p>发言人   01:23:44<br>L 1 s virtual, sorry. So what’s the point of having physically addressed? Is that the difference? It’s easy, the stuff in the L 1 in a virtually address CA. If the same data is used with different virtual addresses, you can’t. The virtual address cache doesn’t really help you find it. If it was cacheing under a different address where these L 2 caches, the data is independent, is usable no matter what virtual address you addressed it under.<br>L 1 s是虚拟的，对不起。那么，物理解决有什么意义呢？这有区别吗？这很容易，将L 1中的东西放在虚拟地址CA中。如果相同的数据用于不同的虚拟地址，则无法使用。虚拟地址缓存并不能真正帮助您找到它。如果它在这些L 2缓存的不同地址下缓存，则数据是独立的，无论您在哪个虚拟地址下处理它，数据都是可用的。</p>
+<p>发言人   01:24:20<br>Yeah, where does the MMU sit relative to all these caches in the TLB? Oh, it’s not. It’s distributed really because the, I mean, the most obvious, I mean, I think in real life, the TLB, the most critical thing is the TLB. And I believe it’s indexed in parallel with the L 1 cache typically, right? So if you hit in the cache, the all cash, great. Although there may be a. Anyway, and if you miss in the all one cache, then now you have the physical, you’re looking up in the TB at the same time. Now you’re the physical cache addressed.<br>是的，相对于TLB中的所有这些缓存，MMU在哪里？不是的。它真的是分布式的，因为我的意思是，最明显的，我的意思是，我认为在现实生活中，最关键的是TLB。我相信它通常与L 1缓存并行建立索引，对吗？所以如果你命中了缓存，所有的现金都很好。虽然可能有a。无论如何，如果你错过了所有的缓存，那么现在你有了物理，你同时在TB中查找。现在您就是物理缓存地址。</p>
+<p>发言人   01:25:01<br>The MMU, though, is not just a single box that sits somewhere, it’s actually kind of involved. Oh, okay, but isn’t it hardware? So, oh, everything is yours hardware yet? But remember these, you know, these chips have billions of transistors on them. So yeah, maybe it’s hardware, but we’re talking about massively complex hardware that’s designed using very sophisticated software like design techniques so that it can do very, very complex and sophisticated things. So, yeah, it’s hardware.<br>然而，MMU不仅仅是一个放置在某个地方的盒子，它实际上有点涉及。好吧，但这不是硬件吗？所以，一切都是你的硬件了吗？但请记住，你知道，这些芯片上有数十亿个晶体管。所以，也许它是硬件，但我们正在谈论使用非常复杂的软件设计的非常复杂的硬件，例如设计技术，以便它可以做非常复杂和复杂的事情。所以，是的，它是硬件。</p>
+<p>发言人   01:25:39<br>Not at all at all straightforward. So do table mapping, like page table mappings, ever end up in the ashes at all? Or are they always just routed through the TLB? Because if you miss it, the TLB, you have to go to memory retrieve, right? So the certainly the L 2 cache will hold from the point of view, the L 2 cache TLB misses. TLB reloads are just memory accesses. So the TLB needs to load a bunch of page table junk. It is just a memory load and it could stuff could easily be cached in the L 2, but it has to skip L 1 because L 1 has virtual addresses.<br>一点也不直截了当。那么，像页表映射一样，表映射是否会在灰烬中结束？还是他们总是通过TLB路由？因为如果你错过了TLB，你就必须去记忆检索，对吗？因此，从观点来看，L 2缓存肯定会保持状态，L 2缓存TLB错过了。TLB重新加载只是内存访问。所以TLB需要加载一堆页表垃圾。这只是内存负载，可能的东西可以很容易地缓存在L 2中，但必须跳过L 1，因为L 1有虚拟地址。</p>
+<p>发言人   01:26:17<br>I don’t, don’t think the TLB would the old one for its because it’s virtually addressed.<br>我不，我不认为TLB会是旧的，因为它实际上是被解决的。</p>
+<p>发言人   01:26:24<br>Yes, and then one thing about the spectral attack. How would you? So the thing is like I’ve heard about Meltdown Inspector like at least a dozen times. And every time I looked it up, I would not understand it. So this is the first time I actually understand what’s going on. But for Specter is there, like how similar is it to Meltdown? It’s not not okay or well, my understanding of the Spectre attack is by training the branch predictor, you know, the other code that you’re trying to attack stuff from let’s it is another process and you share some memory with it, right?<br>是的，还有一件关于频谱攻击的事情。你要怎么做？所以事情就像我至少听说过十几次熔毁检查员一样。每次我查它，我都看不懂。这是我第一次真正理解发生了什么。但是对于幽灵的存在，它与崩溃有多相似？这不太好，我对幽灵攻击的理解是通过训练分支预测器，你知道，你试图攻击的其他代码让它成为另一个进程，你与它共享一些内存，对吗？</p>
+<p>发言人   01:27:11<br>You know, because you’re it’s really the same program as you, but it’s some other user running the program, right? You can the branch, the branch, the tables that the branch predictor uses are shared between different. You know, if I run on a CPU, forbidden that you run, or maybe you run on different hyper-threaded the same CPU, everybody sees the same branch, sees the same branch predictor. So I can train the branch predictor to predict branches in a certain way, and then I let you run.<br>你知道，因为它实际上和你是同一个程序，但运行这个程序的是其他用户，对吧？分支，分支预测器使用的表可以在不同的人之间共享。你知道，如果我在CPU上运行，禁止你运行，或者你在不同的超线程CPU上运行，每个人都会看到相同的分支，看到相同的分支预测器。所以我可以训练分支预测器以某种方式预测分支，然后让你运行。</p>
+<p>发言人   01:27:44<br>You’re running with my branch predictor training, right? And so that means I can essentially trick your program into speculatively executing instructions of my choice. Now it’s only speculative, so of course they’ll be undone, but they will cause cash flow that to some extent I can control because I control how you speculate, you execute, and then if we share memory, I can use flesh and reload to sense what cache lines your program loaded in this speculative execution Li. Well, so in that case, you don’t need to, you don’t need to like like directly address a piece of memory, you just need to make sure that program will speculatively executed, like in Meltdown, we did it ourselves, but in spec, we just directed there. That’s kind of cool because you can just say, oh, you know, just go and load that secret by training the branch predictor without knowing where the secret is.<br>你正在用我的分支预测训练跑步，对吧？这意味着我基本上可以欺骗您的程序，使其投机执行我选择的指令。现在这只是推测，所以它们当然会被撤销，但它们会在某种程度上引起我可以控制的现金流动，因为我控制你如何推测，你如何执行，然后如果我们共享记忆，我可以使用肉体和重新加载来感知你的程序在这个推测执行中加载了哪些缓存行。在这种情况下，你不需要，你不需要像直接寻址一块内存，你只需要确保该程序将被推测执行，就像在崩溃中一样，我们自己做了，但在规范中，我们只是指向那里。这很酷，因为你可以说，哦，你知道，通过训练分支预测器来加载那个秘密，而不知道秘密在哪里。</p>
+<p>发言人   01:28:41<br>Yeah, or like you got to know someone, yeah, you kind of have to know you know, great, you know, and great, no, yeah, sorry, you have to know, but you yourself, that stuff’s not secret, right? You’re probably running a program that I know what program you’re running, you know? Okay, that makes sense, thank you.<br>是的，就像你认识某人一样，是的，你必须知道，很好，你知道，很好，不，对不起，你必须知道，但你自己，那不是秘密，对吧？你可能正在运行一个程序，我知道你正在运行什么程序，你知道吗？好的，这很感知，谢谢。</p>
+<p>发言人   01:29:01<br>Yeah, I was just wondering, It seems like when you, when a research paper like this gets released, you know, it’s out there for like people Linux and Windows and like int for them to try to go and scramble to patch the bug, but it’s also out there for like hackers can start to like learn from the paper and be like, oh, this is a method we could use. And I’m Tom wondering, like as a researcher, is there a general practice of like as we’re working on the paper we like sort of tip off the quote unquote good guys first so that they can get a head start the authors informed the CPU manufacturers and the OS manufacturers before they published the paper, whole protocol, the paper, these kind of paper won’t be even that can be accepted anymore unless you know, you follow the protocol. Yeah, that doesn’t mean the attackers weren’t already using it, right? Because probably know the attackers discovered this 20 years ago.<br>是的，我只是想知道，当像这样的研究论文发布时，你知道，它是为Linux和Windows以及像int一样的人准备的，他们试图去争先恐后地修补这个错误，但它也存在，黑客可以开始像从纸上学习一样，像是，哦，这是我们可以使用的方法。我是汤姆，想知道，作为一名研究员，有没有一种普遍的做法，就像我们在撰写论文时一样，我们喜欢先向 “好人” 提供一些提示，这样他们就可以在论文发表之前，作者就通知了CPU制造商和操作系统制造商，整个协议，论文，这种类型的论文将不再被接受，除非你知道，你遵循协议。是的，这并不意味着攻击者还没有使用它，对吧？因为可能知道攻击者在20年前发现了这个。</p>
+<p>发言人   01:29:58<br>Straightfor this particular case, I think, you know, there was some ins not too excited, but the collaboration between the Linux community and Int was not completely smooth, I think. When that happened, I think they worked at some of the Kings. I think it was kind of scary because I read when weki beia that the ubulu-uku published after the paper was published, which I found scary but.<br>在这个特定的情况下，我认为，你知道，有些插件并不是太激动人心，但我认为Linux社区和Int之间的合作并不完全顺畅。当这种情况发生时，我认为他们曾在某些国王那里工作过。我认为这有点吓人，因为当我读到weki beia时，ubulu-uku在论文发表后发表，我发现这很吓人。</p>
+<p>发言人   01:30:36<br>Yeah, thank you so much. Thank you, thank you, thank you, see you next week.<br>是的，非常感谢。谢谢，谢谢，谢谢，下周见。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 021-Meltdown</div>
+      <div>http://example.com/2025/10/18/6S081-021/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-022/" title="操作系统工程 022-RCU">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 022-RCU</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-020/" title="操作系统工程 020-Networking">
+                        <span class="hidden-mobile">操作系统工程 020-Networking</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

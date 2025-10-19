@@ -1,0 +1,762 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:06All right, hello everyone. Welcome back from Thanksgiving. Can anyone hear me? Yep, you’re good, Good, all right, today I want to talk about networking and how it relates to operating syste">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 020-Networking">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-020/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:06All right, hello everyone. Welcome back from Thanksgiving. Can anyone hear me? Yep, you’re good, Good, all right, today I want to talk about networking and how it relates to operating syste">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:20.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.145Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 020-Networking - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 020-Networking"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          22k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          182 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 020-Networking</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:06<br>All right, hello everyone. Welcome back from Thanksgiving. Can anyone hear me? Yep, you’re good, Good, all right, today I want to talk about networking and how it relates to operating systems, and a lot of this is. Geared towards lab, the last lab which you’ll actually build some. Network interface driver. Some of us just give general understanding of how the network software typically is set up in operating systems. And then we’re going to talk about today’s paper on live Look, which illustrates an interesting danger in network and stack design.<br>好的，大家好。欢迎从感恩节回来。有人能听到我说话吗？是的，你很好，很好，好的，今天我想谈谈网络以及它与操作系统的关系，很多都是这样的。面向实验室，这是你实际建立的最后一个实验室。网络接口驱动程序。我们中的一些人只是大致了解网络软件通常是如何在操作系统中设置的。然后我们将讨论今天关于实时外观的论文，它说明了网络和堆栈设计中的一个有趣的危险。</p>
+<p>发言人   00:56<br>So first, let me set the general ski scene by drawing a few network pictures.<br>首先，让我通过绘制一些网络图片来设置滑雪的一般场景。</p>
+<p>发言人   01:05<br>The network, of course, connects up different hosts. Kind of two ways in which you can view the connections as occurring. One is that for nearby hosts, they’re often connected to what’s essentially the same network. So there may be a single Ethernet, and maybe this is a switch or a cable, and you might have a bunch of hosts connected to this ethernet or hosts, or maybe laptops or servers, or as it will turn out, routers.<br>当然，网络连接不同的主机。有两种方式可以查看发生的连接。其一是对于附近的主机，它们通常连接到本质上相同的网络。所以可能有一个以太网，也许这是一个交换机或电缆，你可能有一堆主机连接到这个以太网，或者主机，或者笔记本电脑或服务器，或者路由器。</p>
+<p>发言人   01:45<br>The way network software is designed is to kind of try to ignore as much as possible the details of exactly what this network is that directly attaches Hos. It might be a single cable, which is probably the case at the time today’s paper was written. This might be an Ethernet switch. This might be some sort of WiFi, wireless LAN. And these things aren’t wires at all, but rather radio links. But for the most part, these differences in sort of exactly what the local connectivity is are kind of totally papered over pretty low level in the networking stack.<br>网络软件的设计方式是尽可能地忽略直接连接Hos的网络的细节。这可能是单个电缆，这可能是今天报纸撰写时的情况。这可能是一个以太网交换机。这可能是某种WiFi，无线局域网。这些东西根本不是电线，而是无线电链路。但在大多数情况下，这些在本地连接方面的差异在网络堆栈中被完全掩盖了相当低的水平。</p>
+<p>发言人   02:27<br>So on each of these hosts, there may be different applications. Maybe there’s a web browser here and you know Http server over here, and they need to talk to each other across this, this network.<br>因此，在每台主机上，可能有不同的应用程序。也许这里有一个网络浏览器，你知道这里有一个Http服务器，它们需要通过这个网络相互通信。</p>
+<p>发言人   02:41<br>Now, there’s a limit to how big you can build a single local area network for which the abbreviation is usually LAN local area network. The way to think about it maybe is that a local area network can be as large as the network in which it makes sense for all the hosts to be able to see all of each other’s packets. That is, sometimes hosts need to want to broadcast to all of the local hosts. You know, that works fine with a dozen or 20 or 50 or maybe even 100 hosts.<br>现在，构建单个局域网的大小有一个限制，其缩写通常是LAN。思考它的方式可能是，局域网可以像它感知的网络一样大，以便所有主机能够看到彼此的所有数据包。也就是说，有时主机需要向所有本地主机进行广播。你知道，这在十几个、20个、50个甚至100个主机上运行良好。</p>
+<p>发言人   03:15<br>You can’t really easily build single networks where all the hosts can more or less directly talk to each other with more than, say, a few hundred hertz.<br>你无法真正轻松地建立一个网络，使所有主机或多或少地能够直接相互通信，比如说几百赫兹。</p>
+<p>发言人   03:26<br>And so to deal with that, the way the larger internet is constructed is that there’s a number of these individual lands, maybe one at MIT, you know, maybe one at Harvard, maybe one far away at Stanford. And there’s some sort of connectivity between them, which you can think of as routers. There might be a router that’s plugged into the MIT local area network and also has perhaps a longer link to the. Harvard network. And in fact, there’s a network of routers, which is essentially the backbone of the internet, including long distance router to router links. So there might be a longer link across the country. And maybe this router is plugged into the. Some local area network at Stanford.<br>因此，为了解决这个问题，更大的互联网的构建方式是有许多这样的个人土地，也许一个在麻省理工学院，你知道，也许一个在哈佛，也许一个在遥远的斯坦福。它们之间有某种连接，你可以把它想象成路由器。可能有一个路由器插入了麻省理工学院的局域网，并且可能有一条更长的链路。哈佛网络。事实上，有一个路由器网络，它本质上是互联网的骨干，包括长途路由器到路由器的链接。因此，全国可能会有更长的联系。也许这个路由器已经插入了。斯坦福的一些局域网。</p>
+<p>发言人   04:21<br>And then we have hosts.<br>然后我们有主持人。</p>
+<p>发言人   04:22<br>We have this sort of. More elaborate task in which we want to host at MIT to be able to talk through a sequence of routers to a host at Stanford. This is called routing. So we need to have a way for hosts at MIT to address to names, individual hosts at Stanford. And we need some way to so that routers near MIT can look at a packet sent by MIT and say, oh, that’s a packet for Harvard, or a packet for Stanford, or a packet that needs to go somewhere in Japan, or who knows what. So from the point of view of network protocols, this local. Communication is taken care of by Ethernet protocols, and this long distance communication is sort of layered on top of that and taken care of by IP or Internet protocols that know how to route over long distances to distant hosts.<br>我们有这样的。我们想要在麻省理工学院主持更复杂的任务，以便能够通过一系列路由器与斯坦福的主机进行通信。这叫做路由。因此，我们需要为麻省理工学院的主机提供一种方法，以命名斯坦福大学的单个主机。我们需要一些方法，以便麻省理工学院附近的路由器能够查看麻省理工学院发送的数据包，并说，哦，这是哈佛大学的数据包，斯坦福大学的数据包，或者需要去日本某个地方的数据包，或者谁知道是什么。因此，从网络协议的角度来看，这是本地的。通信由以太网协议处理，这种长距离通信是在其之上分层的，由IP或互联网协议处理，这些协议知道如何通过长距离路由到远程主机。</p>
+<p>发言人   05:23<br>Okay, this is what a network looks like in a nutshell. I now want to talk about the what’s inside the packets that move across an Ethernet or move across the larger internet with an eye to eventually talking about the software that in hosts that has to process hosts and routers that has to process those packets.<br>好的，这就是网络简而言之的样子。我现在想谈谈在以太网中传输或在更大的互联网中移动的数据包内部的内容，着眼于最终谈论主机中必须处理主机和路由器中必须处理这些数据包的软件。</p>
+<p>发言人   05:48<br>So let me start with the lowest level and talk about what’s inside an Ethernet packet. So when two hosts that are quite nearby attached to the same cable or same WiFi network or same Ethernet want to talk to each other, the sort of lowest level protocol, which allows two hosts in the same land to talk to each other as the Ethernet protocol. And you can think of one host, host one. Sending free over the Ethernet to host two, what’s called an Ethernet frame, which is the Ethernet word for a packet. And it’s a series of bytes that are sent over the Ethernet from one host to another. And what the Ethernet protocol does is have just enough information in it to allow the two hosts to realize who’s talking to each other and cause the hosts to be able to recognize packets that are addressed to them.<br>所以让我从最低级别开始，谈谈以太网数据包里面有什么。因此，当两个非常靠近的主机连接到同一根电缆、同一WiFi网络或同一以太网想要相互通信时，最低级别协议的一种，它允许同一土地上的两台主机作为以太网协议相互通信。你可以想到一个主持人，主持人之一。通过以太网向第二个主机发送免费的以太网帧，即数据包的以太网字。它是一系列通过以太网从一台主机发送到另一台主机的字节。以太网协议所做的是在其中包含足够的信息，使两台主机能够意识到谁在相互通信，并使主机能够识别发送到它们的数据包。</p>
+<p>发言人   06:48<br>And so what an Ethernet header looks. So the way that Ethernet deals with this is that every Ethernet packet has at the beginning, a header that has three fields followed by some Ethernet payload. And what’s in the header is two Ethernet addresses. We’ll call them the destination address and the source address, and also the type of the packet. Each of these addresses is just a 48 b number that uniquely identifies a particular network interface card, really. And this type field, it’s going to indicate to the recipient host what it’s supposed to do with that packet. And what that really means is what higher level protocol should examine and process the payload of that Ethernet pack. So these are bits that go, are typically said to go over the wire, these 48 plus 48 plus 16 b of header.<br>以太网标头是什么样子。因此以太网处理这个问题的方式是，每个以太网数据包在开头都有一个标头，该标头有三个字段，后跟某个以太网有效负载。标头中的内容是两个以太网地址。我们将它们称为目标地址和源地址，以及数据包的类型。这些地址中的每一个只是一个48 b的数字，它唯一地标识一个特定的网络接口卡。并且此类型字段将指示接收方主机应该如何处理该数据包。这真正意味着更高级别的协议应该检查和处理该以太网包的有效负载。因此，这些是通常被认为是通过线路传输的位，这些48加16 b的标头。</p>
+<p>发言人   07:51<br>And then however much payload not really visible to the software, but there’s going to be something at the beginning of the packet that’s recognized at a very low level by the hardware that signifies the start of a packet. And the receiving house needs to know when the packet ends. And so there’s going to be another sort of special bit pattern at the end that signifies the end of the packet. These two begin and end flags are never seen by the software, but the rest of this ethernet frame is delivered by the network interface card that nick at H2 to the software.<br>然后，无论软件实际上看不到多少有效负载，但是在数据包的开头会有一些东西被硬件以非常低的水平识别，这表示数据包的开始。接收方需要知道包裹何时结束。因此，末尾将会有另一种特殊的位模式，表示数据包的结束。这两个开始和结束标志永远不会被软件看到，但是这个以太网帧的其余部分是由网络接口卡传递的，该接口卡在H2处被标记给软件。</p>
+<p>发言人   08:28<br>If you’ve looked at the final lab for the course, you’ll see that the software we give you includes a bunch of new files, including kernel slash net Doh, which contains a whole bunch of definitions of packet headers for different network protocols. And so this is just text taken directly from this net. Each file we give you, and it includes a description of the layout of the Ethernet header. And this software we give you actually uses, literally uses this struct definition in order to parse incoming Ethernet packets, that is, to pick apart the head to get the destination and type. And also it uses this structure to format packets. So the host is really in charge of sort of setting up and parsing this header that’s used by Ethernet. Any questions about Ethernet packets?<br>如果您查看了本课程的最终实验，您会发现我们为您提供的软件包括一堆新文件，其中包括内核斜杠net Doh，其中包含不同网络协议的数据包标头的完整定义。所以这只是直接从这个网络上取得的文本。我们为您提供的每个文件，都包含以太网标头布局的描述。我们给你的这个软件实际上使用这个结构定义来解析传入的以太网数据包，也就是说，拆开头部以获取目的地和类型。并且它使用此结构来格式化数据包。因此，主机实际上负责设置和解析以太网使用的此标头。对以太网数据包有任何问题吗？</p>
+<p>发言人   09:32<br>Yeah, I had a question. Please Is, is the bit pattern you mentioned that the hardware uses to determine the start and end of a packet similar to the EOP in the lab? Which is the end of packet? No, the EOP is a separate mechanism between the driver and the nick to help them communicate.<br>是的，我有一个问题。请问您提到的硬件用于确定数据包开始和结束的位模式是否与实验室中的EOP相似？数据包的结尾是什么？不，EOP是司机和尼克之间的一个独立机制，用于帮助他们沟通。</p>
+<p>发言人   10:01<br>This is, you know, there’s some electrical scheme, there’s some slow level electrical or optical signaling scheme to transmit bits over Ethernet cables. And these flags have to do with they are typically electrical patterns that would not be legal inside a packet. And so one scheme is to instead of just sending 0 1 b over the wire, you could send. Sequences of two signals. So there’s four different symbols possible with sequences of two different electrical voltage levels or something, have two of the four possible symbols indicate 0 or 1 b in the body of the packet, and have the remaining two indicate beginning and end. And that was, in fact, a scheme that was used years ago, scheme much like that was used years ago in Ethernet. I don’t actually know how it works now.<br>这是，你知道，有一些电气方案，有一些缓慢级别的电气或光学信号方案，用于通过以太网电缆传输比特。这些标志与它们通常是在数据包内不合法的电气模式有关。因此，一种方案是不仅仅是通过网络发送0 1 b，而是可以发送。两个信号的序列。因此，有四个不同的符号可能与两个不同的电压电平或其他东西的序列，在数据包的正文中有四个可能符号中的两个表示0或1 b，其余两个表示开始和结束。实际上，这是多年前使用的方案，与以太网中多年前使用的方案非常相似。我现在实际上不知道它是如何工作的。</p>
+<p>发言人   11:02<br>Okay, something to know about these addresses is that these are 48 b addresses. The reason for the 48 b is that they wanted to make sure that there was enough bits to be able to give a unique addressed every different nick ever manufactured. So there’s a vast number of possible addresses.<br>好的，关于这些地址需要知道的是，这些是48个地址。48 b的原因是他们希望确保有足够的比特，以便能够为制造的每个不同的缺口提供唯一的地址。所以有很多可能的地址。</p>
+<p>发言人   11:23<br>The internal structure of these 48 hours bit addresses is that the first half, the first 24 b is a manufacturer number. And it is, there’s every manufacturer of network interface cards of Nix has its own manufacturer number. So that’s the first 24 b. And the second 24 b is just any number can be any unique number assigned by the manufacturers. So manufacturers typically assign them in just ascending order. So if you buy, you know, half a dozen network interface cards, the network interface card, each network interface card has programmed into it its own address. And if you look at the address, you’ll see that the high bits are the same for these six cards you bought from the same manufacturer, But the low 24 b are probably six sequential numbers. So these addresses are unique, but what they’re not helpful in is locating the destination host.<br>这48小时位地址的内部结构是前半部分，前24 b是制造商编号。而且，每个Nix网络接口卡制造商都有自己的制造商编号。这就是前24个b。第二个24 b是任意数字，可以是制造商分配的任何唯一数字。因此，制造商通常只按升序分配它们。所以，如果你购买了六个网络接口卡，每个网络接口卡都有自己的地址。如果你看一下地址，你会发现你从同一制造商购买的这六张卡片的高位是相同的，但低24 b可能是六个序列号。所以这些地址是唯一的，但它们没有帮助的是找到目标主机。</p>
+<p>发言人   12:17<br>So if you know the host you’re talking about is on the same local area network as you can use a ethernet address and it’s on the same local area network, so it will be listening for packets with its own address. But if the host you’re trying to talk to is in the other side of the country, you have to use a different scheme. And that’s what IP is all about, which I’ll talk about in a bit.<br>因此，如果您知道您正在谈论的主机位于与您可以使用以太网地址相同的局域网上，并且它位于同一局域网上，那么它将使用自己的地址监听数据包。但如果你要谈话的主人在这个国家的另一边，你就必须使用不同的方案。这就是IP的全部意义，我稍后会谈论它。</p>
+<p>发言人   12:39<br>Okay, so this is what these packets look like. You can actually look at Ethernet packets in action using the TCP dump program, and you’re encouraged to do this. You’ll probably need to do this as part of the lab. And this is actually. The output of TCP do from the and what TCB dump is telling us here, telling us a whole bunch of things.<br>好的，这就是这些数据包的样子。你实际上可以使用TCP转储程序查看运行中的以太网数据包，我们鼓励你这样做。你可能需要将此作为实验室的一部分。这实际上是。TCP的输出来自，TCB转储告诉我们这里，告诉我们一大堆事情。</p>
+<p>发言人   13:06<br>This first part is the time at which the packet arrived. If you like, you can try this on your laptops. If you install TCP dump and the rest of the first line is a sort of human readable interpretation of what kind of packet that is. And then these next three lines, or the part here is a hex dump of the received packet.<br>第一部分是数据包到达的时间。如果你喜欢，你可以在你的笔记本电脑上尝试一下。如果你安装了TCP dump，第一行的其余部分是对什么类型的数据包的一种人类可读的解释。然后接下来的三行，或这里的部分是接收到的数据包的十六进制转储。</p>
+<p>发言人   13:33<br>And you can see we can actually follow along with the ethernet header. There’s these first 48 b or 6 B is a broadcast address, all F’s, and all that’s ethernet address is broadcast to all the hosts on the local network. The next 48 b is the sending host Ethernet address, which, you know, we can’t necessarily tell anything about, although the high bits mean, in fact, this was generated by X 6 running under QM, so no real nick was involved. So it’s not actually a manufacturer number up here, it’s just something that QM makes up. And then the next 16 b, the next 2 B is the type. It’s ethernet type of the packet. In this case, it’s 0 8 0 6, which is a protocol called ARP, which I’ll talk about in a moment.<br>你可以看到我们实际上可以跟随以太网标头。前48 b或6 b是广播地址，所有的F和所有的以太网地址都被广播到本地网络上的所有主机。接下来的48 b是发送主机的以太网地址，你知道，我们不一定能说出任何信息，尽管高位意味着，事实上，这是由QM下运行的x6生成的，所以没有涉及真正的昵称。所以这里实际上并不是一个制造商编号，它只是QM制造的东西。然后接下来的16个b，接下来的2个B是类型。这是数据包的以太网类型。在这种情况下，它是0 8 0 6，这是一个名为ARP的协议，我稍后会讨论。</p>
+<p>发言人   14:30<br>And the rest of this stuff is is the payload of an art packet, which I’ll also talk about any questions about what we’re looking at here. This is well worth trying out on your own computer if you care about networks.<br>其余的东西是一个艺术数据包的有效载荷，我也会讨论有关我们在这里看的任何问题。如果您关心网络，这非常值得在您自己的计算机上尝试。</p>
+<p>发言人   14:50<br>Okay, so the next protocol that’s of relevance to the lab and communication over an Ethernet, it’s called ARP. So at the Ethernet level, every host has a 48 b Ethernet address, but for communicating over the internet it, it turns out you need to use a 30, 32 b internet address. And the reason why internet addresses are different is that internet addresses have internal structure in a 32, in the hosts 32 b internet address, the high bits are full of all kinds of hints about where in the entire internet this packet needs to go. So you can think of an internet address as having in the high bits a network number. It’s actually a little more complex than that, but it’s essentially a network number. Every network in the internet has a distinct number. And routers look at the high bits in the internet address to decide which router on the Internet this packet needs to be forwarded to. And then the low bits in a 32 b Ethernet internet internet address IP address are the number of that of the host we want to talk to on its local network.<br>好的，下一个与实验室和以太网通信相关的协议被称为ARP。因此，在以太网级别，每个主机都有一个48 b的以太网地址，但为了通过互联网进行通信，您需要使用30，32 b的互联网地址。互联网地址不同的原因是，互联网地址的内部结构为32，在hosts 32 b互联网地址中，高位充满了有关整个互联网中该数据包需要去向的各种提示。因此，您可以将互联网地址视为具有网络号码的高位。实际上比那更复杂一些，但它本质上是一个网络号码。互联网上的每个网络都有一个不同的编号。和路由器查看互联网地址中的高位以确定此数据包需要转发到互联网上的哪个路由器。然后，32 b以太网互联网地址IP地址中的低位是我们想要在其本地网络上进行通信的主机的编号。</p>
+<p>发言人   15:57<br>But when a packet finally arrives.<br>但是当一个包裹最终到达时。</p>
+<p>发言人   16:02<br>When the internet packet arrives at an Ethernet, we need some way to give an 32 b IP address. Figure out the 48 b Ethernet address of that host. The way the internet chooses to do that is to have a dynamic resolution protocol, a kind of request response protocol called our for address resolution protocol. And the way to think about it is that when a IP packet arrives at a router or it’s needs to be sent by a host to a host that’s known to be on the same LAN local area network, the sender first broadcasts on that LAN an art packet. That’s a request that says whoever has, whoever owns this IP address, please respond with your 48 b Ethernet address. And assuming that host exists and it’s turned on, it’ll respond with an ARP response packet.<br>当互联网数据包到达以太网时，我们需要一些方法来给出一个32 b的IP地址。计算出该主机的48 b以太网地址。互联网选择的方式是拥有一个动态解析协议，一种称为地址解析协议的请求响应协议。而思考它的方式是，当IP数据包到达路由器或需要由主机发送到已知位于同一局域网中的主机时，发送者首先在该局域网上广播一个艺术数据包。这是一个请求，说无论谁拥有这个IP地址，请回复您的48 b以太网地址。假设该主机存在并且已打开，它将使用ARP响应数据包进行响应。</p>
+<p>发言人   16:58<br>And this is the format of the packet of an art packet. The way it actually shows up is inside an Ethernet packet. And so what you would actually see, and the network is first the Ethernet header, which has the 48 b source field and a 48 b destination field. Maybe it’s destination source type. So this is the Ethernet header, and then from the ethernet point of view, the rest is payload. But actually, the Ethernet payload is an art packet which has these fields, boom, boom, boom, right after the Ethernet header. And the way the receiving host knows is an art packet is by looking at this type field. And if it’s 0 8, 0 6, that’s the agreed on Ethernet protocol number for ARP, and then the receiving host software would know to hand this packet to its ARP protocol processing code.<br>这是艺术数据包的格式。它实际显示的方式是在以太网数据包中。因此，您实际看到的是网络首先是以太网标头，它具有48 b的源字段和48 b的目标字段。可能是目标源类型。所以这是以太网标头，然后从以太网的角度来看，其余的是有效负载。但实际上，以太网有效负载是一个艺术数据包，它具有这些字段，boom，boom，boom，就在以太网标头之后。接收主机了解艺术数据包的方式是通过查看此类型字段。如果它是0 8，0 6，那就是为ARP商定的以太网协议号，然后接收主机软件就会知道将这个数据包交给它的ARP协议处理代码。</p>
+<p>发言人   17:56<br>What’s in these packets? There’s a bunch of junk here that basically amounts to saying, I have an internet address. I want to turn it into an Ethernet address. Please respond if you own this internet address. And then these fields hold the internet and ethernet addresses of whatever host is sending this art packet. And that’s enough to figure out the for who’s to build dynamically tables that tell them the correspondence between Ethernet and IP addresses. Again, we can use TCP dump in order to see these packets go by. And you’re highly likely to see them if you run TCP dump.<br>这些包裹里有什么？这里有一堆垃圾，基本上相当于说，我有一个互联网地址。我想把它变成一个以太网地址。如果您拥有此互联网地址，请回复。然后这些字段保存着发送这个艺术数据包的任何主机的互联网和以太网地址。这足以确定谁可以动态构建表格，告诉他们以太网和IP地址之间的对应关系。再次强调，我们可以使用TCP转储来查看这些数据包经过。如果你运行TCP dump，你很有可能会看到它们。</p>
+<p>发言人   18:44<br>Here’s again TCP nump output taken from the lab. It turns out that in the lab, your XV 6 will end up talking simulated true, but talking Ethernet protocol and sending IP packets through Ethernet through a simulated Ethernet protocol with whatever host you’re running QM you want. And so when you want, you’ll actually be able to see these ARP exchanges between XV 6 and your host. And so what we’re seeing here is my host knows the IP address at my XV 6 and wants to figure out its Ethernet address on the LAN that qmu simulates. And this second packet is my XV 6. And you can see the code that generates this. My XV 6 has seen this request realize that it’s the owner of the IP address and the request, and it’s sending back the response.<br>这里又是从实验室拍摄的TCP nump输出。事实证明，在实验室中，您的XV 6最终将使用模拟真实通信，但是使用模拟以太网协议并通过以太网发送IP数据包，无论您运行QM的主机需要使用模拟以太网协议。因此，当您需要时，您实际上可以看到XV 6和您的主机之间的这些ARP交换。所以我们在这里看到的是，我的主机知道我的XV 6的IP地址，并想要找出它在qmu模拟的局域网上的以太网地址。这第二个包是我的XV 6。你可以看到生成这个的代码。我的XV 6已经看到这个请求意识到它是IP地址和请求的所有者，并且它正在发回响应。</p>
+<p>发言人   19:46<br>TCP Du has nicely parsed out the fields in the RPA, and I printed them here, and I think this is the sender IP address and this is the, sorry, this is the sender’s IP address. This is the IP address that the sender is interested in. And those would presumably go in here and here. And this is the response. With the Ethernet address of the owner of this IP address and this Ethernet address would probably end up being in this field.<br>TCP Du已经很好地解析了RPA中的字段，我把它们打印在这里，我认为这是发件人的IP地址，这是，对不起，这是发件人的IP地址。这是发件人感兴趣的IP地址。那些大概会在这里和这里。这就是回应。使用该IP地址所有者的以太网地址，该以太网地址可能最终会在此字段中。</p>
+<p>发言人   20:28<br>And if we’re clever enough, we can pick apart these packets and see some of these fields. As we know, this part is the Ethernet header, destination, ethernet address source, ethernet address, and packet type 0 8 0 ones. Working backwards, this is the Tipp field, which is the IP address that the sender wants to find the Ethernet address for. And if you pick this apart, there’s 1 B for each of the four fields of the IP address. Sorry, really looking for 10 0 2 15, this is 10 hex, zero hex, 2 hex, 15 hex. And then there’s the targets ethernet address, which is not known. And then the sender’s IP address, 1 0 2 2, and the senders ethernet address, and a bunch of other junk here saying that we’re interested in ethernet and IP address formats. And this is a request, this is a response.<br>如果我们足够聪明，我们可以将这些数据包拆开并查看其中一些字段。正如我们所知，这部分是以太网报头、目的地、以太网地址源、以太网地址和数据包类型0 8 0 1。向后工作，这是Tipp字段，这是发件人想要查找以太网地址的IP地址。如果你把它拆开，IP地址的四个字段中的每一个都是1 b。抱歉，真的在寻找10 0 2 15，这是10十六进制，零十六进制，2十六进制，15十六进制。然后是目标以太网地址，这是未知的。然后是发件人的IP地址，1 0 2 2，发件人的以太网地址，以及这里说我们对以太网和IP地址格式感兴趣的一堆垃圾。这是一个请求，这是一个回应。</p>
+<p>发言人   21:36<br>Any questions about ARP? Yeah, question? Why is it necessary for the sender to include its IP address if it if the it’s ethernet address is already included in the packet? Like to respond to it, wouldn’t it? Wouldn’t the receiver only need the ethernet address? Yeah, I don’t know why that all this stuff’s in there. I think, you know, if you wanted to, you could strip this down quite a bit, you know, like the sent. Well, okay, maybe the answer is that this protocol was designed to be usable on networks other than Ethernet. And so it was designed to be fairly self contained so that it didn’t depend on anything.<br>对ARP有什么问题吗？是的，问题？如果数据包中已经包含了它的以太网地址，为什么发送方需要包含它的IP地址？喜欢回应它，不是吗？接收方不是只需要以太网地址吗？是的，我不知道为什么所有这些东西都在里面。我想，你知道，如果你想，你可以把它剥离很多，就像发送的一样。好的，也许答案是这个协议被设计成可以在以太网以外的网络上使用。因此，它被设计成相当独立的，这样它就不依赖于任何东西。</p>
+<p>发言人   22:26<br>Else, and therefore the ARP header has a copy of the Ethernet addresses. Now, in fact, if you know you’re sending ARP over Ethernet, the Ethernet packet also has all the Ethernet addresses, as you can see here. So it’s redundant if you running ARP over Ethernet. But maybe if you were running ARP over something else, you’d need these fields because maybe something else packet format doesn have doesn’t already include these addresses.<br>否则，因此ARP标头具有以太网地址的副本。现在，事实上，如果你知道你在以太网上发送ARP，以太网数据包也包含所有的以太网地址，如你所见。所以如果你在以太网上运行ARP，它是冗余的。但是，如果您在其他地方运行ARP，则可能需要这些字段，因为可能数据包格式尚未包含这些地址。</p>
+<p>发言人   22:53<br>I see, okay, thank you, yeah. Oh sorry, what is that part on the right versus are you, are this okay? This, this is not interesting? Yeah, but this is Ascii you interpretation of these bytes. So well, it’s the dot here corresponds to, you know, a heck, a bite that has no Ascii equivalent. And this, I guess somewhere in here, 52 or 55, probably 52 is probably R and 55 is probably u in Ascii. So this will be more interesting when we start sending packets that have actual ASI text in them rather than binary fields.<br>我明白了，好的，谢谢。对不起，右边的那部分是什么，你可以吗？这个，这不有趣吗？是的，但这是Ascii你对这些字节的解释。那么，这里的点对应着一个没有等价Ascii的咬口。我猜在这里的某个地方，52或55，可能52可能是R，55可能是u在Ascii中。所以当我们开始发送包含实际ASI文本而不是二进制字段的数据包时，这将会更有趣。</p>
+<p>发言人   23:36<br>Okay, I see, thank you, Yes, okay, and I’m showing you this because you’ll see these packets in the lab. Okay?<br>好的，我明白了，谢谢，是的，好的，我向你展示这个，因为你会在实验室看到这些数据包。好吗？</p>
+<p>发言人   23:50<br>Actually, there’s something I wanted to. Well, there’s a something I want to make sure that you all caught in this discussion, and that’s the habit in formatting packets of nesting protocols and nesting headers. So what we just saw was a packet that had an Ethernet header, an Ethernet payload. The first part of the Ethernet payload was know an RPR, and as it happens RP has no remaining payload. But there are other.<br>实际上，有件事我想要做。嗯，我想确保你们都参与到这个讨论中，那就是格式化嵌套协议包和嵌套标题的习惯。所以我们刚刚看到的是一个具有以太网报头的数据包，一个以太网有效负载。以太网有效负载的第一部分是知道RPR，当它发生时，RP没有剩余的有效负载。但还有其他的。</p>
+<p>发言人   24:29<br>What we’ll see in a moment is much more complicated structures in which we have an Ethernet packet that contains an IP packet and inside the IP packet is a UDP packet. And so UDP is another protocol that you can run over IP. So there’s a UDP header it also. You don’t necessarily have to understand these acronyms yet, but this UDP header, a UDP packet, also has a header and a payload. And there’s times when you carry another protocol inside you. So for example, the domain name system has yet another format, a packet defined that fits inside UDP. So what you see is that hosts that are sending packets will build up a packet.<br>我们稍后将看到的是更复杂的结构，其中我们有一个包含IP数据包的以太网数据包，其中IP数据包内部是一个UDP数据包。因此，UDP是另一种可以在IP上运行的协议。所以也有一个UDP头。你不一定要理解这些首字母缩写，但是这个UDP标头，一个UDP数据包，也有一个标头和一个有效负载。有时候你内心携带着另一种协议。例如，域名系统还有另一种格式，即定义在UDP内部的数据包。所以你看到的是发送数据包的主机会形成一个数据包。</p>
+<p>发言人   25:13<br>The DNS software will say, I want to send a packet over UDP. The UDP software will prepend UDP header. We need to send that over IP the IP software will prepend IP header, the Ethernet software will Ethernet header and gradually build up packets in the software when it’s sending. And similarly, a system receives packets. It first gets the whole packet and inspects the first header and loads its Ethernet because it receives it from an Ethernet nick.<br>DNS软件会说，我想通过UDP发送一个数据包。UDP软件会在UDP标题前面加上前缀。我们需要通过IP发送，IP软件将预先添加IP标头，以太网软件将在发送时逐渐在软件中建立数据包。同样，系统接收数据包。它首先获取整个数据包并检查第一个标头并加载其以太网，因为它从以太网缺口接收到它。</p>
+<p>发言人   25:40<br>You know, check some validity strips off this header to look at the next header, and there’ll be a type. This, you know, always it either a type field or in this case, a protocol field that tells the software what to expect after the Ethernet header. So there’s a tight field that indicates IP versus ARP. So the software will will look at each header, validate it, strip it off, revealing the next header, you know, check that header, interpret it, figure out what it means, strip it off, revealing the next, and sort of hand it on to the next layer of software. I’ll talk a bit more about this, but this is a sort of universal way of looking at these nested packet headers.<br>你知道，检查这个头的一些有效性条以查看下一个头，会有一个类型。这个，你知道，总是一个类型字段，或者在这种情况下，一个协议字段，告诉软件在以太网标头之后期望什么。所以有一个紧密的字段表示IP与ARP。因此，软件将查看每个标题，验证它，将其剥离，显示下一个标题，您知道，检查该标题，解释它，弄清楚它的含义，将其剥离，显示下一个标题，然后将其交给下一层软件。我将更详细地谈论这个问题，但这是一种通用的查看这些嵌套数据包标头的方式。</p>
+<p>发言人   26:31<br>All right, so the Ethernet packet, the Ethernet header is enough to get a packet to a host on the local area network when especially, and if you want to send an IP packet locally, you can use ARP, but IP is used much more generally. IP is sort of layer of the protocol that helps you deliver a packet anywhere in the internet based on IP addresses. And so this is the format of an IP packet. Again, taken. You can find it in net Doh and the source we give you and over Ethernet at the way you’d see this is in an Ethernet packet with destination, source and type of. Ethernet type equals 0 8 0 0, and then the IP header and then the IP payload.<br>好的，所以以太网数据包，以太网标头足以将数据包发送到局域网上的主机，特别是如果您想在本地发送IP数据包，可以使用ARP，但IP的使用更为普遍。IP是一种协议层，可以帮助您根据IP地址在互联网上的任何地方传递数据包。因此，这是IP数据包的格式。再次，采取。你可以在netdoh和我们给你的来源中找到它，在以太网上你看到的方式是在一个具有目标，来源和类型的以太网数据包中。以太网类型等于0 8 0，然后是IP标头，最后是IP负载。</p>
+<p>发言人   27:34<br>When you send a packet to a distant network on the other side of the world, the IP header gets passed along. This Ethernet header gets stripped off after you leave the local Ethernet, maybe a new one gets put on it for each hop that your packet is routed, but the IP header stays basically the same the whole way from the ultimate, the original source, host you, your computer, all the way to the destination host. So this header has global significance, whereas the Ethernet header is really only used for each for a single local area network. So there has to be enough information here to carry a packet all the way to the far side of the internet.<br>当您向世界另一端的远程网络发送数据包时，IP标头会被传递。在您离开本地以太网后，这个以太网头会被剥离，也许在您的数据包路由的每个跃点上会放置一个新的，但是从最终的原始来源，主机，您的计算机开始，IP头基本上保持不变。一路到达目的地主机。因此，此标头具有全球意义，而以太网标头实际上仅用于单个局域网的每个标头。因此，这里必须有足够的信息来将数据包一直传送到互联网的远端。</p>
+<p>发言人   28:15<br>And the critical fields for our purposes is really three very interesting fields in this packet format. The destination field, which is the 32 b IP address of the host that we want to send the pack to. And in particular, and its high bits, it’s going to have network numbers in it that’ll help routers. And then when the packets delivered this P protocol field, we’ll tell the destination host what to do with the packet, not what to do with it.<br>对于我们来说，关键字段实际上是这种数据包格式中的三个非常有趣的字段。目标字段，即我们要将数据包发送到的主机的32 b IP地址。特别是它的高位数，它将有网络编号，这将有助于路由器。然后，当数据包传送到这个P协议字段时，我们将告诉目标主机如何处理数据包，而不是如何处理它。</p>
+<p>发言人   28:45<br>Next after it strips off the IP header. And have you ever seen an MIT IP address? You’ll see, well, there’s a couple of different ones. But for example, if you see. Internet address starting with 18. The things have actually changed in the last couple years. But this for a long time, was the network number of MIT. And so most hosted MIT would have IP addresses whose high byte was 18. And routers all over the world would have some table. They’d look up 18 and say, aha, I know how to route this packet one step closer to MIT. So let me show you again. TCP dump output. Again, actually taken from the lab that includes. An IP header. Okay, so.<br>接下来，它将剥离IP标头。你见过麻省理工学院的IP地址吗？你会看到，嗯，有几个不同的。但是举个例子，如果你看到了。互联网地址以18开头。在过去的几年里，情况实际上发生了变化。但在很长一段时间里，这是麻省理工学院的网络号码。因此，大多数托管的麻省理工学院的IP地址将具有高字节为18的IP地址。世界各地的路由器都会有一些桌子。他们会查找18并说，啊哈，我知道如何将这个包路由到更接近麻省理工学院的一步。让我再向你展示一遍。TCP转储输出。再说一次，实际上取自包括在内的实验室。IP标头。好的，所以。</p>
+<p>发言人   29:52<br>We can parse this packet because it was sent over the Ethernet. It starts with an Ethernet header.<br>我们可以解析这个数据包，因为它是通过以太网发送的。它以一个以太网头开头。</p>
+<p>发言人   30:06<br>Actually, one thing that’s kind of wrong with these TCP dump, with these packets that are generated. Now that I’m seeing it I’m not sure what the problem is. They should not start with all these ethernet headers, shouldn’t start with all apps because that’s the broadcast address that causes the packet to go to every host. And you would not see that for a packet sent between two individual hosts as this one is on a real network. So there’s something funny going on with my solution to the network lab or with QM. Anyway, the ethernet destination address, ethernet source address, and the ethernet type and 0 8 0 0 is, and it means that the remaining bytes or IP packet, the IP packet header length, I think is 20 B. See if we can find the end 215. So this must be the end of the IP header.<br>实际上，这些生成的数据包存在一个问题，即这些TCP转储。现在我看到了，我不确定问题是什么。它们不应该以所有这些以太网标头开始，也不应该以所有应用程序开始，因为这是导致数据包发送到每台主机的广播地址。并且您不会看到在两台主机之间发送的数据包，因为这一台在真实网络上。所以我在网络实验室或QM的解决方案中发生了一些有趣的事情。无论如何，以太网目标地址，以太网源地址，以及以太网类型和0 8 0 0是，这意味着剩余的字节或IP数据包，IP数据包报头长度，我认为是20 B。看看我们是否能找到最后的215。所以这必须是IP标头的结尾。</p>
+<p>发言人   31:12<br>And working backwards, because these are the fields we really care about. The destination IP field is a is 1, 1 0, 2, 2. Which is, I think, the in qmu websites funny simulated network is the address of the real computer running qmu on. And then before that is the IP source address, which is 10, 0 to 15, which is the sender, which is qmu websites address for the or XV 6 basically running inside qmu. And then this stuff before it is all this other stuff.<br>并倒推，因为这些是我们真正关心的领域。目标IP字段是1，1，0，2，2。我认为，qmu网站中有趣的模拟网络是运行qmu的真实计算机的地址。然后在那之前是IP源地址，即10，0到15，这是发件人，这是qmu网站地址，或XV 6基本上在qmu内运行。然后这些东西在它之前是所有这些其他东西。</p>
+<p>发言人   31:51<br>There’s a 16 b check sum, which your software is supposed to check to realize that a packet’s been corrupted and should be discarded. That’s this check sum. There’s a 1 B, or I mess something up here. Oh, this is 16, sorry, this is 16 b checksum. This 11 is the protocol number, which is particularly important. 11 hex is 16 plus 1 or 17, so that means that this is a UDP packet based on the protocol field, and then all this other stuff we don’t really care about. It has things like the length of the packet. Any questions about IP headers?<br>有一个16 B的校验和，您的软件应该检查它以确定数据包是否已损坏并应被丢弃。这就是这个检查和。有一个1 b，或者我在这里弄乱一些东西。哦，这是16，对不起，这是16 b的校验和。这11是协议号，这特别重要。11十六进制是16加1或17，这意味着这是一个基于协议字段的UDP数据包，然后是我们并不关心的所有其他东西。它包括数据包的长度等内容。对IP标头有任何问题吗？</p>
+<p>发言人   32:43<br>All right, again, the critical stuff is the IP header has the IP address, the source of destination. And this protocol field is going to tell the destination hosts networking stack that this packet should be processed by its UDP software, which I’ll talk about right now.<br>好的，再次强调，关键的东西是IP报头有IP地址，也就是目标的来源。这个协议字段将告诉目标主机网络堆栈，该数据包应由其UDP软件处理，我现在将讨论此内容。</p>
+<p>发言人   33:05<br>Okay, this IP header is enough to get a packet to any host on the internet, but we want to do better than that. Every host you is running lots and lots of different programs that need to use the network. We need to send and receive packets on the network, and so we need a way that’s thats not included in the IP field in order to decide which application needs to which application on the target host. This packet ought to be handed off to.<br>好的，这个IP标头足以将数据包发送到互联网上的任何主机，但我们希望做得更好。您运行的每台主机都有许多不同的程序需要使用网络。我们需要在网络上发送和接收数据包，因此我们需要一种未包含在IP字段中的方式，以便决定目标主机上哪个应用程序需要哪个应用程序。这个包裹应该被转交给。</p>
+<p>发言人   33:36<br>And there’s a couple of protocols that do that job. One of them is TCP, which is quite complex, another was UDP. TCP is actually what’s used mostly for things like the web. TCP is a very complex protocol that not only helps your packet be delivered to the right application, but also has a lot of things like sequence numbers in order to detect lost packets and retransmit them, make sure packets or data is delivered in order and without gaps in case anything goes wrong. UDP is a much simpler protocol that just delivers a sort of best effort delivery of a packet to a particular application without any error correction or, well, basically without anything else.<br>有几个协议可以完成这项工作。其中一个是相当复杂的TCP，另一个是UDP。TCP实际上主要用于像web这样的东西。TCP是一个非常复杂的协议，它不仅可以帮助您将数据包发送到正确的应用程序，而且还具有许多诸如序列号之类的功能，以便检测丢失的数据包并重新传输它们，确保数据包或数据按顺序传递，并且没有间隙，以防出现任何问题。UDP是一种简单得多的协议，它只向特定应用程序提供一种尽最大努力交付数据包的方式，而不进行任何错误纠正，或者基本上没有其他任何内容。</p>
+<p>发言人   34:27<br>For us, the critical fields are these two port numbers. And the game here is that when your application wants to send or receive packets, it uses what’s called the sockets API.<br>对我们来说，关键字段是这两个端口号。这里的游戏是，当你的应用程序想要发送或接收数据包时，它会使用所谓的套接字API。</p>
+<p>发言人   34:43<br>On Unix, at any rate. And this is a set of system calls whereby a process can say, look I’m interested in packets addressed to a particular port. And it’ll say what port number it’s interested. Sorry, packets with I want to receive packets with a particular destination port and operating. So you make a system call, it sets this up, and the operating system will return a file descriptor. And every time a packet arrives with the port that the application asks for, that packet will appear on the file descriptor and the application can read it.<br>在Unix上，无论如何。这是一组系统调用，其中一个进程可以说，我对发送到特定端口的数据包感兴趣。它会说出它感兴趣的端口号。抱歉，我想接收具有特定目标端口和操作的数据包。所以你进行一个系统调用，它会设置这个，操作系统会返回一个文件描述符。每次数据包到达应用程序要求的端口时，该数据包将出现在文件描述符中，应用程序可以读取它。</p>
+<p>发言人   35:19<br>And these are, there’s really two kinds of ports. Some are well known port numbers, like I think port 53 is the official well known, a universally agreed port number for a DNS name server. So if you want to send a request to a DNS name server, you can send it in a UDP packet addressed to deport 53. And there’s a bunch of other sort of well known ports for commonly available services with universally agreed on numbers and then the remainings the remainder of the 16 b port number space is used for the sort of anonymous client support.<br>这些是，实际上有两种端口。有些是众所周知的端口号，就像我认为端口53是官方众所周知的，DNS名称服务器的普遍认可的端口号。因此，如果您想向DNS名称服务器发送请求，可以在发送到dport 53的UDP数据包中发送该请求。还有一堆其他常见服务的知名端口，它们具有普遍同意的数字，然后剩余的16 b端口号空间用于匿名客户端支持。</p>
+<p>发言人   36:03<br>So if I want to send a packet to a DNS server, its D port will be 53, all right, but it S port will be a more or less randomly chosen number for my end, so that’ll be associated with my applications socket so that when the DNS server sends a reply, it’ll be addressed. The DNS server will copy the request source port into the destination port field of the reply, send it back to my machine, and my machine will use this port number to figure out which application should get the reply.<br>所以，如果我想将一个数据包发送到DNS服务器，其D端口将是53，没问题，但它的端口将是一个或多或少随机选择的数字，因此它将与我的应用程序套接字相关联，以便当DNS服务器发送回复时，它将被解决。DNS服务器会将请求源端口复制到回复的目标端口字段中，将其发送回我的计算机，我的计算机将使用此端口号来确定哪个应用程序应获得回复。</p>
+<p>发言人   36:41<br>Okay, so the main function here is to have these two port numbers in order to hand be able to hand off packets to individual applications. On this machine. So feel free to ask questions.<br>好的，这里的主要功能是拥有这两个端口号，以便能够将数据包传递给各个应用程序。在这个机器上。所以请随意提问。</p>
+<p>发言人   36:59<br>I have TCP dump output for UDP also again taken from the lab. So again, we have an Ethernet header and 20 B IP header, which probably ends here. The 11 is IP protocol 17, which is UDP. So the receiving host will know to process it with its UDP software. The next 8 B are the UDP header, which is shown right here. And so who knows what these port numbers are. I mean, none. This is unfortunately packages generated by the lab software without any. Any special numbers in it? So these are just the port numbers that happen to choose.<br>我还有从实验室获取的UDP的TCP转储输出。所以，我们又有一个以太网标头和20个IP标头，它们可能在这里结束。11是IP协议17，即UDP。因此，接收主机将知道使用其UDP软件处理它。接下来的8个B是UDP标头，如下所示。所以谁知道这些端口号是什么。我的意思是，没有。不幸的是，这是由实验室软件生成的软件包，没有任何内容。里面有特别的数字吗？所以这些只是选择的端口号。</p>
+<p>发言人   37:58<br>This must be the length of the packet. So 1 b is 20 something and this my, you know, this or software UDP and XV 6 is so lame that it doesn’t fill in the checksum field, but this is the header. And then after the UDP header is the payload of the UDP packet. And in this case, the application is sending Ascii text. And that Ascii text is right here. So this is a mask E text placed inside UDP packet place inside an IP packet placed inside an Ethernet packet. Sent over simulated ethernet.<br>这必须是数据包的长度。所以1 b等于20多个东西，而这个，你知道的，软件UDP和XV 6是如此蹩脚，以至于它没有填写校验和字段，但这是标题。然后，在UDP标头之后是UDP数据包的负载。在这种情况下，应用程序正在发送Ascii文本。而那篇Ascii文本就在这里。所以这是一个位于以太网数据包中的IP数据包中的UDP数据包中的掩码文本。通过模拟以太网发送。</p>
+<p>发言人   38:42<br>Sorry, I just had a question. So when, when you, when you said when you send a package to someone you don’t know there ethernet like address, so do you just send it to your router then? And then the router?<br>抱歉，我只有一个问题。那么，当你说当你把包裹发送给一个你不知道以太网地址的人时，你会把它发送到你的路由器吗？然后路由器？</p>
+<p>发言人   38:57<br>If for most for packets sent somewhere else on the internet, let’s see. Your host, if you send a packet to a particular IP address, your host software will look at the destination address to figure out if the target host is on the same local area network as you are. And if it is, it’ll use ARP to translate the IP address into an Ethernet address and then send the packet over the Ethernet to the target host. So that’s what happens is sort of in the special case in which the target host is on the same network, in the more general case where you’re sending the packet to somewhere else on the internet across the country, you’ll send the packet to a router on the same local area network. That router will look at the destination IP address to pick the next router to decide which router it’s attached to it for the packet to. In the packet, all they’ll go hop by hop through routers getting closer and closer to the target. Does that answer your question? Okay, I see, yes, thank you so much.<br>如果对于大多数在互联网上其他地方发送的数据包，让我们看看。在您的主机上，如果您向特定的IP地址发送数据包，主机软件将查看目标地址，以确定目标主机是否与您在同一局域网上。如果是，它将使用ARP将IP地址转换为以太网地址，然后通过以太网将数据包发送到目标主机。因此，在目标主机位于同一网络上的特殊情况下，在更普遍的情况下，即您将数据包发送到全国互联网上的其他地方，您将把数据包发送到同一局域网上的路由器。该路由器将查看目标IP地址，以选择下一个路由器来决定数据包要连接到哪个路由器。在数据包中，它们将通过路由器逐跳地越来越接近目标。这回答了你的问题吗？好的，我明白了，是的，非常感谢。</p>
+<p>发言人   40:01<br>Someone asked if there’s a limit to the length of the packet. And the answer is yes.<br>有人问包裹的长度是否有限制。答案是肯定的。</p>
+<p>发言人   40:05<br>There’s a couple of different limits. Every underlying network technology, like Ethernet, but there are other things that are like Ethernet has its own maximum packet length. So when today’s paper was written, the maximum packet length was on Ethernet was 100 B. I think modern ethernets allow packets up to around 9000 or 10000 B, but that’s about the highest maximum packet size I’ve heard of. And the reason, there’s a couple of reasons why you wouldn’t want sort of infinitely long single packets. One of them is that the packets are, you’re in these packets over wires that could be quite long and subject to noise and interference. And so you do get corruption of bits when you’re sending packets.<br>有几个不同的限制。每一种底层网络技术，如以太网，但还有其他类似于以太网的东西有其自己的最大数据包长度。所以当今天的论文撰写时，以太网上的最大数据包长度为100 B。我认为现代以太网允许高达9000或10000 B的数据包，但这大约是我听说过的最大数据包大小。原因是，你不想要无限长的单个数据包有几个原因。其中之一是数据包，你在这些数据包中通过可能相当长的电线，受到噪音和干扰的影响。因此，当您发送数据包时，您确实会损坏位。</p>
+<p>发言人   40:54<br>Basically, every networking technology is some kind of checksum or error correcting code that goes along with every packet. But checksums and error correcting codes are only capable of reliably detecting errors over a certain number of bits, which. And so as you increase the number of bits, the probability of an uncaught error goes up and up.<br>基本上，每种网络技术都是与每个数据包一起使用的某种校验和或纠错代码。但校验和纠错码只能可靠地检测超过一定位数的错误。因此，随着比特数的增加，未捕获错误的概率会不断上升。</p>
+<p>发言人   41:14<br>And so that limits for a reasonable size checksum, 16 or 32 b, that limits the maximum size of a packet. And the other limitation is that if you send huge packets, that means that all the routers in hosten fall have to have huge packet buffers to be prepared to receive huge packets. And that starts to get unwieldy, inexpensive. It’s difficult to have variable length buffers. It’s most convenient to have just a single length of buffer, and that works best if the maximum packet length isn’t too enormous. Anyway, so for so ethernet has a 1500 or. 9000 B limit. In addition, for all these IP protocols have length fields which are 16 b.<br>因此，对于合理大小的校验和 (16或32 b) 的限制限制了数据包的最大大小。另一个限制是，如果发送巨大的数据包，这意味着hosten中的所有路由器都必须拥有巨大的数据包缓冲区，以便准备好接收巨大的数据包。这开始变得笨拙，廉价。很难拥有可变长度的缓冲区。最方便的做法是只有一个长度的缓冲区，如果最大数据包长度不是太大，这将发挥最佳作用。无论如何，所以以太网有一个1500或。9000 B限制。此外，对于所有这些IP协议，长度字段为16 b。</p>
+<p>发言人   42:07<br>Even if you are willing to have Ethernet have a larger packet size, IP itself has a kind of baked in maximum packet sizes, 64 kB. Okay?<br>即使您愿意让以太网拥有更大的数据包大小，IP本身也有一种最大数据包大小，64 kB。好吗？</p>
+<p>发言人   42:25<br>Okay, good. So much for UDP. And hopefully when you finish the lab, you’ll see output very much like this. In particular, the message from XV 6 and a message, a reply back from the hosts that you’re running, running qmu on. In fact, actually, at the end of the lab, you’ll use, you’ll run software which we provide, which will actually send a DNS query to Google’s DNS servers and get the response back. And our software will print the response. But your software will have done the sort of Ethernet level device driver interactions.<br>好的，好的。UDP就这么多。希望当你完成实验时，你会看到非常像这样的输出。特别是，来自XV 6的消息和一条消息，一条来自您运行qmu的主机的回复。实际上，在实验结束时，你将使用并运行我们提供的软件，该软件实际上将向谷歌的DNS服务器发送DNS查询并获取响应。我们的软件会打印出响应。但是你的软件将完成以太网级别的设备驱动程序交互。</p>
+<p>发言人   43:07<br>All right, so that’s the story for packet headers and protocols on the wire. Sort of corresponding to these packet formats is what’s called the stack of network software that runs on the host.<br>好的，这就是数据包标题和线路上协议的故事。与这些数据包格式相对应的是所谓的在主机上运行的网络软件堆栈。</p>
+<p>发言人   43:24<br>If you think about what’s sitting inside the host, and from now on I’m talking and mostly talk about sort of typical software arrangements. There’s all kinds of different ways people have structured network software. And this is quite different from what I’m going to talk about. But I’m going to talk about kind of the what I think of is at least as a sort of standard approach. So let’s assume we’re running Linux or maybe XV 6 and we have a bunch of applications, maybe a web browser. Maybe DNS server who knows what bunch of applications they all have used the Sockets API to open up file descriptors in the sockets layer. So this is going to be this inside the kernel.<br>如果你考虑一下主机里面有什么，从现在开始，我主要谈论的是典型的软件安排。人们有各种不同的结构化网络软件方式。这与我要谈论的内容截然不同。但我要谈谈我认为至少是一种标准方法的东西。所以让我们假设我们运行的是Linux或者XV 6，我们有一堆应用程序，也许是一个web浏览器。也许DNS服务器知道他们都使用了套接字API来打开套接字层中的文件描述符。所以这将是内核内部的。</p>
+<p>发言人   44:16<br>A layer software called the Sockets layer that has tables that remembers the correspondence between file descriptors which the applications for you to write, and UDP port numbers or TCP port numbers, which is for the sort of endpoints of conversations that these file descriptors refer to. So the socket layer has these tables of file descriptors, important numbers. And it also typically has a cue of packets that have arrived and are waiting to be read by each socket or file descriptor. And the software we provide you has a very primitive socket slayer. Underneath that are going to be the udpn TCP protocol layers. UDP has almost nothing going on. It basically looks at incoming packets, extracts the destination port number, and hands the packet off to the socket layer to it so the payload is in queue on the correct file descriptors.<br>一种称为套接字层的层软件，其中包含表格，可以记住应用程序要编写的文件描述符与UDP端口号或TCP端口号之间的对应关系，这些端口号用于这些文件描述符所指的会话端点类型。所以套接字层有这些文件描述符表，重要的数字。并且它通常还有一个数据包已经到达并等待每个套接字或文件描述符读取的提示。我们提供给您的软件有一个非常原始的套接字杀手。下面将是udpn TCP协议层。UDP几乎没有任何进展。它基本上查看传入的数据包，提取目标端口号，然后将数据包传递给套接字层，以便有效负载在正确的文件描述符上排队。</p>
+<p>发言人   45:25<br>Incoming queue TCP actually is much more complex. It keeps state for each TCP connection and it remembers all kinds of sequence numbers and packets that haven’t been acknowledged and need to be retransmitted. So there’s a huge amount of state in what’s called a protocol control block and TCP, and virtually no state in there UDP layer.<br>传入队列TCP实际上要复杂得多。它保存每个TCP连接的状态，并记住尚未确认并需要重传的各种序列号和数据包。因此，在所谓的协议控制块和TCP中存在大量的状态，而在UDP层中几乎没有状态。</p>
+<p>发言人   45:47<br>These are often called transport layers UDP and TCP, and we provide you with a simple UDP layer, but not a TCP layer underneath TCP, and I is a. IP layer. Which is often fairly simple and kind of in parallel with the IP layer? I’m not sure whether I should draw it on the same level or underneath it. Is the art layer under them? Both we can think of as an ethert layer, but it’s really, there’s not typically a separate Ethernet layer. Typically there’s a one or more Nicolette.<br>这些通常被称为传输层UDP和TCP，我们为您提供一个简单的UDP层，但不是TCP下面的TCP层，而I是一个。IP层。这通常相当简单，并且与IP层并行？我不确定我应该把它画在同一水平上还是在它下面。艺术层在它们下面吗？我们都可以将其视为一个以太层，但实际上，通常没有单独的以太网络层。通常有一个或多个妮可莱特。</p>
+<p>发言人   46:30<br>At the lowest layer. And these talk to the actual Ni network interface hardware, which itself has a connection off to the local area network. Whatever kind of network you’re attached. And sort of at this level, what happens is the packet arrives off the network. The nick, you know, pulls it off the network, hands it off to the driver, and the driver essentially pushes the network, the packet up the networking stack.<br>在最底层。并且这些与实际的Ni网络接口硬件进行通信，该硬件本身具有与局域网的连接。无论你所连接的网络是什么。在这个层面上，发生的事情是数据包从网络到达。这个缺口，你知道的，将其从网络上拉下来，交给司机，司机基本上会将网络和数据包推送到网络堆栈上。</p>
+<p>发言人   47:04<br>And at each layer in the stack, you know, that layer is header. You know, I, the IP layer will look the IP header, verify the header, strip it off, hand it to UDP. UDP will figure out what files the script or cue the data on and add it to that queue now. So packets come in and are parsed and headers are stripped in the way up. And when an application sends a packet, the reverse thing happens as the packet moves down through the layers, more and more headers are added on until you get to the bottom layer. And then the packets handed to the Ni for transmission.<br>在堆栈的每一层，你知道，那一层是标题。你知道，IP层将查看IP标头，验证标头，将其剥离，然后将其交给UDP。UDP将找出脚本或数据的文件，并立即将其添加到该队列中。因此数据包进入并被解析，并且标头被向上剥离。当应用程序发送数据包时，相反的情况发生在数据包向下移动时，会添加越来越多的标头，直到到达底层。然后将数据包交给Ni进行传输。</p>
+<p>发言人   47:41<br>And so, of course, software, the way people think about it, and design network software. And the kernel is typically driven by the nesting of the protocols inside the packets. Any questions about this structure?<br>因此，当然，软件，人们的思考方式，以及设计网络软件。内核通常由数据包内的协议嵌套驱动。对这个结构有什么问题吗？</p>
+<p>发言人   48:03<br>There’s actually one important thing that I kind of left out here that sits on the side. There’s buffers. There’s packet buffers all through this. So when a packet arrives, it’s copied into a packet buffer, and the packet buffers are sent up and down the stack. And there’s often quite a few packet buffers, there’s often queues between these layers. There’s certainly a queue here. A packet’s waiting to be processed by applications. And this will be a linked list of buffers. And so there’s a buffer allocator, buffer scheme, and a buffer allocator that’s used throughout the stack. And in the software we give you these, the buffer scheme is called M buffs, so it’s kind of a M buff.<br>实际上，我在这里遗漏了一件重要的东西，那就是放在旁边的东西。有缓冲区。整个过程中都有数据包缓冲区。因此，当数据包到达时，它被复制到数据包缓冲区，然后数据包缓冲区在堆栈中上下发送。通常有相当多的数据包缓冲区，这些层之间经常有队列。这里肯定有一个队列。等待应用程序处理的数据包。这将是缓冲区的链接列表。因此，有一个缓冲区分配器、一个缓冲区方案和一个在整个堆栈中使用的缓冲区分配器。在我们给你的软件中，缓冲方案被称为M buff，所以它有点像M buff。</p>
+<p>发言人   48:52<br>Scheme, not a layer, but it’s used all throughout these layers.<br>方案，不是层，但它在这些层中使用。</p>
+<p>发言人   48:59<br>Okay, this is the layering diagram of sort of typical network stack. For this paper, it’s actually important to understand how the control flow works, which is maybe a little bit different from what’s in that diagram. One thing to know about network stacks is that there’s typically multiple independent actors that process packets and take input, think about those packets, and produce output. And for various reasons, these different actors are decoupled so they can run concurrently and have packet queues connecting them. So that’s extremely important from the point of view of this paper. So within the kernel, so again, we have a network interface card, and then we have the kernel.<br>好的，这是典型网络堆栈的分层图。对于本文来说，理解控制流的工作方式实际上很重要，这可能与图表中的内容略有不同。关于网络堆栈需要了解的一件事是，通常有多个独立的参与者处理数据包并接收输入，考虑这些数据包，然后产生输出。由于各种原因，这些不同的参与者是解耦的，因此它们可以同时运行，并有数据包队列连接它们。因此，从本文的角度来看，这是非常重要的。所以在内核中，再次，我们有一个网络接口卡，然后我们有了内核。</p>
+<p>发言人   49:51<br>A classic arrangement here is for the nick to somehow get packets. Well, for the nick, when it receives a packet to generate an interrupt. And so there’s this interrupt routine that gets triggered whenever there’s an interrupt. And this job of the interrupt routine is to get the packet from the neck because we don’t want to dedicate CPU time to completing the processing of the packet. Now, the interrupt routine typically just appends the packet to a queue of packets for later processing and then returns. So it sort of does the minimum work.<br>这里的一个经典安排是让尼克以某种方式收到包裹。好的，对于缺口来说，当它收到一个数据包时会产生一个中断。因此，有一个中断例程，每当有中断时都会触发。而中断例程的这项工作是从颈部获取数据包，因为我们不想将CPU时间专门用于完成数据包的处理。现在，中断例程通常只是将数据包附加到数据包队列中以供以后处理，然后返回。所以它做最少的工作。</p>
+<p>发言人   50:34<br>Required to get the packet from the nick and put it in a queue. And the reason why we want to transfer or in the sort of traditional network stack, we want to quickly move the packet out of the Ni and into this software queue is that Nis typically have a very limited amount of memory for queueing packets, whereas in the main memory, the Ram and the computer, we might have gigabytes of memory. So far more space here the So if there’s a burst of packets, the nick may actually run out of space to cue them. So we copy them this queue here to avoid the nick running out of space, and then separately, perhaps in a separate thread, there’s what I’ll call the IP processing thread.<br>需要从缺口处获取数据包并将其放入队列中。我们想要在传统网络堆栈中传输或快速移动数据包的原因是，Nis通常具有非常有限的内存用于排队数据包，而在主内存中，Ram和计算机，我们可能有千兆字节的内存。这里有更多的空间，所以如果有大量的数据包，缺口可能实际上没有足够的空间来提示它们。所以我们把它们复制到这里，以避免缺口耗尽空间，然后分开，也许在一个单独的线程中，我称之为IP处理线程。</p>
+<p>发言人   51:18<br>And sometimes it’s not a thread. Sometimes it’s a sort of a different kind of entity. But its basic job is to read packets of these incoming queues. And there may be multiple nicks you pending packets to these queues.<br>有时它不是一个线程。有时候它是一种不同类型的实体。但其基本工作是读取这些传入队列的数据包。并且可能有多个缺口将数据包挂起到这些队列。</p>
+<p>发言人   51:32<br>So our IP thread runs, it looks at packets that are queued here and decides what to do with them. One possibility is to send them up through UDP. Into the sockets layer to be queued, waiting for some application. And typically this will just be a function calls here within the context of this thread. Another possibility, and this is the possibility the paper cares most about, is that this host is actually a router and it packets are coming in one nicca routed out one or more other Niccolo, because it’s very common to build routers out of ordinary operating systems like Linux. Like if you buy a WiFi box now or a cable modem router or something, it’s extremely likely to be running Linux internally and to use the standard Linux stack, which has a complete router implementation. It’s highly likely to be using the standard Linux stack in order to do its routing.<br>因此，我们的IP线程运行时，它会查看在此处排队的数据包并决定如何处理它们。一种可能性是通过UDP发送它们。进入套接字层进行排队，等待某个应用程序。通常这只是此线程上下文中的一个函数调用。另一种可能性，也就是这篇论文最关心的可能性，是这个主机实际上是一个路由器，它的数据包通过一个或多个其他的nicca路由进来，因为在普通操作系统 (如Linux) 之外构建路由器是非常常见的。就像你现在购买一个WiFi盒或电缆调制解调器路由器或其他东西一样，它极有可能在内部运行Linux并使用标准的Linux堆栈，该堆栈具有完整的路由器实现。它很有可能使用标准的Linux堆栈来进行路由。</p>
+<p>发言人   52:31<br>So if the IP thread looks at the destination IP address and decides, oh, I should send this out, I should forward this packet out, you know, out another network interface, it’ll add the packet to a queue of outgoing packets for this outgoing interface. And there’s almost certainly. So this is a receive interrupt or Rx. For receive, there’s usually some sort of transmit interrupt scheme. For the outgoing Nick, that and the nick will interrupt whenever it’s finished sending one packet and is ready to be handed more packets. So these outgoing interrupts may also be important.<br>因此，如果IP线程查看目标IP地址并决定，哦，我应该发送这个，我应该将这个数据包转发出去，你知道，从另一个网络接口，它会将这个数据包添加到这个出站接口的出站数据包队列中。几乎可以肯定。所以这是接收中断或Rx。对于接收，通常有某种传输中断机制。对于传出的昵称，每当完成发送一个数据包并准备传递更多数据包时，昵称就会中断。这些传出中断可能也很重要。</p>
+<p>发言人   53:19<br>Point here is that there’s a bunch of concurrent entities that are sort of separately scheduled in various different ways. These interrupts are triggered by the Nx asking for it interrupts when packets arrive or when packets have been sent. This thread may be a kernel thread like we have in XV 6 and on a uniprocessor, as was the case with today’s paper, this thread can’t run at the same time as it interrupt that interrupts that absolute priority. On a multi-core machine, there may be more parallelism. And then if it’s important that applications to be able to read the packets, the applications are yet another sort of independently scheduled entities that we’d like to get their chance at executing on the CPU. So these are all the players in the.<br>这里的重点是有一堆并发实体，它们以各种不同的方式分别调度。这些中断是由Nx触发的，当数据包到达或数据包发送时请求中断。这个线程可能是一个内核线程，就像我们在XV 6中使用的那样，在单处理器上，就像今天的论文中的情况一样，这个线程不能在中断绝对优先级的同时运行。在多制芯机上，可能有更多的并行性。然后，如果应用程序能够读取数据包很重要，那么这些应用程序是我们希望有机会在CPU上执行的另一种独立调度的实体。所以这些都是游戏中的玩家。</p>
+<p>发言人   54:11<br>In the scheduling game, essentially.<br>在调度游戏中，基本上。</p>
+<p>发言人   54:18<br>One thing that comes up a lot is buffering. So three cues here. By buffering, I mean these structures in which one independent entity appends input packets and some other entity pulls packets off the front of the queue. These queues are pervasive in networking systems. One reason for them is to allow temporary to cope with temporary births. This IP thread maybe can only process packets that however many per second, but the nicca be able to deliver packets much more quickly. And so there may be a little sort of temporary burst of packets we’d like to have somewhere to put them waiting for the IP thread to get around to processing them. And so that’s one use of cues on the output side.<br>有一件事经常出现，那就是缓冲。这里有三个提示。通过缓冲，我指的是这些结构，其中一个独立实体附加输入数据包，另一个实体从队列的前面提取数据包。这些队列在网络系统中非常普遍。他们的一个原因是允许临时生育来应对临时生育。这个IP线程可能只能处理每秒多少个数据包，但nicca能够更快地传递数据包。因此可能会有一些临时的数据包突发，我们希望有地方放置它们，等待IP线程来处理它们。因此，这是在输出端使用线索的一种方式。</p>
+<p>发言人   55:08<br>Another use of cues is we’d like to, especially if packets are bursty, we’d like to be able to stack up a bunch of packets here ready for the neck descent to keep the neck to output Nick busy. Because depending on the speeds of things, it may be quite important be able to utilize 100% of the network here.<br>提示的另一个用途是我们希望，特别是如果数据包突发性很大，我们希望能够在这里堆叠一堆数据包，准备好颈部下降，以保持颈部输出Nick繁忙。因为根据事物的速度，能够在这里利用100% 的网络可能是相当重要的。</p>
+<p>发言人   55:30<br>And the other reason for, or maybe the same reason stated differently for having cues, is to be able to structure software into independent parts that are scheduled separately. Like we wouldn’t necessarily want to have our IP thread or the application know about the other things that have to go on, like interrupt processing. So the IP thread is sort of the traditional networking system. It doesn’t necessarily know when erupt happen or when applications run, although we’ll see in this paper that there may be advantages to having a little bit of knowledge there. Questions about this sort of scheduling control diagram?<br>另一个原因，或者可能与使用提示的相同原因不同，是为了能够将软件构建成独立的部分，这些部分分别安排。就像我们不一定希望我们的IP线程或应用程序知道其他必须进行的事情，比如中断处理。所以IP线程是一种传统的网络系统。它并不一定知道何时发生爆发或应用程序运行，尽管我们将在本文中看到，在那里拥有一点知识可能会有优势。关于这种调度控制图的问题？</p>
+<p>发言人   56:20<br>I have a quick question. So can the same neck not be used for both transmitting and receiving? It can’t, why? So my laptop really only has one interface in it connected to WiFi when it receives a packet this so on my laptop, this nick is actually a WiFi radio interface, packets arrive and go out on the same nick, the two Nick situation. It’s certainly used for routers. So your home WiFi, I don’t know, maybe you have, I have WiFi and cable and there’s a router box that has two Ni, 1 is it’s connection to my cable modem, which leads to the rest of the internet and the other one is my the WiFi interface, so the little box that the cable modem cable company sent me is a router with two network interfaces. And there’s actually a lot of servers have multiple interfaces also, especially ones that are web servers that you want to talk to the outside world at one interface and to your private sensitive database machine or something on a totally separate network with another network interface. So arrangements pretty common.<br>我有个简短的问题。那么同一个脖子不能同时用于发送和接收吗？它不能，为什么？因此，当我的笔记本电脑收到数据包时，实际上只有一个接口连接到WiFi，因此在我的笔记本电脑上，这个缺口实际上是一个WiFi无线电接口，数据包在同一个缺口到达和出去，即两个缺口情况。它肯定用于路由器。所以你的家庭WiFi，我不知道，也许你有，我有WiFi和电缆，还有一个有两个Ni的路由器盒，一个是连接到我的电缆调制解调器，这导致了互联网的其他部分，另一个是我的WiFi接口，所以电缆调制解调器电缆公司寄给我的小盒子是一个有两个网络接口的路由器。实际上，有很多服务器也具有多个接口，尤其是那些您想要在一个接口上与外界通信的web服务器，以及与您的私人敏感数据库机器或与另一个网络接口完全独立的网络上的其他服务器。所以安排很常见。</p>
+<p>发言人   57:37<br>The criteria for having multiple Nis is just wanting to talk to different networks. Then, yeah, okay, yeah, if you want to talk to different networks, then you would have multiple links, yes. I want to, as an aside, talk a little bit more about X, what Knicks do with packets when they arrive, a special relevance to the lab.<br>拥有多个NI的标准只是想要与不同的网络交谈。那么，是的，好的，如果你想与不同的网络交谈，那么你会有多个链接，是的。作为旁白，我想更多地谈谈X，尼克斯在包裹到达时如何处理它们，这与实验室特别相关。</p>
+<p>发言人   58:05<br>You know what a nick looks like internally. You know it’s got a cable leading or a radio leading to the from the outside world, you know? And it looks at electrons as they come in and sort of turns them into packets. And then there’s the host. And there’s the host has some sort of driver software in it. And one way or another, we need to get a packet that’s decoded in the nick into memory where the IP software and the host can parse that packet.<br>你知道尼克在内部是什么样子的。你知道它有电缆引导或无线电从外面的世界引导，你知道吗？当电子进入并将它们变成数据包时，它会观察它们。然后是主持人。还有主机里面有某种驱动软件。不管怎样，我们需要将一个在缺口中解码的数据包放入内存中，IP软件和主机可以在其中解析该数据包。</p>
+<p>发言人   58:41<br>And so there’s a lot of different schemes that been designed over the years. Paper scheme is that the nick has a lot of internal memory, and as packets arrive, the only immediate thing that happens is that Nick puts lays down the packets in its own buffer memory and that’s it, and interrupts the host. And so the nick has an internal cue of packets and a bunch of memory. And then in the interrupt in the host driver, the host driver has a loop in it. The host driver will talk to them and they can say, oh, you don’t have any packets buffered. And if it does, the host has a loop that’ll just copy, you know, by byte or word by copy this packet into the memory of the host and append it to a queue inside the host. So that’s how the papers Nick works.<br>因此，多年来设计了许多不同的方案。论文方案是nick有很多内部存储器，当数据包到达时，唯一会发生的事情是Nick将数据包放在自己的缓冲区中，然后中断主机。因此，这个缺口具有数据包和一堆内存的内部提示。然后在主机驱动程序的中断中，主机驱动程序中有一个循环。主机驱动程序将与他们交谈，他们可以说，哦，您没有任何数据包缓冲。如果是这样，主机就有一个循环，它将逐字节或逐字复制该数据包到主机的内存中，并将其附加到主机内部的队列中。这就是尼克文件的运作方式。</p>
+<p>发言人   59:33<br>The driver sort of is responsible for doing the copy from Nick memory, toho’s memory. That made a lot of sense 30 years ago. Today, though, it turns out that loops and the CPU, that copy that you talk to, external hardware or hardware sitting on buses are very, very slow. This is sort of a in the grand scheme of microprocessor design, this distance here between the CPU and external device, even if it’s on the same computer, this is a very long distance. And this, each conversation today takes a long time for each back and forth chit chat. And so you don’t want to have a lot of bite by bite interaction. So people don’t design high speed interfaces like this anymore. So a much more modern arrangement looks like this.<br>司机负责复制尼克的记忆，托霍的记忆。这在30年前引起了很多感知。然而今天，事实证明循环和CPU，你与之交谈的副本，外部硬件或位于总线上的硬件非常非常慢。这有点像微处理器设计的宏伟计划，CPU和外部设备之间的距离，即使它们在同一台计算机上，也是非常长的距离。而且，今天每次对话都需要很长时间来进行来回的聊天。所以你不希望有太多的互动。所以人们不再设计这样的高速接口了。所以一个更现代的安排看起来像这样。</p>
+<p>发言人   01:00:29<br>I’m talk about an arrangement which shows up in the E1 thousand Ni. Which you’ll use in the lab or simulation of which the way the E1 thousand Nik works, so has this wire, and it’s looking at the electrons as the packets arrive, the nick writes them.<br>我正在谈论一个出现在e1000 Ni中的安排。您将在实验室或模拟中使用E1，000 Nik的工作方式，因此有这根电线，当数据包到达时，它正在观察电子，缺口将它们写入。</p>
+<p>发言人   01:00:54<br>Nick doesn’t really have significant internal buffering, although it has a little bit. It actually copies the packets directly into host memory, where they’ll be sitting there in host memory waiting for the driver to pick them up, sort of already copied. But that means that Nick has to know where in memory it should put each packet. So the way that E1 thousand Nick works is that the host software formats up what’s called rings DMA rings of packet pointers. So a DMA ring is just an array of pointers. To packet buffers. So the host driver, when it’s initialized in the card, will allocate however many you say 16, 1500 B packet buffers will create an array of 15 pointers or 16 pointers and make these pointers point to there. And then it’ll tell the nick in configuration time.<br>Nick并没有真正重要的内部缓冲，尽管它有一点点。它实际上将数据包直接复制到主机内存中，它们将在主机内存中等待驱动程序拾取它们，有点已经复制了。但这意味着Nick必须知道它应该把每个包放在内存的哪个位置。因此，E1千分之一的工作方式是主机软件格式化所谓的环DMA数据包指针的环。因此，DMA环只是一个指针数组。到数据包缓冲区。因此，当主机驱动程序在卡中初始化时，将分配多少个16，1500 B的数据包缓冲区，将创建一个由15个指针或16个指针组成的数组，并使这些指针指向那里。然后它会在配置时间内告诉您昵称。</p>
+<p>发言人   01:01:57<br>Look, here’s the ring. So this is called a DMA ring because after you’ve gone off the end, you start back at the beginning. The driver’s software will tell them to look, here’s a pointer, the address in my Ram of the ring, the DMA ring that you’re supposed to use to deposit incoming packet. So when a packet arrives, the nickel actually remember which ring entry is the next one. Well, it has a little point of view that allows it to remember the next entry that it should DNA a packet into.<br>看，这是戒指。这被称为DMA环，因为在你离开结尾之后，你会从头开始。驱动程序的软件会告诉他们看一下，这里有一个指针，我内存中的地址，你应该用来存放传入数据包的DMA环。因此，当一个包到达时，硬币实际上会记住下一个环是哪个环。嗯，它有一个小观点，允许它记住下一个条目，它应该将DNA数据包放入其中。</p>
+<p>发言人   01:02:34<br>When a packet arrives, then it will the point fetch this buffer pointer out. Of the host Ram, copy the packet bytes into this buffer and then advance its internal index here to point to the next ring slot, which we’ll use for the next pack. And there’s a similar, so this will be the r.x. ring to receive. There’s a similar ring that the driver sets up in which the driver puts packets that it wants the nick to send so that nick also has a pointer to the TX ring. And so you’ll learn your job in the lab is basically to write the driver’s software that handle these rings. Any questions about this arrangement?<br>当数据包到达时，它将点提取此缓冲区指针。在主机Ram中，将数据包字节复制到此缓冲区，然后在此处推进其内部索引以指向下一个环形插槽，我们将用于下一个包。还有一个类似的，所以这将是r.x。 要接收的戒指。有一个类似的环，驱动程序设置在其中，驱动程序放置想要nick发送的数据包，以便nick也有一个指向TX环的指针。因此，您将了解到您在实验室的工作基本上是编写处理这些环的驱动程序软件。对这个安排有什么问题吗？</p>
+<p>发言人   01:03:29<br>Yeah, how does the E1 thousand compare with production level niches that may be used in high performance environments? Well, when the year 1000 came out, it was the absolute best nick available, and it was the neck that was used in serious production environments. But that was however many years ago.<br>是的，e1000与可能在高性能环境中使用的生产级别的利基相比如何？嗯，当公元1000年出现时，它是绝对最好的缺口，并且它是在严肃的生产环境中使用的颈部。但那是多年前的事情了。</p>
+<p>发言人   01:03:51<br>Modern Knicks are quite a bit clever. The what hasn’t changed that much is this deep DMA ring structure. You still find that Nix, they use DMA to deliver packets and the way they find the place to deliver the packet is by these rings of buffer pointers.<br>现代的尼克斯相当聪明。但没有发生太大变化的是这种深层的DMA环形结构。你仍然会发现Nix，他们使用DMA来传送数据包，他们找到传送数据包的地方的方式是通过这些缓冲区指针环。</p>
+<p>发言人   01:04:11<br>The main, there’s a couple of things that are that modern Knicks are more clever about. One is that modern niches, you can set them up with many, many cues. The year 1000, I thinks this has a single receive queue, but you can tell a modern nick. Look, I want you to split my packets up into 32 different incoming cues. And here’s how to decide. For each packet, look at this field and use that to choose which ring to DMA the packet into. And there’s a whole bunch of clever ways that people use that capability. Like if you have multiple virtual machines, you’re Amazon and you’re running many guest virtual machines, you may use that capability to sort of direct each packet to the queue corresponding to the virtual machine that that packet should be read by.<br>最重要的是，有几件事情是现代尼克斯队更聪明的。其一是现代的利基市场，你可以用很多很多的线索来设置它们。在1000年，我认为这只有一个接收队列，但你可以说出一个现代的昵称。看，我想让你把我的数据包分成32个不同的传入提示。这是如何决定的。对于每个数据包，查看此字段并使用它来选择要将数据包放入哪个振铃。人们有很多聪明的方式来使用这种能力。就像你有多个虚拟机一样，如果你是亚马逊并且运行着许多来宾虚拟机，你可以使用该功能将每个数据包定向到与应该读取该数据包的虚拟机对应的队列中。</p>
+<p>发言人   01:05:01<br>And another way in which modern i.s. are more clever is that they’ll do some of the TCP processing on the Ni, like maybe typically check some calculations. The most thing. Anyway, yeah, modern Xs are like the even 1000, but more.<br>现代信息系统的另一种方式。 更聪明的是他们会在Ni上进行一些TCP处理，例如通常检查一些计算。最重要的事情。不管怎样，现代的Xs就像1000个一样，但更多。</p>
+<p>发言人   01:05:20<br>Thanks. Sorry, oh yeah. I just wanted to ask. So in our in the lab, there is no cue between the IP layer and the driver, right?<br>谢谢。抱歉，是的。我只是想问一下。因此，在我们的实验室中，IP层和驱动程序之间没有线索，对吗？</p>
+<p>发言人   01:05:35<br>Yeah, the lab network stack is stripped down to the absolute minimum simpler instruct than a real network stack, but this is worse in terms of performance. I never run it in real life. I’m sure. I mean, certainly we paid zero attention to performance when writing the lab network stack. So it would be surprising to the 10 b of performance. But mostly it’s not a question of performance, but limitations. It doesn’t do 95% of what you need a network stack to do, like handle multiple Nis or have TCP, right? Right? Okay, I see, thank you.<br>是的，实验室网络堆栈比实际网络堆栈简化为绝对最小指令，但这在性能方面更糟。我从来没有在现实生活中运行过它。我确定。我的意思是，在编写实验室网络堆栈时，我们当然没有关注性能。所以这10 b的表现会令人惊讶。但大多数情况下，这不是性能的问题，而是限制。它不能做你需要一个网络堆栈做的95% 的事情，比如处理多个Nis或者有TCP，对吧？对吧？好的，我明白了，谢谢。</p>
+<p>发言人   01:06:21<br>Sorry, so were there any like hardware changes to, like the overall system that we needed to enable like niches to have direct memory access? Like in the previous picture? Was everything mediated through the CPU or or could Nx also like reach at the memory directly in the picture I showed before? Now the neck doesn’t reach in the memory at all. I actually don’t know.<br>抱歉，那么是否有任何类似的硬件更改，例如我们需要使整个系统能够实现直接内存访问的利基？就像之前的图片一样？一切都是通过CPU介导的，还是Nx也可以直接在我之前展示的图片中到达内存？现在，脖子根本无法进入记忆。其实我也不知道。</p>
+<p>发言人   01:06:52<br>I mean, maybe the most important question is how virtual memory, whether and how virtual memory translates, works with a nick wants to use an address that refers to host memory. And I don’t actually know how that works. I don’t know how that works. I suspect there’s translation, you know, the Nick is really sitting on a bus that’s connected with through some fairly intelligent silicon to the DRAM system. And I believe in modern machines, you can set up translation tables with the Ni, could use virtual addresses or addresses that are translated by this hardware that sits between it and ran. And that could be very valuable for some situations.<br>我的意思是，也许最重要的问题是虚拟内存 (虚拟内存是否以及如何转换) 如何与想要使用指向主机内存的地址一起工作。我实际上不知道它是如何工作的。我不知道那是如何运作的。我怀疑有翻译，你知道，尼克真的坐在一辆公共汽车上，通过一些相当智能的硅与DRAM系统相连。我相信在现代机器中，您可以使用Ni设置翻译表，可以使用虚拟地址或由位于其之间的硬件翻译并运行的地址。这在某些情况下可能非常有价值。</p>
+<p>发言人   01:07:39<br>The other thing, I mean, another thing that I’m aware of is that if the nick is going to write some memory or read some memory, and the memory is cached on the CPU, you want the nick to read. If the software just wrote a packet buffer, but the CPU hasn’t, the CPU is merely cached the right? Because after all, most memory is right back. That means that the real latest version of that memory is sitting on the CPU cache, not in Ram. And in that case, we’d like the nick to be reading the CPU cache, not the Ran. If it does DMA, and certainly on Intel machines and probably on others, there’s some fairly elaborate machinery so that if the Nick reads the memory, but the latest copy of that memory in the CPU cache, it’s the CPU cache that will produce the data and not Ram. And that’s, yeah, that’s actually a facility you can some clever software uses to get high performance. That is to have the effect of having this happens for rights also that the Nick will essentially directly write cash lines in the cash where it’s the CPU can get at the data very quickly.<br>另一件事，我的意思是，我知道的另一件事是，如果nick要写入一些内存或读取一些内存，并且内存缓存在CPU上，您希望nick读取。如果软件刚刚写了一个包缓冲区，但CPU没有，CPU只是缓存了一下，对吗？因为毕竟大部分记忆都马上回来了。这意味着该内存的真正最新版本位于CPU缓存中，而不是在Ram中。在这种情况下，我们希望尼克正在读取CPU缓存，而不是奔跑。如果它做了DMA，当然在英特尔机器上，可能在其他机器上，有一些相当复杂的机器，所以如果尼克读取内存，但是CPU缓存中该内存的最新副本，则是CPU缓存生成数据而不是Ram。是的，这实际上是一种设施，你可以用一些聪明的软件来获得高性能。这也会产生这样的效果，即该缺口基本上会直接在CPU可以非常快速地获取数据的现金中写入现金行。</p>
+<p>发言人   01:08:58<br>It simple, but they’re real life. It’s pretty involved. Other questions about? About anything?<br>这很简单，但它们是真实的生活。这相当复杂。关于其他问题？关于任何事情？</p>
+<p>发言人   01:09:12<br>Okay I’d like to switch gears now to today’s paper. And I’m just going to like, because we’ve already talked about sort a lot of the background of this paper. I’m just going to go directly to the first graph in the paper. And essentially drive the discussion off of the papers graphs.<br>好的，我现在想换个话题，看今天的报纸。我只是会喜欢，因为我们已经讨论了这篇论文的很多背景。我将直接转到论文中的第一个图表。基本上把讨论从论文图表中剥离出来。</p>
+<p>发言人   01:09:37<br>And so what we’re looking at here is the performance graph or a router on the X axis. This is a router with two nicks job. This is a X coming in one nick, and it’s supposed to just send them out the other nick. The x axis is the arrival rate which packets arrive at the input nick. The Y axis is the output reader which packets are observed to leave the output. And the line we care about is is the. Filled circles, which goes up and then down.<br>所以我们在这里看到的是x轴上的性能图或路由器。这是一个有两个刻痕的路由器。这是一个X进来一个小点，它应该只是把它们送出另一个小点。X轴是数据包到达输入缺口的到达率。Y轴是输出读取器，观察到哪些数据包离开输出。我们关心的是这条线。充满了圆圈，向上然后向下。</p>
+<p>发言人   01:10:14<br>Even without knowing anything about what’s going on here, we can look at this graph and we can ask ourselves, gosh, why does it go up? Why does it go down? You know, what’s special about this point? That’s an inflection. What is it that governs how fast it goes up or how fast it goes down? So even with 0 knowledge, you kind of have a good clue about what questions to ask. So why does it go up?<br>即使不知道这里发生了什么，我们可以看看这张图，我们可以问自己，天哪，为什么它会上升？为什么它会下降？你知道，这一点有什么特别之处？这是一种变化。是什么决定了它上升的速度或下降的速度？因此，即使你的知识为0，你仍然对要问什么问题有一个很好的线索。那么为什么它会上升呢？</p>
+<p>发言人   01:10:41<br>Why do these dots go up? It’s not a very deep question. They go up. Sorry, go ahead. Oh, because when they’re like until it gets like saturated, you can process more input packages and produce more output packages?<br>为什么这些点会上升？这不是一个非常深刻的问题。他们上去了。抱歉，请继续。哦，因为当它们饱和时，您可以处理更多的输入包并生产更多的输出包？</p>
+<p>发言人   01:11:06<br>Absolutely, until something starts to go wrong. For every packet that comes in, the battery just forwards it out until things go wrong. If packets arrive at 2000 packets per second, well, it just copies every input packet to the output. And that means that the output rate is just equal to the input rate. So this is just y equals x you, because every input packet gets sent out. So it’s y equals x for a while. And so why does it stop going up?<br>绝对的，直到事情开始出错。对于每个进来的数据包，电池都会将其转发出去，直到出现问题。如果数据包以每秒2000个数据包的速度到达，它只是将每个输入数据包复制到输出。这意味着产出率正好等于输入率。所以这只是y等于x你，因为每个输入数据包都会被发送出去。所以一段时间内y等于x。那么为什么它停止上涨呢？</p>
+<p>发言人   01:11:39<br>Isn’t this the one thing they mentioned in the paper about? They’re being interrupted. That can’t be processed at the necessary rate. That’s the answer to the question, why does it go down? My question is, why does it stop going up? Like, what is it that could this line in a well bedes signed system, supposing that they hadn’t messed up the design, right? You and I would design a system that didn’t have problems, right? With rard our system, would the line just keep going up?<br>这不是他们在报纸上提到的唯一一件事吗？他们被打断了。无法以必要的速率处理的。这就是问题的答案，为什么它会下降？我的问题是，为什么它停止上涨？就像假设他们没有搞砸设计，那么这条线在一个良好的bedes签名系统中是什么呢？你我都会设计一个没有问题的系统，对吧？有了我们的系统，线路会继续上升吗？</p>
+<p>发言人   01:12:19<br>I guess not, because at some point the rate at which packets come will. If you can process packets fast enough, then at some point, the bottleneck will be the rate at which packets arrive. That’s right, the system we’re talking about has some has sort of limits.<br>我想不会，因为在某个时刻数据包到达的速率将会加快。如果您能够足够快地处理数据包，那么在某个时候，瓶颈将是数据包到达的速率。没错，我们正在谈论的这个系统有一定的局限性。</p>
+<p>发言人   01:12:44<br>It’s not the CPU is not infinitely fast. The CPU executes however many instructions per second and no more. So each of these packets has to be processed. The IP software has to look at the header and check the checks and look up the destination addresses and the table, whatever it takes, hundreds of thousands of CPU cycles per packet. And so we can never, never expect these lines to go up indefinitely. They must stop somewhere and we can sort of tell what we can make some guesses on this system.<br>这并不是说CPU没有无限快。CPU每秒执行多少指令，不再执行了。所以每个数据包都必须被处理。IP软件必须查看标头并检查并查找目标地址和表，无论需要什么，每个数据包需要数十万个CPU周期。因此，我们永远不能、永远不能期望这些线路无限上升。他们必须在某个地方停下来，我们可以告诉我们可以在这个系统上做一些猜测。</p>
+<p>发言人   01:13:15<br>It goes up to 5000 and no more. And what that basically suggests to us is that it takes about 200 microseconds on this computer to process each packet. That’s what this point, the fact that the inflection point is here means, suggests that the total cost of processing a packet is around 200 microseconds of CPU time. Yeah, that it’s a guess, but it’s likely to be close to correct. And so there’s just no way we could get, you know, maybe we could make the software a little more efficient. Maybe we could reduce that 150 microseconds per packet or something, and so maybe we could move the inflection point up a bit.<br>它上升到5000，没有更多了。这基本上告诉我们，在这台计算机上处理每个数据包大约需要200微秒。这就是这一点，拐点在这里的事实意味着，处理一个数据包的总成本大约是200微秒的CPU时间。是的，这是猜测，但很可能接近正确。所以我们不可能得到，你知道，也许我们可以让软件更高效一些。也许我们可以减少每个数据包的150微秒，所以也许我们可以将拐点提高一点。</p>
+<p>发言人   01:13:51<br>But we’re certainly faced with some point at which, well, that’s just how many packets the system can process. Now? That’s not necessarily what’s going on here. It happens to be what’s going on here, but it’s not written in stone. In fact, there’s other bottlenecks that could be the limit other than CPU time, which are worth considering.<br>但我们肯定面临着一个问题，那就是系统可以处理多少数据包。现在？这并不一定是这里发生的事情。这恰好是这里发生的事情，但它并不是一成不变的。事实上，除了CPU时间之外，还有其他可能成为限制的瓶颈，这是值得考虑的。</p>
+<p>发言人   01:14:17<br>The most obvious is the speed of the network. The network they were using ran at only 10 Mb per second. That’s just how fast the low level networking hardware sent bits. And so it can never transmit more than 10000, 10 million b per second. And so that may also constitute a limit. And so we’re thinking about whether maybe that’s actually what’s determining this 5000.<br>最明显的是网络的速度。他们使用的网络速度只有每秒10兆字节。这就是低级网络硬件发送比特的速度。因此它永远无法每秒传输超过10000，一千万b。因此，这也可能构成限制。因此，我们正在考虑是否这实际上是决定这5000的原因。</p>
+<p>发言人   01:14:45<br>I don’t paper doesn’t quite say enough to know whether it is, whether it’s CPU or the N is the limiting factor here. But the fact is, with their 10 Mb network, if you send small packets it the 10 Mb translates into something like 10 or 15000 packets per second. So that’s the limit that the networking cable puts on the input rate. And so this is well under the 10 or 15000 packets per second that the network is capable of. So almost certainly the limit has to do with CPU or memory or something and not the not the network itself.<br>我不清楚纸张是否足够，无论是CPU还是N是这里的限制因素。但事实是，在他们10 Mb的网络中，如果你发送小数据包，10 Mb会转化为每秒10或15000个数据包。这就是网络电缆对输入速率的限制。因此，这远远低于网络每秒10或15000个数据包的能力。所以几乎可以肯定，限制与CPU、内存或其他方面有关，而不是与网络本身有关。</p>
+<p>发言人   01:15:30<br>What we love to see in a well-designed router is that it can actually you if it takes 200 microseconds to forward a packet, to process a packet, what we’d like to see is that the thing, the router can actually forward 5000 packets per second no matter what, even if the load is high. So what we like to set C is this line here where the output rate matches the input rate until you get up to the capacity of the system, you know, 5000 packs per second and then it just continues to forward 5000 packets per second and presumably drops discards the rest. So this is what we’d to design. But what actually happened is much worse than that. As you increase the rate beyond 5000, the number of packets that it manages, the forward goes down towards 0. So why does this line go down? Like somebody mentioned this before.<br>我们喜欢在设计良好的路由器上看到的是，如果转发一个数据包需要200微秒来处理一个数据包，我们希望看到的是，路由器实际上可以每秒转发5000个数据包，无论如何。即使负载很高。因此，我们想要设置的C是这里的这条线，其中输出率与输入率匹配，直到达到系统的容量，你知道，每秒5000个包，然后它继续每秒转发5000个包，并且可能会丢弃其余的包。这就是我们要设计的。但实际发生的事情比这更糟糕。当您将速率提高到超过5000 (它管理的数据包数量) 时，转发将下降到0。那么这条线为什么会下降呢？就像之前有人提到过的那样。</p>
+<p>发言人   01:16:35<br>Well, the reason that the authors figured out is that as you increase the input rate, each of these input packets generates an interrupt. And the interrupts take time actually on their system. The interrupts are quite expensive because they involve copying a packet off of the network interface card and in domain memory, which took a long time because the CPU was doing so each. So we know if packets arriving at 10000 per second, we certainly can’t forward at 10000. And that means the best we can hope for is to forward 5000 and simply discard the other 5000. But in fact, the extra 5000 packets each generate a very expensive interrupt So for each additional packet, over 5000 per second, we’re generating more and more expensive that interrupts, which have priority, like interrupts or whatever you’re doing, it stops and the machine takes the interrupt. Because the machine is essentially giving priority these interrupts. That means every additional packet per second is taking CPU time away from the forwarding code until finally 100% of the CPU time is used up in the input interrupt routine, and no CPU time is used in the thread that forwards packets.<br>好的，作者发现的原因是，随着输入速率的增加，每个输入数据包都会生成一个中断。而中断实际上在他们的系统上需要一些时间。中断的成本相当高，因为它们涉及从网络接口卡和域内存中复制数据包，这需要很长时间，因为CPU每次都在这样做。所以我们知道，如果数据包以每秒10000的速度到达，我们当然不能以每秒10000的速度转发。这意味着我们最好的希望是转发5000，然后简单地丢弃另外的5000。但事实上，额外的5000个数据包每个都会产生一个非常昂贵的中断，因此对于每增加一个数据包，每秒超过5000个数据包，我们正在生成越来越多昂贵的中断，这些中断优先，像中断或任何你正在做的事情，它会停止，然后机器接受中断。因为机器基本上优先考虑这些中断。这意味着每秒每个额外的数据包都会占用转发代码的CPU时间，直到最终100% 的CPU时间被用于输入中断例程，而转发数据包的线程中没有CPU时间。</p>
+<p>发言人   01:17:56<br>Is everyone happy with this explanation? And this going down. Is called interrupt live lock, the fact that this line goes down instead of saying steering flags is what people can mean by interrupt livelock. And it’s actually a phenomenon that occurs in many systems. I mean, the sort of thing that’s driving it is that there’s two separate tasks, the input interrupt task and the forwarding task. And because of a scheduling problem. Essentially, priority is given to the input task, which can starve the packet processing task in pretty much any system that has multiple independent tasks or sort of sequence of independent tasks that need to be done to each input, and in which the input rate can’t necessarily be controlled.<br>大家对这个解释满意吗？这个正在下降。被称为中断活锁，事实上这条线路下降而不是说转向标志，这就是人们所说的中断活锁的意思。这实际上是许多系统中发生的一种现象。我的意思是，驱动它的事情是有两个独立的任务，输入中断任务和转发任务。因为调度问题。本质上，优先级被赋予了输入任务，这可能会在几乎任何具有多个独立任务或需要对每个输入完成的独立任务序列的系统中使数据包处理任务受到限制，并且输入速率不一定能被控制。</p>
+<p>发言人   01:18:56<br>Many systems like that will exhibit livelock, push them too hard and you can get live lock due to many resources, not just CPU. But it could be that Nick the Dmas uses up Ram cycles to do the Dmas, and if the Nick is using the Ram, the CPU can’t use the Ram. So another way to get Live lock, even if you have lots of CPU time, you know, in some other design, you might get livelock because the nick is using up.<br>许多这样的系统会显示活锁，推动它们太难，你可以由于许多资源而获得活锁，而不仅仅是CPU。但可能是Nick Dmas使用了内存周期来执行Dmas，如果Nick正在使用内存，则CPU无法使用内存。所以另一种获得活锁的方法，即使你有很多CPU时间，你知道，在其他设计中，你可能会得到活锁，因为缺口正在用完。</p>
+<p>发言人   01:19:29<br>Ram resources. Ram performance resources. So the CPU is less able to use the Ram. Anyway, this line going down is is what they mean by live block.<br>Ram资源。内存性能资源。因此，CPU不太能够使用Ram。无论如何，这条线下降就是他们所说的实时块的意思。</p>
+<p>发言人   01:19:40<br>You may ask what happens to the excess packets? And if you recall, the structure of their software was that they have a Ni that basically feeds the receive interrupt. The receive interrupt software copies each packet into a queue. And then there’s some sort of network thread. That pulls packets off the queue. The exact place where packets are lost are right here.<br>你可能会问，多余的数据包会发生什么？如果你还记得的话，他们软件的结构是有一个Ni，基本上是为接收中断提供信息。接收中断软件将每个数据包复制到队列中。然后还有某种网络线程。将数据包从队列中提取出来。数据包丢失的确切位置就在这里。</p>
+<p>发言人   01:20:11<br>What’s going to happen is that the interrupt routine, you know, once we get down here with serious Live Lock, the interrupt routine is going to fill this Q, there’s going to be some maximum Q length here, at least all of Ram, but probably much less. And the interrupt routine is going to pull a packet off the neck and see that this cue is already as long as it’s allowed to be. Interrupt routine will discard the packet, but then, of course, immediately after that, there’ll be another interrupt.<br>将要发生的是，中断例程，你知道，一旦我们开始进行严重的活动锁定，中断例程将填满这个Q，这里将有一些最大的Q长度，至少是所有的Ram，但可能更少。中断例程将从颈部拉出一个数据包，并看到这个提示已经被允许的时间长度。中断例程将丢弃数据包，但当然，在此之后立即会有另一个中断。</p>
+<p>发言人   01:20:42<br>Name again. It’s for the next packet because the network thread is always interrupted and never allowed to run.<br>再次命名。这是为了下一个数据包，因为网络线程总是被中断并且永远不允许运行。</p>
+<p>发言人   01:20:52<br>A question about this diagram. This is the most important diagram in the paper. All right, well, we’ve basically run out of time, so I’ll try to compress the answer to this problem to a minute. The authors proposed a solution. The most immediate good news about the solution is that this is the performance of their solution. That is, the input rate goes up because the 5000, and then it’s flat at 5000 regardless of input rate. So this is sort of a perfect non live lock performance line.<br>关于这个图表的问题。这是论文中最重要的图表。好的，我们基本上没有时间了，所以我会试着把这个问题的答案压缩到一分钟。作者提出了一个解决方案。这个解决方案最直接的好消息是，这是他们解决方案的性能。也就是说，输入速率因为5000而上升，然后无论输入速率如何，它都在5000保持平稳。所以这是一种完美的非活锁性能系列。</p>
+<p>发言人   01:21:35<br>Of course, it’s going to be flat because we can only process 5000 packets per second due to the speed of the CPU. And the way they get this, they still have this network thread. And they still have an interrupt routine. And so the very first time that Nick interrupts, it’ll run the interrupt routine. But the interrupt routine does not copy Pcos sohai it wakes up the network thread and then and leaves interrupts on the nick disabled. So we’ll get no more interrupts, wake up to the networking thread, and then the interrupt routine will return. So now interrupts in the SNCC are turned off.<br>当然，它将是平坦的，因为由于CPU的速度，我们每秒只能处理5000个数据包。他们得到这个的方式，他们仍然有这个网络线。他们仍然有一个中断例程。因此，Nick第一次中断时，它将运行中断例程。但是中断例程不复制Pcos sohai，它唤醒网络线程，然后将中断保持在禁用状态。因此，我们将不再获得中断，唤醒网络线程，然后中断例程将返回。所以现在SNCC中的中断被关闭了。</p>
+<p>发言人   01:22:18<br>The network spread basically has a loop. That it’ll check the nick, you know, pull a few packets? From the neck? Five, I think, is what they ended up using. And then process those packets. And then if there were none, if this, it’ll check the so it’s this networking thread now that reads packets off the nick of the interrupt routine. If there are not no packets waiting, it enables interrupts.<br>网络传播基本上是一个循环。它会检查缺口，你知道的，拉几包？从脖子上？我认为，五就是他们最终使用的。然后处理这些数据包。如果没有，那么它将检查，现在是这个网络线从中断例程的缺口读取数据包。如果没有等待的数据包，则启用中断。</p>
+<p>发言人   01:23:00<br>And then goes to sleep. Because it’s enabled interrupts, the next time my packet arrives, the interrupt routine will wake up this thread and I’ll come out of sleep and go back to the top of the loop. And so this just, this is the structure of their solution. And one way to view this is that they turn an interrupt scheme into a polling scheme that is under high load. They just sit in this loop and they read a packet, process it, read a packet, process it with interrupts turned off. Since those interrupts are turned off, they never get this effect where the interrupts steel time from the main thread, whereas under low load the enable interrupts and maybe a while until the packets arrive, but they’ll be woken up by the interrupt routine immediately if a packet does arrive. And that’s all I have to say, any questions?<br>然后就去睡觉了。因为它启用了中断，下次我的数据包到达时，中断例程将唤醒此线程，我将从睡眠状态中恢复，回到循环的顶部。这就是他们解决方案的结构。一种看待这种情况的方法是，它们将中断方案转换为高负载下的轮询方案。他们只是坐在这个循环中，读取数据包，处理它，读取数据包，在中断关闭的情况下处理它。由于这些中断被关闭，它们永远不会得到这种效果，即中断从主线程开始的钢铁时间，而在低负载下，允许中断可能会持续一段时间，直到数据包到达，但如果数据包到达，它们将立即被中断例程唤醒。这就是我要说的，有问题吗？</p>
+<p>发言人   01:23:56<br>I have a question, is that loop looking at all of the devices or only the one that generated the internet? If there’s multiple nicks. So there’s a good question. If there’s multiple niches, the loop, I don’t actually know how the loop works. A very reasonable design is for this network thread to keep track of for every Ni, whether it’s in interrupting mode or polling mode. And then it will only actually.<br>我有一个问题，那个循环是在查看所有设备还是只查看生成互联网的设备？如果有多个缺口。所以有一个好问题。如果有多个利基市场，循环，我实际上不知道循环是如何工作的。一个非常合理的设计是让这个网络线程跟踪每一个Ni，无论它处于中断模式还是轮询模式。然后它只会实际发生。</p>
+<p>发言人   01:24:39<br>Because the interrupt routines no longer read packets from the nick, that means the loop probably checks every interface. At this point. Every pride checks every nick at this point and pulls up for every nick if it has a few pack pack. If that nick has packets waiting, the loop will pull a few out of the neck and process them. And then if none of the nicks had anything, if it checked all the nicks, none of them had any packets waiting. The loophole and AB interrupts on all the nicks and sleep and any nick that interrupts will wake it up. That’s my guess.<br>因为中断例程不再从缺口读取数据包，这意味着循环可能会检查每个接口。在这一点上。每一个骄傲此时都会检查每一个缺口，如果有几个背包的话，就会为每一个缺口而停下来。如果那个缺口有数据包等待，环路将从颈部拉出一些并处理它们。然后，如果所有的刻痕都没有任何东西，如果它检查了所有的刻痕，它们都没有任何等待的数据包。漏洞和AB会中断所有的缺口和睡眠，任何中断的缺口都会将其唤醒。这是我的猜测。</p>
+<p>发言人   01:25:21<br>I had a quick question then how the so while the loop is running, how do packets actually get into the queues to be pulled? I felt like there would only be one at a time initially. The initially the packets are queued inside the nick in its own private memory. Then this loop, you know, when it goes back to the top of the loop, it’ll look at each nick and actually talk to the Nick hardware and ask it, do you have any input packets waiting in your memory? And if it does, then this loop will allocate a packet buffer in Ram and copy the bytes of the packet out of the nick, the packet buffer, and then process that packet buff. So you can copy more than one packet.<br>我有一个简短的问题，那么在循环运行的过程中，数据包实际上如何进入队列进行拉取？我觉得最初一次只会有一个。最初，数据包在其自己的私有内存中排队。然后这个循环，你知道的，当它回到循环的顶部时，它会查看每个缺口并与缺口硬件交谈，并询问它，你的内存中是否有任何输入数据包等待？如果是，那么这个循环将在Ram中分配一个数据包缓冲区，并将数据包的字节从nick (数据包缓冲区) 中复制出来，然后处理该数据包buff。这样您就可以复制多个数据包。</p>
+<p>发言人   01:26:11<br>Yeah, I think they do it in groups of five in order to even if there’s 100 packets waiting here, it would just process the next 5 in order to be fair among the input nicks and to avoid starving the output. But this requires increasing the memory capacity of the nick, right? Possibly well.<br>是的，我认为他们以五个人为一组这样做，以便即使有100个数据包在这里等待，它也只处理接下来的5个数据包，以便在输入缺口中公平并避免输出不足。但这需要增加缺口的记忆容量，对吧？也许很好。</p>
+<p>发言人   01:26:33<br>I don’t know, I don’t know how much the nick might have had a reasonable amount of. The thing is, this interrupt, you know, this livelock phenomenon like below this point, we’re probably interrupting. And if a packet arrives, the network thread will almost immediately be woken up and pull the packet out. We’re over here in this regime where too many packets are arriving and this loop is pulling instead of interrupting, packets are going to be lost. We just know that because the difference, you know, this difference between the input rate and the output rate, this is all dropped packets. Yeah. Adding, I don’t think adding because these packets are going to be dropped anyway.<br>我不知道，我不知道尼克可能有多少合理的数量。问题是，这种中断，你知道，这种活锁现象就像在这一点下面，我们可能在打断。如果数据包到达，网络线程几乎会立即被唤醒并取出数据包。我们在这里，有太多数据包到达，这个循环正在拉动而不是中断，数据包将会丢失。我们只是知道，因为输入速率和输出速率之间的差异，都是丢弃的数据包。是的。添加，我不认为添加是因为这些数据包无论如何都会被丢弃。</p>
+<p>发言人   01:27:29<br>Adding buffering to the neck doesn’t probably doesn’t help very much. I don’t, I think it’s a nick. It’s not clear that Nick needs more than a small amount of buffering. Yeah, that makes sense. Yeah, you only need as much as it would need to take to get saturated. You know, I think in their design, they would pull five packets, that their quota was five packets, and so the Knick certainly needs 5 packets of buffering for that to make sense. But it probably, anyway, it’s not clear that more than that would be very beneficial.<br>给颈部添加缓冲可能没有太大帮助。我不知道，我认为这是一个缺口。目前还不清楚Nick是否需要超过少量的缓冲。是的，这很感知。是的，你只需要饱和所需的量。你知道，我认为在他们的设计中，他们会提取五个数据包，他们的配额是五个数据包，因此Knick肯定需要5个数据包的缓冲来制造感知。但可能，无论如何，目前还不清楚超过这一点是否会非常有益。</p>
+<p>发言人   01:28:02<br>Really, the purpose of buffering is to absorb transient As. A whole the packets long enough that the software can get along to reading that. But we’re not talking about transient anything in this situation. We’re talking about persistent overload. So there’s so that means there’s not really much function for a lot of buffering. Yeah, makes sense. I think my question is related to that.<br>实际上，缓冲的目的是吸收瞬态。整个数据包足够长，软件可以一起阅读它。但在这种情况下，我们不是在谈论瞬态。我们谈论的是持续过载。所以，这意味着没有太多的缓冲功能。是的，这很感知。我想我的问题与此有关。</p>
+<p>发言人   01:28:31<br>So if the difference between in, of, on, and in terms of here is that it’s going to be the same, but like it’s still going to be putting things on the queue if it’s able to, but it will just not issue an interrupt. But if there is no place on the queue, then it will just drop The interrupt routine in this new scheme never looks at packets.<br>因此，如果in、of、on和这里的区别是它将是相同的，但是如果它能够的话，它仍然会把东西放在队列中，但它不会发出中断。但是如果队列中没有位置，那么在这个新方案中它将只丢弃中断例程，从不查看数据包。</p>
+<p>发言人   01:28:58<br>You said that you turn off the interrupts for the neck, right? Yeah, so this what happens in the interrupt handler is it disables. Interrupts on this nick and then wakes up the network thread. That’s all it does. Returns, right? I guess my question is, when the interrupts are disabled, can the next still put packets on its own buffer? Yes, the nick is selfish contined, so it has internal buffering whether or not regardless of whether it interrupts are enabled or disabled only All that happens when a packet arrives is that the nicks?<br>你说你关掉了脖子的中断，对吗？是的，所以在中断处理程序中发生的事情是禁用它。中断这个缺口，然后唤醒网络线程。这就是它所做的一切。退货对吗？我猜我的问题是，当中断被禁用时，下一个仍然可以将数据包放在自己的缓冲区中吗？是的，缺口是自私的，所以它有内部缓冲，无论是否启用或禁用中断，只有当数据包到达时才会发生的是缺口？</p>
+<p>发言人   01:29:41<br>Appends the packet to it? It’s a cue of packets in its own internal memory. That’s all that ever happens when a packet arrives. So it never the nick in this paper’s nick. I mean, different nick designs are very different, but for this paper, they’re Nick never did. DMA never reached out and touched host memory ever. Okay, just kept an internal cue in its own memory and the host could read packets out if it wanted to.<br>将数据包附加到它上面？这是一个提示信息包在它自己的内部存储器中。这就是数据包到达时所发生的一切。所以它从来不是这篇论文中的尼克。我的意思是，不同的尼克设计非常不同，但对于这篇论文来说，尼克从未做过。DMA从未伸出手并接触过主机内存。好的，只需在自己的内存中保留一个内部提示，主机可以根据需要读取数据包。</p>
+<p>发言人   01:30:07<br>Okay, I see, and if there’s no memory, then drop. Okay, so in this design, if gets these excess packet, the place they’re dropped is inside the nick, what’ll happen is a packet, if we’re in an overload situation, then the next Q will be full always or almost always. And so when a packet arrives and Xq will typically be full and it’ll drop, the nick will drop the packet without wasting any CPU time on the main machine. That, that the fact that it can drop without burning up CPU time here is one way of explaining how they avoid Live lock, right? Right, okay, thank you so much.<br>好的，我明白了，如果没有记忆，就下降。好的，在这种设计中，如果得到这些多余的数据包，它们被丢弃的地方就在缺口内，会发生的是一个数据包，如果我们处于过载情况，那么下一个Q将总是或几乎总是满的。因此，当数据包到达并且Xq通常已满并且它会下降时，缺口将丢弃数据包，而不会在主机上浪费任何CPU时间。那个，它可以在不消耗CPU时间的情况下下降的事实是解释它们如何避免活锁的一种方法，对吗？好的，非常感谢。</p>
+<p>发言人   01:30:55<br>I had a quick question. Will there ever be a scenario in which the CPU loop will pull a few packets, but the like internal software queues are all like full? Oh sure, yeah.<br>我有一个快速的问题。会不会出现这样的情况: CPU环路会拉取一些数据包，但类似的内部软件队列都已满？当然，是的。</p>
+<p>发言人   01:31:10<br>There’s some other bottleneck. So for example, suppose these incoming packets, some of them need to be delivered to some application on a socket. If that application isn’t reading packets fast enough, then the socket buffer leading that application should be reading will get full, and then packets may be dropped in the networking thread. And that can also lead to live lock. Because now, because we have the same you, the reason livelock comes up is that we expended resources processing a packet that was later dropped. So it was wasted effort. If the application is not reading, it’s well, one way we can get livelock is as the load goes up, maybe we end up spending 100 percent of our time in the networking thread, leaving 0% of the time for whatever application is supposed to be reading the packets, and then we’ll again get live lock, but it won’t be interrupt livelock it will be network processing livelock or something.<br>还有其他瓶颈。例如，假设这些传入的数据包，其中一些需要通过套接字传送到某个应用程序。如果该应用程序读取数据包的速度不够快，则引导该应用程序应该读取的套接字缓冲区将被满，然后数据包可能会被丢弃在网络线程中。这也可能导致活锁。因为现在，因为我们有同样的你，所以livelock出现的原因是我们花费了资源处理一个后来被丢弃的数据包。所以这是白费力气。如果应用程序没有读取数据包，那么我们可以获得livelock的一种方法是随着负载的增加，也许我们最终会将100% 的时间花在网络线程中，将0% 的时间留给应该读取数据包的任何应用程序。然后我们将再次获得活锁，但它不会被中断活锁，它将是网络处理活锁或其他东西。</p>
+<p>发言人   01:32:19<br>The paper actually had a story for that. Somewhere in section 6, they talk about the network. If packets are being delivered to a local application, the network thread would look at the socket queue for that application, and if it was getting long, it would turn off. It would turn off interrupts and stop pulling packets off the network interface until the queue got shorter. And so that means the network thread would stop running and give the application a chance to run and process the packets. So you can get live lock like situations at any stage if you’re not careful in that kind of multi stage processing scheme. Okay, if that makes sense, thank you. Thank you, thank you, welcome.<br>报纸实际上有一个关于这个的故事。在第六节的某个地方，他们谈论网络。如果数据包被传递到本地应用程序，网络线程将查看该应用程序的套接字队列，如果队列很长，它将关闭。它将关闭中断并停止从网络接口提取数据包，直到队列变短。这意味着网络线程将停止运行，并为应用程序提供运行和处理数据包的机会。所以如果你在那种多阶段处理方案中不小心，你可以在任何阶段得到像活锁一样的情况。好的，如果感知的话，谢谢。谢谢，谢谢，欢迎。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 020-Networking</div>
+      <div>http://example.com/2025/10/18/6S081-020/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-021/" title="操作系统工程 021-Meltdown">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 021-Meltdown</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-019/" title="操作系统工程 019-Kernels and High-Level-Languages">
+                        <span class="hidden-mobile">操作系统工程 019-Kernels and High-Level-Languages</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

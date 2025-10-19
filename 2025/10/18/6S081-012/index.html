@@ -1,0 +1,758 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:05All right I’d like to get started. Can anyone hear me? Ye clear? All right, so today my plan is for first I want to spend a few minutes resembles in some points from the lecture last week o">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 012-Sleep Wakeup">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-012/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:05All right I’d like to get started. Can anyone hear me? Ye clear? All right, so today my plan is for first I want to spend a few minutes resembles in some points from the lecture last week o">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:12.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.142Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 012-Sleep Wakeup - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 012-Sleep Wakeup"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          20k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          169 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 012-Sleep Wakeup</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:05<br>All right I’d like to get started. Can anyone hear me? Ye clear? All right, so today my plan is for first I want to spend a few minutes resembles in some points from the lecture last week on thread switching. It turned out to be important points and then I wanted to spend most of the lecture talking about something called coordination, which is the larger term for XV 6 is sleep and wake up mechanism.<br>好的，我想开始了。有人能听到我说话吗？你们清楚了吗？好的，今天我的计划是，首先我想花几分钟时间类似于上周讲座上的线程切换。结果证明这很重要，然后我想在讲座的大部分时间里谈论一种叫做协调的东西，这是XV 6的更广泛的术语，即睡眠和唤醒机制。</p>
+<p>发言人   00:33<br>And particularly I’m going to talk about the lost wake up problem. All right, so one one point I want to just mention again is that. Is the fact that XV 6, whenever anything calls, switch to switch from 1 thread to another, usually from kernel thread to the scheduler thread?<br>我特别要谈论的是迷失的觉醒问题。好的，所以我想再次提到的一点是。事实是，每当有任何调用时，XV 6都会从一个线程切换到另一个线程，通常是从内核线程切换到调度器线程？</p>
+<p>发言人   00:58<br>It’s always preceded by an acquire of this process is lock. So a process acquires the Slo calls switch, which always switches into the scheduler, and it’s the scheduler that releases the lock.<br>它总是在获取这个过程之前被锁定。因此，进程获取Slo调用开关，该开关始终切换到调度器，并且是调度器释放锁定。</p>
+<p>发言人   01:16<br>And in fact, almost always the sequence looks more like this, a process He wants to go to sleep for some reason, yielding the CPU or waiting for something. It acquires a lock on itself. It sets its state. There’s a number of different states. What we see, what we saw last week was set at state to Runnable. Instead of running and then call Switch or Scad switch itself, call switch. And that, you know, this switch basically switches threads over into the scheduler thread, which so previous call to switch over in the schedule of third returns and then the. Scheduler thread calls release on.<br>实际上，几乎总是序列看起来更像这样，一个他想因为某种原因进入睡眠状态的过程，产生CPU或等待某些东西。它自我锁定。它设置其状态。有许多不同的州。我们所看到的，上周看到的设定为可以运行的状态。不是运行然后呼叫开关或呼叫开关本身，而是呼叫开关。而且，你知道，这个开关基本上是将线程切换到调度器线程，因此先前的调用会在第三次返回时切换到调度器线程。调度器线程调用释放。</p>
+<p>发言人   02:09<br>A lock of the process that’s just yielded the CPU. The reason for this, just to repeat, is that the acquisition of this lock on the process prevents the scheduler on a different core from from looking right at this point in time and seeing that, oh, this thread is runnable and trying to run it because every other core, maybe running a scheduler loop, which is continually looping over the process table looking for runnable threads. So any one of them may see that this thread’s runable if we hadn’t acquired the process lock. So the fact that we acquire the process lock means that the other schedulers before they even look at a process of state must acquire its lock. So we know after this acquisition know where the thread’s going to look at the lock. We can’t give up the lock here, though. We can’t give up the lock before calling switch. That is, this thread acquires a lock, but it can’t give it up because if we did, then right after we gave it up, some other core scheduler would probably start running this process, even though the thread is currently running on this core and having 2 cores run the same thread using the same stack is would cause a pretty instant crash, and therefore the process requires the lock and doesn’t release it and call switch and a different thread.<br>刚刚产生CPU的进程的锁。重复一遍，这样做的原因是，获取进程上的这个锁可以防止不同核心上的调度程序在这个时间点看起来正确，并看到这个线程是可运行的，并且尝试运行它，因为每个其他核心，可能运行一个调度器循环，该循环不断地在进程表上循环寻找可运行的线程。所以如果我们没有获得进程锁，他们中的任何一个都可能看到这个线程可以运行。因此，我们获得进程锁的事实意味着其他调度程序在查看状态进程之前必须获取它的锁。所以我们知道在这次收购之后，线程将在哪里查看锁。不过，我们不能放弃这里的锁。在呼叫交换机之前，我们不能放弃锁。也就是说，这个线程获得了一个锁，但它无法放弃它，因为如果我们这样做了，那么在我们放弃它之后，其他一些核心调度程序可能会开始运行这个进程，即使线程当前正在此核心上运行，并且有2个核心使用同一堆栈运行同一线程，也会导致相当即时的崩溃，因此该进程需要锁定，但不会释放锁定并调用开关和不同的线程。</p>
+<p>发言人   03:37<br>Namely, the scheduler thread actually releases the lock at a point after this thread has completely stopped using its own stack. So at this point, it’s okay for another course scheduler to start running this thread because the thread is now no longer running and has given up. Given up the processor.<br>即，调度程序线程在使用自己的堆栈完全停止后，实际上会在某一点释放锁。所以在这一点上，另一个课程调度程序开始运行这个线程是可以的，因为这个线程现在不再运行并且已经放弃了。放弃处理器。</p>
+<p>发言人   03:58<br>Okay, so that’s an important point, and it’ll come up in a few minutes. It’s one of the many constraints on the design of the sleep wake up coordination scheme.<br>好的，这是一个重要的观点，几分钟后就会出来。这是睡眠唤醒协调方案设计的众多限制之一。</p>
+<p>发言人   04:09<br>Any questions about this holding of the PR lock across switch? Yeah, if yes, when we have multiple cores, the only reason they’re able to have the same view of the lock is because there’s a single shared physical memory system, right? That is correct. So what is there like implementations where there’s weird file systems that can’t guarantee this ethnicity? So we can lock?<br>对在交换机上保持PR锁有任何问题吗？是的，如果是的话，当我们有多个核心时，它们能够拥有相同的锁视图的唯一原因是因为有一个共享的物理内存系统，对吗？这是正确的。那么，有什么实现方式存在无法保证这种种族的奇怪文件系统呢？所以我们可以锁定？</p>
+<p>发言人   04:43<br>If you buy two computers, then they don’t share memory. So that’s one way to do. If you buy two separate computers, then they won’t share memory. And we wouldn’t have any of these problems. It’s just that the way processor chips look these days, there’s always multiple cores on a single processor chip. And so the hardware just is built to have multiple cores sharing the same memory system. Thanks. Okay, so that’s one point.<br>如果你买了两台电脑，那么它们不会共享内存。所以这是一种方法。如果您购买两台独立的计算机，那么它们将不会共享内存。我们就不会有这些问题。只是现在处理器芯片的外观看起来总是在一个处理器芯片上有多个内核。因此，硬件只是为了让多个内核共享同一存储系统而构建。谢谢。好的，这是一个观点。</p>
+<p>发言人   05:22<br>Another point, which I don’t think I’ve mentioned yet has to do with the fact that in XV 6, a process is not allowed to hold any other lock when it calls switch. A process is required to hold P arrow lock when it calls switch, but is forbidden to hold any other lock when it calls switch. So this is another important constraint on the design of many things, including how sleep is going to work. Let me lay out the reasoning for this. So it’s no other locks.<br>另一个我认为我还没有提到的点是，在XV 6中，进程在调用switch时不允许持有任何其他锁。当进程调用switch时，需要保持P方向锁，但禁止在调用switch时保持任何其他锁。所以这是许多事情设计的另一个重要限制，包括睡眠如何运作。让我解释一下原因。所以没有其他锁。</p>
+<p>发言人   06:03<br>When you call switch. A scenario sort of illustrating why this rule has to be enforced. And this is a rule that, you know, if you’re extending, you know, if you’re a programmer developing the XV 6 kernel, you have to follow this rule along with many other rules. So the justification for this rule, supposing we have process one or, you know, kernel thread for process 1 and it acquires some lock, not not it’s lock, but just some lock. Maybe it’s using the disk or using the Ur to console, and you require some lock. And supposing it did, then give up the CPU by calling switch or yield or skid or something while still holding this lock. So now P1 holds a lock. This lock’s held, but it’s not running.<br>当你呼叫开关时。一种能够说明为什么必须执行这条规则的场景。这是一条规则，你知道，如果你正在扩展，如果你是一个开发XV 6内核的程序员，你必须遵循这条规则以及许多其他规则。所以这个规则的理由是，假设我们有一个进程或者，你知道，进程1的内核线程，它获取了一些锁，不是它的锁，而是一些锁。可能它正在使用磁盘或使用控制台，并且您需要一些锁定。并假设它是这样做的，然后通过调用switch或yield或skid或其他方式放弃CPU，同时仍持有此锁。所以现在P1拥有一个锁。这个锁被持有，但它没有运行。</p>
+<p>发言人   06:56<br>And imagine also for a moment that we’re on a machine with just a single core. So there’s only one core, the process one called switch, which transfers the scheduler. The scheduler sees a hot process, 2 is kernel thread is waiting to run, and so the scheduler switches to process, starts running process to two, switches to process 2, and smoothing process to for whatever reason. Maybe it also wants to use the disk or use the UART or something.<br>再想象一下，我们在一台只有一个核心的机器上。所以只有一个核心，这个进程被称为交换机，它传输调度器。调度器看到一个热进程，2是内核线程正在等待运行，因此调度器切换到进程，开始运行进程到2，切换到进程2，并将进程平滑到任何原因。可能它还想使用磁盘或使用UART或其他东西。</p>
+<p>发言人   07:20<br>And if calls acquire on the same lock. So we have a second acquirer of this lock. It’s the same lock, of course, the locks already held, so this acquirer can’t get it. And these are spin locks. So what this actually causes to happen is that process 2 inside a Cho will just sit in a loop spinning, waiting for the lock to be released and acquire won’t return. And since acquirer doesn’t return, process 2 can’t, doesn’t have a chance, even though it may be willing to yield the CPU when it’s done later on, it doesn’t get a chance to because a choir doesn’t return until the locks released. But the only way the lock could be released is if process 1 resumes execution, and presumably later. If it’s correctly, it doesn’t have charit bugs in it.<br>如果调用在同一锁定上获取。所以我们有了这个锁的第二个收购者。当然，这是同一个锁，锁已经持有，所以收购方无法获得它。这些是旋转锁。因此，这实际上导致发生的情况是，在Cho中的进程2将只是坐在循环中旋转，等待锁被释放，并且不会返回。由于收购方不返回，进程2不能，没有机会，即使它可能愿意在以后完成时放弃CPU，它也没有机会，因为合唱团在锁定释放之前不会返回。但是唯一可以释放锁的方法是进程1恢复执行，然后再执行。如果它是正确的，那么它里面就没有charit bug。</p>
+<p>发言人   08:12<br>It was going to call it was intending to release this lock, but it hasn’t happened yet because the cold switch and process 2 is spinning, waiting for the lock. So this is a deadlock and. It will just cause the system to freeze. And while I’ve described this in the context of a machine with a single CPU, a single core, you can construct scenarios that using multiple locks would cause the same kind of deadlock on a machine with multiple cores. And so as a result, we have a general prohibition in XV 6 that you’re not allowed to hold spin locks across the switch. Any questions about this rule?<br>它本来打算释放这个锁，但还没有发生，因为冷开关和进程2正在旋转，等待锁定。所以这是一个僵局。它只会导致系统冻结。虽然我已经在具有单个CPU、单个核心的机器上下文中描述了这一点，但您可以构建这样的场景: 使用多个锁会在具有多个核心的机器上导致相同类型的死锁。因此，我们在XV 6中有一个一般的禁令，即您不允许在交换机上持有旋转锁。对这个规则有什么问题吗？</p>
+<p>发言人   09:06<br>There’s a question in the chat. Robert, Oh, wouldn’t you have a timer interrupt a switch to P1, which resolves the deadlock? Okay, so yeah, it does turn out. So we’re running both, all this stuff’s running in the kernel, right? You know, acquire release, which, you know is only it’s all kernel code. So when I’m running a user space, but indeed, a timer interrupt could occur, and x VSS is actually and allows timer interrupts to happen while running kernel code system, call code. And in fact, if you look at the kernel trap code or whatever it is in trap DOC, you’ll see that if a timer interrupt happens while 60 is executing the kernel, it will call yield. So if a timer interrupt could happen while we’re running a choir here, then actually we would be saved because recall, yield, yield would switch back here and hopefully P1 would then resume and eventually release the lock.<br>聊天中有一个问题。Robert，哦，你不会有一个计时器中断和一个切换到P1的开关，它可以解决死锁问题吗？好的，是的，结果确实如此。所以我们两个都在运行，所有这些东西都在内核中运行，对吗？你知道的，获取释放，你知道的只是所有的内核代码。因此，当我运行用户空间时，可能会发生计时器中断，而x VSS实际上允许计时器中断发生，同时运行内核代码系统，调用代码。实际上，如果您查看内核陷阱代码或陷阱文档中的任何内容，您将看到，如果在60执行内核时发生计时器中断，它将调用yield。因此，如果我们在这里运行合唱团时可能发生计时器中断，那么实际上我们将被保存，因为召回，yield，yield将切换回这里，希望P1随后会恢复并最终释放锁。</p>
+<p>发言人   10:03<br>However, for reasons that were explained in a previous lecture, acquire turns off interrupts before it starts to wait for the lock, Absolutely, for other reasons can not afford to have an interrupt happen while we’re holding a lock, because that would cause a different kind of deadlock if the interrupt handler needed to acquire the lock that this acquirer had possibly just acquired. So if you look at the code for acquire and XV 6, you’ll see the first thing it does is turn off interrupts and then spins. And you may wonder, geez, why doesn’t it spin and then turn off interrupts? And the reason is that would allow a short period of time to occur in which the lock is held, but interrupts weren’t disabled. And again, a device interrupt at that time might cause a deadlock. So unfortunately, this other requirement that we leave interrupts off while we’re spinning, waiting for a lock prevents the timer interrupt from going off and therefore prevents process 2 from yielding back to process one, it’s a good question.<br>然而，由于之前讲座中解释的原因，在开始等待锁之前，获取关闭中断，绝对，由于其他原因，当我们持有锁时无法承受中断发生，因为如果中断处理程序需要获取该收购者可能刚刚获取的锁，那么这将导致不同类型的死锁。因此，如果您查看获取和XV 6的代码，您将看到它所做的第一件事是关闭中断，然后旋转。你可能会想，为什么它不旋转，然后关闭中断？原因是这将允许在短时间内保持锁，但不会禁用中断。而且，此时设备中断可能会导致死锁。不幸的是，另一个要求我们在旋转时关闭中断，等待锁定可以防止计时器中断关闭，因此可以防止进程2屈服于进程1，这是一个很好的问题。</p>
+<p>发言人   11:11<br>Because another question, can I repeat how deadlocks or avoided? Oh, deadlocks are avoided in XV 6 by prohibiting this. XV 6 mode is not allowed to acquire any lock other than P arrow lock and then call switch. And if you look at the code for switch, there’s actually a some checks and switch that are equivalent to checking that no locks are held other than P lock. So the problem with this is this code, if it occurred in the XV 6 kernel, would be illegal and would could easily call this a deadlock. So it’s forbidden. Does that answer the question, okay? Other questions?<br>因为另一个问题，我可以重复一下如何避免死锁吗？在XV 6中，通过禁止这一点可以避免死锁。XV 6模式不允许获取除P箭头锁定和呼叫开关之外的任何锁定。如果你看一下开关的代码，实际上有一些检查和开关等效于检查除了P锁之外没有其他锁被持有。所以这个问题是这个代码，如果它发生在XV 6内核中，将是非法的，并且可以很容易地称之为死锁。所以这是被禁止的。这回答了问题吗，好吗？其他问题？</p>
+<p>发言人   12:01<br>Okay, okay, so keep this rule and the previous need to hold P lock across switch in mind because they’ll come up again in our discussion of how sleep and wake up work. All right, new topic.<br>好的，好的，所以请记住这条规则和之前需要保持P锁跨越开关的需求，因为它们将在我们关于睡眠和醒来工作方式的讨论中再次出现。好的，新的话题。</p>
+<p>发言人   12:22<br>It’s coordination.<br>这就是协调。</p>
+<p>发言人   12:29<br>Which really means sleep? The. We’ve heard a lot about locks, and locks are fantastic for situations where different threads really want to not be aware and not have to worry about or think about what other threads are up to. We hold locks and share data. That means we just like never have to worry about the possibility that some other lock is, or maybe not, who knows, using that data. Because the lock, so it causes things to happen one at a time.<br>睡眠的真正含义是什么？这个。我们听说过很多关于锁的事情，锁非常适合不同的线程真正想要不知道并且不必担心或思考其他线程在做什么的情况。我们持有锁并共享数据。这意味着我们永远不必担心其他锁是否会使用这些数据，谁知道呢。因为锁，所以它会导致事情一次发生一个。</p>
+<p>发言人   13:02<br>But when you’re writing threaded code, there are also situations where you explicitly want to wait for some specific event where you want different threads to interact. So for example, supposing we have pipes and we got a reader and a writer, right? If I’m reading a pipe and there’s nothing currently to read in the pipe, I want to be able to wait for any other process to write data to the pipe. So I want to wait for the sort of pipe is not empty event. Similarly, if I’m reading the disk or writing the disk. If I’m reading the disk, then I want to be able to tell the Dis controller, look, please read a particular block on the disk. It may take a long time, milliseconds long, long time before the disc finally finishes the read, especially if it has to seek and rotate. And the process of suing the read needs to be able to wait for that specific event.<br>但是，当您编写线程代码时，也存在这样的情况: 您明确希望等待某个特定事件，希望不同的线程进行交互。例如，假设我们有管道，我们有一个读者和一个作家，对吧？如果我正在读取管道，并且管道中当前没有任何内容可读取，我希望能够等待任何其他进程将数据写入管道。所以我想等待那种管道不是空事件。同样，如果我正在读取磁盘或写入磁盘。如果我正在读取磁盘，那么我希望能够告诉磁盘控制器，请查看，请读取磁盘上的特定块。在光盘最终完成读取之前，可能需要很长时间，毫秒长，长时间，尤其是如果光盘必须进行寻道和旋转。并且起诉读取的过程需要能够等待该特定事件。</p>
+<p>发言人   14:00<br>We want to wait for the discrete to complete. Similarly, you may have noticed when you’re programming that a Unix program can make the wait system call. And what weight does is it causes the calling process to wait until any of its children exit. We have the parent shot process intentionally waiting for some event sort of caused by another process. So these are all situations where a process needs to wait for a specific event, either typically IO or another process, sort of declaring that something specific has happened.<br>我们想等待离散完成。同样，您可能已经注意到，当您编程时，Unix程序可以进行等待系统调用。而权重的作用是它导致调用进程等待，直到它的任何子进程退出。我们让父拍摄进程有意地等待由另一个进程引起的某种事件。所以这些都是进程需要等待特定事件的情况，通常是IO或另一个进程，声明特定的事情已经发生。</p>
+<p>发言人   14:39<br>And coordination is the sort of tool that helps us solve these kind of problems or implement these kind of requirements.<br>协调是一种工具，可以帮助我们解决这些问题或实现这些要求。</p>
+<p>发言人   14:48<br>And coordination is totally fundamental. Just like with locks, coordination is another fundamental tool for writing threaded programs. And it comes up all the time. All right, so how could we have a process or a thread wait for this kind of event? So one possibility, which is an extremely straightforward one, is just a busy wait to loop. So you could imagine, and we’ll discard, this is a bad idea in a moment.<br>协调是完全基本的。就像锁一样，协调是编写线程程序的另一个基本工具。它总是出现。好的，那么我们怎么能让进程或线程等待这种事件呢？所以一种可能性非常简单，就是忙碌的等待循环。所以你可以想象，我们稍后会丢弃，这是一个坏主意。</p>
+<p>发言人   15:21<br>Let’s say we want to read from a pipe. We just write a loop in the pipe read function that says, you know, while, you know, the pipe buffer is empty. We’re going to do absolutely nothing, right? And we’re going to sit in this loop, going round and round in this loop until maybe some other thread on another core writes into the buffer. It makes it not empty. And then this loop will finish. And then we’ll, you know, return the data or whatever it is we’re supposed to do with the data. So you can imagine writing code like this. And actually, there is a little bit of there may be small amounts of code like this.<br>假设我们想从管道中读取数据。我们只是在管道读取函数中写了一个循环，它说，你知道，虽然，你知道，管道缓冲区是空的。我们什么都不会做，对吧？我们将坐在这个循环中，在这个循环中不停地循环，直到另一个核心上的某个其他线程写入缓冲区。这使得它不是空的。然后这个循环就会结束。然后我们会，你知道，返回数据或者我们应该对数据做的任何事情。所以你可以想象像这样编写代码。实际上，可能会有少量这样的代码。</p>
+<p>发言人   16:02<br>Like if you know that the thing you’re waiting for is extremely likely to happen, a 10th of a microsecond, let’s say, this may be the best way to wait for it. So typically, this is done with some kinds of device hardware, where you ask the device hardware to do something and you know, it will always complete that task in a tiny amount of time. Just sitting in a short loop can be the right answer, but if this might take a long time milliseconds, or you just don’t know how long, right, maybe it’s going to be 10 minutes before whatever process is writing the pipe actually writes anything. And we don’t want to spin there and waste CPU time, which could be used to find more digits of pi or something else useful. We want to give up the CPU instead, and only we want some way to give up the CPU like switch, but actually regain the CPU when the event we care about has actually occurred. And it’s that that coordination is all about techniques to give up the CPU until the condition, the event that we’re waiting for has actually occurred. And again, sleep and wake up.<br>就像如果你知道你在等待的事情极有可能发生一样，十分之一微秒，假设这可能是等待它的最佳方式。因此，通常情况下，这是通过某些类型的设备硬件完成的，在这种情况下，您要求设备硬件做一些事情，并且您知道，它总是会在极少量的时间内完成该任务。只是坐在一个简短的循环中可能是正确的答案，但如果这可能需要很长时间的毫秒，或者你只是不知道多长时间，也许在写入管道的任何进程实际上都需要10分钟才能写入任何东西。我们不想在那里旋转并浪费CPU时间，这可以用于查找更多的pi或其他有用的数字。我们想要放弃CPU，而只是想要一些方法来放弃CPU，比如开关，但是当我们关心的事件实际发生时，实际上重新获得CPU。而且这种协调完全是关于放弃CPU的技术，直到我们等待的情况实际发生。再次，睡觉和醒来。</p>
+<p>发言人   17:14<br>There’s a number of different coordination primitives that people have invented over the years and XV 6 in common with many flavors of Unix, uses something called sleep and wake up. Okay? All right, with this background I’d like to switch to looking at the code in XV 6.<br>人们多年来发明了许多不同的协调原语，XV 6和许多风格的Unix都使用称为睡眠和唤醒的东西。好吗？好的，有了这个背景，我想切换到查看XV 6中的代码。</p>
+<p>发言人   17:43<br>All right, so I’ve just shared my screen. Let me know if the screen share did not work.<br>好的，所以我刚刚分享了我的屏幕。如果屏幕共享不起作用，请告诉我。</p>
+<p>发言人   17:49<br>Okay, I have, in preparation for this lecture, rewritten some of the code in the UART driver. That’s the driver that XP 6 uses to read and write characters from the console. And so I have this function uar’s, right, which when a program like the shell prints its prompt or produces any other output that you, makes a writes system call. And in my slightly modified version of XV 6, that write system call ends up with a call to UART, right in the UART driver, which actually writes the characters in the loop 1 by one to the UART hardware. And this is written in a sort of classic device driver style. You’ll see code like this in many device drivers.<br>好的，为了准备这次讲座，我重写了UART驱动程序中的一些代码。这是XP 6用于从控制台读取和写入字符的驱动程序。所以我有一个函数uar，对吧，当一个像shell这样的程序打印它的提示符或产生任何其他输出时，它会进行一次系统调用。在我稍微修改过的xv6版本中，这个写系统调用最终会在UART驱动程序中调用UART，它实际上会将循环中的字符逐一写入UART硬件。这是用一种经典的设备驱动程序风格编写的。你会在许多设备驱动程序中看到这样的代码。</p>
+<p>发言人   18:42<br>Okay, so one of the things that’s going on here is that the UART hardware can only accept one character for transmission at a time. And so the way this code has to look, know typically you have lots of characters you want to write. You can write a character to the UART hardware, and it needs to wait for the UART hardware to say, yes, I finished sending that character. I’m ready for a new one. And then the driver can write a new one, a new character, the next character output, because this hardware can operate very slowly, like maybe only 1000 characters per second, the amount of time we have to wait between characters can be very long, Like a milliseconds is a long, long time on modern computer, you know, a million cycles, a million cycles maybe, which a huge amount of work could be done. So we’d really prefer not to just spin waiting for the UAR to finish sending each character. We’d like to have a better way. And so in fact XV 6 has a better way.<br>好的，所以这里发生的一件事是，UART硬件一次只能接受一个字符进行传输。因此，这段代码的外观必须清楚，通常你有很多你想写的字符。你可以向UART硬件写入一个字符，它需要等待UART硬件说，“是的，我已经发送完该字符了”。我准备好要一个新的了。然后驱动程序可以编写一个新字符，一个新字符，下一个字符输出，因为这个硬件可以非常缓慢地运行，比如每秒可能只有1000个字符，我们必须在字符之间等待的时间可能非常长，比如毫秒很长，在现代计算机上使用很长时间，你知道，一百万个周期，也许一百万个周期，这可以完成大量的工作。所以我们真的宁愿不只是旋转等待UAR完成发送每个角色。我们希望有更好的方法。事实上，XV 6有更好的方法。</p>
+<p>发言人   19:39<br>Like most operating systems, the UART hardware we’ll raise and interrupt after it’s finished sending each character. And so we have not just this right routine, we also the UART driver has an interrupt routine, which I think trap DOC calls when the UART hardware raises an interrupt to say that it’s finished. And the interrupt routine checks that you weren’t reads one of the memory map registers and the UART hardware to look for the flag that says I’m done transmitting, which is this LSR TX idle flag. And if that flag set, then the int prote actually sets this flag in memory and makes this wake up call, which will cause the UART, right?<br>像大多数操作系统一样，我们将提高UART硬件并在完成发送每个字符后中断。所以我们不仅有这个正确的例程，我们还有UART驱动程序有一个中断例程，我认为当UART硬件发出一个中断说它已经完成时，陷阱文档就会调用。并且中断例程会检查您是否没有读取其中一个内存映射寄存器和UART硬件，以查找显示我已完成传输的标志，即LSR TX空闲标志。如果设置了该标志，那么int prote实际上在内存中设置了该标志并发出唤醒调用，这将导致UART，对吗？</p>
+<p>发言人   20:26<br>Whatever thread is in UART, right, to return from its sleep here and attempt to send a new character. So the game is that if a thread needs to wait for something, and here we are, we need to wait for the UART hardware to be willing to accept a new character or call sleep waiting for a specific condition usually. And when the condition is fulfilled, code that realizes the condition is fulfilled, we’ll call wake up. So these sleeps and wake ups are paired and sleep.<br>无论UART中的线程是什么，对吧，从这里的睡眠中返回并尝试发送一个新角色。所以这个游戏是，如果一个线程需要等待某些东西，我们需要等待UART硬件愿意接受一个新角色或者调用sleep等待特定的条件，通常情况下。当条件得到满足时，实现条件得到满足的代码，我们将调用wake up。所以这些睡眠和唤醒配对和睡眠。</p>
+<p>发言人   21:00<br>We’ll look at the implementation by and by, but sleep does a number of things and then call switch in order to give up the CPU. One thing to notice is that the wake up and the sleep have to be linked together somehow.<br>我们将逐步研究实现，但睡眠会做一些事情，然后调用开关以放弃CPU。需要注意的一件事是，醒来和睡眠必须以某种方式联系在一起。</p>
+<p>发言人   21:15<br>When we call wake up, we really only want to wake up threads that are waiting for this specific event that we realize has happened. And so sleep and wake up take this argument channel, which is called the sleep channel. The wake up supplies the very same value here that we’re passing to sleep. Sleep and wake up actually don’t really look, don’t care. They just take 64 b values here that don’t care what they are. Really the only thing that’s going on is that. When if we sleep on that particular sleep channel, a particular weight channel, we want the wake up to pass the very same value here. In order to show this, indicate which sleepers it wants to wake up.<br>当我们调用 “wake up” 时，我们实际上只想唤醒那些正在等待我们意识到已经发生的特定事件的线程。因此，睡眠和醒来采用这个参数通道，称为睡眠通道。醒来提供的价值与我们进入睡眠的价值完全相同。睡觉和醒来其实并不在乎。他们只是在这里取64个b的值，而不在乎它们是什么。唯一真正发生的事情就是这样。当我们在特定的睡眠频道，特定的权重频道上睡觉时，我们希望唤醒者在此处传递相同的值。为了显示这一点，请指出它想要唤醒哪些睡眠者。</p>
+<p>发言人   22:06<br>Any questions about this interface? Okay, so there’s a question just to clarify. The process is not woken up every for every character that’s written.<br>对这个界面有什么问题吗？好的，有一个问题只是为了澄清。对于写入的每个字符，该过程不会被唤醒。</p>
+<p>发言人   22:20<br>Okay, let’s see. In this driver that I’ve specially hacked for demonstration purposes, there’s an interrupt per character. So the way you are right works is that for each character that is, and this is for each character in the buffer character is supposed to write, we wait here in this loop until the UART is ready to accept one more character. We write one more character, we set this done flag to 0, and go back and wait typically and sleep until the done flag is one. And then after the you are finishes sending this character, it’ll interrupt and the interrupt routine will set done to one and do the wake up. So in fact, there is wake up, a sleep and a wake up and an iteration of the loop for every single character and more. The UART is actually capable of sending some number, like for 16 or something characters at a time. So a more efficient driver would hand 16 characters to the UART per iteration of this loop, and there’d be an interrupt every 16 characters and higher speed devices, you know, typically like Ethernet drivers, typically, except many more bytes than that per interrupt, all right, Okay, so this is just an illustration of what the interface looks like to.<br>好的，让我们看看。在我为了演示目的而特别黑客攻击的这个驱动程序中，每个字符都有一个中断。因此，你正确的工作方式是，对于每个字符，这是缓冲区字符中应该写入的每个字符，我们在此循环中等待，直到UART准备好再接受一个字符。我们再编写一个字符，将这个done标志设置为0，然后返回并等待并睡眠，直到done标志为1。然后在您完成发送此字符后，它将中断，中断例程将设置为done并执行唤醒。因此，实际上，每个角色都有唤醒、睡眠和唤醒以及循环迭代等过程。UART实际上能够发送一些数字，比如一次发送16个字符。因此，一个更高效的驱动程序每次循环都会将16个字符交给UART，并且每16个字符就会有一个中断和更高速的设备，你知道，通常像以太网驱动程序，除了比每个中断多很多的字节，好吧，好的，所以这只是一个界面看起来像什么的例子。</p>
+<p>发言人   23:50<br>Sleep and wake up are nice because or one reason they’re nice is they’re relatively flexible. Sleep and wake up don’t really care what it is you’re up to. You can, you don’t have to tell sleep what you’re waiting for. You don’t have to tell wake up what event you just need to have these matching sleep channel 64 b values.<br>睡眠和醒来都很好，因为它们很好，或者其中一个原因是它们相对灵活。睡觉和醒来并不真正关心你在做什么。你可以，你不必告诉睡眠你在等待什么。你不必告诉醒来是什么事件，你只需要拥有这些匹配的睡眠频道64 b值即可。</p>
+<p>发言人   24:11<br>However, there’s one interesting property of the sleep interface. We have to pass it a lock here. There’s the second argument. This lock argument, there’s a big story behind why sleep takes this second argument, and I can explain what’s going on, but the high level picture is that it not doesn’t seem to be possible to design a sleep that is completely ignorant of what it is you’re trying to wait for. It’s hard to write a sort of general purpose leap that simply sleeps waiting for some specific event. And there’s danger, which we’ll see in a moment, called lost wake ups, that just about every coordination mechanism has to grapple with somehow and deal with somehow. And in the sleep interface, this fact that we have to pass a lock is sort of a little bit of ugly implementation leaking through into the interface in a way.<br>然而，睡眠接口有一个有趣的特性。我们必须在这里通过一把锁。这是第二个论点。这个锁论点背后有一个大故事，为什么睡眠采用第二个论点，我可以解释发生了什么，但高层次的图片是，似乎不可能设计一个完全不知道你想要等待什么的睡眠。很难编写一种只是睡眠等待特定事件的通用飞跃。而且还有危险，我们一会儿就会看到，称为迷失的觉醒，几乎每个协调机制都必须以某种方式应对和处理。在睡眠接口中，我们必须传递一个锁的事实是一种丑陋的实现方式，以某种方式泄漏到接口中。</p>
+<p>发言人   25:16<br>I’ll explain in just a moment. Yeah I’ll explain there’s a question why do we need the done flag and the sleep channel? I will hold on to that question. I’ll explain that in five or 10 minutes. Okay, so before explaining why what it is that sleep is doing with this lock, I actually want to talk a bit about what the implications would be if we had a simpler sleep that didn’t, didn’t take that extra lock argument so.<br>我一会儿就解释。是的，我会解释有一个问题，为什么我们需要完成标志和睡眠通道？我将继续回答那个问题。我会在五到十分钟内解释。好的，在解释为什么睡眠对这个锁做了什么之前，我实际上想谈谈如果我们有一个更简单的睡眠，没有，没有采取额外的锁参数会有什么影响。</p>
+<p>发言人   25:59<br>Right?<br>对吧？</p>
+<p>发言人   26:05<br>And the topic here is lost wake ups. That’s the problem I’m going to describe now. Suppose that the interface was just sleep. On this arbitrary channel value with no second argument. You can’t make this work. So I’m actually going to call this broken sleep. And you could imagine, if we didn’t know better, that a sleep like this could simply set the state of the process to this special sleeping value, which says, I don’t want to run anymore.<br>这里的主题是迷失的觉醒。这就是我现在要描述的问题。假设界面只是睡眠。在这个任意通道值上，不带第二个参数。你不能让这个工作。所以我实际上要把这个叫做破碎的睡眠。你可以想象，如果我们不知道得更清楚，像这样的睡眠可以简单地将进程的状态设置为这个特殊的睡眠值，即表示我不想再运行了。</p>
+<p>发言人   26:53<br>I’m waiting for a specific event. And then if you look at the XV sixty’s implementation of sleep, you’ll see it does this among us things.<br>我在等一个特定的事件。然后，如果你看一下XV 60的睡眠实现，你会发现它在我们的事情中做到了这一点。</p>
+<p>发言人   27:01<br>We need to record this special sleep channel value so that a future call to wake up can realize that we’re actually waiting for the thing, that the wake up is waking us up for. So you could imagine a sleep and it would be broken that really just did this. I guess you’d have to take acquire this process ass lock also, and then a corresponding wake up. You go. And this really is pretty much how wake up works. We want to wake up all the threads that are waiting on that are called sleep with this particular channel value. So we’re just going to say, you know, for each p in the process table.<br>我们需要记录这个特殊的睡眠通道值，这样未来的唤醒呼叫才能意识到我们实际上正在等待这件事，唤醒正在唤醒我们。所以你可以想象睡眠中它会被打破，这真的只是做到了这一点。我猜你也必须获取这个过程，然后相应地唤醒。你去吧。这实际上就是唤醒的工作原理。我们想要用这个特定的通道值唤醒所有等待的线程，这些线程被称为睡眠。所以我们只想说，你知道，对于工艺表中的每个p。</p>
+<p>发言人   27:55<br>If, if it’s sleeping? And it’s sleeping on the channel that we’re waking up.<br>如果，如果它在睡觉？它正在我们醒来的频道上睡觉。</p>
+<p>发言人   28:14<br>Then set the state to runable. And actually, modular locks, this is pretty much what Wake Up does. Okay, so some alternate universe. Boy, it would be nice if sleep and wake up were this simple. Let me demonstrate though, well. Let me demonstrate.<br>然后将状态设置为runable。实际上，模块化的锁，这几乎就是 “唤醒” 所做的。好的，所以是一个不同的宇宙。孩子，如果睡觉和醒来都这么简单就好了。让我演示一下，好吧。让我演示一下。</p>
+<p>发言人   28:55<br>Well, before I go back to the actual XV 6 code, let me just outline how you would use this sleep and wake up in the UART driver. And this is sort of a repeat of what we’ve already seen, but using this slightly simpler interface you would have, and indeed, the driver does this. You’d have this done flag and then you are Att, right?<br>好吧，在我回到实际的XV 6代码之前，让我概述一下您将如何在UART驱动程序中使用这个睡眠和唤醒。这在某种程度上是我们已经看到的重复，但是使用这个稍微简单的界面，你会得到，而且实际上，司机会这样做。你已经完成了这个任务，然后你就在这里了，对吧？</p>
+<p>发言人   29:23<br>You know, would say for each character in the buffer? And then it would check this done flag. Just say while not done. We’re going to sleep. And then pass that channel, whatever it was, TX chain or something, doesn’t really matter, okay? And then we’re going to send C to the UART and set done equals 0, right? And then the interrupt routine. Just sets the don’t as equal to true and calls wake up. So this is how we could use the simplified broken sleep. So this is really broken sleep.<br>你知道，对于缓冲区中的每个字符？然后它会检查这个完成的标志。只是在还没有完成的时候说。我们要睡觉了。然后通过那个频道，不管是什么，TX链还是其他什么，都不重要，好吗？然后我们将把C发送到UART，并将 “完成” 设置为0，对吗？然后是中断例程。只需将 “不” 设置为等于true，然后调用wake up。这就是我们如何使用简化的睡眠中断。这真的是一种破碎的睡眠。</p>
+<p>发言人   30:23<br>What this is missing, though, is locking. So actually both, both of these routines, both the right routine and the interrupt routine, absolutely have to lock. And one reason is that this done flag, anytime we have shared data, we really need to put a lock around the shared data. And the other reason is that actually, I didn’t put it in here, but both the interrupt routine and the right routine need to access the hardware, the UART hardware itself. And typically, it’s an error. Unless you’re very, very clever. It’s an error to have two threads concurrently try to read and write the memory mapped hardware registers. So we need to lock around in both of these subroutines in order to avoid both racing and racing accesses to the hardware.<br>然而，这缺少的是锁定。所以实际上这两个例程，无论是正确的例程还是中断例程，都必须锁定。其中一个原因是，每当我们有共享数据时，我们确实需要锁定共享数据。另一个原因是，实际上我没有把它放在这里，但是中断例程和正确例程都需要访问硬件，即UART硬件本身。通常情况下，这是一个错误。除非你非常非常聪明。让两个线程同时尝试读取和写入内存映射硬件寄存器是一个错误。因此，我们需要锁定这两个子例程，以避免对硬件的争用和争用访问。</p>
+<p>发言人   31:21<br>And so the question is, where should we put the locks in it’s easy in the interrupt routine, we’re going to lock our lock at the beginning, whatever the lock, I think is called ur TX lock or something, and we’re going to unlock at the end. So the interrupter gene just takes the lock and then releases it.<br>所以问题是，我们应该把锁放在哪里，在中断程序中很容易，我们将在开始时锁定我们的锁，无论是什么锁，我认为被称为ur TX锁或其他什么，最后我们将解锁。因此，中断基因只需要锁定然后释放它。</p>
+<p>发言人   31:40<br>The puzzle is where to put the locks in the Ur routine. One possibility is that UART, right, could hold the lock for the entire sequence of trying to send a character, each character. So we could acquire the lock here. And unlock here. So lock and unlock sort of at the beginning and very end, processing each character. So why? Why it is definitely not work?<br>难题是在你的程序中把锁放在哪里。一种可能性是，UART可以在尝试发送一个字符的整个序列中锁定每个字符。这样我们就可以在这里获得锁。在这里解锁。所以在开头和结尾处锁定和解锁，处理每个字符。所以为什么？为什么它绝对不是工作？</p>
+<p>发言人   32:22<br>Well, one reason is that the only way we can get out of this loop is that the interrupt routine sets done to one. But if we hold this lock for this entire sequence, the interrupt routine also needs the lock. And so it will sit here spinning, waiting for the lock because we hold the lock and aren’t going to release it until done is set. But done can only be set when the interrupt routine, it’s actually able to get the lock. So we can not just simply hold the lock across the entire sequence of sending each character.<br>好的，一个原因是我们能够摆脱这个循环的唯一方法是将中断例程设置为 “完成”。但是如果我们在整个序列中持有这个锁，中断例程也需要这个锁。所以它会坐在这里旋转，等待锁，因为我们握着锁，直到完成设置后才会释放它。但是完成只能在中断例程时设置，它实际上能够获得锁。因此，我们不能简单地在发送每个字符的整个序列上保持锁定。</p>
+<p>发言人   33:00<br>All right, so another possibility, the sort of nasty problem here is that we, the you are right, was holding a lock at the time when it had expected the interrupt routine to execute, which is right here. The only time when we really need the interrupt routine to execute is is at this point here, Otherwise, it’s okay to hold the lock. So another possibility would be to, yeah, acquire the lock at the beginning because we need to protect our access to just this shared variable Done, but release it. Before the call to sleep, that gives the interrupter team a chance to execute and set down to one, and then we’ll just re-acquire it after sleep returns so that when we go back up to the top and check done again, we have the lock again. All right, so let me actually modify my driver to do this.<br>好的，那么另一种可能性，就是我们，你是对的，在期望执行中断程序的时候持有一个锁，就在这里。我们真正需要执行中断例程的唯一时间是在这里，否则，持有锁是可以的。所以另一种可能性是，是的，在开始时获取锁定，因为我们需要保护我们对这个共享变量的访问，然后释放它。在调用sleep之前，这给了中断团队一个执行并将其降至1的机会，然后在sleep返回后重新获取它，这样当我们回到顶部并再次检查完成时，我们就可以再次锁定。好的，那么让我实际修改我的驱动程序来做到这一点。</p>
+<p>发言人   33:59<br>We’ll see what the consequences are. All right, so the sleep we’re talking about where we want to, you can see this code actually does acquire the lock at the very beginning and release it at the end. And the interrupt routine also acquires and releases. And the proposal is that we do two things. One is. We’re exploring is why my broken sleep idea that only takes a single argument, why that doesn’t work. So the idea is that in order to make the locking workout right, we’re going to call it broken sleep, all right? But we’re going to release. The lock here and re-acquire it after sleep returns.<br>我们会看到后果是什么。好的，所以我们正在谈论的睡眠位置，您可以看到此代码实际上确实在最开始获取锁并在结束时释放它。并且中断例程也会获取和释放。我们的建议是做两件事。一个是。我们正在探索的是为什么我的破碎睡眠想法只接受一个论点，为什么那不起作用。所以我们的想法是，为了使锁定的锻炼正确，我们将其称为睡眠不足，好吗？但我们要释放。在这里锁定并在睡眠恢复后重新获取它。</p>
+<p>发言人   34:53<br>And literally all this broken sleep does is exactly what I wrote on my little whiteboard. Namely, it sets the state to sleeping. It sets the channel to this TX Chan argument, then it calls switch. All right, let’s see what happens.<br>字面上，所有这些破碎的睡眠所做的正是我在小白板上写的。也就是说，它将状态设置为睡眠。它将通道设置为这个TX Chan参数，然后它调用switch。好的，让我们看看会发生什么。</p>
+<p>发言人   35:21<br>Oh, wow, look at that. It actually managed to init is printing out its init starting message, and it actually managed to write a few characters. And now it seems to have hung. And it turns out that if I type a character I’m going to type a period by type of parent period output restarts, maybe make some more output around LS. LS also emitted a few characters and then stopped. But if I type something type and I type X auto to restart LS, and I’ll keep going so. What do we think is going on here? So want to propose a theory?<br>哦，哇，看看那个。它实际上设法init正在打印出它的init起始消息，并且它实际上设法写了一些字符。现在似乎已经挂了。事实证明，如果我输入一个字符，我将按父周期输出的类型输入一个句点，重新启动输出，可能会在LS周围生成更多输出。LS也会发出一些字符，然后停止。但是如果我输入了一些类型，然后输入X auto重新启动LS，我会继续这样做。我们认为这里发生了什么？所以想提出一个理论？</p>
+<p>发言人   36:21<br>The problem definitely has to do with the code that I just changed. So what’s happening?<br>这个问题肯定与我刚刚更改的代码有关。那么发生了什么？</p>
+<p>发言人   36:33<br>All right, so what’s going on here is that my new code releases the lock, releases this lock at this point, and then right here. The interrupt happens because as soon as you release a lock, first of all, an interrupts are being enabled. So on this CPU, interrupts could happen. This is a multicore machine. So actually, interrupts can be taken on any core. So almost certainly what’s going on at this point that I’ve marked in the code is that on some other core, the UART interrupt, it’s acuted, and it’s sitting in a choir waiting for this lock on some other core. And so as soon as I release it, that other core, it’s going to acquire the lock.<br>好的，这里发生的事情是我的新代码释放了锁，此时释放了这个锁，然后就在这里。中断的发生是因为一旦您释放锁，首先就会启用中断。所以在这个CPU上，可能会发生中断。这是一台多核机器。实际上，中断可以在任何核心上进行。所以几乎可以肯定，现在我在代码中标记的是，在其他核心上，UART中断已经被触发，它坐在一个合唱团中，等待其他核心上的这个锁。所以一旦我释放它，另一个核心就会获得锁。</p>
+<p>发言人   37:24<br>It’s going to see that the UART has completed sending the character, and it’s going to set this transmit done flag to one, which is great. And then it’s going to call wake up on TX Chan, which is also fine, except because the rating thread is still executing between the release and the broken sleep, the writing thread hasn’t gone to sleep yet. So the wake up that the interrupt routine calls doesn’t actually wake up any anything up because nothing’s yet gone to sleep on that channel. And then the writing thread will proceed to call it broken sleep, which will, you know, set the state to sleeping and set the sleep channel. But the interrupt has already happened and the wake up has already been called. So this sleep, nothing will ever wake it up because the wake up already happened. This is called the lost wake up prop. Any questions about why or how this arises?<br>它将看到UART已完成发送字符，并将此传输完成标志设置为1，这很棒。然后它会在TX Chan上调用唤醒，这也没问题，除非评级线程仍在发布和睡眠中断之间执行，写作线程还没有进入睡眠状态。因此，中断例程调用的唤醒实际上并没有唤醒任何东西，因为该通道上还没有任何东西进入睡眠状态。然后，写作线程将继续将其称为 “睡眠中断”，这将设置睡眠状态并设置睡眠通道。但中断已经发生，唤醒已经被调用。所以这个睡眠，没有什么能唤醒它，因为唤醒已经发生了。这被称为迷失的觉醒道具。有任何关于为什么或如何出现这种情况的问题吗？</p>
+<p>发言人   38:39<br>Yeah, is it always going to be the case that once something gets, once us, I wake up, gets lost, that on the next time everything that’s been buffered is just going to get dumped? Well, it completely depends on the details of what’s going on. In this case, it’s actually just us. It’s sort of accidental that me typing something caused the output to resume. Is it me typing input cause the output to get fixed? And the reason for that is that the UART has only one kind of interrupt. It makes it, it calls the same interrupt routine, whether for both input, the signal input, and the signal completed output. So when I type something which is input, this UART interrupt routine gets called.<br>是的，一旦有东西得到，一旦我们得到，我醒来，迷路了，下次所有缓冲的东西都会被抛弃吗？嗯，这完全取决于正在发生的事情的细节。在这种情况下，实际上只有我们。我输入一些东西导致输出恢复有点意外。是我打字输入导致输出被修复吗？原因在于UART只有一种中断。它会调用相同的中断例程，无论是对于输入、信号输入还是信号完成输出。所以当我输入输入的内容时，这个UART中断例程会被调用。</p>
+<p>发言人   39:30<br>The UART is thinking that it’s calling it just a signal that input has arrived. But in fact, the interrupt routine in XV six, you know, looks for, you know, notices that the, you know, the way this code happens to be written is that it if the UART is ready to transmit another character, it always calls wake up, even though it’s a while ago, maybe had already called wake up. So it’s sort of accidental that retyping characters caused this to get restarted. And so sometimes, you know, if there are lost wakeups sometimes they sort of fix themselves in this way, if you’re lucky and sometimes they don’t like if the UART had had separate receive and transmit interrupt routines, then there would have been no getting out of this.<br>UART认为它只是一个输入已经到达的信号。但实际上，XV六中的中断例程，你知道，寻找，你知道，注意到，你知道，这段代码的编写方式是，如果UART准备好传输另一个字符，它总是调用wake up，即使已经过去一段时间了，也许已经叫了 “醒来”。所以重新键入字符导致重新启动是一种偶然的情况。所以有时候，你知道，如果有丢失的唤醒，有时他们会以这种方式修复自己，如果你幸运，有时他们不喜欢UART有单独的接收和发送中断例程，那么就没有办法摆脱这种情况了。</p>
+<p>发言人   40:16<br>Does that answer your question? Yes, thank you. Okay, so yes, please go ahead.<br>这回答了你的问题吗？好的，谢谢。好的，所以是的，请继续。</p>
+<p>发言人   40:26<br>What purpose does the TX done that serve or the TX done bit? Or you mean this flag TX done? It is simply a way for the interrupter team to communicate to. You are right that the previously transmitted character is finished and it’s okay for you are right to proceed to transmitting the next character. So it’s a little piece of, it’s just like a little communication flag from the interrupt routine to UART, right? Confused because if it, it could like it would sleep and then it would know that when it wakes up, it’s probably the Ur interrupt that woke it up. So probably the TX done bit like would have been said, but if we didn’t have it. So I guess I’m saying that Ashley wakes up, it should know that it’s from your interrupt.<br>服务的TX或TX完成的位是什么目的？或者你的意思是这个标志TX完成了？这只是一种中断人员团队与其沟通的方式。你是对的，之前传输的字符已经完成了，你可以继续传输下一个字符。所以它只是一个小片段，就像中断例程与UART之间的一个小通信标志，对吧？困惑是因为如果它会睡觉，然后它会知道当它醒来时，可能是你的中断唤醒了它。所以可能TX的完成有点像会说的，但如果我们没有它。所以我想我是说阿什利醒来了，它应该知道是你打断的。</p>
+<p>发言人   41:28<br>Okay, so is another way of phrasing your question, how come there’s this while loop here instead of just, okay? I answered my question. I think the answer to my question is because you are interrupt sort of two purposes, okay? Yeah, so yeah, in general, your, the answer to your question is sort of a specific instance of the more general answer that.<br>好的，那么你问题的另一种表达方式是，为什么这里会有while循环，而不是仅仅，好吗？我回答了我的问题。我想我的问题的答案是因为你打断了两个目的，好吗？是的，总的来说，你的问题的答案是更一般答案的一种特定实例。</p>
+<p>发言人   41:51<br>It, it’s it just turns out to be not practical to make sleeps and wake ups be precise, guaranteed precise.<br>事实证明，让睡眠和醒来精确，保证精确是不切实际的。</p>
+<p>发言人   42:01<br>That is that if sleep returns, then for sure, whatever you’re waiting for has happened. So one example of this is that supposing we have two processes that are both Ch, right? The UART at the same time, they’re both in UART, right? And they can be, after one writes a character, it’ll sleep. And releasing that turns out releasing the lock, and then the other one can enter that loop and try to wait until the Ur. It’s not busy and they both may both end up sleeping. And when an interrupt happens and the UAR can accept one more character, they’ll both be woken up. But only one should actually write the character and that this while loop.<br>也就是说，如果睡眠恢复，那么毫无疑问，你所等待的一切都已经发生了。一个例子是假设我们有两个过程都是Ch，对吧？同时，它们都在UART中，对吧？他们可以这样做，在一个人写了一个字符后，它会睡觉。然后释放，最终释放锁，然后另一个人可以进入那个循环并尝试等待直到Ur。这不忙，他们两个可能都睡着了。当中断发生并且UAR可以再接受一个字符时，它们都将被唤醒。但是只有一个应该实际编写字符，并且这个while循环。</p>
+<p>发言人   42:42<br>And in fact, you’ll see a while loop around every sleep in XV 6, I believe. And it’s because this problem of you may be woken up, but really somebody else sort of took the thing you were waiting for, so you have to sleep. Again, this happens pervasively.<br>事实上，我相信在XV 6中，你会看到每个睡眠都有一个while循环。这是因为你的问题可能被吵醒了，但实际上有人拿走了你等待的东西，所以你必须睡觉。再次，这种情况普遍发生。</p>
+<p>发言人   43:00<br>You, yes. I’ve got a question. Yes. So it looks like we only saw one last wake up because as soon as we pressed like a character, the rest of the output, the entire rest of the output came out. Shouldn’t we have seen like multiple lost wakeups where like, why didn’t it happen again? Oh, it did, it did.<br>你，是的。我有个问题。是的。所以看起来我们只看到了最后一次唤醒，因为当我们像一个字符一样按下时，输出的其余部分，整个输出的其余部分就会出现。我们难道不应该看到多个迷失的唤醒，比如，为什么它没有再次发生？哦，它做到了，它做到了。</p>
+<p>发言人   43:22<br>Here, let me, let me, let me run. So I’m going to run, read me. I’m going to cat read me right, which is a couple thousand bytes. So oops, sorry, I had already typed something, I gosh, we got one character. I’m going to type a period, I got a few more characters and then it hung up again. I’m going to take about another period, another couple characters. Each time I type a period that causes interrupt for the input, which then wakes up the process. And I could do a few more characters of writes and then hangs again.<br>在这里，让我，让我跑。所以我要跑步，读我。我要猫读我，这是几千个字节。抱歉，我已经输入了一些内容，天哪，我们有一个字符。我要输入一个句点，我还有几个字符，然后它又挂断了。我要讲述另一个时期，另外几个角色。每次我键入一个周期，该周期会导致输入中断，然后唤醒进程。我可以写更多的字符，然后再次挂起。</p>
+<p>发言人   43:51<br>I guess another lost wake up is that, Yeah, I just missed that. Yeah, that makes sense, right? Yeah, so I’m typing period. You know, I get a couple characters per lost wake up because, you know, the lost wake up requires this coincidence that the interrupt had already happened and was waiting to acquire the lock. Just we get that coincidence a lot of the time, but not all the time.<br>我想另一个失去的觉醒是，是的，我只是错过了那个。是的，那很感知，对吧？是的，所以我在打句号。你知道，每次丢失唤醒我都会得到几个字符，因为，你知道，丢失的唤醒需要这种巧合，即中断已经发生并等待获取锁。只是我们很多时候都有这种巧合，但不是所有时候。</p>
+<p>发言人   44:15<br>All right, okay, so our goal then is to get rid of this loss wake up problem by somehow eliminating this window here between the release of the ur TX lock, which we have to release, right? Because the interrupt needs that lock. So we know we have to release the lock, but somehow we want to eliminate this window between when we release the lock and when the process actually marks itself as sleeping so that the interrupts wake up, will see that the process is sleeping and actually wake it up and therefore not lose the wake up. So we got to somehow close that window. And to do that, we’ve got to make sleep’s interface a little bit more complicated.<br>好的，那么我们的目标是通过某种方式消除这个窗口，从而摆脱这个丢失唤醒问题。在释放ur TX锁之间，我们必须释放这个窗口，对吧？因为中断需要那个锁。所以我们知道我们必须释放锁，但我们想以某种方式消除从我们释放锁到进程实际标记自身为睡眠之间的窗口，以便中断唤醒，将看到进程正在睡眠并实际唤醒它，因此不会失去唤醒。所以我们得设法关闭那个窗口。要做到这一点，我们必须让睡眠界面变得更加复杂。</p>
+<p>发言人   45:00<br>Go back to the. Original working sleep and a call to the working sleep.<br>回去吧。原始工作睡眠和呼叫工作睡眠。</p>
+<p>发言人   45:07<br>The way that people solve this problem is that sleep requires, even though sleep doesn’t really know what you’re waiting for, it requires that you be waiting for something, and furthermore, that there be a lock that protects whatever it is you’re waiting for. So it requires that there be a sleep condition, which it doesn’t really know about. The sleep condition is that TX done is equal to one. So sleep doesn’t know what the sleep condition is, but it does. It requires that there be a lock that protects the sleep condition, namely this ur TX lock, and that the lock be locked when you check the condition that you hold the lock until you call sleep and that you pass the lock to sleep. And what sleep promises essentially at the interface level is that it’s going to atomically put the process to sleep and release the light as a sort of at least an indivisible pair of actions, at least with respect to wake up. So wake up.<br>人们解决这个问题的方法是睡眠需要，即使睡眠并不真正知道你在等待什么，它需要你等待一些东西，此外，还有一个锁来保护你在等待的任何东西。所以它需要有一个睡眠条件，而它并不真正知道。睡眠条件是TX done等于1。所以睡眠不知道睡眠状况是什么，但它知道。它需要有一个保护睡眠状态的锁，即这个ur TX锁，并且当你检查你持有锁直到你调用睡眠状态并将锁传递到睡眠状态时，锁被锁定。而睡眠基本上在接口层面的承诺是，它将以原子方式将睡眠和释放光线的过程作为一种至少不可分割的动作对，至少在唤醒方面是这样的。所以，醒醒吧。</p>
+<p>发言人   46:10<br>We will never see this situation in which, yeah, you’ve released the lock, but no, the process is not asleep. So sleep makes the release of the lock and the putting the processes sleep atomic.<br>我们永远不会看到这种情况，你已经释放了锁，但是进程没有休眠。因此，sleep使锁的释放和进程的睡眠原子化。</p>
+<p>发言人   46:23<br>And the rules for this is that there has to be, has to be a condition, There has to be a lock protecting the condition. The lock has to be held. When you call sleep, you have to pass the lock to sleep. And furthermore, the lock has to be held when you call wake up. This condition lock needs to be held when you call up, wake up. So these are rules that the programmer had better follow if they want to write correct code using sleep and wake Up.<br>而这样做的规则是必须有一个条件，必须有一个保护该条件的锁。这把锁必须被锁住。当你叫睡眠时，你必须通过锁才能入睡。而且，当你打电话叫 “醒来” 时，锁必须被锁上。当你打电话时，需要保持这种状态锁，醒来。因此，如果程序员想使用睡眠和唤醒来编写正确的代码，最好遵循这些规则。</p>
+<p>发言人   46:52<br>All right? So let’s look at the sleep and wake up to try to spot how how they actually use this extra little piece of information and these rules to avoid loss wakeups.<br>一切都好吗？所以让我们来看看睡眠和醒来，试图发现他们如何实际使用这些额外的小信息和这些规则来避免损失醒来。</p>
+<p>发言人   47:06<br>So first I want to look at wake up. Wake up’s not very surprising. It just runs through the entire process table. It locks every process. And remember that after it’s locked a process, you can’t really look at a process state without locking it, It locks each process. If the process is sleeping and the channel that it’s sleeping for is the same channel that was passed to wake up, then wake up marks the changes, the processes state to runable and then releases the processes lock. So no surprises here.<br>所以首先我想看看 “醒来”。醒来并不令人惊讶。它只是贯穿整个工艺表。它锁定了每个进程。请记住，在锁定进程后，您无法真正查看进程状态而不锁定它，它会锁定每个进程。如果进程处于睡眠状态，并且它睡眠的通道与传递给唤醒的通道相同，则唤醒将标记更改，进程状态为可运行，然后释放进程锁。所以这里没有惊喜。</p>
+<p>发言人   47:43<br>We’ll ignore my broken sleep and said look at sleep itself. So here’s the implementation of sleep.<br>我们会忽略我的破碎睡眠，并说看看睡眠本身。这里是睡眠的实现。</p>
+<p>发言人   47:52<br>With now this new Locke argument? So we know to has to that condition lock. It’s second argument. We know it has to release it because you, the interrupter gene, has to be able to acquire it. So we know there’s going to be release of that lock somewhere inside sleep. And indeed, here’s the release of that lock. Of course, we’re worried after we release the lock that at this very point wake up might be called and might wake up this process. So in order to might try to wake up this process, but of course we haven’t marked it sleeping yet. So we can not afford to have wake up execute.<br>现在有了这个新的洛克论点？所以我们知道必须在那种情况下锁定。这是第二个论点。我们知道它必须释放它，因为你，中断基因，必须能够获得它。所以我们知道，在睡眠中的某个地方，那个锁将会被释放。的确，这里是那个锁的释放。当然，我们担心在释放锁后，此时可能会调用 “唤醒” 并唤醒此进程。所以为了尝试唤醒这个过程，当然我们还没有将它标记为睡眠状态。所以我们不能承担唤醒执行的费用。</p>
+<p>发言人   48:34<br>To have wake up execute right after this release, even though we’re releasing. So in order to cause that Kno to happen before releasing the condition lock, sleep acquires the lock of the process that’s going to sleep, if you recall.<br>在这个版本发布后立即执行唤醒，即使我们正在发布。因此，为了在释放条件锁之前导致那个知识发生，睡眠会获得将要睡眠的过程的锁，如果你还记得的话。</p>
+<p>发言人   48:51<br>Wake up must be called with the condition lock held and it acquires, if it’s about to wake up, a process at first must wait to acquire that processes lock. So for the entire amount of time between when you are right, between before you are right checked the condition. And we, when we call skid here, this thread holds one or another of the condition lock and P arrow lock at all times.<br>唤醒必须在保持条件锁的情况下调用，并且它将被获取，如果它即将唤醒，进程首先必须等待以获取该进程的锁。因此，在你正确的时候之间的整个时间内，在你正确检查病情之前。当我们在这里调用 “打滑” 时，该线程始终保持一个或另一个条件锁和P箭头锁。</p>
+<p>发言人   49:24<br>Just to go back to uarts, I want to emphasize this UART, right, acquires the condition lock here and holds the condition lock all the way through to where it calls sleep. So it requires the condition lock, checks the condition with the lock held call, sleep with the condition lock held, wake up. Can’t do anything now because can not even allowed to call wake up until the caller owns the condition lock. So wake up is definitely not executing.<br>只是为了回到uarts，我想强调一下这个UART，对的，在这里获得了条件锁，并一直持有条件锁，直到它调用睡眠的地方。因此它需要条件锁定，使用保持的锁定呼叫检查条件，在保持条件锁定的情况下睡眠，唤醒。现在不能做任何事情，因为在调用者拥有条件锁之前甚至不允许呼叫唤醒。所以，醒来绝对不是在执行。</p>
+<p>发言人   49:52<br>Now we still hold the lock when we call sleep, Sleep releases the condition lock, but first acquires the processes lock and if you remember oop, wake up, wake up is called with the condition lock. After we release, sorry, after we release the condition lock, wake up can be called, but wake up won’t look at the process until it has the process lock, which we hold. So okay, so wake up is still not executing.<br>现在我们在调用sleep时仍然持有锁，Sleep释放条件锁，但首先获取进程锁，如果你还记得oop，唤醒，唤醒被调用与条件锁。在我们释放之后，抱歉，在我们释放条件锁之后，可以调用wake up，但是在我们持有的进程锁之前，wake up不会查看进程。所以没问题，所以唤醒仍未执行。</p>
+<p>发言人   50:32<br>Acquire the process lock. Release the condition lock. While holding the process lock. Mark the process as sleeping on this particular channel and then calls skid, which calls switch, right? We still have the process lock, so wake up still isn’t doing anything. And if you remember this, we’re now switching away from this thread to the scheduler thread. And the scheduler routine, after it’s called the switch returns, releases the recently running processes lock. So at this point, after we’re in the scheduler, wake up can finally acquire PR lock for this process.<br>获取进程锁定。释放条件锁。同时保持进程锁定。将该进程标记为在这个特定频道上睡眠，然后调用skiid，这调用switch，对吧？我们仍然有进程锁定，所以醒来仍然没有做任何事情。如果你还记得这一点，我们现在从这个线程切换到调度器线程。而调度程序例程在被称为交换机返回之后，会释放最近运行的进程锁。所以在这一点上，在我们进入调度程序后，唤醒最终可以获得此进程的PR锁定。</p>
+<p>发言人   51:08<br>Notice that it’s sleeping and on this channel and set its state to wake up. So we’re guarantee so the effect of the rule that you have to hold the condition lock when calling sleep, the fact that sleep knows about that lock and releases it only after acquiring process PR lock and wake up needing to hold both locks in order to think about this process means that we can no longer lose a wake up. And so we fix this loss wake up problem. I realized I had a little bit involved. Any questions about what’s going on here?<br>请注意它正在睡眠并在此频道上，并将其状态设置为唤醒。所以我们保证，在调用睡眠时你必须保持条件锁定的规则的效果，睡眠知道这个锁，只有在获取了进程PR锁并醒来需要同时持有两个锁才能思考这个过程，这意味着我们不能再失去唤醒。因此，我们解决了这个损失唤醒问题。我意识到我有点牵扯其中。对这里发生的事情有疑问吗？</p>
+<p>发言人   52:03<br>All right, well, feel free to ask questions at any time. All right, so we saw 1, we saw this one, looked at this one case in which we using sleep and wake up in a way that avoids lost wake ups. There’s a bunch of others in XV 6. This particular one, the thing that we’re waiting for, the condition that we’re waiting for is that interrupt has occurred. That is signaled that hardware is ready to. So do the next thing. There’s also times when kernel code calls sleep in order to wait for a diff, some other thread to do something which is not actually, in the end, conceptually different, but may feel a little bit different. So in the pipe code, for example, if you look at pipe read.<br>好的，随时可以提问。好的，所以我们看到了1，我们看到了这个，看看这个案例，我们使用睡眠和唤醒的方式避免了迷失的唤醒。在XV 6中还有一堆其他的。这个特定的，我们在等待的事情，我们等待的条件是中断已经发生。这表明硬件已经准备好了。所以，做下一件事。还有一些时候内核代码调用sleep来等待不同的时间，其他线程来完成一些事情，这实际上并不是概念上的不同，但可能感觉有点不同。因此，在管道代码中，例如，如果您查看管道读取。</p>
+<p>发言人   52:57<br>You know, there’s a bunch of junk here which you have to ignore. But the read system calling a pipe ends up calling pipe read. There’s a lock that protects the pipe. And this is going to end up being.<br>你知道，这里有一堆垃圾，你必须忽略。但读取系统调用管道最终会调用管道读取。有一把锁保护着管道。而这最终将会成为。</p>
+<p>发言人   53:12<br>The condition lock pipe read needs to wait until there’s actually data buffered in the pipe. And that condition is, you know, that there’s data ready is nrea or NRE is greater than nrea that is, more bytes have been written than read. While that’s not true Piper sits in sleep waiting for that condition and passes in this pipe lock, the condition lock that protects the condition into sleep in order to protect against lost wake ups.<br>条件锁定管道读取需要等待，直到管道中实际有缓冲的数据。那个条件是，你知道，有数据准备就绪nrea或NRE大于nrea，也就是说，写入的字节比读取的字节多。虽然这并不是真正的吹笛者坐在睡眠中等待那个条件并通过这个管道锁，保护条件进入睡眠以防止失去唤醒。</p>
+<p>发言人   53:46<br>And the reason why you might get a lost wake up is that on a different core, we go a little farther up in the file. On a different core, there’s probably some other red just now calling piperites and it’s going to add bytes to the pipe buffer. And finally called wake up on the channel that pipe read is waiting for. And you know, the we want to avoid the risk that between the reader checking that there’s and noticing there’s no bites to read and calling sleep, we do not want a piper on another core to slip in there and add bites and wake us up before we’ve even gone to sleep, right? That would be a lost wake up. And this lock, basically this lock and the fact that sleep is careful about releasing it prevent a writer from slipping in between the checkout the condition and the sleep because the writer has to require the slot too.<br>而你可能会迷失方向的原因是，在不同的核心上，我们在文件中走得更远一些。在不同的核心上，可能还有其他一些红色正在调用piperites，它将向管道缓冲区添加字节。最后在管道读取正在等待的通道上调用唤醒。而且你知道，我们想避免这样的风险，即在读者检查并注意到没有阅读和呼叫睡眠之间，我们不希望另一个核心上的吹笛者滑入其中并添加叮咬并在我们睡觉之前唤醒我们。对吧？那将是一次迷失的觉醒。这个锁，基本上是这个锁，而且睡眠要小心释放它，这可以防止写作者在结账和睡眠之间滑动，因为写作者也需要这个插槽。</p>
+<p>发言人   54:48<br>And for those of you who are.<br>对于那些属于你们的人。</p>
+<p>发言人   54:53<br>The people who asked about wrapping sleep. And while loops both pipe read and piperites a sleep wrapped in a while. So for example, the this is the loops for data to appear, wait for the pipe buffer to be empty and the sleep is wrapped in a loop. And again, the reason is that there could be perfectly well be multiple processes reading the very same pipe. And so if a writer writes 1 B to the pipe, so there’s only 1 B there, the writer is going to call wake up. That’s going to wake up all the multiple processes that we’re reading that pipe, but there’s only 1 B in the pipe. And so one of those processes is going to wake up first, right? It’s going to come out of its sleep first.<br>询问关于包装睡眠的人。而循环的管道读取和睡眠被包裹在一段时间内。例如，这是数据出现的循环，等待管道缓冲区为空，睡眠被包裹在循环中。再一次，原因是可能有多个进程读取同一个管道。因此，如果一个作者在管道中写了1 B，那么那里只有1 B，这个作者会打电话醒来。这将唤醒我们正在读取该管道的所有多个进程，但是管道中只有1 B。所以其中一个过程会首先醒来，对吧？它将首先从睡眠中出来。</p>
+<p>发言人   55:43<br>Actually, this reminds me there’s another crucial thing I forgot to mention about sleep, and that’s that the last thing sleep does, let’s look at. Is the here’s the? End of sleep. The last thing sleep does is acquires the condition lock. So you must call sleep with the condition lock held, and sleep reacquires it before it returns. What that means is that if there were a bunch of readers, there’s 1 B written, just written to a pipe, and a bunch of readers that are all woken up, one of them will succeed one of the sleep. So one of the threads will succeed in acquiring this lock. The others will be waiting in sleep, spinning, waiting for the lock. That one lucky process.<br>实际上，这让我想起了另一个关于睡眠的重要事情，那就是睡眠的最后一件事，让我们来看看。是这里吗？睡眠的结束。睡眠的最后一件事就是获得条件锁。所以你必须在保持状态锁的情况下调用睡眠，睡眠在它返回之前重新获得它。这意味着如果有一群读者，有1 B被写入，只是写入管道，还有一群读者都被唤醒，其中一个将接替其中一个睡眠。因此其中一个线程将成功获取此锁。其他人将在睡眠中等待，旋转，等待锁。这是一个幸运的过程。</p>
+<p>发言人   56:32<br>Sleep will return. It’ll come back to this check. And now p and right is one larger than n read, So there’s data to read, it’ll fall out of the loop, it’ll read the 1 B, and now there’s nothing in the buffer, release the lock and return, and now the next thread that was woken up, its sleep will be able to reacquire the condition lock, its sleep will return, it’ll return, recheck the loop condition, but now n read is equal to n, right? And so that thread and any other thread waiting, we will go back to sleep. So this is again just to reinforce why almost every maybe every call to sleep has to be wrapped in a loop that rechecks the condition.<br>睡眠会回来的。它会回到这张支票上。现在p和right比n读取大一，所以有数据要读取，它将退出循环，它将读取1 B，现在缓冲区中没有任何东西，释放锁定并返回，现在唤醒下一个线程，它的睡眠将能够重新获取条件锁，它的睡眠将返回，它将返回，重新检查循环条件，但是现在n读取等于n，对吗？因此，该线程和任何其他等待的线程，我们将返回睡眠状态。因此，这再次强调了为什么几乎每个对睡眠的调用都必须包装在一个重新检查条件的循环中。</p>
+<p>发言人   57:18<br>Questions about the way sleep pipes use sleep?<br>关于睡眠管道使用睡眠的方式的问题？</p>
+<p>发言人   57:33<br>All right, the sleep and wake up interface and rules are a little bit complex because you have to sort of reveal a bit to sleep about what you’re waiting for. You have to tell at the lock and follow some rules, which is sometimes annoying. On the other hand, sleep and wake up pretty flexible, partially because they don’t actually have to understand the condition itself. There just has to be a condition and be a lock.<br>好的，睡眠和唤醒界面和规则有点复杂，因为你必须稍微透露一下你在等待的东西。你必须在锁门处说出并遵守一些规则，这有时很烦人。另一方面，睡眠和醒来非常灵活，部分原因是他们实际上不必了解病情本身。只需要有一个条件和一把锁。</p>
+<p>发言人   58:00<br>There are other schemes that are somewhat higher level. There’s other coordination schemes, like the semaphores you read about in the reading for today, in which the interface is slightly less complex, like the semaphores, you don’t have to tell the semaphore about a lock, and the color of the semaphore doesn’t have to worry about lost wakeups internally. The implementation of the semaphore, again, as you saw in the reading for today, the internal implementation of semaphores worries about I lost wake up. So because the interface is specialize to these up down counters, the need to deal with lost wakeups doesn’t leak through into the interface. So the sefor s are somewhat simpler, although they’re less general. If if you’re not, if you don’t have a count and you’re not waiting for a count, then semaphores are not necessarily going to be super helpful for you. So it’s that that causes me to claim that sleep and wake up are a little more general.<br>还有其他一些更高水平的计划。还有其他的协调方案，就像你在今天的阅读中读到的信号量，其中接口稍微简单一些，就像信号量一样，你不必告诉信号量锁，信号量的颜色也不必担心内部丢失的唤醒。信号量的实现，正如你在今天的阅读中看到的那样，信号量的内部实现担心我失去了觉醒。因此，由于该接口专门用于这些上下计数器，因此处理丢失唤醒的需求不会泄露到接口中。所以sefor s有些简单，虽然它们不那么通用。如果你没有计数，如果你没有计数，也没有等待计数，那么信号量对你来说不一定非常有帮助。因此，这使得我声称睡眠和醒来更加普遍。</p>
+<p>发言人   59:00<br>All right, so with sleep and wake up under our belts, I want to talk about one more kind of challenge that XV 6 faces that’s actually related to sleep and wake up. And that’s how to shut down threads.<br>好的，在我们的睡眠和醒来之后，我想谈谈XV 6面临的另一种挑战，它实际上与睡眠和醒来有关。这就是如何关闭线程。</p>
+<p>发言人   59:16<br>Every threading system, you know, the threads eventually need to exit and we need to clean up their state, free their stack on XV 6. When a process exits, we need to free its user memory and free its page table and free its trap frame and mark the process, the slot, and the process table as reusable. So this is sort of typical cleanup requirements.<br>每个线程系统，你知道，线程最终都需要退出，我们需要清理它们的状态，在XV 6上释放它们的堆栈。当一个进程退出时，我们需要释放它的用户内存，释放它的页表和陷阱帧，并将该进程、插槽和进程表标记为可重复使用。所以这是一种典型的清理要求。</p>
+<p>发言人   59:39<br>There’s a bunch of stuff that has to be freed when threads exit. Or are killed? So, but there’s two big problems that arise here with thread exit or killing threats.<br>当线程退出时，必须释放一堆东西。还是被杀了？所以，这里出现了两个大问题，即线程退出或消除威胁。</p>
+<p>发言人   59:53<br>One is that we can’t just reach out. We can’t usually just reach out and unilaterally destroy another threat. The problem is that that other thread may actually be currently executing on another core and using its stack, maybe about to save its registers in its struct context or whatever The other thread, if it’s in the kernel, may be holding locks. It may be in the middle of some complicated update to a kernel data structure. And if we simply somehow shoot down the thread and stop it dead in its tracks, then it may have gotten halfway through a delicate update to some kernel data. But we shot it down before it completed. So we can’t afford any of those things to happen.<br>其一是我们不能只是伸出援手。我们通常不能只是伸出手来单方面摧毁另一个威胁。问题在于，另一个线程可能实际上正在另一个核心上执行并使用其堆栈，可能将要将其寄存器保存在其结构上下文中，或者其他线程，如果它在内核中，可能会持有锁。它可能正在对内核数据结构进行一些复杂的更新。如果我们只是以某种方式击落线程并阻止它，那么它可能已经通过对某些内核数据的微妙更新进行了一半。但我们在它完成之前就把它击落了。所以我们负担不起任何这些事情的发生。</p>
+<p>发言人   01:00:39<br>Another problem is that even if a thread calls exit and a sort of decided it’s not killed, but decided for itself that it wants to quit, it has resources that it uses while it executes, like it’s stack, for example, and it’s slot in the process table. And while it’s still executing, it may not be able to free up the resources that it’s still using. So we need a way for threads to for those last few resources that are critical to execution to somehow be freed, even though the thread needs them, even just execute any code at all, okay?<br>另一个问题是，即使一个线程调用exit并决定它没有被杀死，而是自己决定它想要退出，它在执行时拥有它使用的资源，例如它的堆栈，并且它在工艺表中的槽位。虽然它仍在执行，但它可能无法释放仍在使用的资源。所以我们需要一种方法，让线程以某种方式释放那些对执行至关重要的最后几个资源，即使线程需要它们，甚至只是执行任何代码，好吗？</p>
+<p>发言人   01:01:16<br>So keep these two problems in mind. XV 6 actually has 2, 2 things that are related to shutting down threads processes. One is exit and the other is killed.<br>所以要记住这两个问题。XV 6实际上有2，2件与关闭线程进程有关的事情。一个是退出，另一个被杀死。</p>
+<p>发言人   01:01:28<br>So let’s look at exit first and look at the code for exit in proc DOC. This is what the exit system call calls. And you know what exit has to do in the end? We know sort of from the outside, from the interface, that it’s got to free up the process memory and page table. It’s got to closest open files. And we also know that there’s this wait call that the parent may be waking making in it Exit has to eventually cause the parent to be woken up as well. And so we’re going to look for all these things in. In the exit code. So you can see some of this stuff like exit specifically closes the open files.<br>所以让我们先看看退出，并查看proc DOC中退出的代码。这就是退出系统调用的调用。你知道出口最终会做什么吗？我们知道，从外部，从接口，它必须释放进程内存和页表。它必须连接到最近的打开文件。我们也知道父母可能正在醒来的等待呼叫，在退出时必须最终导致父母也被唤醒。所以我们要寻找所有这些东西。退出代码中。所以你可以看到一些像exit这样的东西专门关闭打开的文件。</p>
+<p>发言人   01:02:12<br>And this might actually be quite complex because the files are, you know, file system files. Closing them actually involves things like reference counting. And we haven’t gotten there yet, but we’ll see that this takes a fair amount of work.<br>这实际上可能非常复杂，因为这些文件是文件系统文件。关闭它们实际上涉及引用计数等事情。我们还没有到达那里，但我们会看到这需要相当多的工作。</p>
+<p>发言人   01:02:25<br>But a process goes ahead and closes when you call exit its own files. And it also does something similar. It has record of the current working directory, which is what’s changed when you call CD. And it needs to sort of release that reference into the file system.<br>但是当你调用exit它自己的文件时，一个进程继续并关闭。它也做了类似的事情。它有当前工作目录的记录，这是您调用CD时更改的内容。并且它需要将该引用释放到文件系统中。</p>
+<p>发言人   01:02:44<br>Then there’s some other horrible stuff that happens that’s related to the fact that if a process exits, but it has children of its own. Those children are inherited by the init process because, as it turns out, we’ll see in a few minutes that every process that exits, there has to be a corresponding weight from a parent that actually finishes up some of the steps in exiting. And so if I exit my children, they need to be waited for. I was their parent. I’m not going to wait for them because I’ve exited. And so there’s a stretch of code here and exit that is reparenting the exiting processes children so that they’re parents of innit, which is process ID 1. And then finally, a process wakes up its own parent, which might be waiting and sleeping and wait.<br>然后还有一些其他可怕的事情发生，这与以下事实有关: 如果一个进程退出，但它有自己的孩子。这些子进程被init进程继承，因为事实证明，我们将在几分钟后看到每个退出的进程，都必须有一个来自父进程的相应权重，该权重实际上完成了退出的某些步骤。所以如果我离开我的孩子，他们需要等待。我是他们的父母。我不会等待他们，因为我已经退出了。所以这里和exit有一段代码，正在重新计算退出进程的子进程，以便它们是innit的父进程，即进程账号1。最后，一个进程唤醒它自己的父进程，它可能正在等待、睡眠和等待。</p>
+<p>发言人   01:03:39<br>And sets its state to the zombie state? It turns out we haven’t. We’ll see in a moment. But the process hasn’t completely finished releasing all of its resources, so it’s not quite ready to be reused. Like we want to end up in a position where the process can be and all its state can be reused by a fork, by some other fork that’s unrelated, right? But we’re not quite there yet, and we’ll see why in a moment. But we set the state to zombie and then, and we’re not done yet, right? We haven’t freed the process, we just jump into the scheduler without having completely finished freeing all resources.<br>并将其状态设置为僵尸状态？结果证明我们还没有。我们一会儿就会看到。但是这个过程还没有完全释放所有的资源，所以它还没有完全准备好被重用。就像我们希望最终处于这样一个位置，即进程可以并且其所有状态都可以被分叉或其他不相关的分叉重复使用，对吗？但我们还没有完全达到目标，我们一会儿就会明白为什么。但是我们将状态设置为僵尸，然后，我们还没有完成，对吗？我们还没有释放进程，只是在没有完全释放所有资源的情况下跳入调度程序。</p>
+<p>发言人   01:04:27<br>Okay, so the story here continues, You know, at this point, a zombie process won’t be run. The scheduler only runs runable processes. Browse isn’t quite free because that would be state equals unused, but it’s definitely not going to run again because it’s a state zombie.<br>好的，所以这里的故事继续下去，你知道，在这一点上，僵尸进程将无法运行。调度程序仅运行可运行的进程。浏览不是完全免费的，因为它的状态等于未使用，但它肯定不会再次运行，因为它是一个状态僵尸。</p>
+<p>发言人   01:04:43<br>So systems, a scheduler, scheduler now run something else we know from the sort of description of exit and weight in Unix that if a process exits, then if its parent calls weight the weight, that weight is going to return to signal to the parent that one of its children is exited. So we can look for the implementation of weight. Also, here is a big loop, this implementation of weight. But really what’s going on is that when a process calls weight, it scans the process table.<br>所以系统，一个调度器，调度器现在运行一些我们从Unix中退出和权重的描述中知道的其他东西，如果一个进程退出，那么如果它的父进程调用权重，该权重将返回到其子进程退出的信号给父进程。所以我们可以寻找权重的实施方法。此外，这是一个大循环，这是权重的实现。但实际上发生的是，当一个进程调用权重时，它会扫描进程表。</p>
+<p>发言人   01:05:26<br>Looking for processes whose parent is the current process. And in particular, looking for processes whose parent is the current process. And or in state zombie, that is they had gotten that far in exit or almost finished exiting. So now we found this called a weight to the weight system calls found a child process that has exited. And I don’t know if you remember, exit can return this 32 b exit status to the parents. So the next bunch of code collects that.<br>寻找父进程为当前进程的进程。特别是，寻找父进程为当前进程的进程。或者在国家僵尸中，也就是说他们已经在退出中走了那么远或几乎完成了退出。所以现在我们发现这个被称为权重的权重系统调用找到了一个已经退出的子进程。我不知道你是否还记得，exit可以将这个32 b的退出状态返回给父母。所以下一堆代码收集它。</p>
+<p>发言人   01:06:05<br>And then it’s the parent that calls free proc, which does the final steps in freeing a process as resources. So we’ll look at free proc, and this is the final shutdown of stuff that would be quite awkward if if the exiting process itself freed while it was executing. So it frees its trap frame, frees the user page table, and if we freed kernel stacks, the processes, exiting processes, kernel stack would be freed here also. But because of the. Stack guard kernel stack, stack guard pages. We don’t actually ever. Turns out we don’t free to whenever free the kernel stacks, but all the stuff that would be a sort of potentially a pain to free in the in the exit while the exiting process is running is freed by the parent.<br>然后是调用free proc的父进程，它执行释放进程资源的最后步骤。所以我们将看看免费进程，这是最终关闭的东西，如果退出进程本身在执行时释放，这将是相当尴尬的。所以它释放了它的陷阱帧，释放了用户页表，如果我们释放了内核堆栈，那么进程、退出进程和内核堆栈也将在这里释放。但是因为。堆栈保护内核堆栈，堆栈保护页面。我们实际上从来没有。结果发现，无论何时释放内核堆栈，我们都不会释放，但是当退出进程运行时，所有可能在退出时释放的东西都会被父级释放。</p>
+<p>发言人   01:07:00<br>One thing to notice here is that weight. Weight is not just for the convenience of parents that want to know when their children have exited. Weight is actually a critical piece of the exit process. And you really, in Unix, it’s just a requirement that there be a weight that corresponds to every exiting process. And that’s really the reason why when a process exits, its children are sort of given away to init. They’re turned into init children. What init does is just calls weight in the loop, because every process has to be waited for so that the this parent can call free proc and finish freeing up resources. And then when it’s completely done, it sets if when the parent’s done freeing all the exited processes resources, it sets that child state to unus.<br>这里需要注意的一件事是重量。体重不仅仅是为了方便父母，他们想知道自己的孩子什么时候退出。重量实际上是退出过程中的一个关键部分。实际上，在Unix中，只是要求每个退出进程都有一个对应的权重。这就是为什么当一个进程退出时，其子进程会被分给init的原因。他们变成了init的孩子。init所做的只是在循环中调用权重，因为每个进程都必须等待，以便该父进程可以调用free proc并完成释放资源。然后，当它完全完成时，如果当父进程完成释放所有退出的进程资源时，它将该子状态设置为unus。</p>
+<p>发言人   01:07:53<br>Now fork and know some futures called the fork can reuse that process slot. Any questions? Oh, I have a question about sleep. So in sleep where we are. Yeah, so when we are, oh, sorry, not sleep exit. And once I exit, yeah. Yeah, so why are we, why are we grabbing original parent before we repent? Is that necessary?<br>现在分叉并知道一些称为分叉的期货可以重用该进程槽。有问题吗？哦，我有一个关于睡眠的问题。所以在我们所处的睡眠中。是的，所以当我们，抱歉，没有睡眠时退出。一旦我退出，是的。是啊，那么我们为什么要在悔改之前抓住原来的父母呢？有必要吗？</p>
+<p>发言人   01:08:42<br>This is grim code that’s wrestling with the possibility that a process and its parent may exit at the same time. And there’s some, you know, even no, ordinarily there’s like nothing interesting going on, says Xs. Its parent waits for it, everything’s fine. But it could be that a parent, that a process exits, and it’s parent process exits at the same time. And so while we’re trying to like wake up our parent until we’ve exited, that parent is itself exiting.<br>这是一段严峻的代码，它正在努力应对进程及其父进程可能同时退出的可能性。而且有一些，你知道的，甚至没有，通常没有什么有趣的事情发生，Xs说。它的父母等待它，一切正常。但也可能是一个父进程，一个进程退出，它的父进程同时退出。因此，当我们试图唤醒我们的父母直到我们退出时，父母本身也在退出。</p>
+<p>发言人   01:09:19<br>And a lot of this code here, which I feel I kind of understood a year ago but don’t any longer understand, is about taking of this rare concurrent case of concurrent exit of a parent and child. And if it weren’t for that, it would all be extremely straightforward. A parent, the process would have a parent, and it would just wake up its parent at this point. And. If it weren’t for concurrent X, it’s a parent and child. The child could just wake up its parent, period.<br>这里有很多代码，我觉得我一年前就已经理解了，但现在已经不理解了，它是关于采取这种罕见的同时退出父级和子级的情况。如果不是因为那个，一切都会非常简单。父进程会有一个父进程，它只会在此时唤醒其父进程。而且。如果不是并发的X，它就是父和子。孩子可能只是唤醒了它的父母，时期。</p>
+<p>发言人   01:09:54<br>Okay, I see, thank you. Sorry, sorry to not really be explaining here. I have a quick question. So why are we setting the process state to zombie after we wake up the parent? Wouldn’t we want to do that before?<br>好的，我明白了，谢谢。抱歉，抱歉这里没有真正解释。我有个简短的问题。那么为什么在唤醒父母后，我们要将进程状态设置为僵尸状态呢？难道我们不想以前就这么做吗？</p>
+<p>发言人   01:10:09<br>Oh, yeah, it turns out because we’ve had the exiting process had acquired its own process lock, the parent can’t look at this process. And we’ve acquired our own lock here. And then we’re going to call Scad the parent. Parents’ weight acquires the child’s lock, which is PR lock. And so that means that between the squire and when after we call schedule and the scheduler thread releases this P lock, the parent can’t look at this process in this block of code, okay? So the order of this stuff doesn’t matter. And indeed, if we didn’t have the lock-up, it’s possible some other, well, in most situations, no order would work if we didn’t hold the lock. Anyway, yeah, because we hold the lock, the order sort of doesn’t matter because the parent can’t look, that makes sense?<br>哦，是的，事实证明是因为我们已经让退出进程获得了自己的进程锁，父进程无法查看此进程。我们在这里获得了自己的锁。然后我们要将Scad称为父母。父母的体重获得了孩子的锁，即公关锁。这意味着在squire之间，以及在我们调用schedule和调度程序线程释放此P锁之后，父线程无法在这段代码中查看此进程，好吗？所以这些东西的顺序并不重要。的确，如果我们没有锁定，那么在大多数情况下，如果我们没有锁定，订单就不会工作。无论如何，是的，因为我们把锁拿着，顺序有点不重要，因为父母看不到，这就感知了？</p>
+<p>发言人   01:11:19<br>Okay? Okay, so the trick here is, or the trick I wanted to emphasize was that to a great extent, actually, the child doesn’t. In the end, the child doesn’t free all its resources because it can’t, because it’s still using them while it executes. And instead, some other thread, namely the parent, does the freeing of the delicate resources that are required for execution. So that’s sort of a trick to allow us to greedy simplify exit.<br>好吗？好的，这里的诀窍是，或者说我想强调的诀窍是，在很大程度上，实际上，孩子并没有。最后，孩子并没有释放所有的资源，因为它不能，因为它在执行时仍在使用它们。相反，其他一些线索，即父母，释放执行所需的微妙资源。所以这是一种让我们贪婪地简化退出的技巧。</p>
+<p>发言人   01:11:56<br>Okay, the last thing I want to look at is kill. So the, you know, no, the kill system call 1 process in Unix can call that make the kill system call and pass it the process ID of a different process.<br>好吧，我最后想看的是杀人。所以，你知道，不，Unix中的kill系统调用1进程可以调用使kill系统调用并将其传递给不同进程的进程账号。</p>
+<p>发言人   01:12:11<br>And the goal is that that should cause that other process, the target process, to stop executing. And if we’re not careful, you know, this risks, especially at that other, the process is executing in the kernel. This risk, this problem I mentioned a few minutes ago where, gosh, the kernel thread of the process of trying to kill might be in the middle of updating something, you know, updating the file system, creating a file, for example. And we can’t just like kill it dead on the spot because that would leave some delicate multi-step operation only halfway completed. So we know that kill can’t really just stop the target process.<br>目标是让目标进程停止执行。如果我们不小心，你知道，这种风险，尤其是在另一个地方，进程在内核中执行。这种风险，我几分钟前提到的这个问题，天哪，试图杀死的过程的内核线程可能正在更新一些东西，你知道，更新文件系统，例如创建一个文件。我们不能只是当场杀死它，因为这会留下一些微妙的多步骤操作只完成了一半。所以我们知道，杀死并不能真正停止目标过程。</p>
+<p>发言人   01:12:53<br>And indeed, and XV 6 and the unixes as well, k us almost absolutely nothing. It scans the process table looking for the target process ID and just sets this flag. And that processes process structure. And also, if it was sleeping, causes to be runnable. So it’ll wake up from the sleep. But all it does is set the SLA. It doesn’t stop the other process from executing or anything like it. So kill itself is very gentle.<br>事实上，XV 6和Unix也几乎没有任何东西。它会扫描进程表以查找目标进程账号，并仅设置此标志。这处理过程结构。而且，如果它在睡觉，则导致可运行。所以它会从睡眠中醒来。但它所做的只是设定了标准。它不会阻止其他进程执行或类似的事情。所以杀死自己非常温和。</p>
+<p>发言人   01:13:32<br>And the game is that the target process at points in the kernel code where it would be safe to stop executing the other process checks its own killed flag. And if it’s set, the other process sort of voluntarily exits, you know, calls this exit function. And you can see some of those points in trap dot c, In fact, you can see all the points trap DOC.<br>游戏是目标进程在内核代码中可以安全地停止执行另一个进程的点检查自己的已杀死标志。如果设置好了，另一个进程就会自动退出，你知道的，调用这个退出函数。你可以在陷阱点c中看到其中的一些点，实际上，你可以看到所有的点陷阱文档。</p>
+<p>发言人   01:14:01<br>So if we’re in user trap in a system call, before actually executing the system call, if the process has already been killed or if kill has been called for this process, then the process calls exit and goes away. And this is a point in the kernel where it’s not holding any locks. It’s not in the middle of doing anything. And so it’s completely safe for the process to just quit and call exit. And there’s a similar check at the end of User trap. So after a system call, the process also checks if it’s being killed.<br>因此，如果我们在系统调用中处于用户陷阱中，在实际执行系统调用之前，如果进程已经被杀死或如果已经为该进程调用了kill，则进程调用退出并消失。这是内核中的一个点，它不持有任何锁。它不在做任何事情的中间。因此，这个过程退出并呼叫退出是完全安全的。在用户陷阱的末尾有一个类似的检查。因此，在系统调用之后，该进程还会检查它是否被杀死。</p>
+<p>发言人   01:14:39<br>And indeed, this code here executes, even if there’s if the process is interrupted by an interrupt. So for example, if a timer interrupt goes off, then this code will execute. And we’ll see that the process has been killed, and then the process will exit. And so what that means is that what kill means kill, the meaning of kill or the effect of kill is not exactly stop the other process.<br>事实上，即使进程被中断，这里的代码也会执行。因此，例如，如果一个计时器中断停止，那么这段代码将会执行。然后我们会看到该进程已被杀死，然后该进程将退出。因此，这意味着 “杀死”，“杀死” 的意义或 “杀死” 的效果并不完全是停止另一个过程。</p>
+<p>发言人   01:15:08<br>Right now, it’s much more like, well, you know, if the process other processes in user space, then the next time it makes a system call, it will exit. Or the next time a timer interrupt goes off while executing user code in the target process. If it’s interrupted by a timer interrupt or some other interrupt, then it will also exit. So there might be a significant delay between when one process calls kill and when the other process actually exits. That’s just the way it is.<br>现在，它更像是，你知道，如果进程在用户空间中处理其他进程，那么下一次它进行系统调用时，它将退出。或者下一次在目标进程中执行用户代码时计时器中断停止。如果它被计时器中断或其他中断打断，那么它也会退出。因此，在一个进程调用kill和另一个进程实际退出之间可能会有显著的延迟。事情就是这样。</p>
+<p>发言人   01:15:44<br>There is a sort of intermediate question, though, of if the process is not in zone user space, but is in the middle of a system call and it’s killed, do we need to do anything special? The reason why this may come up is suppose the process is reading from the console, right? You know, reading for the next character you type, but you might not type another character until tomorrow. And it would be nice if when you killed the process, it actually went away before tomorrow. And for that reason, in a number of points in XV 6 in which a process is is sleeping, xcv 6 actually arranges that if it’s killed while sleeping in the kernel, it will actually exit. So let me show you the machinery for that.<br>但是，有一种中间问题，即如果进程不在区域用户空间中，而是在系统调用的中间并被杀死，我们需要做什么特别的事情吗？这可能出现的原因是假设进程正在从控制台读取，对吗？你知道，阅读你输入的下一个字符，但你可能要到明天才能输入另一个字符。如果你在结束这个过程时，它实际上在明天之前消失了，那就太好了。因此，在XV 6中的许多点上，进程正在睡眠，xcv 6实际上安排如果它在内核睡眠时被杀死，它实际上会退出。那么让我向您展示用于此的机械。</p>
+<p>发言人   01:16:35<br>The first thing to look at is in kill itself. You can see that if the target process is sleeping, then kill will set its state to runnable. And that’ll mean that even if it had called sleep, the scheduler will now run it and it will simply return from sleep. And so let’s look at a place where that actually matters in the pipe code.<br>首先要看的是自我毁灭。你可以看到，如果目标进程正在睡眠，那么kill会将其状态设置为可运行。这意味着即使它调用了sleep，调度程序现在也会运行它，它只会从睡眠中返回。那么让我们来看一个在管道代码中真正重要的地方。</p>
+<p>发言人   01:16:58<br>If a process is in sleep, waiting to read a pipe. And it’s killed. Kill will set it to runable, it’ll return from sleep, it’ll go back to the top of this loop, probably, if there was no data in the pipe before, there’ll probably still be no data in the pipe. And now this pipe read at least checks whether the process has been killed and if it has been killed, instead of sleeping again, pipe read will return. Return an error doesn’t really matter. But what we’re returning to is this sys call. Since we’re in a system call where pipe really returns to in the end is returns from the system call, and then user trap checks piano, kill again, and will now exit so for sleeps that we know it’s okay to just bail out of when a process is killed, those loops check the killed flag, but there are also sleeps where it would not be OK for a process to quit if it’s killed in that sleep.<br>如果一个进程处于睡眠状态，等待读取管道。它被杀死了。Kill会将其设置为可运行，它会从睡眠状态返回，它会回到此循环的顶部，可能，如果之前管道中没有数据，则管道中可能仍然没有数据。现在，这个管道读取至少检查进程是否已被杀死，如果它已被杀死，而不是再次休眠，管道读取将返回。返回错误并不重要。但我们回到的是这个sys调用。由于我们处于一个系统调用中，其中管道真正返回到的是从系统调用中返回，然后用户陷阱检查钢琴，再次杀死，现在将退出睡眠，以便我们知道当一个进程被杀死时可以摆脱困境，这些循环会检查被杀死的标志，但也有一些睡眠，如果进程在睡眠中被杀死，就不能退出。</p>
+<p>发言人   01:18:06<br>So for example, if a process is in the middle of updating the file system on disk to create a new file that is a bad time, even if it’s sleeping, waiting for the disc, that’s a bad time for a process to just decide to quit because it’s been killed. We want to finish the complete file system operation and only then have the process exit. And so you can see this, we haven’t looked at this, but I will show you in the discr.<br>因此，例如，如果一个进程正在更新磁盘上的文件系统以创建一个新文件，这是一个糟糕的时间，即使它正在休眠，等待光盘，这对于一个进程来说也是一个糟糕的时间，因为它已经被杀死了。我们想要完成完整的文件系统操作，然后才退出进程。所以你可以看到这个，我们还没有看过这个，但我会在discr中给你看。</p>
+<p>发言人   01:18:34<br>An example of a sleep loop that doesn’t check killed. Well, look at that. So here we are, this is the sleep in which a process waits for the disk to finish reading a disk block, and it absolutely doesn’t check killed because it wants to finish. It may in the middle of like creating a file which involves multiple discretes and writes. When I finish the entire file system operation, the entire system call and only then check pier killed and exit.<br>一个不检查终止的睡眠循环的例子。好吧，看看这个。所以我们在这里，这是一个睡眠，其中一个进程等待磁盘完成读取磁盘块，它绝对不会因为想要完成而终止检查。它可能处于创建涉及多个离散和写入的文件的中间。当我完成整个文件系统操作时，整个系统调用，然后才检查码头被终止并退出。</p>
+<p>发言人   01:19:07<br>Questions about anything? I have a question about why skill allowed in the way it is. Why wouldn’t the process kill all the other processes so that it can run by itself? You know, you do that at MIT on a theme, a time streaming machine. They’ll probably kick you out of school. Right, but why is it allowed? I guess it’s allowed in XV 6 because XV 6 is a toy operating system that. It just like anything that has to do with like permissions just doesn’t exist in XV 6 in Linux or a real operating system.<br>关于任何问题？我有一个问题，为什么允许这样的技能。为什么这个进程不杀死所有其他进程，以便它可以自己运行？你知道，你在麻省理工学院做一个主题，一个时间流媒体机器。他们可能会把你赶出学校。对，但为什么允许呢？我猜它在XV 6中是允许的，因为XV 6是一个玩具操作系统。它就像任何与类似权限有关的事情一样，在Linux的XV 6或真正的操作系统中不存在。</p>
+<p>发言人   01:19:55<br>Every process has a user ID. It corresponds to the more or less to the human user who’s executing the process. And some system calls use the user ID of the process to kind of check what is the process allowed to do this. And so in Linux, you would see an extra check here. That said, the calling process has to have the same user ID as the process is trying to kill. Otherwise it’s not allowed. And that, at least in a time sharing context where we have multiple users and we don’t want them to kill each other’s processes, that’s more or less sufficient to keep people, make it hard for people to kill other people’s processes.<br>每个进程都有一个用户账号。它或多或少地对应于执行该进程的人类用户。有些系统调用使用进程的用户账号来检查进程允许执行此操作的权限。因此在Linux中，您会在这里看到一个额外的检查。也就是说，调用进程必须具有与试图终止的进程相同的用户账号。否则是不允许的。而且，至少在我们有多个用户的分时环境下，我们不希望他们杀死彼此的进程，这或多或少足以让人们难以杀死其他人的进程。</p>
+<p>发言人   01:20:41<br>Okay, see, thank you. Does the knit process ever exit? Let me check. Yes, if fork fails it a lexit. However, the real answer to your question is no. The intent is that in it, never exit it, just sit in this loop. And what it’s doing is calling weight over and over again. If init exits, I think that’s a fatal error and the system will crash. There’s code somewhere in the kernel that says maybe an exit. Let’s just check exit, Yeah, here we are.<br>好的，看，谢谢。编织过程会退出吗？让我检查一下。是的，如果fork失败了，那就是一个词汇库。然而，你问题的真正答案是否定的。意图是在其中，永远不要退出，只是坐在这个循环中。它正在做的是一遍又一遍地呼唤体重。如果init退出，我认为这是一个致命错误，系统将会崩溃。内核中的某处代码可能表示退出。让我们检查一下出口，是的，我们到了。</p>
+<p>发言人   01:21:32<br>An exit At the beginning of exit, if it looks like the current process is the init process, a panic because the system would eventually grind to a halt if there were a no in it, because then then there would be nothing collect, nothing to call weight on these exiting processes, and nothing to complete the freeing of the processes and gradually run out of processes. And then that would be some other error, but we have to have an init. So the real answer is that no init really can’t be allowed to exit, better not exit.<br>在退出开始时退出，如果看起来当前进程是init进程，则会出现恐慌，因为如果其中存在一个no，系统最终会停止运行，因为那样就不会有任何收集的东西，也没有任何东西可以调用这些退出进程的权重。并且没有什么可以完成进程的释放并逐渐耗尽进程。然后这将是一些其他错误，但我们必须有一个init。所以真正的答案是，任何init都不能被允许退出，最好不要退出。</p>
+<p>发言人   01:22:08<br>Okay? Any other questions? I guess another question. So I guess we haven’t really talked about it much in this class yet, but like, what happens or what needs to happen to like shut down the OS? You got to unplug it.<br>好吗？还有什么问题吗？我想还有一个问题。所以我想我们在这堂课上还没有真正谈论它，但是关闭操作系统会发生什么或者需要发生什么？你得拔掉它。</p>
+<p>发言人   01:22:31<br>Okay, yeah, this is like very complex and it depends on what you’re running. If the machine is currently doing nothing, well, a part of the answer to the question is that the file system ends up being because the file system is permanent you, the file system is carried over from reboot to reboot.<br>好的，是的，这非常复杂，取决于你在跑什么。如果计算机当前什么也不做，那么问题的一部分答案是文件系统最终会因为文件系统是永久性的而停止，文件系统会从重新启动到重新启动。</p>
+<p>发言人   01:22:58<br>We need to leave the file system in good shape. So if we were in the middle of some update to the file system, like creating a file, then we and we want to shut the system down or the power fields or something. We absolutely need a strategy to make sure that that even though we were in the middle of some complex update to the file system, that we don’t leave it in the file system in a state. We don’t expose any broken invariants in the on disk file system structures because the file system’s really just a data structure that lives on disk. So there’s like a lot of that sort of machinery involved and like making sure that if you shut down or the power fails or who knows what that the disk can, that we can recover the file system on disk. For the rest, though, if it’s not for that.<br>我们需要保持文件系统的良好状态。因此，如果我们正在对文件系统进行一些更新，比如创建一个文件，那么我们想要关闭系统或电源字段或其他东西。我们绝对需要一个策略来确保即使我们正在对文件系统进行一些复杂的更新，我们也不会将它留在文件系统中处于某种状态。我们不会在磁盘文件系统结构中暴露任何被破坏的不变量，因为文件系统实际上只是一个存在于磁盘上的数据结构。所以涉及到很多这样的机器，比如确保如果你关机或电源故障，或者谁知道磁盘能做什么，我们可以恢复磁盘上的文件系统。对于其他的，如果不是因为那个。</p>
+<p>发言人   01:23:49<br>Then whether you have to do anything special to shut down depends on what processes you’re running. If you’re running some important server, you know, a database server that a lot of other computers depend on and use over the network, who knows? You know, the answer may be that you just can not be allowed to shut down because you’re providing a service that’s critical to a bunch of other computers.<br>那么你是否需要做任何特别的事情来关闭取决于你正在运行的进程。如果你正在运行一些重要的服务器，你知道，一个许多其他计算机依赖并通过网络使用的数据库服务器，谁知道呢？你知道，答案可能是你不能被允许关机，因为你提供的服务对一堆其他计算机来说是至关重要的。</p>
+<p>发言人   01:24:11<br>If your computer is not doing much of anything, then you can just turn it off and it will stop executing and there’s not much to do. I mean, really, maybe the answer to your question is if you want to shut down the computer, make sure the file system is in good shape, and then stop executing instructions. And that’s fine. That makes sense. Yeah, thank you. Anything else? Oh, sorry, I have another question.<br>如果您的计算机没有做任何事情，那么您可以将其关闭，它将停止执行，并且没有太多事情要做。我的意思是，也许你问题的答案是，如果你想关闭计算机，确保文件系统处于良好状态，然后停止执行指令。没关系。这很感知。好的，谢谢。还有什么吗？哦，抱歉，我还有一个问题。</p>
+<p>发言人   01:24:44<br>So what is the semaphore interface? We’re talking about P and V? So just just those two functions. Yeah, XP 6 doesn’t have semaphores really. But yeah, the Book of Semaphores, I think it’s just P and B is just those are two methods. You know, you have a semaphore object, there’s 2 methods, p and v, okay, I see you, thank you, sure.<br>那么信号量接口是什么？我们在谈论P和V？所以只有这两个功能。是的，XP 6真的没有信号量。但是，是的，在信号量的书中，我认为只有P和B是这两种方法。你知道，你有一个信号量对象，有两个方法，p和v，好的，我看到你了，谢谢，当然。</p>
+<p>发言人   01:25:20<br>Anything else? All right?<br>还有什么吗？一切都好吗？</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 012-Sleep Wakeup</div>
+      <div>http://example.com/2025/10/18/6S081-012/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-013/" title="操作系统工程 013-FileSystems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 013-FileSystems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-011/" title="操作系统工程 011-QA2 COW lab">
+                        <span class="hidden-mobile">操作系统工程 011-QA2 COW lab</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

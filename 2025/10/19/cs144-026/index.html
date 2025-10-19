@@ -1,0 +1,634 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00So in this video I’m going to give a brief overview of the TCP header. If you want more information, there’s of course tons of documentation online, but there’s just a brief summary of kind">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 026 TCP header">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-026/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00So in this video I’m going to give a brief overview of the TCP header. If you want more information, there’s of course tons of documentation online, but there’s just a brief summary of kind">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:25.000Z">
+<meta property="article:modified_time" content="2025-10-19T13:02:55.730Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 026 TCP header - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 026 TCP header"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 026 TCP header</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>So in this video I’m going to give a brief overview of the TCP header. If you want more information, there’s of course tons of documentation online, but there’s just a brief summary of kind of what the fields in the header in their meaning.<br>所以在这个视频中，我将简要概述TCP标头。如果您想了解更多信息，当然在线上有大量文档，但只是对标题中字段含义的简要总结。</p>
+<p>发言人   00:11<br>A standard TCP header is 20 B long. So we can see here that there are five rows of 4 octets each. Additionally, you can have options after the TCP header. I’m not going to go into any of those. Now, the basic TC header you see in most connections is 20 B long. So the first two fields in TCP are the source port and destination port. Each of these are 16 b or two octets. So talk about connecting to the web port, port 80, that’s the destination port, say, of 80.<br>一个标准的TCP报头有20个长度。所以我们可以看到这里有五行，每行有4个八位组。此外，您可以在TCP头后面有选项。我不打算深入其中的任何一个。现在，您在大多数连接中看到的基本涤&#x2F;棉混纺标题是20 B长。因此，TCP中的前两个字段是源端口和目标端口。这些都是16个b或两个八位组。所以谈论连接到web端口，端口80，即目标端口，比如说80。</p>
+<p>发言人   00:42<br>The next two fields are the TCP sequence numbers. So these denote from the source of this packet to its destination, what is the sequence number of the data contained in this segment, as well as what is the acknowledgement number from that endpoint. So for example, if I have, if I want to acknowledge that I received up to byte of 5000. And then this is sequence number 4000. Then as I said, I will send sequence number 4000, acknowledgement number 5000.<br>接下来的两个字段是TCP序列号。这些表示从该数据包的源到其目的地，该数据段中包含的数据的序列号，以及该端点的确认编号。因此，例如，如果我有，如果我想确认我收到了多达5000个字节。然后这是序列号4000。然后就像我说的，我将发送序列号4000，确认编号5000。</p>
+<p>发言人   01:20<br>The sequence number denotes what the sequence number is of the first byte of the data region, which follows the segment header. So if I’d a sequence number of 4000, and there were 500 B of data, then this would mean byte 4000 to 4499. Now, the acknowledgement number acknowledges the last byte received plus one. And so if I were to send this segment 4000 to 4499 and the other side received it, it would send an acknow number of of 4500. That is, in TCP, the act is not for the last byte received, but that plus one, what is the next byte that is needed?<br>序列号表示数据区域的第一个字节的序列号，跟在段头后面。因此，如果我的序列号为4000，并且有500 B的数据，那么这将意味着字节4000到4499。现在，确认号确认收到的最后一个字节加一。因此，如果我将这个段4000发送到4499，而另一方收到了它，它将发送一个4500的已知号码。也就是说，在TCP中，行为不是针对接收的最后一个字节，而是加一，需要的下一个字节是什么？</p>
+<p>发言人   02:09<br>So when we talk about TCP a packets, what these are is these are TCP segments that have no data. All they’re doing is counting the a.n. and numbers for this happens if say traffic is unidirectional, sending lots of data in one direction, but there isn’t data coming back. If the flow is bidirectional, then these acknowledgement numbers are just going to be padded or padded onto or not padded, but incorporated into the data segments that they’re being sent.<br>所以当我们谈论TCP数据包时，这些是没有数据的TCP段。他们所做的只是计算a.n. 如果流量是单向的，在一个方向上发送大量数据，但没有数据返回，则会发生这种情况。如果流程是双向的，那么这些确认号码将仅被填充或填充到或不填充，而是合并到它们要发送的数据段中。</p>
+<p>发言人   02:33<br>So after the sequence number and acknowledgement number, we have a bunch of fields.<br>所以在序列号和确认号之后，我们有一堆字段。</p>
+<p>发言人   02:38<br>Let’s start with the checksum. So the checksum is computed over the TCP pseudo header, which is the TCP header, as well as some of the IP header. This way, just add a little bit of additional resilience for the IP header, the IP addresses, etc. So the checksum covers the pseudo header, the TCB header, and then the data within the TCP segment. And so the checksum actually in some way stretches before the packet to the pseudo header filled in from the IP header, and then stretches to the end of the segment.<br>让我们从校验和开始。因此，校验和是根据TCP伪标头以及一些IP标头计算的。这样，只需要为IP标头、IP地址等添加一点额外的弹性即可。所以校验和覆盖伪头、TCB头，然后是TCP段内的数据。因此，校验和实际上以某种方式在数据包发送到从IP报头填充的伪报头之前拉伸，然后拉伸到数据段的末尾。</p>
+<p>发言人   03:15<br>Simple ones complement checksum. The window field is the flow control window. It tells the end point, so the flow control window, the window filled within a packet, is telling the other endpoint how much receive buffer space its sender has. So if you say, say, a window of 20000, that means that there can not be more than 20000 outstanding unacknowledged bytes in this connection in that direction.<br>简单的补码校验和。窗口字段是流量控制窗口。它告诉终点，因此流量控制窗口 (填充在数据包中的窗口) 正在告诉另一个端点其发送方有多少接收缓冲区空间。所以，如果你说，比如说，一个20000的窗口，这意味着在这个连接的这个方向上不能有超过20000个未确认的字节。</p>
+<p>发言人   03:40<br>So these bits here, UAR, s, and f are control bits. So let’s start with some of sort of less common ones. So there’s you, which is the urgent bit. That means that this data is particularly urgent. So hey, let’s go to the application quickly. Then there’s P, which is the push bit. So the push bit says, hey, please push this data to the receiving application. So the other 4 b, there’s the AC bit, the reset bit, the thin bit, and the fin bit. So the AC bit here, this bit is set to one if the acknowl number field is valid.<br>所以这里的位UAR、s和f是控制位。所以让我们从一些不太常见的开始。所以你来了，这是最紧急的一点。这意味着这些数据特别紧急。嘿，让我们快速进入应用程序。然后是P，也就是推位。所以推送位说，嘿，请将此数据推送到接收应用程序。另外4个b有交流位、复位位、薄位和鳍位。所以这里的交流位，如果acknow数字字段有效，则该位被设置为1。</p>
+<p>发言人   04:23<br>So the API is generally set to one for every single segment except for the first one that initiates a connection. Because when you initiate a connection, you don’t know what the other side’s sequence number is, so you can’t acknowledge anything. So the A bit is not set. So when we talk about Tsp setup, we’ll see that the first packet sent does not have the apit set, but all other packets in the connection through its termination have the apit set.<br>因此，除了第一个启动连接的分段外，每个分段的API通常设置为一个。因为当您启动连接时，您不知道对方的序列号是多少，因此您无法确认任何事情。因此未设置A位。因此，当我们谈论Tsp设置时，我们会看到发送的第一个数据包没有设置apit，但是通过其终止的连接中的所有其他数据包都设置了apit。</p>
+<p>发言人   04:47<br>The sin and fin bits are used to set up and tear Ito Downe connections accordingly, respectively.<br>sin和fin位分别用于相应地建立和断开Ito向下连接。</p>
+<p>发言人   04:55<br>So the sin bit says, hey, this is my starting sequence number, please synchronize to this number. And so when you first open a connection, you send a packet with the a bit not set, but with the sin bit set, and then a sequence number. And you’re telling the endpoint, I would like to synchronize you to this sequence number, which represents my first byte of data. The other side can then respond and say, all right. I’m going to acknowledge that sequence number and send you one of mine. In this case, both those fields are valid to which then you can respond and say, okay I’m going to acknowledge your sequence number. Now we synchronize. We both know when the bytes start.<br>所以sin位说，嘿，这是我的起始序列号，请同步到这个号码。所以当你第一次打开一个连接时，你发送一个数据包，其中包含一个未设置的位，但设置了sin位，然后是一个序列号。并且你告诉端点，我想将你同步到这个序列号，它代表我的第一个数据字节。然后对方可以回应并说，好的。我会确认序列号并发送给你我的一个。在这种情况下，这两个字段都是有效的，然后您可以回复并说，好的，我要确认您的序列号。现在我们同步。我们都知道字节何时开始。</p>
+<p>发言人   05:34<br>So one of the things is that you could imagine I could always just start my sequence number at 0 for every connection both direction. But they turn out to be real security problems of doing that. That means people can guess what your sequence number is, they can start interpersed packets. It generally seem as a bad idea also because if you have lots of short lyved connections, these packets with similar sequence numbers can be long lived it in the network and you want to be able to filter them out.<br>所以其中一件事是，你可以想象我总是可以在两个方向的每个连接中从0开始我的序列号。但这样做会带来真正的安全问题。这意味着人们可以猜测你的序列号，他们可以开始间隔数据包。这通常似乎是一个坏主意，因为如果您有许多短的lyved连接，这些具有相似序列号的数据包可能会在网络中长寿命，您希望能够过滤掉它们。</p>
+<p>发言人   05:56<br>So the F is for fin, this is for tearing down a connection. So when you set the fin bit, you’re telling the other side, I have no more data to send. And so often they exchange is you send the fin, they acknowledge the fin, they send later ufn with no more data to send, and then you acknowledge that fin. The final bit is R, the reset bit, which says you need to reset this connection, Something wrong has gone on. So if the urgent bit is set, then this urgent pointer points where in the segment that urgent data is.<br>所以F代表fin，这是用来拆除连接的。所以当你设置fin位时，你告诉另一边，我没有更多的数据要发送。他们经常交换的是你发送了鳍，他们确认了鳍，他们稍后发送了ufn，没有更多的数据要发送，然后你确认了那个鳍。最后一位是R，即重置位，表示您需要重置此连接，但出现了问题。因此，如果设置了紧急位，则此紧急指针指向紧急数据段中的位置。</p>
+<p>发言人   06:30<br>Finally, we have the offset field. So the offset field is needed because it’s possible for TCP to have options. And you don’t know from this header necessarily where the options are. So what the offset tells you is at what offset within this segment does data begin? So if you have options, then the offset tells you the size of those options, and your TCP stack knows to look inside their four options. The options are padded to be 4 B, 4 octets wide. So that’s the basic TCP header.<br>最后，我们有偏移字段。因此需要偏移字段，因为TCP可能有选项。并且你不一定知道这个标题中的选项在哪里。那么偏移量告诉你的是，这段内数据的起始偏移量是多少？因此，如果您有选项，则偏移量会告诉您这些选项的大小，并且您的TCP堆栈知道要查看它们的四个选项。选项被填充为4 B，4个八位组的宽度。这就是基本的TCP标头。</p>
+<p>发言人   07:02<br>We have the source and destination ports, the sequence numbers, both for the data and then for the a.n. events of the data that you’ve received, the offset field to tell you where data begins, the urgent and push bits for urgent data or data you want to push the application. The acknowledgement bit indicating the acknowledgement number is valid. The sin bit for synchronizing the sequence number, the thin bit for tearing down a connection, saying that this there’s no more data to send the reset bit, for resetting a connection, the window for flow control check sum, for making sure that there aren’t errors in the data, an urgent pointer for the urgent bit, and then options.<br>我们有源端口和目标端口，序列号，既用于数据，又用于a.n。 您收到的数据的事件，偏移字段告诉您数据开始的位置，紧急数据或您要推送应用程序的数据的紧急和推送位。表示确认号码的确认位有效。用于同步序列号的sin位，用于拆除连接的细位，表示没有更多的数据可以发送重置位，用于重置连接，用于流量控制检查和的窗口，用于确保数据中没有错误。紧急位的紧急指针，然后是选项。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 026 TCP header</div>
+      <div>http://example.com/2025/10/19/cs144-026/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-027/" title="计算机网络 027 TCP Setup and Teardown">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 027 TCP Setup and Teardown</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-025/" title="计算机网络 025 Retransmission Strategies">
+                        <span class="hidden-mobile">计算机网络 025 Retransmission Strategies</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

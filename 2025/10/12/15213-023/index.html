@@ -1,0 +1,734 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00So today’s the second lecture about network programming. We got started last time. And as you probably saw last time, the Apis for this are really big and hairy and messy. It takes just a l">
+<meta property="og:type" content="article">
+<meta property="og:title" content="深入理解计算机系统 023-Network Programming, Part II">
+<meta property="og:url" content="http://example.com/2025/10/12/15213-023/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00So today’s the second lecture about network programming. We got started last time. And as you probably saw last time, the Apis for this are really big and hairy and messy. It takes just a l">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-12T02:00:22.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.139Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>深入理解计算机系统 023-Network Programming, Part II - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="深入理解计算机系统 023-Network Programming, Part II"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-12 10:00" pubdate>
+          2025年10月12日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          16k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          136 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">深入理解计算机系统 023-Network Programming, Part II</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>So today’s the second lecture about network programming. We got started last time. And as you probably saw last time, the Apis for this are really big and hairy and messy. It takes just a lot of time in my own personal experience of re-reading, looking at code, looking at examples, re-reading documentation, going back and forth over that a dozen or so times before it all really sinks in. And it’s one where it really helps a lot to look at example code. And there’s example code in the book that CSA C file that you’ve seen versions of in various forms so I can lecture for days and weeks, but it’s really when we’d all settle in until you’ve spent time studying yourself. Anyways, I want to repeat and go back over a little bit of ground before. But last time we talked about the idea of translating from a domain name, which is something like Www dot CMU dot edu, to an IP address, which for IP version 4 is a is a 32 b address, it’s usually written in dotted decimal form.<br>今天是关于网络编程的第二堂课。我们上次开始了。正如你上次可能看到的那样，这个应用程序的Apis非常大、毛茸茸和混乱。在我的个人经历中，重新阅读代码、查看示例、重新阅读文档需要花费很多时间，在这一切真正陷入之前，我来回走了十几次。而且看示例代码真的很有帮助。并且在这本书中还有一些示例代码，您已经看到了各种形式的CSA C文件版本，因此我可以进行几天或几周的讲座，但实际上，在您花时间学习之前，我们都需要适应它。无论如何，我想重复一下，并回到之前的一点地面。但是上次我们谈论了将域名 (类似于Www.CMU.edu) 转换为IP地址的想法，对于IP版本4来说，这是一个32 b的地址，通常以点分十进制形式编写。</p>
+<p>发言人   01:22<br>And I showed you a program last time called host info that you could that will look actually at the code for. And I just wanted to show you today, I just did one very small tweak to that program, and I’ll describe it today. And the interesting thing is it letsgo look at both Ipv 4 and Ipv 6, and it’s one of the interesting features, the code in the book, and it’s new to the third edition, is it uses a new API that letscher easily write code that will work under either of these two versions of the Internet Protocol. So for example, with a slightly modified program, if I now look up the IP address for Facebook, you’ll see it comes back with two different ones.<br>我上次给你看了一个叫做host info的程序，你可以用它来查看代码。我今天只想给大家展示一下，我只是对这个程序做了一个很小的调整，今天我会描述它。有趣的是，它让我们看看Ipv 4和Ipv 6，这是其中一个有趣的功能，书中的代码，它是第三版的新内容。它是否使用了一个新的API，letscher可以轻松编写在这两个版本的互联网协议下工作的代码。因此，例如，如果我现在稍微修改了一个程序，如果我查找Facebook的IP地址，你会看到它返回两个不同的。</p>
+<p>发言人   02:25<br>The first one is the familiar dotted decimal form, where recall that each of these, it’s a decimal representation of a single byte. So it’s a number between 0 and 255. This is a Ipv 6 address, which is, I told you, is 128 b long. So that’s. To the 7th, take away three. To the 5th, 32 B, right? And it’s usually written in this hex format with colon after every pair of bytes. And I think the colon, colon just means it’s a 0 there. One of the cute things Facebook did was embed Fac as a hex code inside of their Ipv 6 address.<br>第一种是熟悉的点分十进制形式，回想一下，每一个都是一个字节的十进制表示。所以它是0到255之间的一个数字。这是一个Ipv 6地址，我告诉过你，它有128 b长。就是这样。到第七个，拿走三个。第五，32 b，对吧？并且通常以这种十六进制格式编写，每对字节后面都有冒号。我认为冒号，冒号只是意味着它在那里是0。Facebook做的一件可爱的事情是将Fac作为十六进制代码嵌入到他们的Ipv 6地址中。</p>
+<p>发言人   03:24<br>And. Well, it’s really different. I get very different results running this at home than I do here. And as I mentioned, you’ll get different results running a DNS server depending on where in the country you are if you repeat the same thing over and over again, you’ll get different results.<br>而且。嗯，这真的很不同。我在家里运行这个得到的结果与在这里截然不同。正如我提到的，如果你一遍又一遍地重复同样的事情，你会得到不同的结果，这取决于你在哪个国家运行DNS服务器，你会得到不同的结果。</p>
+<p>发言人   03:44<br>And that’s because these very large companies are providing servers that are stationed all over the world. And as a way to sort of balance out the load of the traffic, they also have multiple server addresses. Then they kind of rotate through to give you so that different people will get served by different machines. So you see, for example Twitter or Google just gave me two addresses, an Ipv 4 and an Ipv 6 address. Twitter gave me four different Ipv 4 addresses.<br>那是因为这些非常大的公司提供的服务器遍布世界各地。而且作为平衡流量负载的一种方式，它们还有多个服务器地址。然后他们轮流给你，这样不同的人就会被不同的机器服务。所以你看，例如Twitter或谷歌只给了我两个地址，一个是Ipv 4，一个是Ipv 6。Twitter给了我四个不同的Ipv 4地址。</p>
+<p>发言人   04:18<br>So let’s look then at the code. I’ll go back through some of what we talked about last time. Quite honestly, I spent a fair amount of time looking at it, can really understand it better because it’s not simple stuff. But as I mentioned, as we went over last time, this is sort of this giant block diagram that shows all the activity involved in setting up and running both a server and a client. And just to repeat, the idea is you need, the server needs to fire up. You can’t contact the server until that server exists. The server is the thing that has to exist first, and all these steps are required for a server too begin on a machine and then to accept a connection request from a client.<br>那么让我们来看看代码。我将回顾一下我们上次谈论的一些内容。老实说，我花了相当多的时间看它，真的可以更好地理解它，因为它不是简单的东西。但正如我提到的，就像我们上次讨论的一样，这是一个巨大的框图，显示了设置和运行服务器和客户端所涉及的所有活动。重复一遍，这个想法是你需要，服务器需要启动。在该服务器存在之前，您无法联系服务器。服务器是首先必须存在的东西，服务器也需要所有这些步骤从机器开始，然后接受来自客户端的连接请求。</p>
+<p>发言人   05:15<br>Similarly, once the server is, then the client can begin and it’s like placing a call to the server and it makes a connection request and that’s accepted by the server. And then what’s called a session begins, meaning an ability for these two machines to talk back and forth over an internet connection. And they’ll do it.<br>同样，一旦服务器启动，客户端就可以开始，就像给服务器打电话一样，它发出连接请求并被服务器接受。然后所谓的会话开始了，意思是这两台机器能够通过互联网连接来回交谈。他们会做到的。</p>
+<p>发言人   05:39<br>This example I’ll show is done by reading and writing as if they were file a file. Each n looks like it’s reading and writing a file. And then once the client is done with whatever it’s trying to get, it will disconnect, essentially hang up its phone. And then listening, the server will detect this by receiving an end to file when it attempts to read from the client. And then it will close that connection. And this I didn’t have stated quite properly last time. It’s not going to actually shut down at that point. It’s just going to return back and accept a new connection request.<br>我将要展示的这个例子是通过读取和写入来完成的，就好像它们是一个文件一样。每个n看起来都像是在读写一个文件。然后一旦客户端完成了它想要得到的任何东西，它就会断开连接，基本上挂断电话。然后侦听，服务器将通过在尝试从客户端读取时接收结束文件来检测此情况。然后它将关闭该连接。上次我没有恰当地说出来。它不会在那个时候真正关闭。它只会返回并接受一个新的连接请求。</p>
+<p>发言人   06:28<br>And this is what’s known as an iterative server. It can only handle a single client at a time. Later in the course, we’ll talk about how to do a multi-thread server that can handle multiple connections at one time. So this is a pretty basic version.<br>这就是所谓的迭代服务器。它一次只能处理一个客户端。在课程的后面，我们将讨论如何做一个可以同时处理多个连接的多线程服务器。所以这是一个相当基本的版本。</p>
+<p>发言人   06:45<br>So the first step on either the client or the server side is this very Harry messy, relatively new API called Get Adder info. And the idea of Git add info is it’s a sort of kitchen sink or Swiss Army knife If you know all those expressions, it has a zillion features that sort of subsume a lot of other sort of individual protocols. So for example, it’s pretty much the same whether it’s Ipv 4 Ipv 6, it letscher of go forward from a domain name to an IP address. You go backward from an IP address back to a domain name, supports all of those things, it will let you look up what is the port number associated with an Http server. So do all kinds of different things. And as a result, it’s a big and messy API with a zillion, zillion features and parameters and so forth.<br>所以无论是在客户端还是服务器端，第一步都是这个非常杂乱、相对较新的API，称为Get Adder info。Git add info的想法是，如果你知道所有这些表达式，它是一种厨房水槽或瑞士军刀，它具有无数的功能，这种功能包含了许多其他类型的单独协议。因此，例如，无论是Ipv 4还是Ipv 6，它都几乎是一样的，它从域名转到IP地址。你从一个IP地址回溯到一个域名，支持所有这些东西，它将让你查找与Http服务器相关的端口号。所以做各种不同的事情。因此，它是一个庞大而杂乱的API，具有无数的功能和参数等等。</p>
+<p>发言人   07:55<br>So you recall from last time that the data structures we used to refer to a connection, whether it’s an Ipv 4 or an Ipv 6 connection, is called a sack adder. And as I mentioned, this is sort of the C version of subtyping. If you know a language with type inheritance, this is how it’s done. In C, it’s done by casting. And so in particular, the sort of generic socket address, all it needs to know is 2 B field at the front that specifies what kind of socket is this. And then in particular, we’ll be looking at what’s called a sock adder in which is an Ipv 4 version of of a socket. And so what it needs to know is a port number, which is a 2 B integer, and an IP address, which is a 4 B address for Ipv 4. Both of those are actually stored in this structure, as I mentioned, in big Indian order.<br>你还记得上次我们用来指代一个连接的数据结构，无论是Ipv 4还是Ipv 6连接，都被称为麻袋加法器。正如我所提到的，这是一种C版本的子类型。如果你知道一种带有类型继承的语言，这就是它的实现方式。在C中，它是通过转换完成的。特别是通用套接字地址的类型，它需要知道的只是前面的2 b字段，该字段指定这是什么类型的套接字。然后，我们将特别关注所谓的sock加法器，其中是套接字的Ipv 4版本。所以它需要知道一个端口号，这是一个2 b的整数，以及一个IP地址，这是Ipv 4的4 b地址。这两个实际上都存储在这个结构中，正如我所提到的，以印度的大顺序。</p>
+<p>发言人   09:04<br>Even if you’re running it on a little Indian machine.<br>即使你在一台小型印度机器上运行它。</p>
+<p>发言人   09:07<br>And one of the interesting features of that, this API, this get add info, it’s largely removed the need for you as a programmer to worry about byte ordering. And that’s a nice feature. So in general, for example, and get so if I want to pass in a port number I’ll pass it as a character string, a string representation of a decimal number, in other words. And then the code here within this API will automatically turn that into a 16 b integer and put it in the proper byte order. And same with how it takes use of this 32 b IP address. And you want to get it into dotted decimal form. It will do that for you without you having to worry about bite order. So it’s kind of a nice thing.<br>其中一个有趣的功能是，这个API，这个可以添加信息，它在很大程度上消除了作为程序员的字节排序问题。这是一个很好的功能。所以一般来说，例如，如果我想传递一个端口号，我会将其作为字符串传递，即十进制数字的字符串表示形式。然后此API中的代码会自动将其转换为一个16 b的整数，并以正确的字节顺序进行放置。这与使用这个32 b IP地址的方式相同。你想把它转换成点分十进制形式。它会为你做到这一点，而你不必担心咬合顺序。所以这是一件好事。</p>
+<p>发言人   10:06<br>So Get editor Info has a whole bunch of arguments. And some of them are essentially outputs, Some of them are inputs, things you’re passing into the function. Another is really more like outputs, how it gets information back to you. So in particular, the first one is just the name of the host, and that can be either a domain name or a dotted decimal name, or one of those funky looking things with the colons that you saw. For Ipv 6, the service is usually if you’re looking up. So if we’re using this to look up, that’ll actually be a null pointer. And basically what typically you’ll have is one of those two will be a string and the other will be a null pointer. And the reason for that is the same function can be used either to look up a service, like what is the port number associated with Http, or it can be, what is the IP address of Www dot CMU dot edu?<br>因此，获取编辑信息有很多论点。其中一些本质上是输出，一些是输入，就是你传递给函数的东西。另一个更像是输出，它如何将信息反馈给你。所以特别的是，第一个只是主机的名称，它可以是域名或点分十进制名称，或者你看到的那些看起来时髦的冒号。对于Ipv 6，如果您正在查找，通常会提供服务。因此，如果我们使用这个来查找，那实际上将是一个空指针。基本上，通常您将拥有其中一个是字符串，另一个是空指针。原因是相同的功能可以用于查找服务，例如与Http相关的端口号是什么，或者它可以是Www.CMU.edu的IP地址是什么？</p>
+<p>发言人   11:12<br>The hints is something that you’re passing in, and it’s basically is you fill in a small amount of fairly large body of information about what specifically are you looking for in this request? Are you looking for an Ipv 6 information? Are you looking for Ipv 4 and so forth? And then what it returns back and that’s why you pass a star star is it will return back a linked list that it’s generated of results And the reason for that, as I mentioned, is that IP addresses are sort of many to many mapping, potentially. As you saw, it’s possible for a single domain name to have multiple IP addresses, it’s possible for a single IP address to have multiple domain names. So this is how they handle that sort of fact that they return a whole list of results.<br>提示是你要传递的东西，基本上是你填写少量相当大的信息，关于你在这个请求中具体寻找什么？您正在寻找Ipv 6的信息吗？你在寻找Ipv 4等吗？然后它会返回，这就是为什么你传递一个星号，它会返回一个链表，它生成的结果，其原因是，正如我所提到的，IP地址是潜在的多对多映射。正如你所看到的，一个域名可能有多个IP地址，一个IP地址也可能有多个域名。所以这就是他们处理这种事实的方式，他们返回整个结果列表。</p>
+<p>发言人   12:14<br>And associated with that, once that result gets used, once you’re done with it, you’re supposed to call a function called free adder info that will basically dispose of all the elements of that linguist. You don’t have to do it yourself with free. And then there’s another helper function called Gar stir error that you use if there’s an error code to help you interpret that error, and it returns error code. So as I mentioned, it returns a link twists. That result is a linked list, these of adder trucks or infostrada sports.<br>与此相关的是，一旦结果被使用，一旦你完成它，你应该调用一个名为自由加法器信息的函数，它基本上会处理该语言学家的所有元素。你不必免费自己做。然后还有另一个名为 “Gar搅拌错误” 的辅助函数，如果有错误代码可以帮助您解释该错误，它会返回错误代码。正如我所提到的，它返回一个链接扭曲。这个结果是一个链接列表，这些是加法器卡车或infostrada体育公司的。</p>
+<p>发言人   12:53<br>And the adder infostrada has a zillion fields, some of which you’ll use and some of which you won’t. This is, for example, when you’re passing in hints. Hints is sort of what you’re passing in the information. Some conditions about what you’re looking for in this request. And then some of these you pass in and some of it returns. And so some of these fields are ones that then you can use when you’re making calls to other socket functions in the socket library.<br>加法器infostrada有无数的字段，其中一些你会使用，一些你不会使用。例如，当您传递提示时。提示是你传递信息的方式。关于您在此请求中要查找的内容的一些条件。然后其中一些你传入，一些又返回。因此，当您调用套接字库中的其他套接字函数时，可以使用其中的一些字段。</p>
+<p>发言人   13:32<br>It’ll fill in instead of you having to worry about what’s the structure, the format of a sock adder in, and how do I convert into network order and stuff? It will do all that for you. So it’s a little confusing to use, though, because sometimes the stuff you’re providing, it’s stuff you’re giving it, and sometimes it’s stuff that it’s returning back to you. And then there’s an inverse function that so get adder info is given.<br>它将填写，而不必担心袜子加法器的结构、格式，以及如何将其转换为网络订单和其他东西？它会为你做所有这些。所以使用起来有点混乱，因为有时你提供的东西是你给予的东西，有时它会返回给你。然后有一个反函数，因此可以给出加法器信息。</p>
+<p>发言人   14:10<br>It’s actually give me the address information about some name and get name info is I give you an address and you give me back some documentation about it, including potentially a domain name.<br>它实际上是给我一些关于名字的地址信息，并获得名称信息，如果我给你一个地址，你给我一些关于它的文档，包括可能的域名。</p>
+<p>发言人   14:26<br>So there you pass in the first argument is a sock adder struct, remember, for this lecture, and I think in the book, in a few places, we’ve sort of created a type def to alias. So we don’t have to say struct sock adder all over the place. But that’s what the essay is, and it will provide back information about that, that address. So if you’re passing in a 32 zero-bit IP address, you can get it to return either dotted decimal version of that or to do the DNS lookup and have it come back with the domain name for that. So this is that program that I just demoed to you, this one called Host Info. So all it’s really going to do is use these features to I’ll, on the command line, give a domain name, say, and it will just come back with a list of IP addresses. So, and this is pretty much the way you write code for this, get adder info API that you typically, so hints is the information I’m passing about what it is I’m looking for here. And so you start typically by zeroing out that entire field and then setting the particular things you want, in particular in this code that in the slides and the 1 I demoed to you last time.<br>所以你在那里传递的第一个参数是一个袜子加法器结构，记住，对于这个讲座，我认为在书中，在一些地方，我们创建了一个类型定义为别名。所以我们不必在所有地方都说结构袜子加法器。但那就是论文的内容，它将提供有关该地址的信息。因此，如果您要传递一个32零位的IP地址，您可以让它返回该IP地址的点分十进制版本，或者进行DNS查找，并让它返回该IP地址的域名。所以这就是我刚刚向您演示的程序，称为主机信息。所以它真正要做的就是使用这些功能，在命令行上，给出一个域名，然后它会返回一个IP地址列表。所以，这几乎是你为此编写代码的方式，获取通常的加法器信息API，所以提示是我传递的关于我在这里寻找的信息。因此，您通常会首先将整个字段归零，然后设置您想要的特定内容，特别是在幻灯片和上次演示给您的1 i中的这段代码中。</p>
+<p>发言人   16:06<br>I’m only going to be looking for Ipv four connections. And so I use the constant called Afi Nett, which is defined in the sockets interface. And also I’ll say that I want a TCP connection, what’s called a socket stream, which if you recall is the sort of the protocol 99% of the IP traffic in the world is carrying is on TCP, meaning it provides a somewhat higher level of abstraction of what’s going on, of sending packets back and forth. So that’s as much hint as I’m giving it here. And now I’m making a call to get adder info. And this argument is the name, which is I’m getting it right off of the command line here. So in my demo, it was always a domain name.<br>我只会寻找四个Ipv连接。因此，我使用名为Afi Nett的常量，它在套接字接口中定义。并且我会说我想要一个TCP连接，也就是所谓的套接字流，如果你还记得的话，世界上99% 的IP流量都承载在TCP上，这意味着它提供了一个更高级别的抽象。来回发送数据包。所以这就是我在这里给出的暗示。现在我正在打电话获取加法器信息。这个参数是名称，我在这里从命令行中得到它。所以在我的演示中，它总是一个域名。</p>
+<p>发言人   16:56<br>I’m passing a null for the service. As I mentioned this call, you typically have one of the two is null, but not both hints is what I’m passing in is this is the kind of information I want and list P is a will now become a pointer to the results that get returned by get editor info. So that’s the call in all of its querying.<br>我正在为服务传递一个null。正如我提到的这个调用，通常会有两个之一为null，但并不是两个提示都是我传入的，这是我想要的信息，而列表P现在将成为指向get editor信息返回的结果的指针。这就是它所有查询中的呼叫。</p>
+<p>发言人   17:30<br>Okay, and now I want to go back. So I got one of those linked lists and that will have a whole bunch of IP, potentially multiple IP addresses in it. Maybe just one, maybe none, but some number of them in a linked list. And I want to walk through that list and get back the dotted decimal version of all those names or the colonized version of those Ipv 6 addresses. I don’t know how you refer to those, by the way. I know relatively little about IVV 6, I have to confess.<br>好的，现在我想回去。所以我得到了其中一个链接列表，它将包含一大堆IP，其中可能包含多个IP地址。可能只有一个，也可能没有，但链表中有一些数量的。我想浏览一下这个列表，并返回所有这些名称的点分十进制版本或那些Ipv 6地址的殖民版本。我不知道你怎么称呼那些东西，顺便说一下。我对IVV 6知之甚少，我必须承认。</p>
+<p>发言人   18:01<br>So then there’s function called get name info, which usually you use to take a socket IP address and go backward and get a domain name. But if I tell it by a flag, one of the final argument to it is a flag argument and say what I want back from this is not a domain name. I want it in this numeric format, either dotted decimal or the colons between hex digits. So by passing that to get name info, what it’s going to return and I’m passing in a buffer, meaning a care star and some size of that buffer. And it’s going to fill that in with the string representation of it.<br>因此，还有一个名为 “获取名称信息” 的功能，通常您使用它来获取套接字IP地址并后退并获取域名。但是如果我用一个标志告诉它，它的最后一个参数之一是一个标志参数，并说我想从这里得到的不是一个域名。我想要这种数字格式，可以是点分十进制或十六进制数字之间的冒号。因此，通过传递它来获取名称信息，它将返回什么，我正在传递一个缓冲区，意味着一个关心星以及该缓冲区的一些大小。它将用它的字符串表示来填充它。</p>
+<p>发言人   18:45<br>So you see, this is a way I’m going from the, if you look at this is the actual sock adder of each of the whst elements I’m giving it. It’s going from that sock adder, which embedded within it, as you know, is the 4 B IP address. And what it’s doing is it’s taking that, flipping the bytes, and converting it to the dotted decimal form. This function can do a lot of different things, and I’m using it for that particular feature here.<br>所以你看，这是我从实际袜子加法器开始的一种方式，如果你看看这是我给它的每个元素的实际袜子加法器。它是从那个嵌入在其中的袜子加法器开始的，如你所知，它是4 b IP地址。它正在做的是将字节翻转，然后将其转换为点分十进制形式。这个功能可以做很多不同的事情，我在这里使用它来实现这个特定的功能。</p>
+<p>发言人   19:18<br>Question. So good card is that when p is nu, if p is no, then I won’t go very far. Because it’s a null terminated Wi. Other questions? Good questions, but that’s exactly the code you saw running. And all I did too, I generalize that to include Ipv 6 addresses was I commented out this one, say I don’t demand that it be Afi net as a shorthand for Ipv 4. So by commenting that out, it said, okay. I’ll get whatever TCP connections this domain will support, and that will include Ipv 6 addresses.<br>问题。如此好的牌是当p是nu时，如果p是no，那么我不会走得太远。因为它是一个以null结尾的Wi。其他问题？好问题，但这正是您看到运行的代码。我也是，我概括地说，要包括Ipv 6地址，我注释掉了这个地址，说我不要求它作为Ipv 4的简写。所以通过评论，它说，好的。我将获得此域支持的任何TCP连接，其中包括Ipv 6地址。</p>
+<p>发言人   20:09<br>So I thought it’s pretty neat and you have to be pretty nerdy, but I am pretty nerdy to think this kind of thing is neat, but that you could write code in this way, that whether you’re doing different versions of the Internet protocol, it’s all one common body of code. So we’ve seen demo of this. Okay, so now let’s jump into that shows you sort of a little bit of this, get a or info API.<br>所以我认为这很整洁，你必须相当书呆子，但我认为这种事情很整洁，但你可以用这种方式编写代码，无论你是在做不同版本的互联网协议，它都是一个共同的代码体。所以我们已经看过这个演示了。好的，现在让我们跳转到这个展示给你一点点，获取一个或信息API。</p>
+<p>发言人   20:39<br>Now let’s jump into the full-blown web server part. And as I mentioned, in chronological order, you actually want to set up the server first, but it’s easiest to understand the code for the client because as you see, it has a couple fewer calls to make. So let’s go through the client and just imagine that somewhere out there, there’s a server that’s waiting for us to connect to. So now, perhaps when you break it down, maybe this picture looks a little less daunting.<br>现在让我们进入完整的web服务器部分。正如我所提到的，按时间顺序，你实际上想首先设置服务器，但最容易理解客户端的代码，因为如你所见，它需要进行几个调用。那么让我们通过客户端，想象一下在那里的某个地方，有一个服务器正在等待我们连接。所以现在，也许当你把它分解时，也许这张图片看起来不那么令人生畏了。</p>
+<p>发言人   21:14<br>We already saw get editor info is the way I’m going to get an IP address out of whatever I’m where my server is Socket, I mentioned this yesterday or last time. It’s just a local call that’s used to allocate some data structures for this particular connection. And then connect is like placing a call, it’s an API, it’s actually sending over the internet to the server some information saying, hey I’d like to connect to you and then the once. That connection is accepted. Then I can begin my session. So let’s look at that. So first of all, I have to go through all this rigor Rolle with get add info, but it will look pretty similar to what you’ve seen before, except I’m going to give a little more information because I want this to be.<br>我们已经看到获取编辑信息是我从我所在的服务器套接字中获取IP地址的方式，我昨天或上次提到过这一点。这只是一个本地调用，用于为此特定连接分配一些数据结构。然后连接就像打电话一样，它是一个API，它实际上是通过互联网向服务器发送一些信息说，嘿，我想连接到你，然后是一次。这种联系被接受。然后我就可以开始我的会话了。那么让我们来看看这个。首先，我必须通过获取添加信息来完成所有这些严格的操作，但它看起来与您之前看到的非常相似，除了我会提供更多信息，因为我想这样做。</p>
+<p>发言人   22:15<br>I’m filling in a few more details here because I want to specify more features of this connection. So I’m saying that it’s a TCP connection. That’s a sock stream. I’m saying that I’m going to give it a port number in a numeric form. You could also say, as I mentioned, certain ports have standard names, http, SSH, and so forth. And you can actually pass in the string representation of those. But I’m using this in a sort of idiosyncratic way here.<br>我在这里填写一些细节，因为我想指定此连接的更多功能。所以我说这是一个TCP连接。那是一条袜子流。我是说我将以数字形式给它一个端口号。你也可以说，正如我提到的，某些端口有标准名称，http，SSH等等。你实际上可以传入它们的字符串表示形式。但我在这里以一种独特的方式使用它。</p>
+<p>发言人   22:51<br>And then this feature get adder configs, a parameter that’s described in the book, and they say it’s a good idea to use it. And then I’m making a call to my friend, get adder info with these hints. And it’s going to return back this linked list of representing the results of this request. So basically a linked list of IP addresses.<br>然后这个功能会得到加法器配置，一个在书中描述的参数，他们说使用它是个好主意。然后我打电话给我的朋友，获取有关这些提示的加法器信息。并且它将返回表示此请求结果的链接列表。基本上是IP地址的链表。</p>
+<p>发言人   23:19<br>And now just like you saw before I’m going to walk that list with, except now what I’m going to try and do is for each of those say, well, here’s a number, let me give that a try. And if that fails, here’s another drug. Let me give that a try. So I’m going to just sequentially try all the different addresses you saw, for example, 4 potential addresses for Twitter. I’ll walk through all of those and on each one I’m going to call for a socket and the socket is the one that.<br>现在就像你之前看到的那样，我要带着这个清单走，但是现在我要尝试做的是，对于每一个来说，这是一个数字，让我试试。如果失败了，这里还有另一种药物。让我试一试。所以我将按顺序尝试您看到的所有不同地址，例如，Twitter的4个潜在地址。我会遍历所有这些，并在每个我要调用的套接字上调用套接字，该套接字就是那个套接字。</p>
+<p>发言人   23:54<br>As I said, allocates some data structures. I talked about this last time. That’s why I’m rushing through this pretty fast. But you’ll notice that the fields that you’re filling in are actually all been generated for us by the get at or info call. So whereas you used to have to remember, oh, this is a number, and it should be a short network order and yada da, pretty much nowadays you can just say, here I’m just going to pass you this information that this.<br>正如我所说，分配一些数据结构。我上次谈到了这个。这就是为什么我很快就匆匆忙忙地浏览了一下。但是你会注意到，你所填写的字段实际上都是通过get at或info调用为我们生成的。所以，你过去必须记住，哦，这是一个数字，它应该是一个简短的网络订单和yada da，现在你可以说，我只是要传递给你这个信息。</p>
+<p>发言人   24:33<br>Was returned by a function call, And then as I mentioned also last time, I know I went through it pretty fast last time.<br>被一个函数调用返回，然后就像我上次提到的那样，我知道上次我经历了相当快的过程。</p>
+<p>发言人   24:43<br>Socket actually returns back to you a file descriptor. And you recall a file descriptor is just a small integer, starts with 0, 1, and 2, and then it goes up from there. And so I’m going to interface with this network code as if I’m talking through files. But it socket doesn’t actually do anything. As far as the internet goes, there’s nothing going. Serious effort within the operating system. Nothing goes over the network here. So the real work here is, but so it allocates some local data structures.<br>套接字实际上返回给您一个文件描述符。你记得，文件描述符只是一个小整数，从0、1和2开始，然后从那里开始上升。所以我将与这个网络代码进行接口，就像我在通过文件进行交流一样。但它的套接字实际上不做任何事情。就互联网而言，没有什么会发生。在操作系统内认真努力。这里没有任何东西通过网络传输。所以这里真正的工作是，但是它分配了一些本地数据结构。</p>
+<p>发言人   25:25<br>And then what I’ll do is I’ll attempt to connect to the server. And again, you’ll see the various arguments I have to pass to the connect command I get provided for me out of this call I made to get editor info. And that’s either going to work or it’s not going to work. Similarly, the socket call is either going to work or not work. It be very unusual for a call to socket to fail, but connect, for example, will fail if the server is not available or doesn’t like you for some reason, and so if that.<br>然后我要做的是尝试连接到服务器。而且，您将再次看到我必须传递给connect命令的各种参数，我通过此调用获得了编辑器信息。这要么起作用，要么不起作用。同样，套接字调用要么工作，要么不工作。调用套接字失败是非常不寻常的，但例如，如果服务器不可用或出于某种原因不喜欢你，连接将失败，因此如果是这样的话。</p>
+<p>发言人   26:01<br>Succeeds I’m going to break out of this loop. I’m going to then free this data structure and return the file descriptor for the this particular function. Its job is to open a connection to a client and return a file descriptor for it. And this is just what happens if you fall out of the loop not having made any connections.<br>成功了，我将打破这个循环。然后我将释放这个数据结构，并返回这个特定函数的文件描述符。它的工作是打开与客户端的连接并返回它的文件描述符。这就是如果你没有建立任何联系就脱离了循环会发生的事情。</p>
+<p>发言人   26:32<br>Okay, so I know this is I’m marching this fast. As I said, I know from my own personal experience, I can attest this stuff just takes time to understand because there’s so many different features here.<br>好的，我知道这是我行进得这么快。正如我所说，我从自己的个人经验中知道，我可以证明这些东西需要时间来理解，因为这里有很多不同的特征。</p>
+<p>发言人   26:48<br>OK, but that’s the idea is we’re going to now on the server side, which as I mentioned, is actually what you do beforehand because you can’t really have a client connect to a server that doesn’t exist. But it’s just a little bit trickier to understand what’s going on. But you’ll see the first two steps are the same.<br>好的，但这个想法是我们现在要在服务器端进行，正如我提到的，这实际上是你事先要做的，因为你不能让客户端连接到不存在的服务器。但理解发生了什么只是有点棘手。但你会看到前两个步骤是一样的。</p>
+<p>发言人   27:08<br>I need a socket, but then remember, what I want to do is essentially set up a server that’s listening on a particular port for clients to request on it, and that’s the function of the bind and the listen functions. And then the accept is when I’m saying OK, the server is ready. I’m ready to accept requests, and it will fire that up. In particular, the accept will just stop and hang up and wait indefinitely until some connection request comes in. So if the server has no customers, if there are no clients, it will just be waiting potentially forever with the call to accept. Everything else goes through. Boom, boom, boom. But that one is where the actual weighting occurs for client connections.<br>我需要一个套接字，但是请记住，我想做的基本上是设置一个服务器，该服务器正在侦听特定端口以供客户端请求它，这就是bind和listen函数的功能。然后接受是当我说好的时候，服务器已经准备好了。我已经准备好接受请求了，它会启动它。特别是，接受将会停止并挂断，无限期地等待，直到某个连接请求进来。因此，如果服务器没有客户，如果没有客户端，它将可能永远等待并调用accept。其他一切都经过了。砰，砰，砰。但这是客户连接实际权重发生的地方。</p>
+<p>发言人   28:08<br>The same way I should mention, the K will also hang up and wait until the connection is formed. But typically it’s built in with a timeout so that it will fail if it takes too long. And you can adjust the parameters on both of these, how long you wait for, whether you wait or not. But I’m talking the typical case. So anyways, again, we’ll look a little at those functions then.<br>同样地，我应该提到，K也会挂断并等待连接形成。但通常它内置有超时，如果花费太长时间，它将失败。您可以调整这两个参数，您等待的时间，是否等待。但我说的是典型案例。无论如何，我们再来看看这些函数。</p>
+<p>发言人   28:38<br>Okay, so this, again, we have to make a call to get editor info. And this time it’s not because I need any IP addresses. I already have an IP address. I’m a local server, need to know the IP addresses of. The clients, I usually won’t know them, but I need to fill in all those nasty little data structures. And so that’s what I’m going to use GI add info here for here. So I’m going to say this time again, I want a TCP connection, a So stream. I want it to be listening for any. IP address connection coming in. So it’s passive, meaning it’s not actively reaching out. It’s passively waiting for connection requests.<br>好的，所以这一次，我们必须再次拨打电话以获取编辑信息。这次不是因为我需要任何IP地址。我已经有一个IP地址了。我是本地服务器，需要知道的IP地址。客户，我通常不认识他们，但我需要填写所有那些讨厌的小数据结构。这就是我要在这里添加信息的镀锌。所以我这次再说一遍，我想要一个TCP连接，一个So流。我希望它能倾听任何人。IP地址连接进入。所以它是被动的，意思是它没有主动地伸出手。它被动地等待连接请求。</p>
+<p>发言人   29:31<br>I’ll say that I’m going to tell you a port number that I’m going to actually use is my server’s port number, and then I’m going to make a. Call, and this time you see that I’m not giving any information about the host because I am the host, but I’m giving the information of the port number that I’m using for this server and the other hints that I’ve just filled in. And then it will return a list P?<br>我会说我要告诉你一个我实际使用的端口号是我的服务器的端口号，然后我会做一个。Call，这次你会发现我没有提供任何有关主机的信息，因为我是主机，但我提供的是我用于此服务器的端口号信息以及我刚刚填写的其他提示。然后它会返回一个列表P？</p>
+<p>发言人   30:04<br>Mem set is the standard way that you set all the bytes in some number of bytes to a fixed value. It’s the same as if you’ve used b 0, b, or b? Is the way you often would zero out a bunch of bytes? And if you look at the web page, and I don’t know why they say mem, don’t use B 0 anymore. Calic Walt. So zero it out, but I’m not actually allocating anything. See, the hints is a struct here. And remember, a struct is just a bunch of bytes. And so if I make that particular call to mem set, it will set every byte in that structure to 0, the official standard way you’re supposed to do that kind of thing.<br>Mem集是将某些字节数中的所有字节设置为固定值的标准方法。这就像你用过b0、b或b一样？你通常会把一堆字节归零吗？如果你看网页，我不知道为什么他们说 “我不要再使用b0了”。Calic Walt。所以把它归零，但我实际上并没有分配任何东西。请参阅，这里的提示是一个结构。请记住，结构只是一堆字节。因此，如果我对mem set进行特定的调用，它会将该结构中的每个字节设置为0，这是您应该执行这种操作的官方标准方式。</p>
+<p>发言人   30:57<br>That was a good question. Question individually, what are AI passive? And AI AI passive is that it’s a listening connection, it’s going to be a listening connection and AI adder config was some other argument, quite honestly, I don’t remember, but you saw I gave it before with the host name, so I don’t remember it’s somewhat obscure parameter that’s not even a required parameter. It’s in the book. I’m sorry, or you could Google it right now.<br>这是个好问题。个人提问，什么是AI被动？和AI被动的是它是一个监听连接，它将是一个监听连接，AI加法器配置是另一个论点，老实说，我不记得了，但你看到我之前用主机名给过它，所以我不记得它是有点晦涩的参数，甚至不是必需的参数。它在书里。对不起，或者你可以现在就谷歌一下。</p>
+<p>发言人   31:44<br>One interesting thing is I didn’t say that on this code on either side, that it’s Afi Nett. I didn’t force this to be Ipv 4 code. This will work for Ipv 4 or 6, the exact same code.<br>有一件有趣的事情是，我并没有在两边的这段代码中说它是afnet。我没有强迫这是Ipv 4代码。这将适用于Ipv 4或6，代码完全相同。</p>
+<p>发言人   31:56<br>OK, so again, list P comes back with a list of stuff. Typically that list will be of length 1. In fact, I don’t know why it would be anything else, but it has the same general look to it. So again I’m going to make a call to socket to create a file descriptor that I’m going to use. This will be the one that the server listens on for connection requests. And then there’s another kind of obscure thing you have to do of setting some options on that socket that will get it to free it up more quickly if there’s a failure is gone. This 1 I do know, and it’s kind of obscure, and it’s in the book, so I won’t spend a lot of time talking about it.<br>好的，那么再一次，列表P返回一个东西列表。通常，该列表的长度为1。事实上，我不知道为什么它会是其他任何东西，但它具有相同的一般外观。所以我将再次调用套接字来创建一个我要使用的文件描述符。这将是服务器监听连接请求的那个。然后还有另一种晦涩的事情你必须做，在那个套接字上设置一些选项，以便在故障消失时更快地释放它。这个我确实知道，它有点模糊，而且它在书中，所以我不会花很多时间谈论它。</p>
+<p>发言人   32:50<br>But now what? Here’s the real work is the bind call is the one that says, I want this file descriptor to be associated with this information, which in particular specifies the port number. So that’s where the binding occurs for this machine. Remember, port numbers are a resource that all the different applications on a single machine are sort of sharing or competing for. And so this is requesting, I want to use this particular port number in doing this, in setting up a server. And that may fail if the port’s already in use or if you’re trying to set up a service on a port that you’re not allowed to do, like you’re not allowed to set up a service on port 80 unless you have root access. So, and then again, it passes in the information that was filled in by the called to get add info.<br>但是现在呢？这里真正的工作是绑定调用是说，我希望这个文件描述符与此信息相关联，特别是指定端口号。这就是这台机器进行绑定的地方。请记住，端口号是一种资源，一台机器上的所有不同应用程序都可以共享或竞争该资源。所以这是请求，我想在设置服务器时使用这个特定的端口号。如果端口已经在使用中，或者如果您尝试在不允许的端口上设置服务，例如除非您具有根访问权限，否则不允许在端口80上设置服务，则可能会失败。因此，它会再次传递由调用填充的信息以获取添加信息。</p>
+<p>发言人   34:06<br>So we’re not quite done yet. But if this succeeds, then what we’ve done is we’ve bound a port number and a file descriptor together and a socket.<br>所以我们还没有完全完成。但是如果成功了，那么我们所做的就是绑定一个端口号、一个文件描述符和一个套接字。</p>
+<p>发言人   34:25<br>But all that’s done is that’s, again, just within the machine saying, okay, I agree you this particular process gets to be listening on a particular port, but it’s not actually listening yet. And I don’t know why they split this into two, but they do.<br>但所做的只是再次在机器内部说，好的，我同意你这个特定的进程可以监听特定的端口，但它还没有真正监听。我不知道他们为什么把这个分成两部分，但他们确实这样做了。</p>
+<p>发言人   34:45<br>And now I actually have to explicitly make a call to listen saying, okay, now I really am ready to receive connection requests. And you can give as a parameter a number that says how many. Request Connection Requests Are you allowed to queue up before they start getting refused? And this is a performance parameter that if you set it to 0, then unless you have really fast server, people will get failures in their connection requests. But if it’s too big, then you’re vulnerable to certain types of sort of denial of service attacks. So again, a little bit of an obscure feature. But the result of this is now I’m returning out of this a file descriptor that the server can use to listen to pick up connection requests.<br>现在我实际上必须明确地打电话给听众说，好的，现在我真的准备好接收连接请求了。你可以给出一个数字作为参数，说明有多少。请求连接请求在被拒绝之前可以排队吗？这是一个性能参数，如果您将其设置为0，那么除非您的服务器速度非常快，否则人们的连接请求会失败。但是如果它太大，那么你很容易受到某些类型的拒绝服务攻击。再次，这是一个有点模糊的特征。但这样做的结果是现在我从中返回一个文件描述符，服务器可以用它来监听拾取连接请求。</p>
+<p>发言人   35:46<br>Okay, so let’s do a little example of how we might actually do something. And I’m going to use as an example, a rather mundane application, which is an echo server. An echo server is just one that responds back whatever it just received and the code for it in the book on the slides we’re studying. So let me set up this amazing demonstration.<br>好的，让我们举一个小例子来说明我们如何实际做某事。我将以一个相当平凡的应用程序为例，它是一个echo服务器。回声服务器只是一个响应器，它响应刚刚收到的任何信息以及我们正在研究的幻灯片上的代码。所以让我设置这个惊人的演示。</p>
+<p>发言人   36:34<br>So it’s called the echo server. I meaning iterative, it can only do one connection request at a time. And I’m going to set it up on my laptop here. I’ll connect to that.<br>所以它被称为echo服务器。我的意思是迭代，它一次只能执行一个连接请求。我打算在我的笔记本电脑上设置它。我会连接到那个。</p>
+<p>发言人   37:02<br>So you’ll see that I told the server use port 1 to 13, which is just a random number I picked out as the port number. In general, if you want to do your own stuff, you pick port numbers that are 1000 or greater, and they’re limited to be unsigned 16 b ins, so 64, 65000 something, some maximum. And as long as, and by the way, if you live in a corporate world, your ports will all be locked down and they will not let you do this. And the CMU environment has a pretty permissive policy. And actually I’m just doing this on local host, but you’re allowed to at CMU open up ports like you want. So anyways I’m going to run this client and you’ll see that.<br>所以你会看到我告诉服务器使用端口1到13，这只是我选择的随机数作为端口号。一般来说，如果你想做自己的事情，你可以选择1000或更大的端口号，并且它们被限制为未签名的16个，即64,65000左右，最大一些。顺便说一句，如果你生活在企业界，你的端口将全部被锁定，他们不会让你这样做。并且CMU环境有一个相当宽松的政策。实际上，我只是在本地主机上执行此操作，但您可以在CMU上根据需要打开端口。所以无论如何，我要运行这个客户端，你会看到的。</p>
+<p>发言人   37:56<br>The server just said I’ve received a connection from. The local host? Not very exciting. And I’ve received it from port 5005 4 5 7. So this is the part that got assigned to the client in making the connection. The server is using port 1 to 13. And you recall we talked about last time that a link is defined by the host and port names on either end. And the client side is usually assigned what they call ephemeral ports, meaning it’s just assigned for this particular session that I’m going to run.<br>服务器刚刚说我收到了一个连接。当地主持人？不是很激动人心。我已经从5005 4 5 7端口收到了它。所以这是在建立连接时分配给客户端的部分。服务器正在使用端口1到13。你还记得我们上次谈到过的，链接是由两端的主机和端口名称定义的。并且客户端通常被分配所谓的临时端口，这意味着它只是为我要运行的这个特定会话分配的。</p>
+<p>发言人   38:34<br>And now here’s the amazing feature of an echo server is that you can type in stuff and it will come back to you. Because it’s echoing. So what’s happening is I’m sending those meaningful messages to the server. It’s reading them, and it’s just sending them right back again. And then the clients reading that and printing it on the screen so that it’s sort of the minimum functionality you could imagine.<br>现在echo服务器的惊人功能是，您可以输入内容，它会返回给您。因为它在回响。所以发生的事情是我正在向服务器发送这些有意义的消息。它正在阅读它们，并且只是再次发送它们。然后客户端阅读并将其打印在屏幕上，以使其成为您可以想象的最小功能。</p>
+<p>发言人   39:06<br>But you can see that the server is telling you, oh, by the way, I just received so many bytes. So many bytes, so many bytes. So you can see that it’s actually doing something. And then if I send it into file, which is just a Ctr D, the client will exit and the server will.<br>但是你可以看到服务器告诉你，顺便说一下，我刚刚收到了这么多字节。这么多字节，这么多字节。所以你可以看到它实际上正在做一些事情。然后，如果我将它发送到文件中，这只是一个Ctr D，客户端将退出，服务器将退出。</p>
+<p>发言人   39:28<br>Drop that connection, but doesn’t show you anything. And if I wanted to, I could start it again. And you see this time it as signed a different ephemeral port to the client. But I can only do one at a time. If I tried to now do another connection. I won’t try and do it if I tried to do it. Would it would just hang up? The client would hang up. It would not be able to get a connection because the server is only able to handle one client at a time.<br>断开该连接，但没有向您显示任何内容。如果我想，我可以重新开始。并且这次您会看到它已向客户端签名了不同的临时端口。但我一次只能做一个。如果我现在尝试进行另一个连接。如果我想做，我不会尝试去做。它会挂断吗？客户会挂断电话。它将无法获得连接，因为服务器一次只能处理一个客户端。</p>
+<p>发言人   40:05<br>So that’s. What the application does. And now let’s see how it’s implemented. It’s pretty simple.<br>就是这样。应用程序做什么。现在让我们看看它是如何实现的。这相当简单。</p>
+<p>发言人   40:17<br>The nastiness was those functions we’ve already seen. So here’s the client side of it. It calls that function I went through called open the client file descriptor, where you gave the name of the host and the name of the port that the server is operating on. So I said here local hosts 15 to 13. And I’m going to initialize a buffer that will be used for communication back and forth for this network communication.<br>那些我们已经看到的功能令人不满意。所以这是它的客户端。它调用我所经历的打开客户端文件描述符的函数，在其中您提供了主机的名称和服务器正在操作的端口的名称。所以我在这里说本地主机15到13。并且我将初始化一个缓冲区，该缓冲区将用于在此网络通信中来回通信。</p>
+<p>发言人   40:48<br>So now echoing means I, from a client perspective, it will just read in what I’ve typed. So using gets or F gets to read what’s been typed on the standard input. And as long as that’s not null, meaning I don’t have an end of file, then I will write it to the client file descriptor. So that’s how I actually send it over the network as I do a write to socket that file descriptor represents.<br>所以现在回显的意思是，从客户的角度来看，它只会读取我输入的内容。因此，使用gets或F gets读取标准输入上输入的内容。只要这不是null，意味着我没有文件结尾，那么我就会将其写入客户端文件描述符。这就是我实际通过网络发送它的方式，当我将文件描述符写入套接字时。</p>
+<p>发言人   41:22<br>And then to get something back from the server, it’s response. I’ll do a read. And Rio, as you call, has embedded within it. What file descriptor that read is using? So I’ll say read from that particular file descriptor, fill the results back into this buffer. So I’m using buff both as a sending buffer and a receiving buffer, and then just print that out onto the. Onto the terminal. And this is, by the way, the new lines being included in this, not just in all of this. And that’s how it’s working. So that’s all that happens.<br>然后从服务器获取一些东西，它是响应。我会读一读。而你们所说的Rio已经嵌入其中。读取使用的文件描述符是什么？所以我会说从那个特定的文件描述符中读取，然后将结果填充到这个缓冲区中。所以我使用buff作为发送缓冲区和接收缓冲区，然后将其打印到.到终端。顺便说一句，这不仅仅是所有这些，而是包括了新的产品线。这就是它的运作方式。这就是所有的事情。</p>
+<p>发言人   42:08<br>So the main point you see here is that I’m using this socket like a file to both send and receive. The server code is just a shade more nasty than that. To support some of those amazing features it has. So in particular, there’s a weird struct called a sock adder storage that is just, again, part of this generic API that gives you a buffer of some kind that’s big enough to store a name.<br>所以你在这里看到的主要观点是，我像使用文件一样使用这个套接字来发送和接收。服务器代码只是比这更让人讨厌的一种阴影。支持它的一些惊人功能。特别地，有一个奇怪的结构叫做sock adder存储，它只是这个通用API的一部分，为您提供某种大小足以存储名称的缓冲区。</p>
+<p>发言人   42:47<br>Of a host is what I’m going to use it for you. And so I’m going to accept a connection. So except recall, you recall is the way it it, it says OK I’m going to wait here until a client contacts this server so that you make a call to accept and it will just hang until that contact occurs. And then what it will return from you is a new file descriptor that we call the connection file descriptor here, which is different from the listening file descriptor. And the reason is doesn’t really show up in this code where I’m doing it iteratively. But you can imagine if I had a server, and I wanted to be able to maintain 1000 connections at once, there’ll be one of those file descriptors that I pick up new requests on. And then all the other ones are the various other clients that I’m communicating with right now. And then what except fills in here into this information?<br>我将为你使用一个主机。所以我要接受一个连接。所以，除了回想一下，你记得的就是它的方式，它说好的我要在这里等待，直到客户端与此服务器联系，以便你拨打电话接受，它会一直挂起，直到该联系发生。然后它将从您那里返回的是一个新的文件描述符，我们在这里称之为连接文件描述符，它与侦听文件描述符不同。原因是在我迭代执行的这段代码中并没有真正出现。但是你可以想象一下，如果我有一个服务器，并且我希望能够同时维护1000个连接，那么会有一个文件描述符可以让我接收新的请求。然后所有其他的都是我现在正在与之通信的各种其他客户端。那么除了在这里填写这些信息还有什么？</p>
+<p>发言人   43:55<br>It’s a sock. Adder.<br>这是一只袜子。加法器。</p>
+<p>发言人   43:56<br>Struct is about information about the client, the IP address of the client. And I’ll use this call called get name info, which is again, one of these kitchen sink features that I’ll pass in this client address. And it will come back with the domain name of the client. And that’s you saw how it printed out when the connection was formed, where that connection was coming from. So all this business here is used to support that feature of being able to print out what’s the host name and what port am I using? And this thing, by the way, port is.<br>结构是关于客户端的信息，即客户端的IP地址。我将使用这个名为获取名称信息的调用，这也是我将在这个客户端地址中传递的其中一个厨房水槽功能。它将返回客户端的域名。这就是你看到它是如何在连接形成时打印出来的，那个连接是从哪里来的。所以这里所有的业务都是用来支持能够打印出主机名和我使用的端口的功能？顺便说一下，这个东西是港口。</p>
+<p>发言人   44:55<br>Client, host name and client port are both. Buffers, yes. Host name and port are both buffers. And I’m passing a pointer, those buffers, and I’m passing their length max line. And then the call to get name info is filling those in with string representations of the host name in the port. And now it just makes a call to the echo function, which I’ll show you momentarily. It closes that connection. And then this continues.<br>客户端、主机名和客户端端口都是。缓冲区，是的。主机名和端口都是缓冲区。我正在传递一个指针，那些缓冲区，并且我正在传递它们的长度最大线。然后获取名称信息的调用是在端口中用主机名的字符串表示填充这些信息。现在它只调用echo函数，我稍后会向您展示。它关闭了这种连接。然后这种情况继续下去。</p>
+<p>发言人   45:36<br>You see the while one, this is in a loop forever, and you actually have to control C on this program to get it to quit. So let me just look one more.<br>你看到了while，它永远处于循环中，你实际上必须控制这个程序上的C才能让它退出。让我再看看一个。</p>
+<p>发言人   45:48<br>So this now is the echo function that the server uses. And it’s pretty straightforward. In fact, it looks kind of like what you just saw, except it flips around the reading and the writing. It will read some number of bytes over the. Connection file descriptor. And if that’s a nonzero number, then it will echo that back by writing it. If it’s a 0, that means it’s detected in end of file, and it will just exit from that little loop. But remember, echo is within a bigger loop of accepting new connection requests. But again, just see that it reads as a way of accepting information from the client. And then it writes to send information back to the client.<br>所以现在这是服务器使用的echo函数。这相当简单。事实上，它看起来有点像你刚刚看到的，除了它在阅读和写作中翻转。它将读取一些字节数。连接文件描述符。如果那是一个非零数字，那么它将通过写入来回应它。如果它是0，这意味着在文件末尾检测到它，它将从那个小循环中退出。但请记住，echo处于接受新连接请求的更大循环中。但是，再次强调，它被视为一种从客户那里接受信息的方式。然后它写入以将信息发送回客户端。</p>
+<p>发言人   46:41<br>Good? So one interesting feature is if you want to test some programs, you can use a program called Telnet, which it used to be the old fashioned way, way you use before SSH. This is how you communicated with other machines, and it’s absolutely, completely insecure. So don’t ever use it. In most places, you can’t even make a connection to another machine using telnet. It’s amazing how simple life used to be, but for example.<br>很好？所以一个有趣的特性是，如果你想测试一些程序，你可以使用一个叫做Telnet的程序，在SSH之前，它曾经是老式的方式。这就是你与其他机器通信的方式，这是绝对完全不安全的。所以永远不要使用它。在大多数地方，您甚至无法使用telnet连接到另一台机器。过去的生活如此简单，这真是令人惊讶，但举个例子。</p>
+<p>发言人   47:23<br>If I telnet to myself on that port. It will begin a session and it will, in fact, look a lot like an Echo client because because Telnet just sends information to the server and the server is designed to echo it back. And so it will print the response. And so if effectively telnet is behaving like an Echo client for me, and I’ll demo that because it’s useful. I mean, this is a pretty trivial program, but it’s actually times you can use telnet If there’s a server somewhere out there and you want to give it a poke to see what’s going on as a tool, you can use telnet. Let us see, you have to escape with a control right bracket quick.<br>如果我在那个端口远程登录自己。它将开始一个会话，实际上，它看起来很像Echo客户端，因为Telnet只是向服务器发送信息，而服务器的设计是将其回显。这样它就会打印出响应。因此，如果有效地telnet对我来说表现得像一个回声客户端，我会演示一下，因为它很有用。我的意思是，这是一个非常简单的程序，但实际上，如果某个地方有一个服务器，并且你想给它一个工具，你可以使用telnet，你可以使用telnet。让我们看看，你必须快速用控制右支架逃脱。</p>
+<p>发言人   48:13<br>Okay, so now let’s move on to Http. I tried to get rid of all the animations in this. Okay, so that’s sort of the basics of the low level of socket programming that you need to create client server application.<br>好的，现在让我们转到Http。我试图删除其中的所有动画。好的，这就是创建客户端服务器应用程序所需的低级套接字编程的基础。</p>
+<p>发言人   48:38<br>So the best example out there of a client server application is the World Wide Web. And you know, the idea web servers and your browser is a client. All of that sits on top of the protocols for that, sit on top of the other Internet protocols. So we talked about TCP is sort of sits on top of the lowest level, the packet protocol, and then Http sits on top of that and uses TCP connections to send and receive data over the World Wide Web. And that’s all according to a protocol that was developed starting in the early 90s. And that’s what Tim berner’s way did initially. And it’s gone through a couple revisions, but the latest 1 is still dates back to 1999. Htp version, excuse me, 1.1.<br>因此，客户端服务器应用程序的最佳示例是万维网。你知道，这个想法网络服务器和你的浏览器是一个客户端。所有这些都建立在协议之上，建立在其他互联网协议之上。所以我们谈论过TCP有点像坐在最低级别的数据包协议上，然后Http坐在最低级别的数据包协议上，并使用TCP连接在万维网上发送和接收数据。这一切都基于一个始于90年代初的协议。这就是蒂姆·伯纳最初的做法。它经历了几次修改，但最新的1仍然可以追溯到1999年。Htp版本，对不起，1.1。</p>
+<p>发言人   49:44<br>So just as some terminology, and you’ve sort of heard this at various different ways, one of the clever things about Http is it letsgo, sir.<br>所以，就像一些术语一样，你已经以各种不同的方式听到过这个，关于Http的聪明之处之一就是它让我们走，先生。</p>
+<p>发言人   49:56<br>It set handles different formats. You can send a JPEG image, you can send a text, and so forth. And those are all encoded in a format called Mime, which is actually just a way to take binary values and convert them into hex formatted strings. And then sort of a standard for how you encode it at one end, how you decode the other.<br>它集处理不同的格式。你可以发送JPEG图像，也可以发送文本等等。这些都以称为Mime的格式编码，这实际上只是一种将二进制值转换为十六进制格式的字符串的方法。然后是如何在一端进行编码以及如何解码另一端的标准。</p>
+<p>发言人   50:37<br>And so you get to specify when you’re sending stuff, you specify what, what type of information it is. And then the other thing you’ve probably experienced, now we’re talking a little bit ancient history, and I’ll update it momentarily. But classically, you either use static content, meaning of fixed web page that was written in HTML format and was designed to just give you information that was the same every time you looked at it, or dynamic content where you will change. So for example, a server application that’s giving you the weather, it’s not the same page every time. And so it’ll format it in dynamic content. If you make a request nowadays, it’s gotten a lot more complicated because of JavaScript and all these other sort of client side programming languages that actually executes code on your client and communicates back and forth to get results. So I’m a little bit dated here talking about this sort of old style way of working. But in all cases, what actually comes across the wires are some type of a file.<br>因此，你可以指定发送东西的时间，你可以指定它是什么，是什么类型的信息。然后你可能经历过的另一件事是，现在我们谈论的是一些古老的历史，我会随时更新它。但传统上，您要么使用静态内容，即以HTML格式编写的固定网页，旨在为您提供每次查看都相同的信息，要么使用动态内容进行更改。例如，一个服务器应用程序提供天气信息，但每次页面并不相同。所以它会将其格式化为动态内容。现在，如果你提出一个请求，它会变得更加复杂，因为JavaScript和所有这些其他类型的客户端编程语言实际上在你的客户端上执行代码并来回通信以获得结果。所以我在这里谈论这种老式的工作方式有点过时。但在所有情况下，实际经过电线的是某种类型的文件。</p>
+<p>发言人   51:58<br>And then you’ve heard the term Url, meaning universal resource locator is a combination of a couple of things. One is it tells you where is that information in terms of a domain name and potentially with a port number, and then also on that particular host. Where within the host is that information to be found? And there’s defaults, like if you don’t give anything at defaults to index, do HTML, for example. But Url in principle gives you where to locate something on a remote machine. And now we’ve seen examples of the tricks that DNS plays so that even though you’re giving a host name, a domain name, it could be any of a number of different servers, but the concept is still the same.<br>然后你听说过Url这个术语，意思是通用资源定位器是几个东西的组合。其一是它告诉您该信息在哪里，包括域名和可能的端口号，然后还包括在该特定主机上。在主机的哪里可以找到这些信息？并且有默认值，例如，如果您在默认情况下不给索引指定任何内容，请执行HTML。但是Url原则上可以让你在远程机器上定位某些东西。现在我们已经看到了DNS的技巧示例，即使您提供主机名，域名，它也可以是许多不同服务器中的任何一个，但概念仍然是相同的。</p>
+<p>发言人   52:56<br>So when I make a request, then I’m running my browser and I want to see a web page. What it does is it sends an h.t.t.p. request out to the server to do something and to return back a web page. And there’s a couple of different standard services. The most common one, it’s used 90 some percent of the time is get, get me a page. And there’s other stuff too.<br>所以当我发出请求时，我正在运行我的浏览器，我想看到一个网页。它所做的是发送一个h.t.p. 请求服务器做一些事情并返回一个网页。并且有几种不同的标准服务。最常见的一种，它被使用了90% 的时间是获取，给我一个页面。还有其他的东西。</p>
+<p>发言人   53:32<br>And then it will respond back with what’s called the response line. And embedded within that response will be the thing you’re asking for. But in front of it all is a header that contains other stuff that is of of some range of interest of whether you really care or not. It can also come back with a response that says there’s an error code. As you know, the infamous 404 error code. So let me give you a demo of this, just so we’re talking a little less abstract. And this is a little tricky to make it work. And I’ll use tel onnet as a way to probe a web server.<br>然后它将使用所谓的响应行进行响应。并且嵌入在那个回应中的将是你所要求的东西。但在它前面是一个包含其他内容的标题，这些内容与你是否真的关心有关。它还可以返回一个响应，说有一个错误代码。如你所知，臭名昭著的404错误代码。让我给你一个演示，这样我们谈论的就不那么抽象了。这有点棘手，要让它发挥作用。我将使用tel onnet作为探测web服务器的一种方式。</p>
+<p>发言人   54:32<br>So I’ll make a telnet connection to the computer science departments, a web server, and now I need to make a get request. Remember, all it is is now I’m basically providing the exact bytes that will be seen by the web server. So if I say get. Slash Ted Bryant test, do HTML, see if this really works.<br>所以我将建立一个到计算机科学系的telnet连接，一个web服务器，现在我需要发出一个get请求。记住，现在我基本上只提供web服务器可以看到的确切字节数。所以如果我说得到。斜杠Ted Bryant测试，做HTML，看看这是否真的有效。</p>
+<p>发言人   55:16<br>It worked? I’m always surprised when things actually work. So anyways, let’s just look at what happened.<br>成功了？当事情真正起作用时，我总是感到惊讶。所以无论如何，让我们看看发生了什么。</p>
+<p>发言人   55:29<br>So at the top is what I typed in. It’s getting, and this I’m giving some the name of a particular web page that I made up just for this purpose, a fairly simple web page. And I’m telling it I want the response in the Http 1.1 format. And then I have to also give a host name explicitly. And the reason for this is a given machine can actually be serve multiple hosts. Like if I want to pay for hosting of some domain name, say to GoDaddy dot com, it’s serving hundreds or thousands of different domain names. And so it actually used that host information to figure out, oh, which particular web customer am I supporting here?<br>所以在顶部是我输入的内容。它正在变得，我正在给一些特定网页的名称，我为此目的制作了一个相当简单的网页。我告诉它我想要Http 1.1格式的响应。然后我还必须明确地提供一个主机名。这样做的原因是一台给定的机器实际上可以为多个主机提供服务。就像我想为某个域名的托管付费一样，比如GoDaddy dot com，它为数百或数千个不同的域名提供服务。因此，它实际上使用主机信息来确定，哦，我在这里支持哪个特定的网络客户？</p>
+<p>发言人   56:23<br>And now it came back with its response. And it said the code 200 means that was accepted, which tells you OK.<br>现在它回来了，并做出了回应。它说代码200表示被接受，这告诉你没问题。</p>
+<p>发言人   56:32<br>And now it comes back with this is the header information, here’s the server, here’s some cookie information. The overall content is exactly 479 B, and it’s a text HTML format. And then it will return back the raw HTML that this web page had, which is what I actually, I typed that did this by hand. But you can imagine other types of things. And then it just call the connection. So you can see that this return, both header information and the actual content information as well.<br>现在它返回了这是标题信息，这里是服务器，这里是一些cookie信息。总体内容正好是479 B，它是文本HTML格式。然后它将返回此网页所拥有的原始HTML，这实际上是我手动输入的。但是你可以想象其他类型的事情。然后它只调用连接。因此，您可以看到这返回了标题信息和实际内容信息。</p>
+<p>发言人   57:20<br>And so that’s a general idea of what an h.t.t.p. transaction looks like. And the slides go through a different version of it, but it’s the same general idea.<br>这就是h.t.p的一般概念。 交易看起来像。并且幻灯片上有不同的版本，但总体思路是一样的。</p>
+<p>发言人   57:36<br>So the text has a really interesting code that I highly recommend you read and study called Tiny, which is the world’s smallest functioning web server. And it really only a couple of pages of code it serves. It shows some very basic handling of static and dynamic content. It’s something you can sit down and read and study 239 lines of code. Now, it lacks a lot of features. It does a very bad job of handling errors. It doesn’t have a lot of the functionality you’d come to expect in a server, so it’s been stripped down to the sort of barest bones to demonstrate the concepts. But it’s pretty cool that it works. And I can say this because I didn’t write it.<br>所以文本中有一个非常有趣的代码，我强烈建议你阅读和研究它，它叫做微型，它是世界上最小的正常运行的web服务器。它实际上只服务了几页代码。它显示了静态和动态内容的一些非常基本的处理。这是你可以坐下来阅读并研究239行代码的东西。现在，它缺少很多功能。它在处理错误方面做得非常糟糕。它没有很多你期望在服务器中的功能，所以它被精简到最基本的骨头来演示概念。但是它起作用还是很酷的。我可以说这个，因为这不是我写的。</p>
+<p>发言人   58:29<br>So the overall idea then is, and it’s a server, so it’s receiving requests from clients, from browsers, saying I want this web page, or I want to execute this particular dynamic program to get dynamic content. So it comes in with a request, a get request, like you just saw, and it splits that. It picks out what’s called the Uri, The argument to the Get request.<br>总的想法是，它是一个服务器，所以它从客户端和浏览器接收请求，说我想要这个网页，或者我想执行这个特定的动态程序来获取动态内容。所以它附带了一个请求，一个get请求，就像你刚才看到的，它会将其拆分。它挑出所谓的Uri，即Get请求的参数。</p>
+<p>发言人   58:59<br>A Uri is a universal resource indicator, which is not a complete potentially. Uri’s are a superset of Url’s. Url has to include the host name and all the information to get from anywhere to anywhere, but a Uri can just be a portion of that information and then it will determine, is this a request for static or dynamic content? I’ll show you both of them, hopefully. And if it’s a static content, all it has to do is retrieve a file on its own machine. It’s in that back in that format that I just showed you, so let’s take a look. So this is sort of the guts of the static server. So what it’s done is it’s received a request.<br>Uri是一个通用资源指示器，可能不是完整的。Uri是Url的超集。Url必须包含主机名和所有信息，才能从任何地方到达任何地方，但是Uri可以只是该信息的一部分，然后它将确定这是静态内容还是动态内容的请求？我将向你们展示他们两个，希望如此。如果是静态内容，它所要做的就是在自己的机器上检索文件。它是以我刚刚展示给你的那种格式的，所以让我们来看看。这就是静态服务器的核心部分。所以它所做的就是接收到一个请求。</p>
+<p>发言人   59:50<br>This is a helper function of this code. So I’m kind of buried down in the middle. But what it’s picked out is the server has received a request for a particular file name from the Uri, and it’s also done a lookup through an OS call to figure out how big is that file, how many bytes long is that file? And it’s also given the file, the file descriptor for this particular.<br>这是此代码的帮助函数。所以我有点被埋在中间。但是它所挑选出来的是服务器已经从Uri收到了对特定文件名的请求，并且它还通过OS调用进行了查找，以确定该文件有多大，该文件有多少字节长？它还给出了文件，这个特定的文件描述符。</p>
+<p>发言人   01:00:23<br>Connection, So all it’s doing here, you’ll notice is it’s doing a bunch of sprint FS into a buffer. And what it’s doing there is it’s formatting the header information byte as just a big long string, including the returns in it. And one of the features, which don’t ask me why, the great wisdom of of Tim Bernard as we did or whoever figured this out, but every line has to finish with both carriage return and a new line instead of the usual Linux thing of just new lines. So that’s what the backslash r, backslash n means. But you’ll see it’s going to respond back with an OK and some of this kind of information that’s not very exciting, but the ones that really matter are. The length in bytes that has to be given and the type.<br>连接，所以它在这里做的所有事情，你会注意到它正在将一堆冲刺FS放入一个缓冲区。它在那里的作用是将标头信息字节格式化为一个大的长字符串，包括其中的返回值。其中一个特点，不要问我为什么，蒂姆·伯纳德的大智慧，就像我们所做的或者谁想出的那样，但是每一行都必须以回车符和一个新行结束，而不是通常的Linux事情，只有新行。这就是反斜杠r，反斜杠n的意思。但是你会看到它会回复一个OK的信息，其中一些信息并不是很令人兴奋，但真正重要的是。必须给出的长度 (以字节为单位) 和类型。</p>
+<p>发言人   01:01:25<br>Where is he getting the file type? Oh, there’s another function. Oh, I remember why there’s another helper function here that because this supports not just text, but also GIF and JPEG images. So get file type is another function somewhere else that’s telling which Mime type is this particular a file? And so it’s putting that together, and now it writes that out. So it writes the header information out to the.<br>他从哪里获得文件类型？哦，还有另一个功能。哦，我记得为什么这里还有另一个帮助函数，因为它不仅支持文本，还支持GIF和JPEG图像。所以获取文件类型是另一个函数，它告诉这个特定的文件是哪种Mime类型？所以它把它们放在一起，现在它把它写下来。,因此它将标头信息写入到。</p>
+<p>发言人   01:02:11<br>Client, so it’s sending back to the client and then it’s going through a few gyrations here to get the file, open it up. And then there’s a function called m-map Have you guys covered m-map yet, which is just a tricky way to avoid having to actually read the file into the machine, but basically be able to pass off a pointer directly to. Or into the? Read it through explicit read commands into yet another buffer just avoids one step of buffering. So all it does is map then from the operating system where this particular file is located, and then writes that. So now it’s sending it off to the client. And so this could be done with a regular read. And but this is a little bit more elegant way to handle it.<br>客户端，因此它将发送回客户端，然后在这里经过几个旋转来获取文件，打开它。然后还有一个名为m-map的功能，你们已经覆盖了m-map，这只是一种棘手的方式，可以避免实际将文件读入机器，但基本上能够直接传递指针。或者进入？通过显式读取命令将其读取到另一个缓冲区中，可以避免一步缓冲。所以它所做的就是从操作系统映射这个特定文件所在的位置，然后写入。所以现在它正在将其发送到客户端。因此，这可以通过定期阅读来完成。但这是一种更优雅的处理方式。</p>
+<p>发言人   01:03:14<br>And you’ll notice, by the way, that the content length here is the length of file does not include the number of bytes in the header. So the header comes first. There’s no length associated with it, it sent back. But now the only way that client knows exactly how many bytes that response is going to be is by picking out this number in the header and reading that many bytes from it. We’ll see that in a minute. But anyways, this is the way a file gets sent.<br>顺便说一下，你会注意到这里的内容长度是文件的长度，不包括标头中的字节数。所以头部是第一位的。没有关联的长度，它被发送回来。但是现在，客户端确切知道响应将要有多少字节的唯一方法是在标头中选取这个数字并从中读取那么多字节。我们马上就会看到。但无论如何，这是文件发送的方式。</p>
+<p>发言人   01:03:54<br>So now let’s just real quickly look at dynamic content. So the idea of dynamic content is it letsgo pass in parameters to a program that then gets executed. And what that program then has to do is compose a web page and send that web page back to you. So I’m going to demo this with a feature built into here.<br>所以现在让我们快速地看看动态内容。因此，动态内容的想法是让我们将参数传递给程序，然后执行该程序。然后程序要做的就是编写一个网页并将该网页发送给您。所以我将使用这里内置的功能演示这个。</p>
+<p>发言人   01:04:35<br>So in particular, you probably can, you can barely see. I don’t have a good way to blow up the thing, but you can also see what kind of things I look at. But anyways, if I just say localhost colon 1, 2 13, that means port number 1, 2 13 on my local machine, which is currently running the tiny web server and the only web page available for it is this rather stunning figure here. But it shows that it can handle both GIF content and text HTML. But it also supports another interesting feature, which is a program that can add two numbers called ad dot com. It was our idea for a startup company that didn’t quite make it. So in particular.<br>特别是，你可能几乎看不见。我没有一个好的方法来炸毁这个东西，但你也可以看到我在看什么样的东西。但是无论如何，如果我只是说localhost冒号1，2 13，这意味着我的本地机器上的端口号1，2 13，当前正在运行微型web服务器，唯一可用的网页是这个相当惊人的数字。但它表明它可以处理GIF内容和文本HTML。但它还支持另一个有趣的功能，这是一个可以将两个数字相加的程序，称为ad dot com。这是我们创办一家初创公司的想法，但并没有完全实现。尤其如此。</p>
+<p>发言人   01:05:40<br>The idea of this is it’s a CGI program. It’s a dynamic content so that I pass saying two numbers embedded within the Url, my request. And it comes back with a web page that is beautifully formatted like this one. So you can’t see very well, maybe. But if you look up there, the teeny tiny print at the top, you’ll see local hosts, colon 1, 5, 213, that’s the web server and slash CGI dash bin.<br>这个想法是它是一个CGI程序。这是一个动态内容，所以我通过说两个数字嵌入在我的请求的Url中。它会返回一个网页，该网页格式像这样精美。所以你可能看得不太清楚。但是如果你向上看，顶部的这个小小的印刷，你会看到本地主机，冒号1、5、213，那是web服务器和&#x2F;或CGI短划线bin。</p>
+<p>发言人   01:06:14<br>What this particular server and what most servers do for interpreting dynamic content. And then a program, it’s an executable file called Adder. And then the argument string that you embed in this kind of curious way, the question mark, and then use ampersands to separate out the different fields. So that’s all pretty standard way of handling dynamic content. And as I said, nowadays there’s a lot fancier ways of doing it, but that’s sort of the basic way. And you’ll see it still getting used today.<br>这个特定的服务器以及大多数服务器为解释动态内容所做的事情。然后是一个程序，它是一个名为加法器的可执行文件。然后，您以这种奇特的方式嵌入的参数字符串问号，然后使用 “和” 符号来分隔不同的字段。所以这是处理动态内容的非常标准的方式。正如我所说的，现在有很多更华丽的方法来做这件事，但这是基本的方法。你会看到它今天仍然被使用。</p>
+<p>发言人   01:06:50<br>So imagine that this time it’s a Get request, but instead of the adder function, it’s some other Perl program that is sitting on the server somewhere called Env. And we won’t worry about what that program does. We’ll just show you the idea behind it. So in particular, there’s a get request comes in, and it says CGI bin. And then the next argument is interpreted as the name of a file. And what will happen then is that the server will spawn off a process.<br>所以想象一下，这次它是一个Get请求，但不是adder函数，而是某个名为Env的服务器上的其他Perl程序。我们不会担心该计划的作用。我们将向您展示其背后的想法。所以特别地，有一个get请求进来，它说的是CGI bin。然后下一个参数被解释为文件的名称。然后会发生的是服务器将产生一个进程。</p>
+<p>发言人   01:07:36<br>Using our friend fork and exec, which you know so well now doing the shell lab. So, and that program will execute, will execute, and its job then is to generate a file in HTML format. And then the server will send the result back to the client.<br>使用我们的朋友fork和exec，你现在在做shell实验室时非常熟悉它们。所以，这个程序将会执行，它的工作就是生成一个HTML格式的文件。然后服务器会将结果发送回客户端。</p>
+<p>发言人   01:08:09<br>So there’s a few details we’ve got to figure out to make this work. One is, how will I actually pass arguments? How will n Pl know what is being passed to it as arguments? How will n dot pl it get whatever page HTML it creates back to the server so that the server can send it to the client? Those are all the sort of details of the CGI specification. CGI stands for commonly gateway interface.<br>因此，我们必须弄清楚一些细节才能使其发挥作用。一个是，我将如何实际传递参数？n Pl如何知道传递给它的参数是什么？n点pl如何将它创建的任何页面HTML返回到服务器，以便服务器可以将其发送到客户端？这些都是CGI规范的细节。CGI代表常用网关接口。</p>
+<p>发言人   01:08:48<br>So you just saw a demo of ed dot com dot. And so let’s just look at how this works. So as I mentioned, the way things get passed is within the Url, you include the program name. And then the question mark is, what is like the terminator for the program name? And then all the other arguments with ampersands between them. And you can’t have any blanks in here. So they put percent 20s as you’ve probably seen in various other. Those are called escaped codes. When you can’t use a particular character, how do you encode it in some other way?<br>所以你刚刚看到了ed dot com dot的演示。那么让我们来看看这是如何工作的。正如我所提到的，事物的传递方式是在Url中，您需要包括程序名称。然后问号是，程序名称的终结者是什么？然后是所有其他参数之间用 &amp; 符号表示。你不能在这里有空白。所以他们把20% 放在一起，就像你可能在其他各种情况下看到的那样。这些被称为转义代码。当你不能使用特定的字符时，你如何用其他方式对其进行编码？</p>
+<p>发言人   01:09:40<br>So the first thing is, how does the server then pass the argument to the program that gets executed? Well, it’s really weird. The way it does it is by creating an environment variable for your machine that’s called query string. And so the server defines that environment variable. And then the job on the CGI side of the script is to then retrieve that environment variable as a way of getting the string.<br>所以第一件事是，服务器如何将参数传递给被执行的程序？嗯，这真的很奇怪。它的实现方式是为您的机器创建一个名为 “查询字符串” 的环境变量。因此，服务器定义该环境变量。然后，脚本的CGI端的工作是检索该环境变量作为获取字符串的一种方式。</p>
+<p>发言人   01:10:16<br>You can already see, hey, wait a minute, what if you were running multiple servers at once? You can see you’ve got a problem here. Actually, no environments are specific to particular processes, so this will work. So it’s creating for the application program. We’ll be able to sort of retrieve from the operating system essentially what arguments were passed to the. Are being passed to it? And so this is what the code looks like for the dynamic server. Again, it’s going to write back.<br>你已经可以看到，嘿，等一下，如果你同时运行多个服务器怎么办？你可以看到你在这里遇到了一个问题。实际上，没有特定环境是特定于特定过程的，因此这将起作用。所以它正在为应用程序创建。我们将能够从操作系统中检索基本上传递给的参数。正在被传递给它吗？这就是动态服务器的代码看起来的样子。再一次，它会回信。</p>
+<p>发言人   01:11:03<br>Some. Information back to the. The client? And let’s look at this. And now it’s going to set up this CGI query string environment variable and then use our friends dupe and exec basically to redirect the standard output.<br>一些。信息返回给他们。客户？让我们来看看这个。现在它将设置这个CGI查询字符串环境变量，然后使用我们的朋友dupe和exec基本上重定向标准输出。</p>
+<p>发言人   01:11:36<br>To its client? Wait a minute, let me look at this. Oh I’m sorry, file descriptor is the client’s file descriptor. So we’ll, it’s going to, oh, and we’re in a fork. I’m sorry, so now we’re in the child process. OK, let me read all the code and within the child process, it’s going to rename its standard output so that it’s writing directly to the client and then call it exec, which, as you know, is the way you take this program, which is just given by a file name, and fire it up and get it going with that defined environment value. And then this is the parent will just wait until the child completes.<br>其客户？等一下，让我看看这个。哦，对不起，文件描述符是客户端的文件描述符。所以我们会，它会，哦，我们在一个叉子里。我很抱歉，现在我们在子进程中。好的，让我读一下所有代码，在子进程中，它将重命名其标准输出，以便直接写入客户端，然后将其称为exec，正如你所知，这是你使用这个程序的方式，它只是由一个文件名给定，并启动它，让它与定义的环境值一起运行。然后这是父母会等待孩子完成。</p>
+<p>发言人   01:12:32<br>Okay, so now we’re almost done. So now this is what the actual program, the Adder program does. The one, the CGI program, the one that’s been forked off and ex. So it creates then the HTML.<br>好的，现在我们几乎完成了。所以现在这就是实际的程序，即加法器程序所做的事情。那个，CGI程序，那个被分叉的程序和ex。所以它会创建HTML。</p>
+<p>发言人   01:12:57<br>That you want to send back? And here it’s pretty. Mundane, the only actual HTML in here are p’s, meaning paragraph markers. So this is literally generating Http HTML content and storing them all as a string called content. And now it wants to send that content back. And you saw before server already filled in the top level stuff. But I have to tell, what is the type and how many bytes it is. So I’ll use Sterling to figure out how many bytes I’m sending back and the content type. And then I will. And I’m print effing this, which as you recall I’ve remapped standard output now is talking directly to the client.<br>你想寄回去吗？这里很漂亮。平凡的，这里唯一真正的HTML是p，意思是段落标记。所以这实际上是生成Http HTML内容并将它们存储为名为content的字符串。现在它想要将这些内容发送回去。而且你之前看到服务器已经填充了顶层的东西。但我必须告诉你，它的类型是什么，有多少字节。所以我会用英镑来计算我发回的字节数和内容类型。然后我会的。我正在打印effing这个，正如你所记得的，我现在重新映射了标准输出，直接与客户端交谈。</p>
+<p>发言人   01:13:55<br>And just to be sure it all goes out. I’ll flush that out of there at the end. So what’s happening here then is that it’s the job of the CGI program to write the HTML and to send it back to the client.<br>只是为了确保一切都熄灭了。我将在最后冲出那里。所以这里发生的是，编写HTML并将其发送回客户端是CGI程序的工作。</p>
+<p>发言人   01:14:24<br>So again, let’s just do a real quick demo here. Got just enough time.<br>所以，让我们在这里做一个真正快速的演示。只有足够的时间。</p>
+<p>发言人   01:14:51<br>So I’ve got the tiny web server running down at the bottom, and I’m using telnet to reach it. And so now I want to say.<br>所以我在底部运行了一个小型web服务器，并使用telnet访问它。所以现在我想说。</p>
+<p>发言人   01:15:07<br>I have to cheat, sorry. Slash CGI bin slash adder Question What numbers do you want to add? 17 and 13.<br>我不得不作弊，对不起。斜杠CGI bin斜杠加法器问题你想添加什么数字？17和13。</p>
+<p>发言人   01:15:29<br>You don’t get many shots at it. So I like to double check what I’m doing.<br>你没有得到很多机会。所以我喜欢仔细检查我在做什么。</p>
+<p>发言人   01:15:49<br>It worked, always amazed. So it shouldn’t surprise you what comes back because you just saw the code that did it. What you see then is that these first three lines got generated by the server code that comes back with the OK information about the server. And then the content length was generated by the CGI program adder and the content type. And then this is the HTML that you saw being generated. So it’s actually what people say about this early world wide web.<br>它成功了，总是令人惊讶。所以回来的东西应该不会让你感到惊讶，因为你刚刚看到了完成它的代码。然后你会看到，这前三行是由服务器代码生成的，代码返回了关于服务器的OK信息。然后内容长度由CGI程序加法器和内容类型生成。然后这是您看到正在生成的HTML。所以这实际上是人们对这个早期万维网的看法。</p>
+<p>发言人   01:16:30<br>And it’s gotten a lot more complicated is the best thing Tim Bernard’s view was to figure out how simple it could be because other people were working on much more exotic ways to get different.<br>事情变得更加复杂了，蒂姆·伯纳德 (Tim Bernard) 认为最好的事情是弄清楚这有多简单，因为其他人正在研究更奇特的方式来变得不同。</p>
+<p>发言人   01:16:45<br>Agents to talk to each other over the Internet. And what Berners we figured out is we can just kind of cobble together standard ideas of sockets, interface, have some protocol, pretty straightforward protocol, handle different content type, set up these dynamic things by forking off a process every time. Extraordinarily inefficient way to do it, Like to add two numbers by forking off a whole process and doing it is totally absurd, but then so is a.d. dot com.<br>代理人可以通过互联网相互交流。伯纳斯我们发现的是，我们可以拼凑出套接字、接口的标准思想，有一些协议，相当简单的协议，处理不同的内容类型，每次通过分叉一个进程来设置这些动态的东西。非常低效的方法来做这件事，比如通过分叉整个过程来将两个数字相加，这样做是完全荒谬的，但是这样做也是如此。 点com。</p>
+<p>发言人   01:17:19<br>But in some ways he took a. Bunch of ideas that existed and figured out how to put it together. And I’ll recognize that the value people would obtain from that. And it took the internet from being something that we certainly only used by nerdy people to talk to each other and opened it up to all the things that we know of today. So it was a huge step forward. And I give them full credit, even if from a technical point of view, it’s actually fairly straightforward. So that will do us through today.<br>但在某些方面，他采取了一个。一堆存在的想法，并想出了如何把它们组合在一起。我会认识到人们从中获得的价值。它使互联网不再是我们肯定只被书呆子用来互相交流的东西，并向我们今天所知道的所有事情开放。所以这是一个巨大的进步。我完全赞扬他们，即使从技术角度来看，这实际上相当简单。这样我们就可以度过今天。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>深入理解计算机系统 023-Network Programming, Part II</div>
+      <div>http://example.com/2025/10/12/15213-023/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月12日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-024/" title="深入理解计算机系统 024-Concurrent Programming">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">深入理解计算机系统 024-Concurrent Programming</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/12/15213-022/" title="深入理解计算机系统 022-Network Programming, Part I">
+                        <span class="hidden-mobile">深入理解计算机系统 022-Network Programming, Part I</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

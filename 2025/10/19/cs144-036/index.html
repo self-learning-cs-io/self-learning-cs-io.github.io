@@ -1,0 +1,651 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00Continuing with our theme of packet switching, in this video I’m going to tell you about some useful para’s of cues. These are going to come in handy whenever we’re thinking about how a que">
+<meta property="og:type" content="article">
+<meta property="og:title" content="计算机网络 036 Principles Packet Switching Useful queue properties">
+<meta property="og:url" content="http://example.com/2025/10/19/cs144-036/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00Continuing with our theme of packet switching, in this video I’m going to tell you about some useful para’s of cues. These are going to come in handy whenever we’re thinking about how a que">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-19T02:00:35.000Z">
+<meta property="article:modified_time" content="2025-10-19T13:30:47.642Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>计算机网络 036 Principles Packet Switching Useful queue properties - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="计算机网络 036 Principles Packet Switching Useful queue properties"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-19 10:00" pubdate>
+          2025年10月19日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          43 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">计算机网络 036 Principles Packet Switching Useful queue properties</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>Continuing with our theme of packet switching, in this video I’m going to tell you about some useful para’s of cues. These are going to come in handy whenever we’re thinking about how a queue evolves, how a packet buffer changes to affect the queueing delay of packets through a network.<br>继续我们的分组交换主题，在这个视频中，我将告诉你一些有用的提示。当我们考虑队列如何演变，数据包缓冲区如何变化以影响网络中数据包的排队延迟时，这些将会派上用场。</p>
+<p>发言人   00:17<br>As it was seen before, we can think of a network as a set of queues interconnected by some links, and those links are carrying the traffic or the packets from many, many different users. And when multiplex together, when statistically multiplexed together, that whole process of packet arrivals is very, very complicated. So we usually think of the arrival processes as being random events. Each one would was, of course, deterministically generated, but the aggregate we can think of as a random process. So it’s going to be good for us to understand how queues with random arrival processes work. And so that’s going to be the topic that I’m going to be discussing today.<br>正如之前所看到的，我们可以将网络视为一组由某些链路相互连接的队列，这些链路承载着来自许多不同用户的流量或数据包。当复用在一起，当统计复用在一起时，数据包到达的整个过程非常非常复杂。所以我们通常认为到达过程是随机事件。当然，每个集合都是确定性地生成的，但我们可以把它看作是一个随机过程。因此，了解具有随机到达过程的队列是如何工作的，对我们来说将是有益的。所以这将是我今天要讨论的话题。</p>
+<p>发言人   00:56<br>So usually arrival processes are complicated in systems like networks, so we often model them using random processes. And this study of queues with random arrival processes is called queueing theory And queued theory, you’ve probably heard of before, has a reputation for having very hairy mathematics. But despite that, hairy mathematics cues with random arrival processes have some really interesting properties that’s going to be good for us to understand. They’re going to really help us understand the dynamics of networks. So I’m going to go through a set of properties. I’m going to be starting with this one here, that the burstiness tends to increase delay. And it’s at this level that I want you to remember these properties, the details of the mathematics we’re not going to worry about so much when you understand these basic intuitive paras of queueing systems.<br>因此，在像网络这样的系统中，到达过程通常是复杂的，因此我们经常使用随机过程对其进行建模。这种对具有随机到达过程的队列的研究被称为排队论，而排队论，你可能之前听说过，以其复杂的数学而闻名。但尽管如此，具有随机到达过程的毛茸茸的数学线索具有一些非常有趣的性质，这将有助于我们理解。它们将真正帮助我们理解网络的动态。所以我要遍历一组属性。我将从这里开始，爆裂往往会增加延迟。正是在这个层次上，我希望你记住这些属性，数学的细节，当你了解排队系统的这些基本直观的参数时，我们就不会太担心了。</p>
+<p>发言人   01:45<br>So it all comes down to the way that the queue evolves. So I’m going to just sketch here my queue. Again, this is the arrivals to the queue of packets. You’ll hear people call customers as well, because queueing theory applies to me other system. So if I say customers, I mean packets in this context, and so this is our arrivals, these are our departures. And we’re going to be thinking about the evolution of the Q occupancy q of t q as a function of time on this timeline down here I’ve drawn a sequence of arrivals and departures, packet arrivals happening at these blue downward arrows representing the time or the epoch of the arrival, and then these red upward arrows being the departures, the times at which the queue was serviced. And just like in many queues for networks, we’re going to think of this as as representing a link of a fixed rate r, which means that the interde opportunities are one over r apart.<br>所以这一切都归结于队列演变的方式。所以我要在这里画出我的队列草图。再次强调，这是数据包到达队列的情况。你也会听到人们打电话给顾客，因为排队论适用于其他系统。所以如果我说客户，我的意思是在这种情况下的数据包，所以这是我们的到达，这些是我们的离开。我们将考虑tq的Q占用q随时间的演变，在这个时间轴上，我在这里画了一个到达和离开的序列，数据包到达在这些蓝色向下箭头处发生，代表到达的时间或纪元。然后这些红色向上的箭头表示出发，即排队服务的时间。就像在许多网络队列中一样，我们会将其视为代表固定速率r的链接，这意味着中间机会是分开的。</p>
+<p>发言人   02:45<br>Now let’s look at the evolution of the queue, the cue here has there’s the first arrival, the blue 1, which takes it up, the 1, and then we have the service, the upward red arrow, which is going to take us to 0. There’s a new arrival, which is going to take us back to one again. Then there’s this departure here, which is going to take us to 0, then back up to one again, then 0, etc. At this point here, we’ve had two arrivals in a row, which is going to take us back to a Q occupancy of two, and so on. So this is going to be the evolution of the queue.<br>现在让我们来看看队列的演变，这里的提示是首先到达的蓝色1，它占据了1，然后我们有了服务，向上的红色箭头，它将把我们带到0。有一个新的到来，它将把我们再次带回到一个。然后这里有一个出发点，它将把我们带到0，然后再次回到1，然后是0，依此类推。在这一点上，我们已经连续有两次抵达，这将使我们回到两个Q占用的状态，以此类推。这将是队列的演变。</p>
+<p>发言人   03:16<br>Now let’s look at this one here, this, this, this departure opportunity. The reason I’ve drawn this is a dotted line. This is sometimes people call this a shadow departure. It was a departure opportunity when we could have set a packet, but the queue was empty so that we never actually sent the packet because we can’t actually go down to a negative Q occupancy that that wouldn’t be possible. And so the Q sticks at 0.<br>现在让我们来看看这个，这个，这个离开的机会。我画这个的原因是一条虚线。这有时被人们称为 “影子出发”。这是一个出发的机会，我们本可以设置一个数据包，但队列是空的，所以我们从来没有真正发送过数据包，因为我们实际上无法达到负Q占用，这是不可能的。因此Q值为0。</p>
+<p>发言人   03:39<br>Even though we missed this opportunity, it’s going to turn out that these missed opportunities are quite important. You can’t have a negative Q occupancy. So some people say you don’t get credit for good behavior by not having an arrival. During this interval here, it meant that the Q occupancy stuck at zero, we don’t get any credit for it, and so if we have random arrivals with arrivals that are spread out, if we miss an opportunity to send, it’s tough. We never, never get that back again.<br>尽管我们错过了这个机会，但事实证明，这些错过的机会非常重要。你不能有负的Q占用率。所以有些人说，如果你不来，你就不会因为表现好而得到赞扬。在这个间隔期间，这意味着Q入住率一直停留在零，我们没有得到任何荣誉，因此，如果我们有随机到达的人，他们是分散的，如果我们错过了发送的机会，那就很难了。我们永远不会再拿回那个东西了。</p>
+<p>发言人   04:10<br>Let’s now take a look at the first property I wanted to wanted to explain, and that is that burstiness or bursty arrivals tend to increase delay and to start with a very simple example where there is no burstiness, where we have the simplest arrival process, which is a sequence of arrivals all exactly one second apart. So this is one packet per second. And in fact, it’s one packet exactly every second, Nothing random about this at all.<br>现在让我们看一下我想要解释的第一个属性，即突发性或突发性到达会增加延迟，并从一个非常简单的例子开始，其中没有突发性，我们有最简单的到达过程。这是一个到达序列，所有到达时间恰好相隔一秒。所以这是每秒一个数据包。事实上，每秒就有一个数据包，这一点也不是随机的。</p>
+<p>发言人   04:39<br>Let’s look at the sequence of departures. I’m going to assume that there is one departure every second. So if we were to sketch the queue occupancy here, I won’t get to the graph. I’ll just put the numbers in. If we were to sample the occupancy here, if there’d been an arrival but no departure, so we would have one and then 0, and then it’s one again, and then 0, 1, 0. So there’s long in this, the way I’ve drawn it here, there are long periods of 0, and then the short periods of one when there’s been arrival but no departure. But of course, I could shift either the arrival of departures and make those those zeros and ones be of different durations, okay? So they’ll just carry on because everything’s nice and periodic.<br>让我们来看看离开的顺序。我假设每秒钟有一个出发。因此，如果我们在这里画出队列占用率，我不会进入图表。我会把数字放进去。如果我们要在这里进行入住率抽样，如果有到达但没有离开，那么我们会有一个，然后是0，然后又是1，然后是0，1，0。所以这里有很长的时间，按照我在这里画的方式，有很长的0周期，然后是到达但没有离开的短暂周期。但是当然，我可以改变出发的到来，并使那些零和一具有不同的持续时间，好吗？所以他们会继续下去，因为一切都很好，而且是定期的。</p>
+<p>发言人   05:22<br>The interesting thing to note here is q of t, the q occupancy is either 0 or 1, so we can say it’s always less than or equal to one. And the average q occupancy is going to be somewhere between 0 and 1. We know that for sure just because of the structure of the problem. So periodic arrivals make for a nice, simple understanding of that QQ evolution now.<br>这里需要注意的有趣之处是q的t，q占用要么是0，要么是1，所以我们可以说它总是小于或等于1。而平均q入住率将在0到1之间。我们确实知道这一点，只是因为问题的结构。因此，周期性的到来使人们对现在的QQ进化有一个很好的、简单的理解。</p>
+<p>发言人   05:44<br>So let’s look at a different example when things are more bursty. So just as before, the arrivals are going to be at the rate of 1 per second, but they’re going to arrive in bursts. And in fact, we’re going to have n arrivals. We’re going to have n arrivals, n arrivals every n seconds. So n packets every n seconds, but they’re going to come in these bursts of n, in this particular case, it’s five packets every 5 seconds. The service opportunities or the departures are going to be the same as before. We’re going to have one per second. So in terms of the rate, the arrival rate and the departure rate, everything is exactly the same as before. It’s one packet per second.<br>那么让我们来看一个不同的例子，当事情更加突发性时。所以就像以前一样，到达的速度将是每秒1次，但它们将以阵发性到达。事实上，我们将有n个国家到达。我们将有n个到达，每n秒有n个到达。因此，每n秒有n个数据包，但它们将以n个突发的方式进入，在这种特定情况下，每5秒有5个数据包。服务机会或离开将与以前相同。我们将每秒钟进行一次。所以在费率、到达率和离境率方面，一切都和以前完全一样。每秒一个数据包。</p>
+<p>发言人   06:26<br>It’s just that the burstiness of the arrivals is going to change things.<br>只是涌入的人口数量将改变一切。</p>
+<p>发言人   06:30<br>And let’s look at the way in which they change. Here we’ve got a sudden burst of arrivals of 5. So depending on whether when we sample it, sample the q occupancy, we’re going to have q of t equals 0 all the way through to five, depending on when we sample during this time here, it’s 4, then 3, then 2, then one, then 0, and then it’s going to go up to 5 again, sometime in here, and 4, and so on and so on and so on. So before our q occupancy was 0 or one, but now even with the same arrival rate, and even with the same departure rate, our Q occupancy can go between 0 and 5. So our arrival, our average Q occupancy is higher. And the variance of the Q occupancy is higher too, because it’s varying all the way across 0 to 5. So average and the variance have both increased, even though the rate hasn’t changed. So clearly, the burst of this is going to make a big, big difference.<br>让我们看看它们改变的方式。这里我们突然有5人到达。因此，根据我们是否采样它，采样q占用情况，我们将有t的q一直等于0到5，这取决于我们在这段时间内采样的时间，它是4，然后是3，然后是2，然后是1，然后是0，然后它将再次上升到5，有时在这里，然后是4，以此类推。因此，在我们的q入住率为0或1之前，现在即使到达率相同，即使有相同的离境率，我们的Q入住率也可以在0到5之间。所以我们的到来，我们的平均Q入住率更高。而且Q占用的方差也更高，因为它在0到5之间一直变化。所以平均值和方差都增加了，即使比率没有改变。很明显，这次爆发将会产生巨大的影响。</p>
+<p>发言人   07:28<br>And in general, we say burstiness increases delay, and that simple example, it illustrates it. It doesn’t prove it, but hopefully it gives you intuition as to why burstiness will increase the way the second property, which is very similar to the first, it’s almost the counterbalance of the first, is that determinism tends to minimize delay, but it’s enough for us to know that in general, determinism minimizes delay.<br>一般来说，我们说突增会增加延迟，这个简单的例子说明了这一点。它并不能证明这一点，但希望它能给你直觉，为什么突变性会增加第二个属性的方式，这与第一个属性非常相似，几乎是第一个属性的平衡，决定论倾向于最小化延迟。但总的来说，我们知道这就足够了，决定论使延迟最小化。</p>
+<p>发言人   07:53<br>In other words, random arrivals wait longer on average than simple periodic arrivals. Okay, let me move on to the third property I’d like you to know about, and that is a well known result called Little’s result.<br>换句话说，随机到达的平均等待时间比简单的周期性到达更长。好的，让我继续到我想让你知道的第三个属性，那就是一个众所周知的结果，叫做小的结果。</p>
+<p>发言人   08:07<br>Q is very complicated, and as you have, as I’ve already given you an indication, the mathematics tends to get very hairy. But there are some simple results that you really need to know. And it’s important for us to understand because they’re going to come in handy when we’re understanding the basic properties of cues. And this one, little as a result, is deceptively simple.<br>Q非常复杂，正如我已经给你的指示，数学往往变得非常复杂。但有一些简单的结果你真的需要知道。理解这一点很重要，因为当我们理解线索的基本属性时，它们会派上用场。而这个，结果很少，看似简单。</p>
+<p>发言人   08:29<br>So in any queued system like the one shown here, there’s a following property, which is. A little surprising if I’ve got a well defined arrival rate. Let’s call that lambda. And I’ve got a average number of queues in the system L, and I want to know what the average delay is. And I’m going to call this d equals average delay of a customer or a packet through the queue. Then little as a result, tells us that there is in general, the number of customers in the system equals the average arrival rate times the average delay of a customer through the queue.<br>因此，在任何像这里所示的排队系统中，都有一个以下属性。如果我有一个明确的到达率，我会有点惊讶。我们称之为lambda。我有一个系统中队列的平均数量，我想知道平均延迟是多少。我将此称为d等于客户或数据包通过队列的平均延迟。那么少的结果告诉我们，一般来说，系统中的客户数量等于平均到达率乘以客户通过队列的平均延迟。</p>
+<p>发言人   09:22<br>That’s it, this deceptively simple result applies for any queueing system for which there are no customers that are lost or dropped. So if none lost or dropped. So it doesn’t matter what the arrival process is.<br>就是这样，这个看似简单的结果适用于任何没有顾客丢失或丢弃的排队系统。所以，如果没有丢失或掉落。所以到达过程是什么并不重要。</p>
+<p>发言人   09:43<br>It doesn’t matter how bursty, how non-nba, asity, so long as it has a well defined arrival rate lambda, then we can make this calculation. So you can go to any queue, and we’ll look at some examples in a moment, and you can calculate the average number in the queue as a function of the arrival rate and the average delay. Or of course, if you know L and lambda, then you can figure out the average delay that’s going to be seen by a customer through this queue. Now, l is the average number that are in the queue plus currently being serviced, so long as d is the average delay of customers that arrive until they’ve completed service. Turns out this result also holds. If we say L is the average, sorry, the average number of customers in just the queue, but not yet entering service, so long as D also equals the average delay through the queue prior to entering service. So both of those are true. We’re going to be using this result quite a lot throughout the quarter.<br>无论有多突发性，多无nba，无所谓，只要它有一个明确定义的到达速率lambda，那么我们就可以进行这个计算。所以你可以去任何队列，我们稍后会看一些例子，你可以计算队列中的平均数量作为到达率和平均延迟的函数。或者，当然，如果您知道L和lambda，那么您就可以计算出客户通过此队列将看到的平均延迟。现在，l是队列中的平均数量加上当前正在服务的数量，只要d是到达的客户的平均延迟，直到他们完成服务。结果这个结果也成立。如果我们说L是平均值，对不起，就是队列中尚未进入服务的平均客户数，只要D也等于进入服务之前通过队列的平均延迟。所以这两个都是真的。我们将在整个季度中大量使用这一结果。</p>
+<p>发言人   10:47<br>Having told you about those three parameters of cues, something I need to tell you before we get on to the fourth property, and that is the Poisson process.<br>在告诉你这三个线索参数之后，在我们进入第四个属性之前，我需要告诉你一些事情，那就是泊松过程。</p>
+<p>发言人   10:57<br>You’re going to hear a lot about the Poisson process whenever you study cues or any complicated system that that we model probabilistically. Okay, first of all, I going to tell you what the price on process is, and I’m going to tell you why it’s interesting and some caveats about using it. So the Poisson process is an arrival process in our case.<br>每当你研究我们概率模型的线索或任何复杂系统时，你都会听到很多关于泊松过程的内容。好的，首先，我要告诉你过程的价格是多少，我要告诉你为什么它很有趣，以及有关使用它的一些注意事项。因此，在我们的情况下，泊松过程是一个到达过程。</p>
+<p>发言人   11:17<br>And an arrival process we say is Poisson if, and in fact, and only if the probability of there being k arrivals in an interval of t seconds is given by this expression here, kind of a hairy expression. But the important thing is that that we can express this is the expected number of arrivals within an interval t is simply lambda t, where lambda is the arrival rate. Also, successive inter rival times are independent. What this means is that once we have picked one arrival from this expression here, this will lead to an arrival event happening. Then the next arrival is independent of the first one. And in fact, if we take a sliding window and move that over the arrival process within any period, interarrival times within one period are independent of the next. That means that there’s no burstiness or coupling of one arrival to another, okay? That’s what the pro-is on process is.<br>我们所说的到达过程是泊松过程，如果事实上只有在t秒的间隔内有k个到达的概率由这里的表达式给出，有点毛茸茸的表达式。但重要的是，我们可以将间隔t内到达的预期数量简单地表示为lambda t，其中lambda是到达率。而且，连续的相互竞争时期是独立的。这意味着一旦我们从这里的表达式中选择了一个到达，这将导致一个到达事件的发生。那么下一次到达与第一次到达无关。实际上，如果我们采用一个滑动窗口并将其移动到任何时间段内的到达过程中，则一个时间段内的到达间隔时间与下一个时间段无关。这意味着没有突发或一个到达另一个的耦合，好吗？这就是过程上的专业人士。</p>
+<p>发言人   12:15<br>You’d pick up any book on probability, then you can find a more detailed description if that’s something that’s new to you.<br>你会拿起任何一本关于概率的书，如果这对你来说是新的，你可以找到更详细的描述。</p>
+<p>发言人   12:23<br>So why the Poisson process? Why, why are we interested in the Poisson process? Well, the Poisson process happens to model an aggregation of many independent random events very well. For example, it’s used in models of new phone calls arriving to a switch. So when we have a telephone switch and we say we want to model the arrival of a new phone call that is being placed through the day, then a Poisson process is a very good model of this, or the decay of many independent nuclear particles, where we have a huge number of particles all operating independently of each other. They will okay at certain times that decay as a aggregation of many random events, tends to do a pro-is on process as we have a large number of particles. And you may also be familiar with shot noise in an electrical circuit, which is also modeled as a Poisson process.<br>为什么是泊松过程？为什么我们对泊松过程感兴趣？嗯，泊松过程恰好可以很好地模拟许多独立随机事件的聚合。例如，它用于到达交换机的新电话的模型。因此，当我们有一个电话交换机时，我们说我们想要模拟一个新的电话呼叫的到来，那么泊松过程是一个非常好的模型，或者许多独立核粒子的衰变。在这里，我们有大量的粒子彼此独立运作。它们在某些时候会很好，会衰变为许多随机事件的聚集，当我们有大量粒子时，倾向于做一个亲的过程。你可能也熟悉电路中的发射噪声，它也被建模为泊松过程。</p>
+<p>发言人   13:15<br>The final thing, despite the complexity of the equation on the previous slide, it actually makes the math very easy. And this is a big reason that it gets used very widely as well.<br>最后一件事是，尽管上一张幻灯片上的方程很复杂，但它实际上使数学变得非常容易。这也是它被广泛使用的一个重要原因。</p>
+<p>发言人   13:27<br>At this point, I should give you some warnings. Network traffic is very bursty. There’s nothing, nothing independent about one packet arrival after another. As we will see later, packets tend very frequently to arrive in bursts, and many things in the network help actually to keep them that way and make them very bursty. So packet of Ris are not, and I can’t overemphasize this, they are not press on.<br>在这一点上，我应该给你一些警告。网络流量非常突发性。一个包一个接一个地到达，没有什么是独立的。正如我们稍后将看到的那样，数据包往往非常频繁地以突发方式到达，网络中的许多事物实际上有助于保持这种方式并使它们非常具有突发性。所以包装不是，我不能过分强调这一点，它们没有被按下。</p>
+<p>发言人   13:52<br>There’s been some classic papers, research papers that have shown this. However, it does model quite well the arrival of new flows, of new communications. For example, the inter arrival times of web requests or sending emails for any one individual. They may be somewhat PO on, but when you take the aggregation of many users, putting their network traffic into the network, that is actually modeled quite well by a Poisson process.<br>有一些经典的论文，研究论文已经证明了这一点。然而，它确实很好地模拟了新流和新通信的到来。例如，任何个人的网络请求或发送电子邮件的到达时间间隔。它们可能有些采购订单，但当你将许多用户的聚合，将他们的网络流量放入网络时，实际上通过泊松过程进行了很好的建模。</p>
+<p>发言人   14:19<br>And sometimes, sometimes we can use some of the results that apply to queues with Poisson arrivals to give us an intuition and understanding of maybe what’s happening even at the packet level. But we must do that very, very carefully.<br>有时候，我们可以使用一些适用于泊松到达队列的结果，让我们直观和理解甚至在数据包级别也可能发生了什么。但我们必须非常非常小心地做到这一点。</p>
+<p>发言人   14:36<br>Let’s look at a very common example of where we use the Poisson process. This is something called the 1 q. The M1 q is about the simplest type of cue that is commonly analyzed. The notation is that the M stands for a Markovian arrival process, which in our case is Poisson Markovian service process, which is exponential in our case, which means that the time that it takes to service a packet is exponentially distributed and each one has a service time independent of all of the others, and that there is one server, in other words, that there’s one outgoing line servicing this queue.<br>让我们来看一个使用泊松过程的非常常见的例子。这就是所谓的1 q。M1q大约是通常被分析的最简单的提示类型。符号是M代表马尔可夫到达过程，在我们的例子中是泊松马尔可夫服务过程，在我们的例子中是指数分布的，这意味着服务一个数据包所花费的时间是指数分布的，并且每个数据包都有一个独立于其他所有数据包的服务时间。并且有一个服务器，换句话说，有一个为这个队列提供服务的传出线路。</p>
+<p>发言人   15:16<br>There’s very widely, widely used because it assumes a nice simple plus on arrival with independent arrivals from one packet to. But it’s also used because the math is nice and simple, and the result is very intuitive. So if we were to analyze this, and we can analyze it using continuous time Markov chains, we will discover that the average delay of a packet going through this queue is given by the simple expression one over mu minus lambda. What this tells us is that it’s 1, 1 over the difference between the service rate and the arrival rate. So as the load increases and the load gets closer and closer to the service rate, then this number will grow very rapidly. And if we plot this on a graph, so as a function of lambda over mu, so that’s lambda over mu, as we get closer and closer to one, in other words, where they’re equal, the average delay of a packet through this queue will increase very, very steeply. And this is the case for almost any queueing system, not just the 1 q.<br>它被非常广泛地使用，因为它假定在到达时有一个漂亮的简单加号，从一个包裹独立到达。但它也被使用，因为数学很好而且简单，结果非常直观。因此，如果我们要分析这个，并且可以使用连续时间马尔可夫链进行分析，我们将发现通过此队列的数据包的平均延迟由简单的表达式 “mu减去lambda” 给出。这告诉我们的是，它是服务费率和到达费率之间的差值的1。因此，随着负载的增加，负载越来越接近服务速率，这个数字将会快速增长。如果我们把它绘制在图表上，作为lambda对mu的函数，这就是lambda对mu的函数，随着我们越来越接近1，换句话说，当它们相等时，通过这个队列的数据包的平均延迟将非常急剧地增加。这几乎适用于任何排队系统，而不仅仅是1 q。</p>
+<p>发言人   16:31<br>The reason that we use the 1 q sometimes as a placeholder for a more complicated system is only that the math is simpler and this expression is simple. But you see a very similar shape for almost any queued system.<br>我们有时使用1 q作为更复杂系统的占位符的原因只是数学更简单，这个表达式也很简单。但是你会看到几乎所有排队系统都有一个非常相似的形状。</p>
+<p>发言人   16:45<br>We can use Little’s result to figure out what the average Q occupancy is. And we know that L equals lambda times d, which in this case is simply going to be lambda over mu divided by 1 minus lambda over mu. The reason for writing it in terms of lambda over mu is simply that lambda over mu represents the intensity, just as I sketched on the graph here, as lambda approaches mu, lambda of a mu approaches 1, and the denominator turns to 0, and the q occupancy, and the average delay will blow up in 10 towards infinity. So the M1 Q provides us a good intuition. Don’t ever assume that this is the actual representative measure of the cue occupancy or the average delay, but it can often help to give it an intuitive sense of what’s going on in a network. So in summary, the main cue properties I want you to take away from this video are that burstiness tends to increase delay. So bursty arrivals tend to make queueing delays longer.<br>我们可以使用小的结果来计算平均Q占用是多少。我们知道L等于lambda乘以d，在这种情况下，就是mu上的lambda除以1-mu上的lambda。用 λ over mu来写它的原因很简单，就是 λ over mu代表了强度，就像我在这里的图表上画的一样，当 λ 接近mu时，mu的 λ 接近1，分母变为0，q占用，平均延迟将在10内向无穷远处爆炸。因此，m1q为我们提供了良好的直觉。不要假设这是线索占用或平均延迟的实际代表措施，但它通常可以帮助直观地感知网络中发生的事情。总之，我希望你从这个视频中得到的主要提示属性是，爆裂往往会增加延迟。如此突发性的到达往往会使排队延误更长。</p>
+<p>发言人   17:50<br>Little’s result gives us a nice relationship between the average occupancy of a q l lambda, the arrival rate, and d, the average delay of a customer through that queue. Well, packet arrivals are not Poisson. Some events are, such as web requests and new flow arrivals. And Poisson process also forms the basis of the 1 q, which is a simple queueing model that often can give us some intuition about the delay properties of a network. That’s the end of this video.<br>lambda的平均占用率、到达率和客户通过队列的平均延迟之间有很好的关系。好的，数据包的到达不是泊松。有些事件是这样的，例如web请求和新流量到达。而泊松过程也形成了1 q的基础，1 q是一个简单的排队模型，通常可以给我们一些关于网络延迟属性的直觉。这就是这个视频的结尾。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>计算机网络 036 Principles Packet Switching Useful queue properties</div>
+      <div>http://example.com/2025/10/19/cs144-036/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月19日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-037/" title="计算机网络 037 Principles Packet Switching How a packet switch works(1)">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">计算机网络 037 Principles Packet Switching How a packet switch works(1)</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/19/cs144-035/" title="计算机网络 035 Principles Packet Switching Simple Queueing Model Example">
+                        <span class="hidden-mobile">计算机网络 035 Principles Packet Switching Simple Queueing Model Example</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

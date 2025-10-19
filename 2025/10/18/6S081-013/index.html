@@ -1,0 +1,759 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="发言人   00:00I’ve started and everybody can see my screen that I shared. And I hope everybody can hear me. I think we’re good. Okay, so I want to talk about file file system today. And it’s going to be">
+<meta property="og:type" content="article">
+<meta property="og:title" content="操作系统工程 013-FileSystems">
+<meta property="og:url" content="http://example.com/2025/10/18/6S081-013/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="发言人   00:00I’ve started and everybody can see my screen that I shared. And I hope everybody can hear me. I think we’re good. Okay, so I want to talk about file file system today. And it’s going to be">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-18T02:00:13.000Z">
+<meta property="article:modified_time" content="2025-10-19T11:16:51.142Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>操作系统工程 013-FileSystems - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="操作系统工程 013-FileSystems"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-18 10:00" pubdate>
+          2025年10月18日 上午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          18k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          154 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">操作系统工程 013-FileSystems</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>发言人   00:00<br>I’ve started and everybody can see my screen that I shared. And I hope everybody can hear me. I think we’re good. Okay, so I want to talk about file file system today. And it’s going to be actually, we’re going to spend 3 lectures on file systems, 2 in the context of XV 6 and 1 in the context of Linux. And in fact, this is the sort of last topic that we’re covering of X 3 6.<br>我已经开始了，每个人都可以看到我分享的屏幕。我希望每个人都能听到我。我认为我们很好。好的，我今天想谈谈文件系统。实际上，我们将花费3个关于文件系统的讲座，其中2个在XV 6的环境中，1个在Linux的环境中。事实上，这是我们要讨论的最后一个话题X 3 6。</p>
+<p>发言人   00:35<br>After this week, we’re basically done with XV 6. So, you know, file systems all know them, you use them, they’re one of the most sort of user facing aspects of an operating system in addition to the shell. And so we sort of want to understand now, and these set of lectures actually what really happens in the duhot is and how the file system is implemented. And that’s sort of exciting because it you use them all the time. And maybe to start off with a question before diving in any of the details. Since you use file systems almost daily, in what way is the XV 6 file system different than the file system that you’re using in a day to day work? And maybe I’ll call out some to people and see what I think. For example, Kendall, Kendall Garner, did you notice anything particular about X 3 6 that is different or similar?<br>这周之后，我们基本上就完成了XV 6。所以，你知道，文件系统都知道它们，你使用它们，除了shell之外，它们是操作系统中最面向用户的方面之一。所以我们现在有点想了解，这些讲座实际上是在duhot中真正发生的事情以及文件系统是如何实现的。这有点令人兴奋，因为你一直在使用它们。也许在深入了解任何细节之前先从一个问题开始。由于您几乎每天都使用文件系统，那么XV 6文件系统与您在日常工作中使用的文件系统在哪些方面有区别？也许我会打电话给人们看看我的想法。例如，肯德尔，肯德尔·加纳，你是否注意到x3 6有什么特别的不同或相似之处？</p>
+<p>发言人   01:46<br>I’m not sure we can hear your candle. Yeah, there we go. Yeah, there we go, okay, Yeah, so one of the problems is size, or at least like the size of the files that actually 16 support are much less than a lot of other file systems. Also, the names for some files that are relatively short. Another feature, it’s because I use butterfly. I don’t think it has copy and write for file system. Good, good in what ways? It’s a similar. It’s similar in the general structure. So the idea of you have file names, you have the inodes, directories and all that. Yeah, seems good, How about? Adela and Yang How?<br>我不确定我们能不能听到你的蜡烛。是的，我们开始了。是的，我们开始了，好的，是的，所以其中一个问题是大小，或者至少像实际支持16的文件的大小远小于许多其他文件系统。还有一些相对较短的文件的名称。另一个功能，是因为我使用了蝴蝶。我认为它没有复制和写入文件系统的功能。好，以什么方式好？这是一个类似的。它在一般结构上相似。所以你有文件名的想法，你有inode，目录等等。是啊，看起来不错，怎么样？阿德拉和杨如何？</p>
+<p>发言人   02:39<br>How do you compare X 6 file system to the file system that you use? Sorry, so the question is like, how would you, how would you compare the XV 6 file system to the file system that you might be using in daily life or on your laptop or whatever computer you’re using? The similarities? Yeah, like the file system path system, like paths in the file system are like hierarchical. Yeah, that’s a good, good point. Okay, so you know the so let me sort of dive in a little bit and sort of talk a little bit about properties of file systems going to, you know, sort of stand out and 1, I think know you just mentioned here, vanilla is user friendly.<br>如何将X 6文件系统与您使用的文件系统进行比较？很抱歉，问题是，您如何将XV 6文件系统与您在日常生活中或笔记本电脑或其他计算机上使用的文件系统进行比较？相似之处？是的，就像文件系统的路径系统一样，文件系统中的路径就像层次结构一样。是的，这是一个很好的观点。好的，所以你知道，让我稍微深入一下，稍微谈谈文件系统的属性，你知道，有点突出，1，我想知道你刚刚在这里提到的，香草是用户友好的。</p>
+<p>发言人   03:39<br>User friendly names and in particular path names. How you can hierarchy to help people to organize their files and directories, folders, whatever term you want to use. And it makes it easy for, you know, people to share files. You know, between users. And processes you can name them with conveniently to remember names.<br>用户友好的名称，特别是路径名。你如何分层以帮助人们组织他们的文件和目录，文件夹，无论你想使用什么术语。它使人们很容易共享文件。你知道的，用户之间。并且您可以方便地为它们命名以记住名称。</p>
+<p>发言人   04:10<br>And then probably most importantly, compared to, at least for all the subsystems that we’ve looked so far in exercise 6 to provide persistence. Or sometimes called durability. With that, I mean, like if you turn off your computer, you did some work, you turn off your computer and turn off your laptop, and a couple days later, you come back, you turn your computer on, the files are still there. And you can continue working with them, which is sort of different from like processes or the thing, the research that we’ve seen so far, which basically, you know, if the computer reboots, you know, that are gone and you have to start up again. But file systems can provide this persistence. All of you using them. And what we’re going to be doing in the next couple lectures are actually understanding how they actually work internally. And this is interesting for a number of reasons.<br>然后可能最重要的是，与我们迄今为止在练习6中研究的所有子系统相比，至少提供持久性。或者有时被称为耐久性。我的意思是，如果你关掉电脑，你做了一些工作，你关掉电脑，关闭笔记本电脑，几天后，你回来，你打开电脑，文件仍然在那里。你可以继续与它们一起工作，这与我们到目前为止所看到的研究不同，基本上，你知道，如果计算机重新启动，你知道，那就消失了，你必须重新启动。但是文件系统可以提供这种持久性。你们都在使用它们。在接下来的几场讲座中，我们要做的实际上是了解它们在内部是如何工作的。这很有趣，原因有很多。</p>
+<p>发言人   05:18<br>One, you know, the abstraction itself, it’s just useful. And so it’s interesting to understand, like under the Whos, actually how the abstraction is actually implemented. And it turns out there’s sort of a couple key interesting aspects.<br>你知道的，抽象本身就是有用的。所以理解抽象实际上是如何实现的很有趣，就像在Whos下一样。结果发现有几个关键的有趣方面。</p>
+<p>发言人   05:35<br>One is crash safety. It would like it to be the case that, you know, if, for example, during the file system operation, the computer crashes, that after reboot, basically your file system is still intact, all the invariant of the file system still hold. And then you can actually get access to both of your files. It would be a disaster if, like, the computer crashed in the middle of five operation, you reboot and there’s no file system anymore, Or, you know, the data structure on disk had been garbled. You lost them. And so the data structure turns out to be a really important topic and involved. And so we’re going to talk about that on Wednesday. This is basically the main topic for Wednesday’s lecture.<br>一个是碰撞安全。它希望这样的情况是，例如，如果在文件系统操作期间计算机崩溃，那么在重新启动后，基本上你的文件系统仍然完好无损，文件系统的所有不变量仍然保持不变。然后您实际上可以访问您的两个文件。如果计算机在五次操作中间崩溃，重新启动并且不再有文件系统，或者磁盘上的数据结构被乱码，那将是一场灾难。你失去他们了。因此，数据结构成为一个非常重要的话题，并涉及其中。所以我们将在星期三讨论这个问题。这基本上是婚礼讲座的主题。</p>
+<p>发言人   06:26<br>Then there’s sort of the general question about like how to lay out the file system on disk. The is the files of the directories. They all have to be represented in some way on the disk because after if you shut down your computer, come back up, know all the data still has to be there and so are basically on this data structure to represent the structure of the file system or the content of the file system. And in actually six of courses, you know the representation where that data structures used are quite simple just to for pedagogical reasons and real file system do more complex data structures. But you can just think about this as on this data structures. And so we’ll see a lot of that in today’s lecture. And then finally, what makes it interesting is performance. The devices typically in which file systems are stored, storage devices, are typically slow.<br>然后有一种关于如何在磁盘上布局文件系统的一般性问题。是目录的文件。它们都必须以某种方式在磁盘上表示，因为如果你关闭计算机，回来后，知道所有的数据仍然必须在那里，因此基本上在这个数据结构上代表文件系统的结构或文件系统的内容。实际上，在六门课程中，您知道使用数据结构的表示非常简单，仅出于教学原因和实际文件系统可以处理更复杂的数据结构。但是你可以把它想象成这个数据结构。所以我们将在今天的讲座中看到很多。最后，让它有趣的是性能。通常存储文件系统的设备、存储设备通常速度较慢。</p>
+<p>发言人   07:36<br>The mean example to be to write a block know on a solid state disk in an SSD disk. I said going to the order of a millisecond. And so in the middle-secondary can do a ton, a ton of work. And so it’s important that, you know, you try to avoid going to disk. And you’ll see that in multiple ways.<br>平均的例子是在固态硬盘的固态磁盘上写入块知识。我说要达到毫秒级。因此在中学可以做一个吨，吨工作。所以重要的是，你知道，你尽量避免去磁盘。你会以多种方式看到这一点。</p>
+<p>发言人   07:52<br>So we see that, for example, a file system will have something of a buffer cache, block cache. And you also see it in basically additional forms or more concurrency. So for example, if you do a path name lookup, you know, then that typically is an involved operation required to sending the directory hierarchy, you know, looking up, blocking for a directory, finding the file name in the directory, then going to the next directory, etc., etc.. And you want it to be the case that if like 1 processor is doing path name lookup, another processor can sort of run concurrently or in parallel with the first process, doing a path name lookup. And so we’ll see that sort of concurrency, you know, shows up again as a big topic in the context of file systems.<br>所以我们看到，例如，一个文件系统会有一个缓冲区缓存，块缓存。你也可以看到它基本上有额外的形式或更多的并发性。因此，例如，如果您进行路径名查找，那么通常是发送目录层次结构所需的复杂操作，您知道，查找，阻止目录，在目录中查找文件名，然后转到下一个目录，等等。并且您希望它是这样的情况，如果像一个处理器正在进行路径名查找，另一个处理器可以与第一个进程同时或并行运行，进行路径名查找。因此，我们将看到那种并发性，你知道，在文件系统的上下文中再次成为一个大话题。</p>
+<p>发言人   08:42<br>The other reason why it’s interesting is it’s going to be the topic of 2 labs. So we’re going to have the next upcoming lab is completely focused on file systems. And the lab after that is a combination of virtual memory and file systems. Even the lab for today or this week, where it has a component trying to make the buffer cache more parallel. So that’s why it’s interesting.<br>另一个有趣的原因是它将成为两个实验室的主题。因此，我们即将推出的下一个实验室将完全专注于文件系统。之后的实验室是虚拟内存和文件系统的组合。即使是今天或本周的实验室，也有一个组件试图使缓冲区缓存更加并行。这就是为什么它很有趣。</p>
+<p>发言人   09:08<br>And, you know, just to sort of get off the ground to understand like what the file system must provide, just let’s look again at the basic file system.<br>而且，你知道，只是为了开始了解文件系统必须提供的东西，让我们再看看基本文件系统。</p>
+<p>发言人   09:18<br>System calls, right the. If you example, and from looking at APR, if there’s these file system calls, then we can sort of deduce a couple of interesting properties that must be true about the implementation. And so the, you know, the file system calls. We’ve seen them early on in the semester. And, you know, we’ve looked at most other unic system calls, how to implement it, like for work and azag pipes, all that stuff. And basically, this set of lectures is really focusing on like how to implement the file system calls.<br>系统调用，正确的。如果你举个例子，通过查看APR，如果有这些文件系统调用，那么我们可以推断出几个有趣的属性，这些属性必须是关于实现的。所以，你知道，文件系统调用。我们在这个学期的早期就看到了它们。而且，你知道，我们已经看过大多数其他unic系统调用，如何实现它，比如用于工作和azag管道，所有这些东西。基本上，这一组讲座真正关注的是如何实现文件系统调用。</p>
+<p>发言人   10:00<br>So, so first of all, let’s just start up of the simulation. Let’s look a simple scenario. We have, you know, say we create a file x, y, or a file y in the directory. X? Yeah, probably have to.<br>所以，首先，让我们开始模拟。让我们来看一个简单的场景。你知道，我们在目录中创建了一个文件x、y或文件y。X?是的，可能不得不。</p>
+<p>发言人   10:34<br>In the file legs, we have to provide some flags. We don’t really care about the flags, so I’m just going to ignore them. So this will create a file, return a file descriptor to the caller, and then the caller, the user Apple application can then actually, for example, right, you know, to that file descriptor.<br>在文件中，我们必须提供一些标志。我们并不真正关心这些旗帜，所以我只是忽略它们。所以这将创建一个文件，返回一个文件描述符给调用者，然后调用者，用户苹果应用程序就可以，例如，对，你知道，到那个文件描述符。</p>
+<p>发言人   10:50<br>As we’ve seen many times before, I shall write FD, maybe ABC, you know, 3 characters. And one of things actually, I can already a couple things that we can point out from these. These two calls is that first of all the. Path names. That show up in the interface. And we’re going to have to implement the names of human readable. They’re not number that get selected by the user.<br>正如我们以前多次看到的那样，我会写FD，也许是ABC，你知道的，3个字符。实际上，我已经可以从中指出一些事情。这两个电话首先是。路径名称。这会显示在界面中。我们将不得不实现人类可读的名称。它们不是用户选择的号码。</p>
+<p>发言人   11:29<br>Another interesting thing here is that in the right system call, there’s no offset as an argument. So the offset is implicit. So the file system somewhere must store the offset. If you do, second call to write correctly, will end up at, you know, the next set of bytes will be in that location 4, You know, some maybe some more interesting calls that we haven’t looked at much, but for example, you know, the XV 6 and all unit file systems, we support calls to create links to have multiple names for the same file, for the same file.<br>另一个有趣的事情是，在正确的系统调用中，没有偏移量作为参数。所以偏移量是隐式的。所以某个地方的文件系统必须存储偏移量。如果你这样做了，第二个正确写入的调用最终会到达，你知道，下一组字节将在那个位置4，你知道，有些可能是我们没有看过的更有趣的调用，但例如，你知道，在XV 6和所有单元文件系统中，我们支持创建链接的调用，以便为同一文件创建多个名称。</p>
+<p>发言人   12:08<br>For example, you might call a call like link that basically creates a second name for the original file. So for example, creates a name z for the file y that we earlier created. So multiple names.<br>例如，您可以调用链接之类的调用，这基本上会为原始文件创建第二个名称。例如，为我们之前创建的文件y创建一个名称z。这么多个名字。</p>
+<p>发言人   12:32<br>So the file system probably internally have to keep track, you know, in some way that multiple names might be pointing to the same file you we might actually remove.<br>所以文件系统内部可能需要跟踪，你知道，以某种方式，多个名称可能指向我们可能实际删除的同一个文件。</p>
+<p>发言人   12:44<br>Change the namespace while the file is open. For example, why we could call, you know, user might actually call an auto a processor, or the same processor might call unlink to remove a particular file. And in fact, you know that we remove the file x, y that we actually open. So here we still have a file descriptor open. And so in fact, that we can still write to it. So we can still write it to MD, you know, for example, the characters, whatever de. And it actually worked out fine. So basically, while you know, a file file is in use, you know, the namespace that sort of surrounds it could actually be changed. And so it has to be the case.<br>在文件打开时更改命名空间。例如，为什么我们可以称用户可能实际上将自动称为处理器，或者同一处理器可能调用unlink以删除特定文件。事实上，你知道我们删除了我们实际打开的文件x，y。所以这里我们仍然打开了一个文件描述符。因此，事实上，我们仍然可以写信给它。所以我们仍然可以将它写入MD，例如，字符，无论de。而且实际上效果很好。所以基本上，当你知道一个文件文件正在被使用时，围绕它的命名空间实际上可能会被改变。所以必须如此。</p>
+<p>发言人   13:29<br>And if you sort of look at this, you know, set of things that there’s a bunch of interesting things going on internally in the file system. For example, the file, the file descriptor must be associated with some, you know, object that is independent of the name. Because even if the name changes you, the file descriptor still points or, you know, references the same file object itself. So in fact, if you think about this, it has to be the case that basically there has to be some internal representation of the file inside of the operating system that’s independent of the name itself. And so we’re going to look at that in a second.<br>如果你看看这个，你知道，文件系统内部发生了很多有趣的事情。例如，文件，文件描述符必须与某个独立于名称的对象相关联。因为即使名称更改了，文件描述符仍然指向或引用相同的文件对象本身。因此，事实上，如果你考虑一下，基本上必须有一些独立于名称本身的操作系统内部文件表示形式。所以我们马上就来看看这个。</p>
+<p>发言人   14:12<br>But there’s one other sort of point I wanted to make here is, you know, the goal of the file system is to implement an API like the ones that we’re looking here, which is a sort of typical file system API. Now, this is, of course, not the only way to be a storage system or to store information on disk. One could imagine completely different Apis. And for example, you know, maybe, you know, the database stores data persistently, but access to the data and provides a very different programming API, user API, then a file system does. And so just important to keep in mind that. You know, there’s other ways of organizing storage systems and where our focus is going to be on file system, which is typically provided by an operating. And databases are typically implemented on top of the file system or almost work around the file system. It can have direct access to disk.<br>但是我想在这里提出的另一种观点是，你知道，文件系统的目标是实现像我们在这里看到的那样的API，这是一种典型的文件系统API。当然，这并不是成为存储系统或将信息存储在磁盘上的唯一方式。人们可以想象完全不同的Apis。例如，你知道，也许，你知道，数据库持久存储数据，但是对数据的访问提供了一个非常不同的编程API，即用户API，然后是文件系统。所以重要的是要记住这一点。你知道，还有其他方法来组织存储系统，我们的重点将放在文件系统上，这通常由操作提供。和数据库通常在文件系统之上实现，或者几乎围绕文件系统工作。它可以直接访问磁盘。</p>
+<p>发言人   15:12<br>We have two questions in the chat, yeah. Students can ask any questions, so link increments or reference to the underlying file descriptor and unlink documented. Yes, that is correct. We’ll talk a little bit more about it later. Another question here is about soft links versus heart links. I’m probably not going to talk much about it today, but you will be implementing soft links in the next in the file system lab that is upcoming. So XV 6 by itself implements hardlinks, and then you will implement soft links. In addition, Any questions, other questions?<br>我们在聊天中有两个问题，是的。学生可以问任何问题，因此链接增量或引用底层文件描述符并取消记录链接。是的，没错。稍后我们会再多谈一点。这里的另一个问题是关于软链接与心脏链接的问题。我今天可能不会谈论太多，但你将在接下来的文件系统实验室中实现软链接。所以XV 6本身实现了硬链接，然后您将实现软链接。此外，还有什么问题吗？</p>
+<p>发言人   16:04<br>Link operates on the I nodes, not on the file. Deers, right? That’s correct link. Since let’s go there. So file system structures. So what structures does the file system maintain to implement this API I just talked about?<br>链接在I节点上操作，而不是在文件上操作。是吧？这是正确的链接。既然我们去那里。所以文件系统结构。那么，文件系统维护什么结构来实现我刚刚谈到的这个API？</p>
+<p>发言人   16:27<br>So first of all, you know, most important part is the inode. And so this is the object that represents a file independent of the name. So file info. Independent of the name. In fact, you know, we, you know, your name actually, and I know this one, and I know number interesting, literally an integer. So the phosphates mean terminally, it refers to inot by a number instead of x by half names.<br>首先，你知道，最重要的部分是inode。因此，这是表示独立于名称的文件的对象。所以文件信息。与名字无关。事实上，你知道，我们，你知道，你的名字实际上，我知道这个，我知道数字有趣，字面上是一个整数。因此，磷酸盐的最终意思是，它用一个数字代替半个名称中的x来指代inot。</p>
+<p>发言人   17:00<br>And we also know based on this discussion, you know, that I know must actually have a link count. To keep track of the number of. To keep track of the number of names that are pointing to that particular inode and the file should only be deleted. You know when the link count actually reaches 0? No, earlier. It’s actually slightly more complicated. There must be also an open FD count, the number of file descriptors that actually have the file open, and then a file can only be deleted when both of these are 0.<br>根据这个讨论，我们也知道，你知道，我知道实际上必须有一个链接计数。跟踪的数量。来跟踪指向该特定inode的名称数量，并且该文件只应删除。你知道链接计数实际达到0的时候吗？不，之前。这实际上稍微复杂一些。还必须有一个打开的FD计数，即实际打开文件的文件描述符的数量，然后只有当这两个都为0时才能删除文件。</p>
+<p>发言人   17:43<br>We also know that basically based on know, the rights have no offset, nor does read, you know, that the file descriptor implicitly must maintain an. Offset?<br>我们也知道，基本上基于知道，权限没有偏移量，也没有读取，你知道的，文件描述符必须隐式地维护一个。偏移？</p>
+<p>发言人   18:02<br>Okay, and so basically the central wheeling data structure in a file system is the inode. And then in the file descriptor to actually interact with processes. So even though like the file systems are very similar in terms of sort of their API know, they’re all implemented differently. But many of them have sort of a similar structure, And because the file systems are quite complex, you know, just helps to sort of organize them. And they’re typically organized in a sort of set of layers And know one way to think about it is at the very bottom, there’s the Dis, some storage device that actually holds the data and actually provides the persistence and durability. Typically, there’s something like a buffer cache or block cache right of above it, so that to avoid going to disk many times. So we’re going to cache basically data ins in memory. So this is going to be basically.<br>好的，所以基本上文件系统中的中央数据结构是inode。然后在文件描述符中与进程进行实际交互。因此，尽管文件系统在API方面非常相似，但它们的实现方式都不同。但是它们中的许多具有相似的结构，并且由于文件系统非常复杂，你知道，这有助于在某种程度上组织它们。它们通常被组织成一组层，并且知道一种思考方式是在最底层，即某些存储设备，实际上保存数据并提供持久性和持久性。通常，上面有一个类似于缓冲区缓存或块缓存的东西，这样可以避免多次进入磁盘。所以我们基本上要将数据缓存在内存中。所以这基本上是这样的。</p>
+<p>发言人   19:21<br>This is the device. For persistence, there’s something typical of a logging layer. You know, many file system has a form of logging. We’re going to talk mostly about Wednesday. So when I can skip that, then the top of the loing are in leasing XV 6.<br>这就是设备。为了持久性，有一个典型的日志记录层。你知道，许多文件系统都有一种日志记录的形式。我们将主要谈论星期三。所以当我可以跳过这个时，那么loing的顶部在租赁XV 6中。</p>
+<p>发言人   19:42<br>There’s an i-cache or inode cache, and this is mostly for synchronization, as also talk about a little bit later. So the inodes is typically smaller than this block. And then the inodes are packed into a single disc block. The phrase will provide synchronization to those individual I notes, you know, actually 6 maintains an eyecat.<br>有一个i-cache或inode缓存，这主要是为了同步，稍后也会讨论。所以inode通常比这个块小。然后将索引节点打包到单个磁盘块中。该短语将为那些我的笔记提供同步，你知道，实际上6保持眼睛。</p>
+<p>发言人   20:09<br>And then typical that to get over the Ino implementation itself, you know, that sort of ranges for region rights bites. And then, you know, on top of that, we have names like path names and file descriptor operations. And you file system is slightly different organized, and the layers may be slightly different. And maybe the laying is not always that strict. Even in x.c. 6, it’s not always super strict. That is conceptually a good way to think about it. And almost all file systems have components in their file system.<br>然后典型的是克服Ino实现本身，你知道的，那种区域权利叮咬的范围。然后，你知道的，除此之外，我们还有路径名和文件描述符操作等名称。而且文件系统的组织方式略有不同，层次可能略有不同。也许铺设并不总是那么严格。即使在x.c.中。 6、它并不总是超级严格的。这在概念上是一个很好的思考方式。而且几乎所有文件系统的文件系统中都有组件。</p>
+<p>发言人   20:47<br>There’s correspond to the different pieces, you know, the buffer cache and the logging to the in notes and to path names. And so I’m going to basically work back through a little bit through, you know, these different files system layers. Let me talk a little bit, starting with the bottom layer. Yeah, okay. Is it just looking at the? Chat, So let me start with the talk a little bit about storage itself, storage devices.<br>有对应于不同的部分，你知道，缓冲区缓存和日志记录到注释和路径名。因此，我将基本上通过这些不同的文件系统层进行回溯。让我说一点，从底层开始。是的，好的。只是在看吗？聊天，那么让我从谈论存储本身开始，存储设备。</p>
+<p>发言人   21:22<br>It turns out there are many, many in different types of storage devices, and there are differences in performance capacity, the degree of durability. But two of the common ones are you’re probably all familiar with, you know SSD and then maybe. Some people may still need using hard disks or magnetic disk. And, you know, they provide a ton of storage, reasonable cost, and a different performance. So Ssd’s have typically in the order of like hundreds of liters to the milliseconds a time. Well, magnetic discs going to tend to be more in the order of 10 milliseconds to individually read or write a block.<br>事实证明，有很多不同类型的存储设备，并且在性能容量和耐用性方面存在差异。但有两个共同点是你们可能都很熟悉，你们知道固态硬盘，然后也许。有些人可能仍然需要使用硬盘或磁盘。而且，你知道，它们提供了吨的存储空间、合理的成本和不同的性能。因此，Ssd通常以数百升到毫秒的顺序进行。嗯，磁盘趋向于以10毫秒的顺序来单独读取或写入一个块。</p>
+<p>发言人   22:13<br>The terminology is actually slightly confusion here. You know, the term sector that are being used blocks. And so in sectors are typically it’s the historically, the smallest unit that this drives can really write in. And so used to be typically 512 B versus the common number. The block size is basically, or a block is basically an OS or the file system idea or defined by the file system. And then actually 6, for example, it’s 1024 B. And so it’s two sectors. So typically, the block size is one or more sector.<br>这里的术语实际上有点混乱。你知道，正在使用的术语部门会阻塞。因此，在行业中，通常是历史上这种驱动器真正可以写入的最小单元。因此，过去通常是512 b，而不是普通的数字。块大小基本上是，或者块基本上是操作系统或文件系统概念或由文件系统定义的。然后，例如实际上是6，它是1024 B。所以有两个领域。通常，块大小为一个或多个扇区。</p>
+<p>发言人   22:56<br>Sometimes, you know, people do dissectors on disk also as blocks. And so, you know, the terminology is not particularly precise. So these devices, you know, basically sit, you know, some bus and, you know, the bus is connected to the CPU or, you know, there might be memory on the side here. Maybe multiple Cpu’s and you said file system runs in the CPU. It stores its internal data structures in memory and basically region rights.<br>有时，你知道的，人们也会将磁盘上的数据块进行分析。所以，你知道，术语并不是特别精确。所以这些设备，你知道，基本上，坐在一些总线上，你知道，总线连接到CPU，或者，你知道，这里可能有内存。可能有多个Cpu，而你说文件系统在CPU中运行。它将其内部数据结构存储在内存中，基本上是区域权限。</p>
+<p>发言人   23:32<br>To the SSD or to the hard disk? To actually write a block or read a block. And so to actually, the interface is quite simple. So it’s typically you just read or write with block number. There’s a little bit of oversimplification. Then about a quarter of the interface is roughly that. And internally, of course, the Ssds and the ad hard disk work completely differently, but the hardware extracts are mostly away. And typically there’s sort of a standard protocol like PCI or PCI extended.<br>固态硬盘还是硬盘？实际上写一个块或读一个块。所以实际上，界面非常简单。所以通常你只是用区块编号来读取或写入。这有点过于简单化了。那么大约四分之一的界面大约是这个。当然，在内部，Ssds和ad硬盘的工作方式完全不同，但是硬件提取大部分都没有了。通常存在一种标准协议，如PCI或PCI扩展。</p>
+<p>发言人   24:08<br>The processor or the file system uses or the disk drivers use to actually talk to disks. And often from the disk driver, most discs sort of look the same and you can just read and write them, you know, by providing a block number and some data and then, you know, send it off or write it to the controller register, you know, the device, and then the device actually will do its job. So from a file system perspective, although the disk have quite distorted devices have quite different properties, they’re actually, from the driver perspective, they’re program and roughly in the same way. Any questions about that? I’m not going to talk much about the storage divisor, so if you have any questions, this is a good time to ask them.<br>处理器或文件系统使用或磁盘驱动程序实际与磁盘通信。通常从磁盘驱动程序来看，大多数光盘看起来都差不多，你可以通过提供块号和一些数据来读写它们，然后将其发送或写入控制器寄存器，你知道，设备。然后该设备将实际完成其工作。因此，从文件系统的角度来看，尽管磁盘设备的属性非常不同，但从驱动程序的角度来看，它们实际上是程序，大致相同。有什么问题吗？我不会过多地谈论存储除数，所以如果您有任何问题，现在是询问他们的好时机。</p>
+<p>发言人   25:11<br>Yes, I have a question. Is the interface for calling, read or write something that offers synchronous and asynchronous options? Yeah, often is the case. In fact, it’s generally like it’s almost very similar to actually, basically, you can think about the driver for a disk in the same way as the console driver where the CPU or the driver issues a command to the device, basically, say, start, read, or do it, right? And then at some point later when the device is done, and we’ll generate an interrupt saying like, okay, I did the read or I did the right, and then, you know, that indicates the completion. And you, of course, the driver you since this device is more complicated than the console, you know, it’s quite a bit more complicated driver than the console driver that we saw in previous lectures.<br>是的，我有个问题。是用于调用、读取或写入提供同步和异步的选项的东西的接口吗？是的，经常是这样的。实际上，它通常就像它几乎非常相似，基本上，您可以像控制台驱动程序一样考虑磁盘驱动程序，其中CPU或驱动程序向设备发出命令，基本上说，开始，读取或执行它，对吧？然后在某个时间点，当设备完成时，我们会生成一个中断，说，好的，我做了读取或正确的操作，然后，你知道，这表示完成了。当然，你是驱动程序，因为这个设备比控制台更复杂，你知道，它比我们在之前的讲座中看到的控制台驱动程序要复杂得多。</p>
+<p>发言人   26:01<br>This is basically the same structure. The bottom half, top half interrupts in reading and writing to controller edit session. Okay thanks. Okay, so from a final system perspective, the way to think about the disk is pretty straightforward Since there’s a reri of walk for sectors, we can just think about the disk with basically a gigantic array box, you know, starting at, you know, whatever, 0, 1, and going up to whatever the size of the disk is.<br>这基本上是相同的结构。下半部分，上半部分中断对控制器编辑会话的读取和写入。好的，谢谢。好的，所以从最终系统的角度来看，考虑磁盘的方式非常简单，因为对于扇区有很多步，我们可以考虑磁盘基本上是一个巨大的阵列盒，你知道，从0，1开始，并且上升到磁盘的任何大小。</p>
+<p>发言人   26:44<br>And basically the file systems jaw is to sort of lay out all the data structures on the disk in a way that it can reconstruct a file system after reboot. And so, you know, there are different ways of going about it x 6 cells, we’ll see users are very simple layout structure, but. But not completely unusual. Pretty typical in prototypical for, how file systems operate. So typically the block 0 is generally not used or used actually for the boot sector to boot the operating system.<br>基本上，文件系统的任务是以一种可以在重新启动后重建文件系统的方式在磁盘上布局所有数据结构。所以，你知道，有不同的方式来处理x6个单元，我们会看到用户的布局结构非常简单，但是。但并非完全不寻常。非常典型的文件系统如何运行的原型。因此，通常不使用或实际上不使用块0来引导操作系统。</p>
+<p>发言人   27:27<br>Log one is often what’s called the super blog. And the super block basically describes, you know, the file system. And they say like, oh, there are so many blocks on disk, and that constitutes the file system. And we’ll see in a second that the XV 6, there’s a little bit more information in as you most out of file system. So for example, in XV 6, the log starjets going to block 2 and runs into block 32. And so this is the log. And of course, the log could be different size. And matter of fact, in the super block, it just says like the log is whatever through two blocks log then, and actually six after that stores from 32 to basically block 45, if I remember correctly, and storage inotes.<br>日志1通常被称为超级博客。超级块基本上描述了文件系统。他们会说，哦，磁盘上有很多块，这构成了文件系统。我们一会儿就会看到，XV 6文件系统中包含了更多的信息。例如，在XV 6中，日志型星际喷气机将进入块2并进入块32。所以这是日志。当然，日志可以有不同的大小。事实上，在超级块中，它只是说日志是两个块之间的任何日志，实际上六个块之后存储从32个块到基本上45个块，如果我没记错的话，存储索引。</p>
+<p>发言人   28:18<br>And I said before, multiple eye notes are packed into single disk block. I think an IoT, I believe, I don’t actually remember at the top of my head, but I think it’s usually 64 B or 128. I believe 64. And after that, you know, there’s a bitmap block Turns out in the default way we be able to file system is actually the bitmap block is one block in size. And so these basically keep track of actually the data blocks, whether they’re free or not. And after that, you know, it’s all from basically year to there, it’s all data blocks. So data blocks that actually store contents or files or contents of directories.<br>我之前说过，多个眼部笔记被打包到单个磁盘块中。我认为一个物联网，我相信，我实际上并不记得我的头顶，但我认为它通常是64 b或128。我相信64。在那之后，你知道，有一个位图块，默认情况下，我们能够对文件系统进行处理，实际上位图块的大小为一个块。因此，这些基本上跟踪实际的数据块，无论它们是免费的还是不免费的。在那之后，你知道，基本上都是从一年到那里，都是数据块。因此实际存储内容、文件或目录内容的数据块。</p>
+<p>发言人   29:06<br>Often all the bitmap blocks and inode blocks and logging block are often sometimes referred to as metadata blocks. And they don’t actually store actually data, but they help, you know, they store meta information for the file system to do its job, like big maps and items. Any questions so far about this?<br>通常所有的位图块和索引节点块以及日志记录块有时通常被称为元数据块。它们实际上并不存储实际数据，但它们可以帮助存储元信息，以便文件系统完成其工作，例如大地图和项目。到目前为止，对此有什么问题吗？</p>
+<p>发言人   29:33<br>I have a question about the boot block. Does it contain the code for the operating system to boot or something else? Yeah exactly, it typically contains one block of code, enough for the operating to get going and load maybe more of the operating system actually from the file system itself. Thank you, so does that mean that the code for XV 6 is actually stored on like the virtual disk? Or is it like how to, because you know, the way we do know we cut corner and qmu actually has a flag, you know, dash kernel that basically points to the where boots the kernel from and loads, you know, that at a particular address into physical memory at 0 8 0 0 0 0. And so basically when we’re using qmu, the way we’re using q.u., we don’t really have to worry about boot sectors and anything like that, okay? So basically like when you run QA mu, you just you just pass in like the program through the command line, and then it’ll just run that. It doesn’t need to like read it from the virtual disk and everything that makes sense.<br>我有一个关于启动块的问题。它是否包含操作系统启动代码或其他内容？确切地说，它通常包含一个代码块，足以让操作系统开始运行并从文件系统本身加载更多的操作系统。谢谢，这是否意味着XV 6的代码实际上像虚拟磁盘一样存储在其中？还是像是如何，因为你知道，我们知道我们切角的方式，qmu实际上有一个标志，你知道，破折号内核，基本上指向启动内核的位置并加载，你知道，将特定地址的数据存储到物理内存中的0 8 0中。基本上，当我们使用qmu时，就像我们使用q.u.的方式一样，我们不必担心引导扇区等问题，好吗？基本上就像当你运行QA mu时，你只需通过命令行传递该程序，然后它就会运行它。它不需要像从虚拟磁盘和感知的一切一样读取它。</p>
+<p>发言人   30:51<br>Okay, so like, you know, the so for example, so assuming that I notes are 64 B know. So for example, now if you want to read, I know it 10.<br>好的，就像，你知道的，例如，假设我的笔记是64 B，知道。例如，现在如果你想阅读，我知道它是10。</p>
+<p>发言人   31:09<br>What do you do, how do you read? I know 10.<br>你是做什么工作的，你是如何阅读的？我知道10。</p>
+<p>发言人   31:18<br>Anybody? In which block will IO 10 be? You’d need to add? Do you take the inode number and add the offset into the disk? So 10 plus 32, yeah, 2 correct, and is it literally plus 10 or something else?<br>有人吗？IO 10将在哪个区块中？你需要添加吗？你要将inode编号并将偏移量添加到磁盘中吗？所以10加32，对，2正确，它是字面上加10还是别的什么？</p>
+<p>发言人   31:47<br>Is it 10 divided by the size? Yeah, it’s going to be whatever. It’s going to be number IoT number. Multiplied times, we do it in bytes. Multiply it by 64 divided by 5 and 24. So I know zero will end up in walk 32. I know whatever, 524 divided by 64.<br>是10除以大小吗？是的，这将是任何事情。这将是一个物联网数字。乘以几次，我们以字节为单位进行。将它乘以64，再除以5和24。所以我知道零会在步行32中结束。我知道什么，524除以64。</p>
+<p>发言人   32:23<br>16, yeah, 16. That sounds about right. So I know 17, where will it, where will it end up? Should be 9, should be in block 33, correct? Does that make sense, so given an IO number, we can always find the bytes on disk where the Iode actually is stored, okay? Okay, so then let’s look at the what actually is on the sky node.<br>16，对，16。这听起来差不多。所以我知道17，它会在哪里，它会在哪里结束？应该是9，应该在33块，对吗？这是否构成感知，所以给定一个IO编号，我们总是可以在磁盘上找到Iode实际存储的字节，好吗？好的，那么让我们来看看天空节点上的实际情况。</p>
+<p>发言人   33:04<br>So as we before, you know, we’ll see there’s basically a little data structure, 64 B in size. And, you know, typically has a type, which I’ll talk about a little bit later. But for example, the type of file or directory and link the link account to track if multiple names are pointing to the same inode, a size in bytes. And then in XV 6, there can be slightly different in different file system exactly how the representation is. But in Xt 6, a little bit more space.<br>因此，正如我们之前所知道的，我们将看到基本上有一个小的数据结构，大小为64 B。而且，你知道，通常有一种类型，我稍后会谈论它。但例如，文件或目录的类型并链接帐户以跟踪多个名称是否指向相同的inode，大小以字节为单位。然后在XV 6中，在不同的文件系统中，其表示方式可能略有不同。但在xt6中，需要更多一点的空间。</p>
+<p>发言人   33:49<br>In exercise 6 basically is followed by a number of block numbers. And so the block number 0, block number one, in fact, are whatever 12 of those guys, we call 12 direct block numbers.<br>在练习6中，基本上后面跟着一些区块编号。因此，区块编号0，区块编号1，实际上是那些人中的12个，我们称之为12个直接区块编号。</p>
+<p>发言人   34:10<br>And those direct block numbers basically correspond to the first 12 blocks that constitute that file. So for example, if the file was only 2 B long, there would be only one block number 0. And that volume number 0 is the block number of the disk block that contains the first, a few bytes of that file. And then there’s one indirect block number.<br>而这些直接块编号基本上对应于构成该文件的前12个块。例如，如果文件只有2 b长，则只有一个块编号0。卷号0是包含该文件的第一个几个字节的磁盘块的块号。然后有一个间接区块编号。</p>
+<p>发言人   34:41<br>And basically, that’s a block number that corresponds to a block, which then itself, the block is 5 to 24 B you, which holds two in the 56 Wa number.<br>基本上，这是一个区块编号，对应于一个区块，该区块本身是5到24 B你，其中包含56 Wa编号中的两个。</p>
+<p>发言人   35:01<br>So if block number 0 for block number 11 are all direct block numbers, and so then block number 12, you know, you stored in that. In an indirect block that basically is pointed to by the indirect block number. And that is basically the layout of the file in XV 6. And so what is the maximum file size in XV 6 based on this?<br>因此，如果块号0对于块号11都是直接块号，那么块号12，你知道，你存储在里面。在一个间接块中，基本上是由间接块编号指向的。这基本上是XV 6中文件的布局。那么，基于此，XV 6中的最大文件大小是多少？</p>
+<p>发言人   35:45<br>Anybody?<br>有人吗？</p>
+<p>发言人   35:54<br>Maybe 268 times 1024 B, basically. Yeah, just 2 and 56, 12 the 12. Times, times 24. And then we get the maximum file size in bytes, right? How much is that?<br>大概是268乘以1024 B。是的，只有2和56，12和12。时间，24次。然后我们得到最大文件大小，以字节为单位，对吗？多少钱？</p>
+<p>发言人   36:19<br>Another way of saying it’s basically 268 kB correct. Why can you store in 268 kB? Can you store video in it? Where’s sea? If it’s a short song yet very short song, correct? So these are really, really small file size, correct? Like real file systems, much, much, much bigger file size. So what we could you do to the file system representation to make this to allow the file system be much more file to be much bigger?<br>换句话说，它基本上是268 kB正确的。为什么可以存储在268 kB中？你可以把视频存储在里面吗？海在哪里？如果是一首很短的歌曲，对吗？所以这些文件真的非常小，对吗？像真正的文件系统一样，文件大小要大得多。那么我们可以对文件系统表示做些什么，以使文件系统变得更多、更大？</p>
+<p>发言人   37:01<br>You extend the indirect portion. Yeah, like for example, you could have another block sitting here below, correct, which is maybe double indirect. Almost like, you know, in the sort of the page table type data structure that we’ve seen before. And that double indire block points to 2 and 56 indirect block number each, which point to another block number, correct? And so suddenly the file size is gonna, the maximum file size is much bigger. And basically, this turns out to be just sort of an exercise in on this data structures.<br>你扩展了间接部分。是的，例如，你可以在下面有另一个块，正确的，这可能是双重间接的。几乎就像我们之前看到的那种页表类型的数据结构一样。那个双重的区块指向2个和56个间接区块号码，哪个指向另一个区块号码，对吗？突然之间，文件大小会变得更大，最大文件大小也会变得更大。基本上，这只是对这些数据结构的一种练习。</p>
+<p>发言人   37:33<br>You could pick a like a structures like this, like a tree, but there’s also possible to like maybe implement it as AB tree or something other sophisticated. Now X 2 6 does something extremely simple and basically sort of modeled after the original version 6 units Unix. But you can implement more sophisticated schemes. In fact, in the file system, wire will implement double indirect block numbers to support much bigger files. Any questions about this?<br>你可以选择像这样的结构，比如一棵树，但也有可能将其实现为AB树或其他复杂的东西。现在，x2 6做了一些非常简单的事情，基本上是在原始版本6的Unix之后建模的。但是你可以实施更复杂的方案。实际上，在文件系统中，wire将实现双间接块编号以支持更大的文件。对此有什么问题吗？</p>
+<p>发言人   38:10<br>Sorry, so is it 256 blocks? Because it’s like one block as a whole, okay? This is an indirect lock number, so that doesn’t count. So the student of 56 sitting in this indirect block plus 12 direct block numbers, that makes it 268. Oh, sorry, my question was, why is it 156? Oh, because it’s a block number is 4 B probably. So 1024 divided by 4, 356 entries, thank you, which is also a little bit ridiculous. If a block number is only 4 B, how big can this be?<br>抱歉，是256个街区吗？因为它就像一个整体，好吗？这是一个间接锁定号码，因此不计算在内。因此，坐在这个间接块中的56个学生加上12个直接块数字，这使得它变成了268。哦，对不起，我的问题是，为什么是156？哦，因为它是一个区块编号，可能是4 B。所以1024除以4，356个条目，谢谢，这也有点荒谬。如果区块编号只有4 B，它会有多大？</p>
+<p>发言人   39:04<br>Anybody?<br>有人吗？</p>
+<p>发言人   39:16<br>Two to the power 42, right? Some days got bigger than that. So typically, you know, people use larger. Sizes for block number than 32 b. Okay, any questions? Further questions? For the max file size, could you, could you help? Could you explain that again? Like, okay, sure, could each block in the could each block in that’s referenced by the indirect block, could that also point to more blocks, if that makes sense? Well, in the default x 3 6 design, that’s not the case. Basically, they are 12 block numbers, 12 direct block numbers, 256 inbreds, block numbers, nothing more.<br>42的力量，对吧？有些日子比这更大。所以通常，你知道，人们使用更大的。区块编号大于32 b的尺寸。好的，有问题吗？进一步提问？对于最大文件大小，你能帮我吗？你能再解释一遍吗？比如，好的，当然可以，中的每个块都被间接块引用，如果这感知的话，这还能指向更多的块吗？好吧，在默认的x3 6设计中，情况并非如此。基本上，它们是12个区块编号，12个直接区块编号，256个内资源，区块编号，仅此而已。</p>
+<p>发言人   40:07<br>In the next lab, you’ll be adding a doubling direct lock to the inode. So you will take one of these B and L 11 s and turn that into a doubling direct-reading. That doubling direct-reading is going to point to basically it has going to have 256 indirect walk numbers, which itself then 0.2, you know, blocks. And that way file can be substantially bigger. Oh, okay, thanks. Okay, so now let’s say, you know, we want to implement the read system call. And, you know, basically we start from the operating system boots get 1 to read, say byte, read byte.<br>在下一个实验中，您将向inode添加一个双重直接锁。所以你会拿这些B和L 11 s中的一个，并将其转换为双倍直接读数。这意味着翻倍的直接阅读将基本上意味着它将有256个间接行走数，而这本身就是0.2个区块。这样文件就可以变得更大。哦，好的，谢谢。好的，现在让我们说，你知道，我们想要实现读取系统调用。而且，你知道，基本上我们从操作系统启动开始，获取1到读取，比如说字节，读取字节。</p>
+<p>发言人   40:59<br>8000.<br>8000。</p>
+<p>发言人   41:04<br>How would you? Which block would you read? Which block will contain basically byte 8000. How would you compute or how you would look up given this data structure, this extremely simple data structure, how would you compute actually the block number that or find the block number that contains byte 8000.<br>你要怎么做？你会读哪个区块？哪个块将基本上包含字节8000。给定这个数据结构，这个极其简单的数据结构，你会如何计算或查找，你会如何计算实际的块编号，或者如何找到包含字节8000的块编号。</p>
+<p>发言人   41:36<br>Anybody do? Just subtract. Like first of all, subtract the number of bytes in the first 12 direct blocks and then see what the offset is in the indirect blocks.<br>有人知道吗？只是减去。首先，先减去前12个直接块中的字节数，然后查看间接块中的偏移量。</p>
+<p>发言人   41:52<br>Yeah, so, okay, so in case of the 8000 is what we will do, correct? We’ll divide it by 1024 because that’s the block size. And that is 7, right? And so what that means that basically the seventh block actually has the seventh entry in this direct block number, has the block number that contains, you know, byte 8000, correct? So B and N 7, whatever number is there is the block number that contains for this particular file.<br>是的，所以，好吧，如果8000是我们将要做的，对吗？我们将它除以1024，因为这是块的大小。那是7，对吧？那么，这意味着基本上第七个区块实际上在这个直接区块号中有第七个条目，区块号包含字节8000，对吗？所以B和N 7，无论数字是多少，都包含这个特定文件的块编号。</p>
+<p>发言人   42:26<br>Byte 8000. And to actually find out exactly where that byte is inside of that block, you know, basically we have to compute 8000. Michael low 5 24. Which is probably, I think is 832. Okay, so basically to read by the 8000, you know, the file system looks at the Iode, takes the byte number divided by 1024 indexes into sees, sees. If it falls below, then there’s a direct block number and just picks up the direct block number from the inode, reads that block, and then fishes out, you know, the 8000 by computing 8000 divided by, by Michael, 10020 two-four. And so it will give us an offset of 8 30 two-two and that’s the location for byte 8000 of the file.<br>字节8000。并且要确切地找出那个字节在那个块中的位置，你知道，基本上我们必须计算8000。迈克尔低5 24。这可能是，我想是832。好的，基本上要读取8000，你知道，文件系统查看Iode，将字节数除以1024个索引转换为sees，sees。如果它低于标准，那么就有一个直接块号，只需从inode中提取直接块号，读取该块，然后通过计算8000除以迈克尔，10020，得出8000。因此，它将给我们一个偏移量为8 30 2-2，这就是文件字节8000的位置。</p>
+<p>发言人   43:23<br>Okay, so basically this is enough information. Again, the thing to conclude from this is like there’s enough information here now to actually implement, you know, read and write system calls, at least to find out which disk locks it need to be written, written for written. In response to a read or write system call. Okay? So let me talk a little bit about directories.<br>好的，基本上这些信息已经足够了。再说一次，由此可以得出的结论是，现在这里有足够的信息来实际实现读写系统调用，至少可以找出需要写入、写入哪些磁盘锁。以响应读或写系统调用。好吗？让我稍微谈谈目录。</p>
+<p>发言人   43:56<br>One of the cool things about looking at a file systems where you have a hierarchical namespace and you can store symbolic user friendly names inside of a inside of the file system. And the interesting aspect, actually, one of the cool design features with mostly tuning file systems is actually there’s a directory is basically a file except a file with some structure. That the file system understands, And in fact, in XV 6, you know, the structure is extremely simple. Every the directory consists of directory entries and every entry has a fixed format. Namely, it contains an inode number in the first 2 B and it contains the file name. And the remaining 14 B. And so the total thing is 16 B.<br>查看具有分层命名空间并且可以在文件系统内部存储用户友好的符号名称的文件系统，这是一件很酷的事情。而有趣的方面是，实际上，主要调整文件系统的酷炫设计功能之一实际上有一个目录基本上是一个文件，除了具有一些结构的文件。文件系统可以理解，事实上，在XV 6中，结构非常简单。每个目录都由目录条目组成，每个条目都有固定格式。即，它在前2 b中包含一个inode编号，并且包含文件名。剩下的14个B。所以总的事情是16 B。</p>
+<p>发言人   45:05<br>This is enough information you basically for you to actually implement path name lookup.<br>这基本上是足够的信息，可以帮助您实际实现路径名查找。</p>
+<p>发言人   45:18<br>So for example, just to make it clear, let’s say we want to look up the path name. Why x? How do we go about doing that? So the world, you know, this path name explain indicates where that we have to start at the root iode. And it turns out that basically has a fixed, a fixed IO number. The root IO number has a pre agreed fixed in number. And in XV 6 number is one. So how can we find the root I note number?<br>例如，为了明确，假设我们想要查找路径名。为什么是x？我们该怎么做呢？所以这个世界，你知道，这个路径名解释指示了我们必须从根节点开始的位置。结果证明，这基本上有一个固定的，固定的IO数字。根IO编号有一个预先约定的固定数量。在XV 6中，数字是1。那么我们如何才能找到根I注释号呢？</p>
+<p>发言人   45:57<br>We have to go back to our earlier picture, correct? Number one, you know, we know that, you know, Ino star at block 32, so it must be in 30 block 32. And so it’s the byte 16 2, whatever. I started byte 64 to 128 in the first block that contains root IO number. And so the Fas, we can just read the root IO number, okay? And then basically the way the path name and lookups works is just scantz the blocks.<br>我们得回到之前的画面，对吗？第一，你知道，我们知道，你知道，在32个街区的星星，所以它一定在30个街区的32个街区。所以它是字节16 2，无论什么。我在包含根IO编号的第一个块中从字节64开始到128。所以Fas，我们可以读取根IO编号，好吗？然后基本上，路径名称和查找的工作方式只是扫描块。</p>
+<p>发言人   46:30<br>Number 4, the name, what? So that the file system can basically go through reach blocks of the inode of file IO 1, 1 by one and just looks can afford the date of those blocks, whether the string wide appears and how can it find all the blocks of the IoT 1? Well, just can look at the reach, the BN 0, the first block, you know, sees if x is in that, if it’s not, and we’ll read the 2nd block, etc., etc., until hopefully at some point, either it finds it or doesn’t find it. And if it finds it, say, let’s we find file X in the directory, you know, it’s going to have some IoT number, say 251. And then we can just proceed from there, right? We can say it’s like, wow, okay, we’re going to read, you know, block number, you know, read Iode 251 and scan its blocks.<br>第四个，名字，什么？这样文件系统基本上可以逐一通过文件IO 1的索引节点的到达块，并且仅看起来可以提供这些块的日期，字符串宽度是否出现以及如何找到IoT 1的所有块？嗯，只要看一下到达的范围，BN 0，第一个块，你知道，看看x是否在那，如果不是，我们会阅读第二个块，等等，直到希望在某个时候，它找到它或找不到它。如果它找到了，比如说，让我们在目录中找到文件X，你知道，它会有一些物联网号码，比如251。然后我们就可以从那里开始了，对吧？我们可以说它就像，哇，好的，我们要阅读，你知道，区块编号，你知道，阅读代码251并扫描它的区块。</p>
+<p>发言人   47:39<br>Okay, I guess did my example wrong. This was why. And this guy is blocked for X? And zoo, who’s going to find us, you know? So my note number again, then we’ll return that as the result of the path name lookup. Any questions about this?<br>好吧，我猜我的例子错了。这就是原因。这个人因为X被封锁了？和动物园，谁会找到我们，你知道吗？所以我的笔记号码，然后我们将返回它作为路径名查找的结果。对此有什么问题吗？</p>
+<p>发言人   48:07<br>Yeah. So this is the layout of the directory in the disk, but is there some bit somewhere in the metadata blocks that indicates whether the current thing is a directory or a file? Yeah, it’s actually in the inode. So the type of the inode says where it’s a directory or file. So if you do a lookup on an inode that actually happens to be a file, then actually the file system will return an error. I see, thanks. Okay?<br>是的。所以这是磁盘中目录的布局，但元数据块中的某个位置是否指示当前的东西是目录还是文件？是的，它实际上在inode中。因此，inode的类型表明它是目录或文件的位置。因此，如果您在实际上是一个文件的inode上进行查找，那么实际上文件系统将返回错误。我知道了，谢谢。好吗？</p>
+<p>发言人   48:46<br>Now, clearly, this structure is not particularly efficient. To actually find a directory name you have to scan. And so a real file system probably would use more sophisticated data structure to actually make these loop ups much faster than XP 6 does. But again, it’s sort of almost a more design or a question of data structures than as a question of operating system design. And so you could plug in your favorite data structure and turn it into an on this data structure. And then hopefully you’re going to get better performance. But for simplicity and for ease explanation, you know, exercises is very simple structure.<br>现在，很明显，这种结构并不是特别高效。要实际找到一个目录名，您必须进行扫描。因此，一个真正的文件系统可能会使用更复杂的数据结构来使这些循环比XP 6快得多。但是，这更像是一个设计或数据结构问题，而不是操作系统设计问题。因此，您可以插入自己喜欢的数据结构，并将其转换为此数据结构。希望你能得到更好的表现。但是为了简单和容易解释，你知道，练习的结构非常简单。</p>
+<p>发言人   49:37<br>Okay, okay, so what I want to do next is going to get a little bit more concrete feel for this and just to see actually how things work out in practice in x.c. 6. And this will be helpful you for the next lab. So I’m going to look at XV 6 for a second here, the usual scream.<br>好的，好的，接下来我想要做的是对此有更具体的感觉，看看实际情况在x.c.中是如何运作的。 6.这将对您的下一个实验室有帮助。所以我要在这里看一下XV 6，通常的尖叫。</p>
+<p>发言人   50:02<br>So the first thing I’m going to boot XV 6 again, as always. And I did make clean. And as you probably remember, many of you have run into this, if you want actually a new file system, you have to run make clean because then make q.u. will build you a new clean file system. So here we go. And we’ll see that XV 6 has started.<br>所以我将一如既往地再次启动XV 6。我确实做了清洁。而且你们可能还记得，你们中的许多人都遇到过这个问题，如果你实际上想要一个新的文件系统，你必须运行 “使干净”，因为这样才能使q.u. 将为您构建一个新的干净文件系统。所以我们开始。我们会看到XV 6已经开始了。</p>
+<p>发言人   50:29<br>But the thing I want to point out first is here, Here you’ll see there’s a call to basically make a file system. So this makes a fresh disk image. And in the disk image contains a bunch of files that we specify in the command line and Mafs basically built to the new file system that contains those files as the content of the file system. And you can see, you know, the X section, which prints out a bit of information about the file system. So it basically says there are 46 meta blocks, you know, that includes the boot block, the super block, the 30 block blocks, 13 Iode blocks, one bitmap block, and then followed by 954 data blocks. So it’s a tiny file system in total of only 1000 blocks. And one of the things you will do in the Wa to support bigger files, you also will have to use a much bigger file system.<br>但我想首先指出的是这里，这里你会看到有一个基本上创建文件系统的调用。这将生成一个新的磁盘映像。并且在磁盘映像中包含我们在命令行中指定的一堆文件，并且基本上构建为新文件系统，其中包含这些文件作为文件系统的内容。你可以看到，你知道的，X部分，它打印出一些关于文件系统的信息。所以它基本上说有46个元块，你知道，包括引导块、超级块、30个块、13个Iode块、一个位图块，然后是954个数据块。所以它是一个很小的文件系统，总共只有1000个块。为了支持更大的文件，您将在Wa中做的一件事是，您还必须使用更大的文件系统。</p>
+<p>发言人   51:27<br>Then I modified Xg 6 slightly to basically write or print something whenever write to a particular block. So for example, we see a couple file call, we actually 6 when it starts up, does a bunch of file system calls, and apparently wrote, you know, block 43, 43, 46 or 42. And you know I’m going to run basically command and we’re just going to see what block numbers are being written by that command or as a cause of that command. And we’re going to try to understand where do those rights make sense? We expect to see. To see what’s happening is what we actually expect.<br>然后我稍微修改了Xg 6，基本上是在写入特定块时写入或打印一些东西。例如，我们看到几个文件调用，实际上在启动时我们6个，执行了一堆文件系统调用，显然写了块43、46或42。你知道我将基本上运行命令，我们将看到该命令正在写入哪些块编号或作为该命令的原因。我们将尝试了解这些权利在哪里感知？我们希望看到。看到正在发生的事情正是我们真正期望的。</p>
+<p>发言人   52:12<br>So I’m just going to create a file echo high. And I’m going to create a file x? And let me actually. Copy that idea a little bit over so it can.<br>所以我只是要创建一个文件回声高。我要创建一个文件x？让我实际一点。稍微复制一下那个想法，这样就可以了。</p>
+<p>发言人   52:32<br>Delineate this. I’m going to delineate it in a couple places just for help, for understanding, Probably right here in. And probably here.<br>描述这个。我打算在几个地方描述它，只是为了帮助，为了理解，可能就在这里。可能在这里。</p>
+<p>发言人   52:48<br>Okay, so basically it turns out that there’s going to be a couple phases here. One is the phase to actually create the file. Then there is right the file, namely right high file. And then, you know, one more, right, right, Actually the new line.<br>好的，基本上结果是这里将有几个阶段。一个阶段是实际创建文件的阶段。然后就有正确的文件，也就是正确的高文件。然后，你知道，还有一个，对，对，实际上是新的一行。</p>
+<p>发言人   53:14<br>Let do the final. So you look at the Echo program, that is basically what it does to pick it up, thanks. Just for completeness, echo, look at his arguments, writes the arguments to file descriptor one, and then at the end, it appends a new line. Okay, so these are the basically the sequences of disk writes involved in each operation. And let’s you’re look at them one and y 1 and try to understand what’s going on. I’m going to just basically maybe the easiest thing to do actually, is to move this over.<br>让我们做最后的。所以你看看Echo程序，这基本上就是它拾取它的方式，谢谢。只是为了完整起见，echo，查看他的参数，将参数写入文件描述符1，然后在末尾添加新行。好的，这些基本上是每个操作中涉及的磁盘写入序列。让我们看看它们中的一个和y 1，并尝试理解发生了什么。我打算基本上可能最容易做的事情就是移动它。</p>
+<p>发言人   54:07<br>Okay, so it’s convenient to understand what’s going on. Instead of looking at the code, we’re going to actually just look at this disk layout and trying to figure out what might be going on in these particular operations.<br>好的，所以理解正在发生的事情很方便。我们将不看代码，而只看这个磁盘布局，并试图弄清楚这些特定操作中可能发生了什么。</p>
+<p>发言人   54:39<br>Okay, good. So what do we think this right is.<br>好的，好的。那么，我们认为这个权利是什么？</p>
+<p>发言人   54:53<br>Any idea what this might actually be? We’re creating a file. So what we expect a file system to do, it writes the inode entry. Yeah, first thing, there’s 2, so okay, so it’s 33. So what do we know about block 33?<br>你知道这可能是什么吗？我们正在创建一个文件。所以我们期望一个文件系统做的是，它写入inode条目。是的，第一件事，有2个，所以没关系，所以是33个。那么我们对33号街区了解多少？</p>
+<p>发言人   55:10<br>If we look at the disk layout picture? It contains a free IO. Yeah, contains, we know that IO 1 lives in 32 work and so whatever. Apparently the allenatore ISS being allocated is probably an IO that lives in block 3 D3, and presumably the first right might just be marking, you know, that this inode actually is now going to be used. So I think the way the XV 6 does this, it uses the type field in the inode to actually indicate where an inotes is free, the file or a directory, so basically change it from free to file and write it to the disk to mark it as in use. What do we think the next right 43 years?<br>如果我们看磁盘布局图？它包含一个免费的IO。是的，包含，我们知道IO 1生活在32个工作中，所以无论如何。显然，被分配的allenatore ISS可能是一个位于第3d3块中的IO，大概第一个正确的可能只是标记，你知道，这个inode现在实际上将被使用。所以我认为XV 6的做法是，它使用inode中的类型字段来实际指示inotes的空闲位置，即文件或目录，因此基本上将其从 “空闲” 更改为 “文件” 并将其写入磁盘以标记为 “正在使用”。我们认为未来43年应该怎样？</p>
+<p>发言人   56:02<br>Actually populating the IO entry with like info? Yeah, exactly indeed. Populating the IO for know. I know it’s with entries like setting in the link count to one and things like. That. What is 46? What do we expect 46 to be? Even 32 maybe? That said.<br>实际上用类似的信息填充IO条目？是的，确实如此。填充IO以获取知识。我知道它与诸如将链接计数设置为1之类的条目有关。这个。46是什么？我们期望46是什么？甚至32个，也许？这就是说。</p>
+<p>发言人   56:30<br>Is 46 the first data? No, actually bitmap, bitmap, no, it’s just it’s a data block. And you’re right, it’s the first data block. Okay, so whose data block do we think this is. It’s the root directory entry. Yeah, correct. Is this is probably the block, first block of the root directory iode one, right? And why, why we expecting, you know, actually that to be written, what?<br>46是第一个数据吗？不，实际上是位图，位图，不，它只是一个数据块。你说得对，这是第一个数据块。好的，那么我们认为这是谁的数据块。它是根目录条目。是的，正确。这可能是根目录iode一的第一块块，对吗？为什么，为什么我们期望，你知道，实际上是要写，什么？</p>
+<p>发言人   57:09<br>Because because we’re we’re creating x in, we’re adding a new file x in the current directory, so we’re adding it to like the file hierarchy. Yeah, exactly, so presumably what we’ve done is like we just added an entry to the root, the root directory. We namely the entry x with whatever inode we allocated in, you know, the stack two steps before, does that make sense? So what do we think this right to 32 is.<br>因为我们要在中创建x，所以我们要在当前目录中添加一个新文件x，所以我们要将其添加到文件层次结构中。是的，确切地说，大概我们所做的就像我们刚刚添加了一个根条目，即根目录。我们即入口x和我们分配的任何inode，你知道，堆栈前两步，这感知吗？那么，我们认为32岁的权利是什么呢？</p>
+<p>发言人   57:47<br>To block 42, Well, the easy thing to do is go back and look at the lakes layout picture, and one is block 32.<br>42号区块，最简单的事情就是回去看看湖泊布局的图片，其中之一就是32号区块。</p>
+<p>发言人   57:55<br>I know the one probably. Yeah, Well, it will include know one includes all other I knowes correct? Because I know it’s smaller than a block, but you know, will include I know 1. And what do you think is going to be written? What I have changed in the IO requires that the IO actually be written to disk size. Yeah, I change exactly. The size should change because when we grew the directory correct by 16 B to actually store the entry x? And then there’s one more right to fruity fruit. And I’ll leave that hanging for a second. Basically, we were updating the Ino X 1 more time, even though nothing actually was written yet.<br>我可能认识那一个。是的，它将包括知道一个包括所有其他我知道的正确吗？因为我知道它比一个街区小，但是你知道，这将包括我知道的1。你认为接下来要写什么？我在IO中进行的更改要求IO实际写入磁盘大小。是的，我完全改变了。大小应该改变，因为当我们将目录正确增长16 B来实际存储条目x时？然后水果还有一种权利。我会把那个悬挂留待一会儿。基本上，我们正在更新Ino X 1更多的时间，即使实际上还没有写任何东西。</p>
+<p>发言人   58:41<br>Okay, so that’s the first phase. So let’s now look at the second, you know, the, so this was creation, now let’s look at the second phase or the first, right? You know, the right of high to file x? Well, what do we think, 45x? Bit map. Yeah, the big map. So rumor, what happened to you is correct that the file system, scan the bitmap block to find a block that was not in use. You should find a bit 0 and then set that bit to one to indicate that that particular block now is in use. And so it wrote 45 to the disk, actually updated the bitmap block. And what block do we think the bitmap allocator picked?<br>好的，那就是第一阶段。现在让我们看看第二个阶段，你知道，所以这是创造，现在让我们看看第二个阶段或第一个阶段，对吧？你知道吗，高级文件x的权利？好吧，我们怎么想，45x？位图。是的，大地图。所以谣言，发生在你身上的事情是正确的，文件系统，扫描位图块找到一个未被使用的块。你应该找到一个位0，然后将该位设置为1，以指示该特定块现在正在使用中。因此它将45写入磁盘，实际上更新了位图块。我们认为位图分配器选择了哪个块？</p>
+<p>发言人   59:36<br>595. Yeah, most likely, correct, Because right after it, we see you right to 595. And presumably the block that was allocated to the file X, and so basically in the Iode correct of file X, now in Pn 0 will have the number 595. And basically what will be the first byte? What’s the value of the first byte of block 595 after this byte? Yeah, and what do you think the second grade is. There’s 1 I, yeah, I every echoed, you know, those character by character.<br>595.是的，很可能是正确的，因为在它之后，我们会看到你一直到595。大概分配给文件X的块，基本上在文件X的Iode中是正确的，现在在Pn 0中将有数字595。基本上，第一个字节是什么？块595的第一个字节在此字节之后的值是多少？是的，你认为二年级是什么？有1个我，是的，我每一个都在回荡，你知道，那些字符。</p>
+<p>发言人   01:00:22<br>Okay, what do we think? This right, 33 years. Updating the size again. Yeah, updating the size of the IO of X, because now it has 2 B in it, does it make sense?<br>好吧，我们怎么想？这个权利，33年。再次更新尺寸。是的，更新了X的IO大小，因为现在它有2个B，感知吗？</p>
+<p>发言人   01:00:38<br>Question 595 seems very high up in the disk. It’s not because there’s other stuff that’s currently living there, like the kernel boot code and other things that have already been stored. Well, yeah, we can look at, we go back to the this screen, we can look at what make F did, right? So make a stored a whole bunch of files there in the files before we actually created file X, and in fact, it’s created all of these guys. And so presumably a good chunk of the disk is already filled, know by the files for the blocks number of the box are already used basically by the D set of files.<br>问题595在磁盘上看起来非常高。这不是因为目前那里还有其他东西，比如内核启动代码和其他已经存储的东西。嗯，是的，我们可以看看，我们回到这个屏幕，我们可以看看F做了什么，对吧？因此，在我们实际创建文件X之前，请在文件中存储一大堆文件，事实上，它创建了所有这些人。所以大概磁盘的很大一部分已经被填满了，通过文件知道盒子的块数基本上已经被D组文件使用了。</p>
+<p>发言人   01:01:18<br>Got. Would it write down that block 595 is related to that? To that? I know during the last, like during the right 3, 2, that is exactly correct. So this right through three, probably a bunch of things happened, correct? The size got updated. And you know BN 0 and BN one were updated or sorry, only BN 0 is updated, correct? To contain 595. And both pieces of information are updated in the Ioe and then written to the disk by this, right?<br>得到了。它会写下595区块与此相关吗？为了那个？我知道在最后一次，比如在正确的3、2中，这是完全正确的。所以这到第三点，可能发生了很多事情，对吗？尺寸已更新。你知道BN 0和BN 1已更新或抱歉，只有BN 0已更新，对吗？包含595。这两条信息都会在Ioe中更新，然后通过它写入磁盘，对吗？</p>
+<p>发言人   01:01:59<br>All makes sense, yeah? Yeah, thank you. Good, that’s sort of the essence of of this layout. And hopefully you have a pretty good understanding what goes on to make this work. And so we’re looking a little bit more in detail now at the code to see actually things in, you know, one more level of detail.<br>都让感知，是吗？好的，谢谢。好的，这就是这个布局的精髓。希望你能很好地理解是什么让这个工作成功。所以我们现在正在更详细地查看代码，以便更深入地了解实际情况，你知道，更多的细节。</p>
+<p>发言人   01:02:27<br>Okay, so the first thing, since we allocate an inode, let’s first look at actually how how that happens. So in Sy file, let’s succeed kernel. So here are all the calls related to file system calls.<br>好的，首先，既然我们分配了一个inode，让我们先看看它是如何发生的。所以在Sy文件中，让我们继承内核。这里是所有与文件系统调用相关的调用。</p>
+<p>发言人   01:02:47<br>So the first thing that actually happens, correct, was just open because we’re going to create a file SS open. We’ll call create. And we have create, create. We’ll look at this later, the resolve, the path name to basically the last directory walks through the, the directory and then doesn’t look up. And I really care about that just to see if the file already exists. And if the file exists, maybe have to turn an error. And then it calls inode allocate. And so this is the call that is going to allocate this inode for the file x, so let’s look it up.<br>所以实际发生的第一件事，正确的，就是打开，因为我们要创建一个文件SS打开。我们将调用创建。我们创造了，创造了。我们稍后再看看这个，解析，基本上最后一个目录的路径名会遍历该目录，然后不会查找。我真的很关心这个问题，只是想看看这个文件是否已经存在。如果文件存在，可能需要出错。然后它调用inode分配。因此，这就是要为文件x分配此inode的调用，让我们查找它。</p>
+<p>发言人   01:03:30<br>It’s going to be in FS DOC.<br>它将在FS文档中。</p>
+<p>发言人   01:03:37<br>And here’s I Alec. And like most x 3 6 code, you know, it’s just very simple, but not particularly efficient. And so what it does, basically, it goes from all the in numbers possible from one to whatever the maximum number of inotes that are possible in this particular file system, and then reach the block for that Ino number. So for example, starts with one reach, you know, the block that contains ino number one. And then sees if that inode number is 3, and if it’s not, if it is 3, then it sets it to file and that way marks it, allocate it, and write it to disk.<br>这是我的Alec。就像大多数x3 6代码一样，你知道，它非常简单，但不是特别高效。所以它的作用是，基本上，它从可能的所有数字从一个到这个特定文件系统中可能的最大inotes数量，然后到达该Ino编号的块。例如，从一个到达开始，你知道，包含第一个数字的块。然后查看该inode编号是否为3，如果不是，如果是3，则将其设置为文件，并以这种方式标记它，分配它并将其写入磁盘。</p>
+<p>发言人   01:04:24<br>And this log, right? You know, actually the print statements I have, I put actually in log, right? And so the log, right? What’s the first right that we have seen in that sequence of rights that we did or that the file system? Does this make sense?<br>这个日志，对吧？你知道，实际上我有的打印报表，我实际上放在了日志里，对吧？这就是日志，对吧？在我们所做的权利序列中，我们看到的第一个权利是什么，或者是文件系统？这有感知吗？</p>
+<p>发言人   01:04:47<br>So an interesting, so this is basically sort of the sequence of events that get you to the first right to the disk. Interesting question, of course, is what happens if like multiple processes are calling created at the same time, multiple core machine that can be running in parallel, you know, coming down and all get to Il like roughly at the same time. And then all they’re going to call, all they’re going to call Bre, right? And so they actually some story for how these rights donate a figure with each other.<br>所以很有趣，这基本上是将你介绍到磁盘右边的一系列事件。当然，有趣的问题是，如果同时创建多个进程进行调用，多个可以并行运行的制芯机会发生什么情况，你知道，它们都大致同时运行。然后他们就会打电话，他们就会打电话给布尔，对吗？因此，他们实际上讲述了这些权利如何相互捐赠一个人物的故事。</p>
+<p>发言人   01:05:24<br>And it is really worthwhile looking into because in some sense, you know, this is actually the part of the last part of this lab that you’re currently doing. So that gets us into the buffer cache. So let’s look at Bre. So Bre, or the first thing it does actually is called BGE. Basically BGE gets a slot in the buffer cache.<br>这真的值得研究，因为在某些感知，你知道，这实际上是你目前正在进行的这个实验室的最后一部分。这样我们就可以进入缓冲区缓存。那么让我们来看看Bre。所以它实际上做的第一件事叫做BGE。基本上，BGE在缓冲区缓存中获得一个槽位。</p>
+<p>发言人   01:05:48<br>Let’s look at the big get for a little while because there’s a reasonable tricky code and. So what’s going on in the first couple lines here? I imagine some of you already looked at this code quite a bit of detail as part of this lab, the locking lab. So what’s going on here?<br>让我们看一会儿大问题，因为有一个合理棘手的代码。那么，这里的前几行发生了什么？我想你们中的一些人已经在这个实验室 (锁定实验室) 中看过了这段代码的相当多的细节。那么这里发生了什么？</p>
+<p>发言人   01:06:19<br>It blocks the linked list and checks if any of the things in the cache are mashing with what we’re looking for. Yeah, right, so the, so basically this is the cash in action we’re looking for whatever the block number, I guess, block number 33. And we’re basically seeing if the cache already has block number 33. And if that is the case, it bumps the ref count up. And then we do this to Beca lock because we’re done looking in the cache itself. We know it’s there. We know that there’s a buff buffer for that particular block there. And the next step that actually happens is sort of interesting.<br>它会阻止链接列表，并检查缓存中的任何内容是否与我们要查找的内容相结合。是的，所以基本上这是我们正在寻找的现金，无论是街区号，我想是33街区号。我们基本上是在查看缓存是否已经有33个区块。如果是这样的话，它会增加参考计数。然后我们这样做是为了Beca锁定，因为我们已经完成了在缓存本身中的查找。我们知道它在那里。我们知道那个特定的块有一个buff缓冲区。而实际发生的下一步是有点有趣的。</p>
+<p>发言人   01:07:06<br>The next step, the block ash basically tries to get a lock on the buffer. So what happens is like multiple processes at the same time called bege, one of them is going to get the bcache lock, right?<br>下一步，块灰基本上试图锁定缓冲区。所以发生的事情就像同时有多个进程被称为bege，其中一个将获得bcache锁，对吧？</p>
+<p>发言人   01:07:23<br>It’s going to scan the buffer cache, and so nobody can actually modify the buffer cache in this particular point, find if the block number is there. And if the block number is there, it bumps the ref count, indicating that basically it has a reference, you know, to this, this particular block, and then releases the bcache lock. So if there were a second process waiting, although also scanned the disk as it might have actually acquired a walk right away, right?<br>它将扫描缓冲区缓存，因此没有人可以在此特定点实际修改缓冲区缓存，以查找块编号是否存在。如果块号在那里，它会增加参考计数，表明它基本上有一个引用，你知道的，这个特定的块，然后释放bcache锁。因此，如果有第二个进程在等待，尽管也扫描了磁盘，因为它可能已经立即完成了步行，对吧？</p>
+<p>发言人   01:07:54<br>In fact, it might be a second process, you know, scanning for one. Also want to scan for this block 33. And it will also, you know, basically a reference to B, bump up the reference count 2, 2 or three or whatever it is. And then, you know, both of them, we’ll try to call acquire sleep that particular buffer, buffer 33 and aqua sleep is just basically another type of lock that we call them sleep locks. And we’ll talk about it in a second. But basically this acquires the lock on the buffer. So one of the two processes will get the lock of buffer 33 and will proceed and that will be returned and it will go through the motions, you know, if you like scanning that block 33 to see if there’s an inode that actually actually is free. And the other process, we’ll just be sitting in the aquatic sleep here, you know, waiting until the first process is done with all its operations.<br>事实上，这可能是第二个过程，你知道，扫描一个。还想扫描这个33号块。而且它也会，你知道，基本上是一个参考面向企业，增加参考计数2、2或3或其他。然后，你知道，我们会尝试将这两个称为 “获取睡眠” 的特定缓冲区，缓冲区33和aqua睡眠基本上是另一种类型的锁，我们称之为睡眠锁。我们马上就会讨论这个问题。但基本上这将获得缓冲区上的锁。因此，其中一个进程将获得缓冲区33的锁定并将继续，这将被返回，并且它将通过运动，你知道，如果你喜欢扫描那个块33以查看是否有一个实际上是免费的inode。而另一个过程，我们将只是坐在这里的水生睡眠中，你知道，等待直到第一个过程完成所有操作。</p>
+<p>发言人   01:08:58<br>Any questions about this? I have a question? While the ref count of a block is not 0, can anything important about that block change? Because something can happen between the release of the big cache and acquiring the lock of the block? Yeah, actually the protocol.<br>对此有什么问题吗？我有问题吗？当一个块的ref计数不为0时，该块的任何重要内容都可以更改吗？因为在释放大缓存和获取块的锁之间可能会发生什么事情？是的，实际上是协议。</p>
+<p>发言人   01:09:25<br>Okay, so there’s a couple points I want to make here. The protocol that basically XV 6 follows is that for any modification to the bcache itself, you need to hold the bcache lock. For any modification to this block 33, you need to hold the sleep block on block 33. And so at any particular point in time, so after the release, the B ref count is larger than 0 and there will be no modification to the buffer cache. The buffer cache will only invict or things that actually have the ref count of 0, never that has a re count of something bigger than 0. And so we know for sure that this block, basically, this buffer won’t be touched in the bcache itself. Other processes might be looking up, might be looking up the entry in the bcache, but it won’t be removed from the bcache. Yeah, makes sense.<br>好的，我想在这里提出几点。基本上XV 6遵循的协议是，对于对bcache本身的任何修改，您需要持有bcache锁。对于此33块的任何修改，您需要将睡眠块保持在33块上。因此，在任何特定时间点，因此在发布之后，B引用计数大于0，并且不会对缓冲区缓存进行任何修改。缓冲区缓存将只调用ref计数为0的对象，决不会调用re计数大于0的对象。因此，我们可以肯定地知道这个块，基本上，这个缓冲区不会在bcache本身中被触及。其他进程可能正在查找，可能正在查找bcache中的条目，但它不会从bcache中删除。是的，这很感知。</p>
+<p>发言人   01:10:22<br>This lock, that second lock, the sleep lock, is really what protects the content of the buffer and ensuring that only one process actually will be reading and writing the buffer at any particular point in time. And it’s important, correct that.<br>这个锁，第二个锁，睡眠锁，实际上是保护缓冲区内容并确保在任何特定时间只有一个进程实际读写缓冲区的东西。这很重要，纠正这一点。</p>
+<p>发言人   01:10:41<br>Would it be like, say, would it be bad if block 33 ended up into cash twice? In different slots. Yeah, because then you could have the correct information, right? Yeah, correct. For example, let’s say process one, right? I know 19 and the other process writes, I know 20, correct? And so if they both get a handle on the buffer for that represents know the block 33, one of Ino 18, the other 19, the first one may be rights it right 18 back to the disk. Then the guy that does modified 19 writes 19 back, but will overwrite the changes that 18 made that were made for inot 18. And so that’s terrible.<br>会不会像，比如说，如果33号街区最后变成两次现金，那会不会很糟糕？在不同的插槽中。是的，因为那样你就可以得到正确的信息，对吗？是的，正确。比如说，流程一，对吗？我知道19，另一个进程写，我知道20，对吗？因此，如果它们都获得了缓冲区的句柄，表示知道块33，其中一个是ino18，另一个是19，那么第一个可能会将其正确的18放回磁盘。然后修改19的家伙写了19回来，但会覆盖18对inot 18所做的更改。这太可怕了。</p>
+<p>发言人   01:11:28<br>So it has to be the case that a block number only appears in the buffer cache only exactly once. And there’s an invariant, correct? You know, that you’re sort of have to maintain while you’re doing this block hash lab locking lab in this week’s lab. Does that make sense, that invariant?<br>因此，必须确保块编号仅在缓冲区缓存中只出现一次。这里有一个不变量，对吗？你知道，当你在本周的实验室里进行这个区块哈希实验室锁定实验室时，你必须保持这种状态。这是否意味着感知不变？</p>
+<p>发言人   01:11:54<br>Yeah, I guess tangential question to this. There might be some blocks that have multiple references to them. And then maybe one of the processes that has is touching this block flushes the cache by forcing a right to the disk. What happens to what everyone else sees? If the right, okay, so if the first process is done at some point, we’ll call release. Where, where is it called?<br>是的，我想这是个问题。可能有一些块有多个引用。然后，也许其中一个正在触摸此块的进程通过强制访问磁盘来刷新缓存。其他人看到的会发生什么？如果正确的话，好的，如果第一个过程在某个时刻完成了，我们就称之为释放。它叫什么？</p>
+<p>发言人   01:12:25<br>Basically, you can think about at the end when the first process is done with its reading and writing to them, block 33, I will call be release for the buffer and that will actually decrease the reference count. Well, releases sleep lock. And that means that if anybody was waiting, any other process was waiting for that particular buffer. And we’ll now be able to get any sleep block on the buffer and go read it and we’ll observe the previous the new main changes, right?<br>基本上，你可以考虑在结束时，当第一个进程完成对它们的读取和写入时，区块33将被称为缓冲区的释放，这实际上将减少引用计数。好吧，释放睡眠锁。这意味着如果有人在等待，任何其他进程都在等待该特定的缓冲区。现在我们将能够获取缓冲区上的任何睡眠块并读取它，我们将观察之前的新主要变化，对吗？</p>
+<p>发言人   01:12:55<br>So if two processes were trying to update Ino 18 and IO 19 that all both live and 33, then if the first process is done, it changes if 18 are visible and so the next. And so the next guy will actually allocate, I know 19 because actually 18 is marked as a file now. So anybody afterwards will observe the changes. Makes sense? Yes, thanks, And this is exactly what we hope to be the case, correct? You know, if a 1 process creates a nine-note or K2 file, then and later process doesn’t read, you know, it should observe that file. Okay, then?<br>因此，如果两个进程尝试更新所有live和33的Ino 18和IO 19，那么如果第一个进程完成，如果18可见，则下一个进程将发生变化。所以下一个人实际上会分配，我知道19，因为实际上18现在被标记为文件。所以之后任何人都会观察到变化。使感知？是的，谢谢，这正是我们希望的情况，对吗？你知道，如果一个进程创建了一个九音符或K2文件，那么稍后的进程不会读取，你知道，它应该观察该文件。那好吧？</p>
+<p>发言人   01:13:40<br>One more smaller detail, as you can see here in the code process, actually takes a sleep lock on the buffer. And so the sleep lock is slightly different than a regular or spin lock. So let’s look at sleep block for a second and you see what it is. So here require sleep block, and when it does, it requires some field, basically requires a spin lock that is associated with the sleep lock. If the lock is actually held, okay, the spin lock is held then. If the lock is actually held. So there, okay, let me first you see the H file. So the H file contains a locked field.<br>还有一个更小的细节，就像你在代码过程中看到的那样，实际上在缓冲区上使用了睡眠锁。因此，睡眠锁定与常规锁定或旋转锁定略有不同。所以让我们看一下睡眠块，你会看到它是什么。所以这里需要睡眠块，当它需要时，它需要一些字段，基本上需要与睡眠锁相关联的旋转锁。如果锁定被实际持有，那么旋转锁定就会被持有。(then this，this this，this.)如果锁实际上被持有。所以在那里，好的，让我先看看H文件。所以H文件包含一个锁定字段。</p>
+<p>发言人   01:14:30<br>And that’s it? And so basically. That was the spin lock. Yeah, where’s the spin lock? Oh. Yeah, there’s a speed lock and.<br>就这样？所以基本上。这就是旋转锁。是的，旋转锁在哪里？哦。是的，有一个速度锁。</p>
+<p>发言人   01:14:59<br>What? Sorry, and then if the lock is actually held, there’s the sleep lock is held that actually goes to sleep. So these schedules itself and why, why do you think for these buffers are we using sleep blocks instead of spin blocks? I guess indirectly, we’re using spin blocks to implement sleep blocks, but why not just use regular? Because disk operations take a long time. Yeah, so multiple regions, there are all kinds of rules, correct? Restrictions on the. On spin locks, like one is one of the restrictions on spin locks.<br>什么？抱歉，然后如果锁实际上被持有，则睡眠锁实际上会进入睡眠状态。所以这些时间表本身以及为什么，为什么你认为我们使用睡眠块而不是旋转块来缓冲这些缓冲区？我想间接地，我们正在使用旋转块来实现睡眠块，但为什么不直接使用常规呢？因为磁盘操作需要很长时间。是的，所以有多个地区，有各种各样的规则，对吗？对的限制。关于旋转锁，就像旋转锁的限制之一。</p>
+<p>发言人   01:15:44<br>Interrupts have to peel off. Yeah, to turn interrupt off, correct? And so we start a disk operation while holding a buffer, while holding a spin block on the buffer. And then we would never hear from the disc. Maybe another Cor here, but like we had only one core and we would never hear from it. And furthermore, and for the same reasons, you know, you’re not allowed to go to sleep while holding a spin walk. And so therefore, we have these sleep locks that are sort of long term locks, if you will. For that particular use case, so that we can hold locks.<br>中断必须剥离。是的，关闭中断，对吗？因此，我们在保持缓冲区的同时启动磁盘操作，同时在缓冲区上保持旋转块。然后我们就永远不会听到光盘的声音了。也许还有另一个核心，但就像我们只有一个核心，我们永远不会听到它的消息。此外，出于同样的原因，你知道，你不能在旋转散步的时候睡觉。因此，我们有这些睡眠锁，如果你愿意的话，它们是长期锁。对于那个特定的用例，这样我们就可以持有锁。</p>
+<p>发言人   01:16:24<br>One of the advantages of sleep locks is that we can hold them across interrupts and we can hold them across disk operations, and we can hold them for long periods of time. And we’re not if, if we’re waiting on that lock, we’re are not keeping the CPU busy or spinning on the CPU. We’re basically releasing the CPU by calling sleep, does that make sense?<br>睡眠锁的一个优点是我们可以在中断之间保存它们，我们可以在磁盘操作之间保存它们，并且我们可以长时间保存它们。如果我们正在等待那个锁，我们就不会让CPU忙碌或在CPU上旋转。我们基本上是通过调用sleep来释放CPU，这感知吗？</p>
+<p>发言人   01:16:49<br>Any questions about this?<br>对此有什么问题吗？</p>
+<p>发言人   01:16:56<br>Okay, let’s look at one more thing, which is. Be release. So we looked over already a little bit, you know, basically would be released us. It releases the sleep lock, then acquires the bcache lock, thence reference count to indicate that one process is not interested anymore in this particular buffer. And then if the re count is 0. It manipulates the. List of buffers a little bit. What does it do here?<br>好的，让我们再看看一件事情，那就是。得到解放。所以我们已经看了一点，你知道，基本上会释放我们。它释放睡眠锁，然后获取bcache锁，然后获取引用计数以指示一个进程不再对这个特定的缓冲区感兴趣。然后，如果重新计数为0。它操纵了。缓冲区列表有点。它在这里做什么？</p>
+<p>发言人   01:17:38<br>It inserts the B into the position after be had inside of the Lake P, yeah, where does it basically go, what does that mean? So let’s go back up, correct, and actually look at that.<br>它将B插入到湖P内部之后的位置，是的，它基本上去了哪里，这是什么意思？让我们回到正确的位置，实际看看这个。</p>
+<p>发言人   01:17:56<br>It was the most recently used. Yeah, you know, basically moves it into the position of the most recently used buffer, right? And this is important, right? Because when, when we can not find the block in the block hash, then we need eviction, something to make space, correct. And so we’re going to go through the block and we basically start from the most, from the least reasonably used one and the big do one first. And so we just used the buffer. It very unlikely that it actually would be eviction it. Why is that a good policy?<br>这是最近使用的。是的，你知道，基本上把它移到最近使用的缓冲区的位置，对吧？这很重要，对吧？因为当我们在块哈希中找不到块时，我们需要驱逐，一些腾出空间的东西，正确的。因此，我们将遍历该块，基本上从最基本的开始，从最合理使用的开始，首先是大项。所以我们只使用了缓冲区。它实际上不太可能被驱逐。为什么这是一个好政策？</p>
+<p>发言人   01:18:41<br>Generally, systems obey a temporal locality. Yeah, right? So if a block is reasonably used, it’s probably a good indicator that it might actually be used again quickly. And so it’s good idea not to EC it you want to. And generally sort of if you, if you have locality CA mcken in the block that they scan the least. Recently used is probably the block that most likely to be used in the future. And so that’s a good one to eviction, does that make sense?<br>一般来说，系统服从时间局部性。是的，对吧？因此，如果一个块被合理使用，这可能是一个很好的指标，它可能会很快被再次使用。所以不要去做你想做的事是个好主意。通常情况下，如果你所在的街区有CA mcken，他们扫描的最少。最近使用的块可能是未来最有可能使用的块。所以这是一个很好的驱逐，这感知吗？</p>
+<p>发言人   01:19:18<br>Okay? So let me actually go back to my slides here. So, so this is a little bit of sort of an slight excursion in the vcache code or the block cache. And there’s a couple of interesting things to point to correct. You know, there’s this invariant that there’s only one copy of a blocking memory. And as an important variant that must be maintained by block A, it has is sleep blocks, different type of blocks than the ones that we’ve seen before, that can span IO operations, that implements LRU release, recently captioning and replacement policy. And they have sort of two levels of locking. In its implementation, one level to basically protect the bcache internal data structures, and then one level of locking through sleep locks to actually lock individual buffers.<br>好吗？让我回到这里我的幻灯片。所以，这是vcache代码或块缓存中的一点点轻微偏移。这里有一些有趣的事情可以纠正。你知道，有一个不变量，即只有一个阻塞内存的副本。作为一个必须由块A维护的重要变体，它有睡眠块，与我们之前看到的不同类型的块，它可以跨度IO操作，实现LRU发布，最近字幕和替换策略。它们有两种锁定级别。在其实现中，一个级别基本上是保护bcache内部数据结构，然后通过睡眠锁的一个级别锁定来实际锁定单个缓冲区。</p>
+<p>发言人   01:20:24<br>Does that make sense, okay, so I’m going to about to throw it out of time. So let us may stop here. They quickly summarized that what we have seen so far and that we’re going on Wednesday, we’re going to focus really on crash safety.<br>这样做感知吗，好吧，所以我要把它扔出去。所以我们可以在这里停下来。他们迅速总结说，到目前为止我们所看到的，以及我们将在周三开始，我们将真正关注碰撞安全。</p>
+<p>发言人   01:20:43<br>So basically, you know, file system is on this data structure. And basically the motion of the lecture today, we are sort of focusing on the layout on this data structure, the XV 6 disk data structure. On this. We saw the XV 6 has a very simple one. But you can imagine implementing more complicated one. The other thing that we spend a bit time looking at is this block cache, which is crucial for performance because reading and writing, typically through the disk is actually expensive in order for hundreds of microseconds to milliseconds. And the block has basically insurers that, you know, if a block was recently read from the disk, and we’re actually not reading it again from the disk.<br>基本上，你知道，文件系统在这个数据结构上。基本上，今天的讲座，我们主要关注这个数据结构的布局，也就是XV 6磁盘数据结构。关于这个。我们看到XV 6有一个非常简单的。但你可以想象实现更复杂的一个。我们花费一点时间研究的另一件事是块缓存，它对于性能至关重要，因为通常通过磁盘进行读取和写入实际上需要数百微秒到毫秒的时间。而且这个区块基本上有保险公司，你知道，如果一个区块最近从磁盘中读取，而我们实际上没有再从磁盘中读取它。</p>
+<p>发言人   01:21:28<br>Okay, and then Wednesday I’m going to talk about crash safety, which is a fascinating other aspect of file system design. And in fact, we’ll spend two lectures on crash safety. We’ll see a logging design on Wednesday that’s slow, and then next week we’ll look at how Linux X 3 does logging, which is a much more faster scheme.<br>好的，接下来我要谈论崩溃安全，这是文件系统设计的另一个迷人方面。实际上，我们将用两堂课来讲解碰撞安全。我们将在周三看到一个慢的日志设计，下周我们将看看Linux X 3如何进行日志记录，这是一个更快的方案。</p>
+<p>发言人   01:21:51<br>If you have any other questions, feel, feel free to hang around and I’m happy to answer them. Otherwise, you know, see you Wednesday. All right, thank you. I have a question about be release. Yes, so it seems like it releases the blocks block and after that it modifies the RA count. Why is that okay? Yeah, good question, So what do we know?<br>如果您有任何其他问题，请随时闲逛，我很乐意回答。否则，你知道的，我们周三晚上见。好的，谢谢。我有一个关于被释放的问题。是的，所以它似乎释放了块块，之后它修改了RA计数。为什么可以？是的，好问题，那么我们知道什么？</p>
+<p>发言人   01:22:26<br>You know, so let’s say we do release the sleep block, so it’s about guy, There’s another process actually was waiting or I was doing an acquire SLE F, what does that mean about the ref count? That it was 0? No, actually, if n processes are waiting for a buffer. Oh okay. There was at least one, no more than at one. If 10 processes you’re waiting, we, yeah, okay. And so, there’s only, there’s only line of code. What it does is basically updates the re count for this one guy with this one process that actually did the release and releases the B Reca 2 by one. And if other people were waiting, it will never, the ref count will definitely not be here.<br>你知道，假设我们确实释放了睡眠块，所以它是关于家伙的，还有另一个过程实际上正在等待，或者我正在进行采集，这对参考计数意味着什么？这是0吗？不，实际上，如果n个进程正在等待缓冲区。哦，好的。至少有一个，不超过一个。如果你正在等待10个进程，我们，是的，好的。所以，只有一行代码。它的作用基本上是通过这个过程最新进展这个人的重新计数，这个过程实际上完成了发布，并逐一发布了B Reca 2。如果其他人在等待，它永远不会，参考计数肯定不会在这里。</p>
+<p>发言人   01:23:21<br>I will never execute this code.<br>我永远不会执行这段代码。</p>
+<p>发言人   01:23:26<br>Okay, okay, okay, I see. I think, I think I see, Okay, And my other question was, why wise 2 b, 2 B enough for a 9 node number? It’s not ridiculously small because how many inotes can you have to the power of 8, whatever, 2 B, 16? 1616, correct, 32000 ioesse that’s a lot of in notes for 90s, 60s or the 60s and 70s, but certainly would not be sufficient for today. And so today’s file system use a bigger number or more bits.<br>好的，好的，好的，我明白了。我想，我想我明白了，好的，我的另一个问题是，为什么2 b足够9个节点呢？它并不小得可笑，因为你有多少个inotes的8的幂，无论如何，2 b，16？1616，正确的，32000的欧斯，这是90年代、60年代或60年代和70年代的很多音符，但肯定不足以满足今天的需求。因此，今天的文件系统使用更大的数字或更多的位。</p>
+<p>发言人   01:24:12<br>Okay, I see, I guess my question was in the architecture that we have for XV 6, the those 2 16 b for I like where, where else do they, where else can we see this number show up?<br>好的，我明白了，我想我的问题是在XV 6的架构中，那些2 16 b，我喜欢在哪里，他们还能在哪里，我们还能在哪里看到这个数字出现？</p>
+<p>发言人   01:24:31<br>Well, the one that is 2 B is really on disk that it is 2 B, any number, and when it’s compiled or when it’s sort of sitting in a register or it’s sitting in memory disk iode is we can look at it. Let’s see, so the disk, I note, as we said before, actually. Use the directory entry, right? We say it’s an inside short. And others, there’s 2 B, 16 b, the in memory representation of an Io’s. In. In memory representation of an IO, that actually number is. Integer and you know, the way we compile C code and integer happens to be 4 B. Okay, okay, I see. Thank you, thank you so much.<br>嗯，2 b实际上在磁盘上，它是2 b，任何数字，当它被编译时，或者当它坐在寄存器中或它坐在内存磁盘的iode中时，我们可以查看它。让我们看看磁盘，我注意到，正如我们之前说的，实际上。使用目录条目，对吗？我们说这是一个内部短片。和其他人一样，有2 B，16 b，Io的内存表示。在。在IO的内存表示中，实际数字是。整数，你知道，我们编译C代码和整数的方式恰好是4 B。好的，好的，我明白了。谢谢，非常感谢。</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>操作系统工程 013-FileSystems</div>
+      <div>http://example.com/2025/10/18/6S081-013/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月18日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-014/" title="操作系统工程 014-Crash Recovery">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">操作系统工程 014-Crash Recovery</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-012/" title="操作系统工程 012-Sleep Wakeup">
+                        <span class="hidden-mobile">操作系统工程 012-Sleep Wakeup</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
