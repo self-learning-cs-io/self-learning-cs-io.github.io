@@ -1,0 +1,1023 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,279So the algorithm that we’re going to look at for solving the substring search problems 200:00:08,279 –&gt; 00:00:10,560called the Canuth Morse Pratt algorithm. 300:00:1">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P100Part29 04_knuth Morris Pratt">
+<meta property="og:url" content="http://example.com/2025/10/23/PrincetonAlgorithms%20P100Part29-04_knuth-morris-pratt/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,279So the algorithm that we’re going to look at for solving the substring search problems 200:00:08,279 –&gt; 00:00:10,560called the Canuth Morse Pratt algorithm. 300:00:1">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:33:27.204Z">
+<meta property="article:modified_time" content="2025-10-23T14:34:26.501Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P100Part29 04_knuth Morris Pratt - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P100Part29 04_knuth Morris Pratt"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:33" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          4.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          34 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P100Part29 04_knuth Morris Pratt</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,279<br>So the algorithm that we’re going to look at for solving the substring search problems</p>
+<p>2<br>00:00:08,279 –&gt; 00:00:10,560<br>called the Canuth Morse Pratt algorithm.</p>
+<p>3<br>00:00:10,560 –&gt; 00:00:15,439<br>It’s got an interesting history that we’ll get to at the end.</p>
+<p>4<br>00:00:15,439 –&gt; 00:00:19,440<br>But I just want to start by saying that this is one of the coolest algorithms that we’ll</p>
+<p>5<br>00:00:19,440 –&gt; 00:00:21,800<br>cover in this course.</p>
+<p>6<br>00:00:21,800 –&gt; 00:00:26,920<br>And it’s not an algorithm that anyone would come up with without a lot of hard work, but</p>
+<p>7<br>00:00:26,920 –&gt; 00:00:32,079<br>understanding this algorithm really gives somebody an appreciation for what’s possible</p>
+<p>8<br>00:00:32,079 –&gt; 00:00:38,079<br>with careful algorithmic thinking even for such a simple problem as this.</p>
+<p>9<br>00:00:38,079 –&gt; 00:00:40,760<br>It’s a quite ingenious method.</p>
+<p>10<br>00:00:40,760 –&gt; 00:00:43,280<br>So here’s the intuition behind the algorithm.</p>
+<p>11<br>00:00:43,280 –&gt; 00:00:50,680<br>So say we’re looking for the pattern B followed by a bunch of A’s and text.</p>
+<p>12<br>00:00:50,680 –&gt; 00:00:55,840<br>So we’re going along and so well we’ve kind of mismatched right away.</p>
+<p>13<br>00:00:55,840 –&gt; 00:01:03,040<br>So we’ll move over to first position and we’ll go BAAA.</p>
+<p>14<br>00:01:03,040 –&gt; 00:01:06,439<br>And we find a mismatch at the end and the miscase.</p>
+<p>15<br>00:01:06,439 –&gt; 00:01:12,240<br>So now what the brute force method is going to do is back up to move over one position.</p>
+<p>16<br>00:01:12,240 –&gt; 00:01:16,560<br>That B doesn’t match the A. Back up again, that B doesn’t match the A.</p>
+<p>17<br>00:01:16,560 –&gt; 00:01:26,320<br>And keep going matching the first B against all these A’s before getting to the next</p>
+<p>18<br>00:01:26,320 –&gt; 00:01:29,600<br>character in the text.</p>
+<p>19<br>00:01:29,600 –&gt; 00:01:33,320<br>So we match five characters and we mismatch on the six.</p>
+<p>20<br>00:01:33,320 –&gt; 00:01:40,879<br>But the key point is that when we got that mismatch, if all we have is A’s and B’s, we already</p>
+<p>21<br>00:01:40,879 –&gt; 00:01:46,799<br>matched BAAA, 4A’s and we got a mismatch so it’s a B.</p>
+<p>22<br>00:01:46,799 –&gt; 00:01:51,319<br>So at that point we know what the previous characters in the text are.</p>
+<p>23<br>00:01:51,319 –&gt; 00:01:55,159<br>And we know that if we move over one position we’re going to be trying to match B against</p>
+<p>24<br>00:01:55,159 –&gt; 00:02:00,159<br>A. So we should be able to take advantage of that knowledge that’s the intuition on the</p>
+<p>25<br>00:02:00,159 –&gt; 00:02:02,280<br>method of the Knuth Morris Pratt.</p>
+<p>26<br>00:02:02,280 –&gt; 00:02:05,560<br>We don’t need to back up the text pointer in this case.</p>
+<p>27<br>00:02:05,560 –&gt; 00:02:10,840<br>When we get the mismatch we can just keep going.</p>
+<p>28<br>00:02:10,840 –&gt; 00:02:14,560<br>We don’t even have to match the first B. We know it’s there.</p>
+<p>29<br>00:02:14,560 –&gt; 00:02:20,560<br>So we can just keep going in the text pointer and start in the second pattern pointer.</p>
+<p>30<br>00:02:20,560 –&gt; 00:02:25,840<br>The Knuth Morris Pratt algorithm is a very clever method that manages to always avoid</p>
+<p>31<br>00:02:25,840 –&gt; 00:02:28,920<br>backup no matter what the pattern is.</p>
+<p>32<br>00:02:28,920 –&gt; 00:02:33,879<br>So let’s take a look at what’s involved.</p>
+<p>33<br>00:02:33,879 –&gt; 00:02:40,800<br>It’s based on the idea of building a deterministic finite state machine for string searching.</p>
+<p>34<br>00:02:40,800 –&gt; 00:02:46,480<br>Now, deterministic finite state machine, if you’re not familiar, don’t remember, is a very</p>
+<p>35<br>00:02:46,480 –&gt; 00:02:47,880<br>simple thing.</p>
+<p>36<br>00:02:47,880 –&gt; 00:02:51,080<br>It’s got a finite number of states.</p>
+<p>37<br>00:02:51,080 –&gt; 00:02:52,920<br>It’s always in one of the states.</p>
+<p>38<br>00:02:52,920 –&gt; 00:02:57,240<br>There’s a start state and a halt state.</p>
+<p>39<br>00:02:57,240 –&gt; 00:03:06,560<br>And from every state there’s exactly one transition for each possible character in the alphabet.</p>
+<p>40<br>00:03:06,560 –&gt; 00:03:16,000<br>So if we’re in a state and we’re reading a particular character, we move to the state</p>
+<p>41<br>00:03:16,000 –&gt; 00:03:18,599<br>that is indicated by that character.</p>
+<p>42<br>00:03:18,599 –&gt; 00:03:23,159<br>So if we’re in state 2 and we’re reading an A, we move to state 3.</p>
+<p>43<br>00:03:23,159 –&gt; 00:03:26,039<br>That’s what this line in the table says.</p>
+<p>44<br>00:03:26,039 –&gt; 00:03:33,879<br>If we’re in state 2 and we read a, that happens to be the pattern character as A. If we see</p>
+<p>45<br>00:03:33,879 –&gt; 00:03:35,759<br>an A, we move to state 3.</p>
+<p>46<br>00:03:35,759 –&gt; 00:03:39,879<br>If we see a B or a C, we go back to state 0.</p>
+<p>47<br>00:03:39,879 –&gt; 00:03:41,639<br>That’s what this machine says.</p>
+<p>48<br>00:03:41,639 –&gt; 00:03:46,399<br>It says a tabular representation and a graphical representation.</p>
+<p>49<br>00:03:46,399 –&gt; 00:03:51,159<br>If we get to state 6, then we just say accept.</p>
+<p>50<br>00:03:51,159 –&gt; 00:03:52,159<br>We found the pattern.</p>
+<p>51<br>00:03:52,159 –&gt; 00:03:56,639<br>And you can see how that is, the pattern, every, if we match a pattern character, we move</p>
+<p>52<br>00:03:56,639 –&gt; 00:04:01,719<br>right through this machine until we get to the halt state.</p>
+<p>53<br>00:04:01,719 –&gt; 00:04:08,039<br>So let’s first take a look at exactly how the machine works to make sure everybody follows</p>
+<p>54<br>00:04:08,039 –&gt; 00:04:09,039<br>that.</p>
+<p>55<br>00:04:09,039 –&gt; 00:04:12,960<br>And then we’ll look at how do we build this machine.</p>
+<p>56<br>00:04:12,960 –&gt; 00:04:18,360<br>So that’s our machine and that’s our text up at the top.</p>
+<p>57<br>00:04:18,360 –&gt; 00:04:20,439<br>So we started state 0.</p>
+<p>58<br>00:04:20,439 –&gt; 00:04:23,759<br>We’re reading an A. What are we supposed to do?</p>
+<p>59<br>00:04:23,759 –&gt; 00:04:28,079<br>If we’re in state 0 and we’re reading A, this entry of the table says we’re supposed</p>
+<p>60<br>00:04:28,079 –&gt; 00:04:31,519<br>to go to state 1.</p>
+<p>61<br>00:04:31,519 –&gt; 00:04:36,479<br>So we go to state 1.</p>
+<p>62<br>00:04:36,479 –&gt; 00:04:38,839<br>At every step, we consume a text character.</p>
+<p>63<br>00:04:38,839 –&gt; 00:04:40,759<br>Just read a text character.</p>
+<p>64<br>00:04:40,759 –&gt; 00:04:46,719<br>Now we’re in state 1 and reading an A. In the graphical representation, it says stay</p>
+<p>65<br>00:04:46,719 –&gt; 00:04:48,879<br>in state 1 or in this representation.</p>
+<p>66<br>00:04:48,879 –&gt; 00:04:53,279<br>That says if you’re in state 1 and you see an A, stay in state 1.</p>
+<p>67<br>00:04:53,279 –&gt; 00:04:56,039<br>So that’s what we’ll do.</p>
+<p>68<br>00:04:56,039 –&gt; 00:04:58,919<br>We’ll read the A and stay in state 1.</p>
+<p>69<br>00:04:58,920 –&gt; 00:05:01,759<br>Now we’re in state 1.</p>
+<p>70<br>00:05:01,759 –&gt; 00:05:10,319<br>So you can say that in state 1, it’s reading A. And we’re looking for something that’s</p>
+<p>71<br>00:05:10,319 –&gt; 00:05:15,360<br>not A. No matter how many A’s you have, you’ll read them right here in state 1.</p>
+<p>72<br>00:05:15,360 –&gt; 00:05:19,639<br>So now we’re in state 1 and we’re reading a B and it says go to state 2 in that case.</p>
+<p>73<br>00:05:19,639 –&gt; 00:05:22,160<br>So that’s where we’ll go and read the B.</p>
+<p>74<br>00:05:22,160 –&gt; 00:05:27,360<br>Now we’re in state 2 and reading an A. So we go to state 3 and read the A.</p>
+<p>75<br>00:05:27,360 –&gt; 00:05:34,080<br>Now we’re in state 3 and we see a C. In state 3, we see a C. We’re supposed to go back</p>
+<p>76<br>00:05:34,080 –&gt; 00:05:36,520<br>to state 0.</p>
+<p>77<br>00:05:36,520 –&gt; 00:05:39,240<br>That’s a mismatch.</p>
+<p>78<br>00:05:39,240 –&gt; 00:05:42,400<br>Our pattern, the C’s not until the end.</p>
+<p>79<br>00:05:42,400 –&gt; 00:05:46,360<br>So now we have to start the search all over again.</p>
+<p>80<br>00:05:46,360 –&gt; 00:05:50,639<br>Although in the finite state machine doesn’t know that, it’s just plotting along according</p>
+<p>81<br>00:05:50,639 –&gt; 00:05:53,560<br>to the state transitions it’s supposed to do.</p>
+<p>82<br>00:05:53,560 –&gt; 00:05:55,920<br>So we read the C now we’re back in state 0.</p>
+<p>83<br>00:05:56,520 –&gt; 00:06:00,600<br>So now we’re in state 0 looking at an A. We moved to 1 and read the A.</p>
+<p>84<br>00:06:00,600 –&gt; 00:06:05,640<br>And then we see another A. So we stay in 1 and read the A.</p>
+<p>85<br>00:06:05,640 –&gt; 00:06:09,080<br>And now we see a B and we’ve got to state 2 and read the B.</p>
+<p>86<br>00:06:09,080 –&gt; 00:06:11,480<br>And now we’ve got to state 3 and read the A.</p>
+<p>87<br>00:06:11,480 –&gt; 00:06:15,319<br>State 3 and read the A. State 4 and read the A.</p>
+<p>88<br>00:06:15,319 –&gt; 00:06:17,240<br>State 5 and read the C.</p>
+<p>89<br>00:06:17,240 –&gt; 00:06:18,840<br>And now we’re in state 6.</p>
+<p>90<br>00:06:18,840 –&gt; 00:06:22,000<br>That means we found the pattern.</p>
+<p>91<br>00:06:22,000 –&gt; 00:06:28,040<br>So that’s a simulation of what the deterministic finite state of thought</p>
+<p>92<br>00:06:28,040 –&gt; 00:06:31,560<br>because corresponding to this pattern would do.</p>
+<p>93<br>00:06:31,560 –&gt; 00:06:37,480<br>And as we’ll see the code for implementing this simulation is quite simple.</p>
+<p>94<br>00:06:37,480 –&gt; 00:06:41,040<br>That’s a demo of DFA simulation.</p>
+<p>95<br>00:06:41,040 –&gt; 00:06:48,279<br>So let’s just take a quick look at what the interpretation of this DFA is.</p>
+<p>96<br>00:06:48,279 –&gt; 00:06:56,839<br>So what does it mean after we just read the Ith character of the text?</p>
+<p>97<br>00:06:56,839 –&gt; 00:07:02,399<br>Well the number of the state is the number of characters in the pattern that we’ve</p>
+<p>98<br>00:07:02,399 –&gt; 00:07:04,639<br>matched up to the current point.</p>
+<p>99<br>00:07:04,639 –&gt; 00:07:10,639<br>So that is at state 3 we’ve matched three characters in the pattern.</p>
+<p>100<br>00:07:10,639 –&gt; 00:07:16,000<br>And what’s happened is that we’ve matched a prefix of the pattern,</p>
+<p>101<br>00:07:16,000 –&gt; 00:07:18,560<br>the first three characters of the pattern.</p>
+<p>102<br>00:07:18,560 –&gt; 00:07:21,040<br>And actually it’s the longest prefix of the pattern.</p>
+<p>103<br>00:07:21,040 –&gt; 00:07:29,959<br>That’s also a suffix of the Ith, the Ith plus 1 character of the text from 0 to I.</p>
+<p>104<br>00:07:29,959 –&gt; 00:07:32,839<br>That’s the interpretation of what it is.</p>
+<p>105<br>00:07:32,839 –&gt; 00:07:40,560<br>So if the DFA is in state 3 after the first six characters of the text,</p>
+<p>106<br>00:07:40,560 –&gt; 00:07:46,240<br>it’s got ABA is the longest prefix of the pattern.</p>
+<p>107<br>00:07:46,240 –&gt; 00:07:51,519<br>That’s also a suffix of the first six characters of the text.</p>
+<p>108<br>00:07:51,519 –&gt; 00:07:56,519<br>So another prefix of the pattern that looks like it might work is ABABA.</p>
+<p>109<br>00:07:56,519 –&gt; 00:08:02,319<br>But that’s not a suffix of the text ending a character 6.</p>
+<p>110<br>00:08:02,319 –&gt; 00:08:08,439<br>And so that interpretation is useful to understand what’s going on.</p>
+<p>111<br>00:08:08,439 –&gt; 00:08:14,240<br>So given that we’ve constructed this DFA,</p>
+<p>112<br>00:08:14,240 –&gt; 00:08:23,879<br>it’s just the state transition table for the DFA is simply a two-dimensional array</p>
+<p>113<br>00:08:23,879 –&gt; 00:08:28,120<br>that’s indexed by the pattern character.</p>
+<p>114<br>00:08:28,120 –&gt; 00:08:33,759<br>So if you’re reading a certain pattern character,</p>
+<p>115<br>00:08:33,759 –&gt; 00:08:37,879<br>sorry if you’re reading a certain text character,</p>
+<p>116<br>00:08:37,879 –&gt; 00:08:46,200<br>then for each, we reset the pattern pointer to be the entry given in the table</p>
+<p>117<br>00:08:46,200 –&gt; 00:08:49,559<br>that corresponds to the current one.</p>
+<p>118<br>00:08:49,559 –&gt; 00:08:53,159<br>So let’s go back to the table to be sure about that.</p>
+<p>119<br>00:08:53,159 –&gt; 00:09:00,559<br>So when we’re in a particular state like 2 and we see in A,</p>
+<p>120<br>00:09:00,559 –&gt; 00:09:06,719<br>so this would be J, we refer to that column</p>
+<p>121<br>00:09:06,719 –&gt; 00:09:12,399<br>in whatever text character we happen to see, that’s how we update J.</p>
+<p>122<br>00:09:12,399 –&gt; 00:09:14,799<br>So that’s what this code does.</p>
+<p>123<br>00:09:14,799 –&gt; 00:09:21,319<br>And then if we ever get to the final state, we just return i minus m.</p>
+<p>124<br>00:09:21,319 –&gt; 00:09:27,479<br>This is just like that alternate implementation of the brute force method that we gave.</p>
+<p>125<br>00:09:27,480 –&gt; 00:09:34,279<br>But the key idea is that notice that i never gets decremented.</p>
+<p>126<br>00:09:34,279 –&gt; 00:09:40,399<br>All we’re doing is incrementing i and changing J.</p>
+<p>127<br>00:09:40,399 –&gt; 00:09:43,759<br>Either always just referring to the table.</p>
+<p>128<br>00:09:43,759 –&gt; 00:09:47,159<br>When we have a match, the table automatically increments J.</p>
+<p>129<br>00:09:47,159 –&gt; 00:09:50,440<br>We have a mismatch that figures out the right state to go to.</p>
+<p>130<br>00:09:50,440 –&gt; 00:09:56,080<br>So that’s a very simple and economical and fast implementation</p>
+<p>131<br>00:09:56,080 –&gt; 00:09:58,879<br>of substring search.</p>
+<p>132<br>00:09:58,879 –&gt; 00:10:10,759<br>So the running time is clearly all it does is look up an entry in the table for every text character.</p>
+<p>133<br>00:10:10,759 –&gt; 00:10:13,440<br>So that’s linear time.</p>
+<p>134<br>00:10:13,440 –&gt; 00:10:17,520<br>The key is how do we build that table that drives the algorithm?</p>
+<p>135<br>00:10:17,520 –&gt; 00:10:19,120<br>And that’s the tricky algorithm.</p>
+<p>136<br>00:10:19,120 –&gt; 00:10:26,040<br>So warning, this is definitely the trickiest algorithm we’ve looked at so far.</p>
+<p>137<br>00:10:26,039 –&gt; 00:10:34,360<br>And key, the importance again of no backup is that since the text pointer never decrements,</p>
+<p>138<br>00:10:34,360 –&gt; 00:10:39,759<br>you could use an input stream and just replace textify by just read the next character in the</p>
+<p>139<br>00:10:39,759 –&gt; 00:10:40,759<br>input stream.</p>
+<p>140<br>00:10:40,759 –&gt; 00:10:47,279<br>And this algorithm is going to work fine no matter how big the input stream is.</p>
+<p>141<br>00:10:47,279 –&gt; 00:10:49,719<br>It’ll just go right through.</p>
+<p>142<br>00:10:49,719 –&gt; 00:10:53,120<br>It’s got no memory of what the text is.</p>
+<p>143<br>00:10:53,120 –&gt; 00:10:59,200<br>It’s got some memory of what the pattern is that’s built into the DFA.</p>
+<p>144<br>00:10:59,200 –&gt; 00:11:04,120<br>So this is the key that you have a pattern.</p>
+<p>145<br>00:11:04,120 –&gt; 00:11:10,039<br>You can spend some time building this DFA table, and pre-processing.</p>
+<p>146<br>00:11:10,039 –&gt; 00:11:17,680<br>But then when you get the text, just index into this table for every text character and</p>
+<p>147<br>00:11:17,680 –&gt; 00:11:19,680<br>you’re doing your substring search.</p>
+<p>148<br>00:11:19,679 –&gt; 00:11:25,239<br>You can make a build a machine that does this no backup.</p>
+<p>149<br>00:11:25,239 –&gt; 00:11:31,919<br>Okay, so let’s take a look at what it means to construct this DFA.</p>
+<p>150<br>00:11:31,919 –&gt; 00:11:34,759<br>It depends on the pattern.</p>
+<p>151<br>00:11:34,759 –&gt; 00:11:40,439<br>You start out with one character, one state for each character in the pattern plus an extra</p>
+<p>152<br>00:11:40,439 –&gt; 00:11:41,439<br>except state.</p>
+<p>153<br>00:11:41,439 –&gt; 00:11:45,240<br>And let’s look at what it means to build a thing.</p>
+<p>154<br>00:11:45,240 –&gt; 00:11:51,759<br>So the first thing that we do, one state for each character in the pattern, the first</p>
+<p>155<br>00:11:51,759 –&gt; 00:11:57,840<br>thing we do is deal with the match transitions.</p>
+<p>156<br>00:11:57,840 –&gt; 00:12:03,519<br>So that’s when you’re in state J, that means you’ve already matched J characters in the</p>
+<p>157<br>00:12:03,519 –&gt; 00:12:05,560<br>pattern.</p>
+<p>158<br>00:12:05,559 –&gt; 00:12:18,799<br>And if the next character matches, so the character that you have is the character that’s</p>
+<p>159<br>00:12:18,799 –&gt; 00:12:25,519<br>supposed to match, you’re going to set about the character J, SS, and J plus first characters.</p>
+<p>160<br>00:12:25,519 –&gt; 00:12:29,079<br>And you know that you’ve matched J plus one character.</p>
+<p>161<br>00:12:29,079 –&gt; 00:12:35,439<br>So all that means is we can put in the match transitions.</p>
+<p>162<br>00:12:35,440 –&gt; 00:12:44,320<br>So we have A, B, A, B, A, C, and these guys go A, B, A, B, A, C. If you’re in state 0 and</p>
+<p>163<br>00:12:44,320 –&gt; 00:12:47,920<br>you see an A, you go to state 1, if you’re in state 1, if you’re in state 2, you go to state</p>
+<p>164<br>00:12:47,920 –&gt; 00:12:49,680<br>2, and so forth.</p>
+<p>165<br>00:12:49,680 –&gt; 00:12:56,120<br>That’s how we get the match transitions to get us all the way through the pattern to the</p>
+<p>166<br>00:12:56,120 –&gt; 00:12:57,760<br>except state.</p>
+<p>167<br>00:12:57,760 –&gt; 00:13:00,400<br>So that’s the easy part.</p>
+<p>168<br>00:13:00,399 –&gt; 00:13:05,279<br>And then the hard part is the mismatch transitions.</p>
+<p>169<br>00:13:05,279 –&gt; 00:13:11,639<br>What are you supposed to do if you come against a text character that does not match the current</p>
+<p>170<br>00:13:11,639 –&gt; 00:13:14,120<br>text character?</p>
+<p>171<br>00:13:14,120 –&gt; 00:13:22,240<br>So for example, if you’re in state 0, the pattern starts with an A. If you don’t see an</p>
+<p>172<br>00:13:22,240 –&gt; 00:13:27,639<br>A as the first character in the text, if you see a B or a C, then obviously you want to</p>
+<p>173<br>00:13:27,639 –&gt; 00:13:29,360<br>stay in state 0.</p>
+<p>174<br>00:13:29,360 –&gt; 00:13:34,840<br>So you can think of state 0 as scanning through the text looking for an A. It’s going to stay</p>
+<p>175<br>00:13:34,840 –&gt; 00:13:36,440<br>in state 0.</p>
+<p>176<br>00:13:36,440 –&gt; 00:13:41,639<br>As long as it sees a B or C, as soon as it sees an A, it’ll go to state 1.</p>
+<p>177<br>00:13:41,639 –&gt; 00:13:43,600<br>But that completes state 0.</p>
+<p>178<br>00:13:43,600 –&gt; 00:13:48,680<br>You know what to do if you have an A, you know what to do if you have a B or a C. What</p>
+<p>179<br>00:13:48,680 –&gt; 00:13:51,080<br>about state 1?</p>
+<p>180<br>00:13:51,080 –&gt; 00:13:57,279<br>So we know that if you’re in state 1, you saw an A in the text, and if you see a B in the</p>
+<p>181<br>00:13:57,279 –&gt; 00:14:00,559<br>text, what are you supposed to do?</p>
+<p>182<br>00:14:00,559 –&gt; 00:14:03,759<br>Well, there’s two different cases.</p>
+<p>183<br>00:14:03,759 –&gt; 00:14:10,039<br>If you see a B, you go into state 2.</p>
+<p>184<br>00:14:10,039 –&gt; 00:14:16,519<br>If you see a C, then that’s not going to match the first character A in the pattern.</p>
+<p>185<br>00:14:16,519 –&gt; 00:14:18,919<br>So you go back to state 0.</p>
+<p>186<br>00:14:18,919 –&gt; 00:14:24,399<br>But if you see an A, it’s just as if you saw an A in state 0.</p>
+<p>187<br>00:14:24,399 –&gt; 00:14:28,159<br>So you might as well stay in state 1.</p>
+<p>188<br>00:14:28,159 –&gt; 00:14:32,639<br>So that’s how we fill in the DFA for state 1.</p>
+<p>189<br>00:14:32,639 –&gt; 00:14:35,600<br>If you see a B, you go into state 2, you match.</p>
+<p>190<br>00:14:35,600 –&gt; 00:14:39,919<br>If you see an A, well that matches the first character, so stay in state 1.</p>
+<p>191<br>00:14:39,919 –&gt; 00:14:43,639<br>If you see a C, clearly you have to go back to state 0.</p>
+<p>192<br>00:14:43,639 –&gt; 00:14:46,519<br>Okay, what about the next one?</p>
+<p>193<br>00:14:46,519 –&gt; 00:14:53,399<br>So if we’re in state 2 and we see an A, we know that we go on to state 3.</p>
+<p>194<br>00:14:53,399 –&gt; 00:14:55,559<br>And what about the mismatch case?</p>
+<p>195<br>00:14:55,559 –&gt; 00:14:57,319<br>Well, in that case, it’s a B or a C.</p>
+<p>196<br>00:14:57,319 –&gt; 00:15:03,799<br>And again, if you’re sitting on a B or a C, you better go back to state 0 to keep looking</p>
+<p>197<br>00:15:03,799 –&gt; 00:15:06,079<br>for an A.</p>
+<p>198<br>00:15:06,079 –&gt; 00:15:11,600<br>State 3, well, now it gets to be a little more complicated.</p>
+<p>199<br>00:15:11,600 –&gt; 00:15:14,840<br>You say 3, C or B, you succeed it.</p>
+<p>200<br>00:15:14,840 –&gt; 00:15:17,679<br>If you see a C, you go back to state 0.</p>
+<p>201<br>00:15:17,679 –&gt; 00:15:19,199<br>It’s not so bad if you see an A.</p>
+<p>202<br>00:15:19,200 –&gt; 00:15:24,000<br>It’s just like before, that’s going to be like the first one.</p>
+<p>203<br>00:15:24,000 –&gt; 00:15:27,640<br>So it seems like we’re going along pretty fine.</p>
+<p>204<br>00:15:27,640 –&gt; 00:15:31,200<br>And again, if you’re in state 4, you see an A, you go to 5.</p>
+<p>205<br>00:15:31,200 –&gt; 00:15:35,759<br>If you see a B or C, then you better go back and look for an A again.</p>
+<p>206<br>00:15:35,759 –&gt; 00:15:39,440<br>This one is the one that’s a little more complicated.</p>
+<p>207<br>00:15:39,440 –&gt; 00:15:44,120<br>If you’re in state 5 and you see a B, you go back to state 4.</p>
+<p>208<br>00:15:44,120 –&gt; 00:15:48,120<br>And that’s a little more work to figure out why that’s the case.</p>
+<p>209<br>00:15:48,120 –&gt; 00:15:52,000<br>And that last case is kind of the essence of the algorithm.</p>
+<p>210<br>00:15:52,000 –&gt; 00:15:58,560<br>So we’ll look at a systematic way to be able to figure out what you do on a mismatch in</p>
+<p>211<br>00:15:58,560 –&gt; 00:15:59,560<br>each case.</p>
+<p>212<br>00:15:59,560 –&gt; 00:16:05,840<br>In this case, you only needed that one state the otherwise it was elementary reasoning.</p>
+<p>213<br>00:16:05,840 –&gt; 00:16:09,200<br>So that’s a full DFA for Knuth-Morris Pratt.</p>
+<p>214<br>00:16:09,200 –&gt; 00:16:13,799<br>A demo was at least thinking about how it’s going to be constructed.</p>
+<p>215<br>00:16:14,039 –&gt; 00:16:18,240<br>OK, let’s look a little more carefully and systematically at the construction process</p>
+<p>216<br>00:16:18,240 –&gt; 00:16:21,719<br>for the Knuth-Morris Pratt DFA.</p>
+<p>217<br>00:16:21,719 –&gt; 00:16:25,279<br>So the start is clear.</p>
+<p>218<br>00:16:25,279 –&gt; 00:16:35,639<br>We’re going to go through the pattern and for systematically fill in the match transitions.</p>
+<p>219<br>00:16:35,639 –&gt; 00:16:39,679<br>If we’re in state 0 and we see an A, we want to go to state 1.</p>
+<p>220<br>00:16:39,679 –&gt; 00:16:43,679<br>We see a B, we’re going to go to state 2.</p>
+<p>221<br>00:16:43,679 –&gt; 00:16:50,519<br>So we look at the pattern character and then whatever that one is, we want to go to the</p>
+<p>222<br>00:16:50,519 –&gt; 00:16:52,879<br>next state.</p>
+<p>223<br>00:16:52,879 –&gt; 00:16:58,239<br>So we can fill in at least that much automatically.</p>
+<p>224<br>00:16:58,239 –&gt; 00:17:02,879<br>Now the real key is the mismatch transition.</p>
+<p>225<br>00:17:02,879 –&gt; 00:17:08,000<br>So here’s the idea of the mismatch transition.</p>
+<p>226<br>00:17:08,000 –&gt; 00:17:16,720<br>So if you’re in state j and you get a mismatch, the next character in the text does not match</p>
+<p>227<br>00:17:16,720 –&gt; 00:17:20,680<br>the j-character in the pattern.</p>
+<p>228<br>00:17:20,680 –&gt; 00:17:27,759<br>So as pointed out at the beginning is motivation for Knuth-Morris Pratt, you know a lot about</p>
+<p>229<br>00:17:27,759 –&gt; 00:17:29,880<br>the text at that point.</p>
+<p>230<br>00:17:29,880 –&gt; 00:17:35,440<br>You know that the last j minus 1 characters of the text are, if you lock up the first</p>
+<p>231<br>00:17:35,440 –&gt; 00:17:39,559<br>character of the pattern, it’s from 1 to j minus 1.</p>
+<p>232<br>00:17:39,559 –&gt; 00:17:45,680<br>So in this case, and then it’s followed by the text character that you’re looking at.</p>
+<p>233<br>00:17:45,680 –&gt; 00:17:53,480<br>So one thing that you could do, so what you want to do, so you know that, and what you</p>
+<p>234<br>00:17:53,480 –&gt; 00:18:02,720<br>could do is simulate the DFA that you have built on that part of the pattern and then take</p>
+<p>235<br>00:18:02,720 –&gt; 00:18:06,640<br>the transition for the character that you just find.</p>
+<p>236<br>00:18:06,640 –&gt; 00:18:08,160<br>So let’s look at this.</p>
+<p>237<br>00:18:08,160 –&gt; 00:18:15,480<br>So let’s run this machine if we had seen it on the text to BABA.</p>
+<p>238<br>00:18:15,480 –&gt; 00:18:16,920<br>That’s what we want to do.</p>
+<p>239<br>00:18:16,920 –&gt; 00:18:22,819<br>We want to put the machine in the state as if we had backed up, but we don’t want to</p>
+<p>240<br>00:18:22,819 –&gt; 00:18:23,819<br>back up.</p>
+<p>241<br>00:18:23,819 –&gt; 00:18:32,120<br>So if we see a B, we stay in zero, if we see a A, we go to 1, then we see a B.</p>
+<p>242<br>00:18:32,119 –&gt; 00:18:38,319<br>We go to 2, and if we see an A, we go to 3.</p>
+<p>243<br>00:18:38,319 –&gt; 00:18:43,679<br>So now we’re in state 3.</p>
+<p>244<br>00:18:43,679 –&gt; 00:18:55,839<br>And if we had a mismatch, then for the fifth character, what we do on a mismatch here,</p>
+<p>245<br>00:18:55,839 –&gt; 00:18:59,679<br>we have to look at what happens if we get an A or if we get a B.</p>
+<p>246<br>00:18:59,680 –&gt; 00:19:05,279<br>If we run it on BABA and we get an A, then we should go back to 1.</p>
+<p>247<br>00:19:05,279 –&gt; 00:19:11,320<br>So what that says is if we had a mismatch and we saw an A and five, we would need to</p>
+<p>248<br>00:19:11,320 –&gt; 00:19:18,519<br>be in state 1 because if we had had run the thing on the characters that we know, BABA,</p>
+<p>249<br>00:19:18,519 –&gt; 00:19:20,799<br>we would wind up in state 1.</p>
+<p>250<br>00:19:20,799 –&gt; 00:19:30,680<br>And similarly, if we got the mismatch on a B, again, if we did BABA, we’d be in state</p>
+<p>251<br>00:19:30,680 –&gt; 00:19:31,680<br>3.</p>
+<p>252<br>00:19:31,680 –&gt; 00:19:36,599<br>And we’re in state 3 and we saw a B, we’d go to 4.</p>
+<p>253<br>00:19:36,599 –&gt; 00:19:42,279<br>So again, to summarize, if we’re in state 5 and we see a C, we know that’s a match,</p>
+<p>254<br>00:19:42,279 –&gt; 00:19:43,799<br>we go to 6.</p>
+<p>255<br>00:19:43,799 –&gt; 00:19:52,119<br>If we see an A, we know that the previous five characters in the text were BABAA.</p>
+<p>256<br>00:19:52,119 –&gt; 00:19:57,519<br>So we can just simulate the machine, BABAA, we’re in state 1.</p>
+<p>257<br>00:19:57,519 –&gt; 00:20:04,559<br>And if we get a mismatch that’s a B, then that’s the DFAB5, then we know that the previous</p>
+<p>258<br>00:20:04,559 –&gt; 00:20:11,159<br>five characters in the text were BABAB and that would put us in state 4.</p>
+<p>259<br>00:20:11,160 –&gt; 00:20:18,440<br>So that’s the simulation of BABA, puts us in state 3, if we get an A, we go to 1.</p>
+<p>260<br>00:20:18,440 –&gt; 00:20:22,040<br>So that means that from 5, we’re back to 1.</p>
+<p>261<br>00:20:22,040 –&gt; 00:20:23,960<br>And if we get a B, we go to 4.</p>
+<p>262<br>00:20:23,960 –&gt; 00:20:29,400<br>So that’s how one way to calculate the mismatch transitions.</p>
+<p>263<br>00:20:29,400 –&gt; 00:20:35,080<br>And as we noted in the simulation, this is the only non-trivial one for this example.</p>
+<p>264<br>00:20:35,079 –&gt; 00:20:45,000<br>Now there’s a little problem with that is that it seems to require J steps to do the simulation.</p>
+<p>265<br>00:20:45,000 –&gt; 00:20:51,039<br>In order to figure out these mismatch transitions, I had to go all the way through the pattern</p>
+<p>266<br>00:20:51,039 –&gt; 00:20:56,839<br>shifted over 1 to figure out the state 3.</p>
+<p>267<br>00:20:56,839 –&gt; 00:20:59,159<br>So that seems to be a bit of a problem.</p>
+<p>268<br>00:20:59,160 –&gt; 00:21:04,759<br>But actually it’s no problem at all because we can run this simulation one character at</p>
+<p>269<br>00:21:04,759 –&gt; 00:21:08,880<br>time as we’re building the machine.</p>
+<p>270<br>00:21:08,880 –&gt; 00:21:16,480<br>All we need to do is keep track of the state that we would be at if we had run the DFA on</p>
+<p>271<br>00:21:16,480 –&gt; 00:21:19,680<br>the pattern starting at position 1.</p>
+<p>272<br>00:21:19,680 –&gt; 00:21:23,920<br>Once we get going, it’s pretty easy.</p>
+<p>273<br>00:21:23,920 –&gt; 00:21:33,960<br>But just let’s illustrate it by saying, okay, we maintained the state X, which is where</p>
+<p>274<br>00:21:33,960 –&gt; 00:21:38,039<br>we would be if we had run the machine on the pattern shifted over 1.</p>
+<p>275<br>00:21:38,039 –&gt; 00:21:46,920<br>Now when we come to do our mismatches to figure out where the mismatch transitions from 5 are,</p>
+<p>276<br>00:21:46,920 –&gt; 00:21:53,640<br>all we do is look at if we were to get an A, it would be as if we were in state X and got an A.</p>
+<p>277<br>00:21:53,640 –&gt; 00:21:55,759<br>So that’s 1.</p>
+<p>278<br>00:21:55,759 –&gt; 00:22:01,720<br>And if we were to get a B, it would be as if we were in state X and got a B in that state 4.</p>
+<p>279<br>00:22:01,720 –&gt; 00:22:08,800<br>So what we need to do is to compute the mismatch transitions is keep track of state X and</p>
+<p>280<br>00:22:08,799 –&gt; 00:22:19,839<br>that is where would the thing be if we had run it starting at the pattern 1 position shifted over.</p>
+<p>281<br>00:22:19,839 –&gt; 00:22:21,440<br>And we want to update that.</p>
+<p>282<br>00:22:21,440 –&gt; 00:22:29,839<br>So when we’re moving to the next state, if we had a match on C, state X gets updated to where it would have gone</p>
+<p>283<br>00:22:29,839 –&gt; 00:22:30,919<br>if it got a C.</p>
+<p>284<br>00:22:30,920 –&gt; 00:22:40,400<br>Because for the next character, when we move J over for the match on C, we’ll want to have X updated.</p>
+<p>285<br>00:22:40,400 –&gt; 00:22:47,720<br>So that’s the key is keeping track of the state where the machine would be if we had backed up or</p>
+<p>286<br>00:22:47,720 –&gt; 00:22:51,640<br>if we had run it on the pattern shifted over 1.</p>
+<p>287<br>00:22:51,640 –&gt; 00:23:02,120<br>So let’s take a look at a demo that does the full construction for the KMP DFA.</p>
+<p>288<br>00:23:02,120 –&gt; 00:23:08,600<br>So here goes, again, one state for every character plus and accept.</p>
+<p>289<br>00:23:08,600 –&gt; 00:23:10,240<br>Match transitions are easy.</p>
+<p>290<br>00:23:10,240 –&gt; 00:23:12,160<br>We build those.</p>
+<p>291<br>00:23:12,160 –&gt; 00:23:20,320<br>And we’re going to start at position 0 and the mismatch transitions are easy.</p>
+<p>292<br>00:23:20,319 –&gt; 00:23:33,960<br>So now when we move over X, and when we’re in position 1 of the pattern, X is where we would be if we started out without that character, which would be the empty string.</p>
+<p>293<br>00:23:33,960 –&gt; 00:23:44,599<br>So we start out with just filling in 0s for state 0 and we can do that without any further reasoning.</p>
+<p>294<br>00:23:44,599 –&gt; 00:23:47,359<br>But now we’ve got X initialized.</p>
+<p>295<br>00:23:47,359 –&gt; 00:23:55,839<br>So now what we need to do is fill in the mismatch transitions for state 1.</p>
+<p>296<br>00:23:55,839 –&gt; 00:23:58,879<br>So what are they there?</p>
+<p>297<br>00:23:58,879 –&gt; 00:24:06,599<br>What would happen if we found those characters in, and we were in state X?</p>
+<p>298<br>00:24:06,599 –&gt; 00:24:09,359<br>If we found an A, we’d go to state 1.</p>
+<p>299<br>00:24:09,359 –&gt; 00:24:12,519<br>If we found a C, we’d go to state 0.</p>
+<p>300<br>00:24:12,519 –&gt; 00:24:23,079<br>And maybe you notice that’s just taking the entries corresponding to the entries we need from X’s column and putting it in J’s column.</p>
+<p>301<br>00:24:23,079 –&gt; 00:24:24,639<br>That’s all it is.</p>
+<p>302<br>00:24:24,639 –&gt; 00:24:32,160<br>And then we need to update X, which is where it would be if we matched a B.</p>
+<p>303<br>00:24:32,160 –&gt; 00:24:36,599<br>So we’ll stay in X’s stay in state 0.</p>
+<p>304<br>00:24:36,599 –&gt; 00:24:40,079<br>So now let’s look at state 2.</p>
+<p>305<br>00:24:40,079 –&gt; 00:24:46,319<br>So we need to fill in what would happen if we got a B and what would happen if we got a C.</p>
+<p>306<br>00:24:46,319 –&gt; 00:24:50,759<br>Well, it’s what would happen if we were in state X and we got a B or a C.</p>
+<p>307<br>00:24:50,759 –&gt; 00:24:55,559<br>So all we do is move those 2 zeros over the column 2.</p>
+<p>308<br>00:24:55,559 –&gt; 00:25:03,799<br>And then don’t forget we have to update X and X goes where the machine would go if we saw an A, that transition from 2 to 3.</p>
+<p>309<br>00:25:03,799 –&gt; 00:25:07,960<br>So we just move X to state 1.</p>
+<p>310<br>00:25:07,960 –&gt; 00:25:10,880<br>So now we have X in state 1 and we’re doing position 3.</p>
+<p>311<br>00:25:10,880 –&gt; 00:25:16,039<br>And now you can see how really simple the algorithm is once it gets going.</p>
+<p>312<br>00:25:16,039 –&gt; 00:25:21,880<br>So now the mismatched transitions are A and C.</p>
+<p>313<br>00:25:21,880 –&gt; 00:25:25,079<br>And that’s what we have to fill in for column 3.</p>
+<p>314<br>00:25:25,079 –&gt; 00:25:28,960<br>But those mismatched transitions were already computed.</p>
+<p>315<br>00:25:28,960 –&gt; 00:25:31,720<br>That’s where X would go.</p>
+<p>316<br>00:25:31,720 –&gt; 00:25:34,519<br>If that’s where it would go if we happened to be in state 1.</p>
+<p>317<br>00:25:34,519 –&gt; 00:25:38,720<br>So we moved the 1 and 0 from column 1 over to column 3.</p>
+<p>318<br>00:25:38,720 –&gt; 00:25:41,440<br>And again, we update X.</p>
+<p>319<br>00:25:41,440 –&gt; 00:25:48,359<br>And when we see a B, X goes to state 2.</p>
+<p>320<br>00:25:48,359 –&gt; 00:25:55,279<br>And again, you can check what is X supposed to be.</p>
+<p>321<br>00:25:55,279 –&gt; 00:26:03,960<br>It’s supposed to be where you would be if you started the machine on the pattern with the first letter cut off.</p>
+<p>322<br>00:26:03,960 –&gt; 00:26:07,960<br>So it’s supposed to be where would you wind up if you got BAB.</p>
+<p>323<br>00:26:07,960 –&gt; 00:26:11,160<br>BAB, and that’s a check.</p>
+<p>324<br>00:26:11,160 –&gt; 00:26:14,960<br>All right, so now straight forward state 4, we have to fill in B and C.</p>
+<p>325<br>00:26:14,960 –&gt; 00:26:19,559<br>We go to X’s column and copy over B and C from X’s column.</p>
+<p>326<br>00:26:19,559 –&gt; 00:26:21,360<br>Then we update X.</p>
+<p>327<br>00:26:21,360 –&gt; 00:26:25,240<br>That’s if you see an A, you go to state 3.</p>
+<p>328<br>00:26:25,240 –&gt; 00:26:27,120<br>Now we’re ready for state 5.</p>
+<p>329<br>00:26:27,120 –&gt; 00:26:29,440<br>We’ve got X all computed.</p>
+<p>330<br>00:26:29,440 –&gt; 00:26:33,400<br>And we need to do A and B, and we get those from X.</p>
+<p>331<br>00:26:33,400 –&gt; 00:26:35,200<br>If it’s an A, it’s a 1.</p>
+<p>332<br>00:26:35,200 –&gt; 00:26:36,519<br>And if it’s a B, it’s a 4.</p>
+<p>333<br>00:26:36,519 –&gt; 00:26:38,840<br>It’s just moved them over.</p>
+<p>334<br>00:26:38,840 –&gt; 00:26:44,519<br>And then when we do the C, and get the accept, there’s no mismatch.</p>
+<p>335<br>00:26:44,519 –&gt; 00:26:48,400<br>That’s the, we do update X to get ready.</p>
+<p>336<br>00:26:48,400 –&gt; 00:26:52,680<br>But when we get the state 6, we’re done.</p>
+<p>337<br>00:26:52,680 –&gt; 00:27:01,680<br>And again, it’s just as a double check, X is where you’d be if you saw BAB.</p>
+<p>338<br>00:27:01,680 –&gt; 00:27:07,080<br>That’s the construction of the Knuth-Morse Pratt, DFA.</p>
+<p>339<br>00:27:07,080 –&gt; 00:27:14,840<br>Efficient algorithm, really ingenious, and turns out simple to implement.</p>
+<p>340<br>00:27:14,840 –&gt; 00:27:23,560<br>Implementation for the DFA construction for Knuth-Morse Pratt requires remarkably little code.</p>
+<p>341<br>00:27:23,560 –&gt; 00:27:28,240<br>So it just goes through what we did in the demo.</p>
+<p>342<br>00:27:28,240 –&gt; 00:27:37,279<br>So we’ve got X. And for every entry of the DFA in X’s column that corresponds to everyone</p>
+<p>343<br>00:27:37,279 –&gt; 00:27:41,759<br>except for the match, we just copy X’s column to J’s column.</p>
+<p>344<br>00:27:41,759 –&gt; 00:27:44,839<br>In fact, we just copy them all.</p>
+<p>345<br>00:27:44,839 –&gt; 00:27:51,720<br>And then overwrite the one corresponding to the match case to J plus 1.</p>
+<p>346<br>00:27:51,720 –&gt; 00:27:56,880<br>So the entry in the column that corresponds to the pattern character, that’s where do we</p>
+<p>347<br>00:27:56,880 –&gt; 00:27:59,440<br>go if we match that’s J plus 1.</p>
+<p>348<br>00:27:59,440 –&gt; 00:28:01,840<br>All the rest of them are copied from X.</p>
+<p>349<br>00:28:01,840 –&gt; 00:28:06,320<br>One for looped a copy from X, then set the match case.</p>
+<p>350<br>00:28:06,320 –&gt; 00:28:10,720<br>And then the only other thing to do is to update X.</p>
+<p>351<br>00:28:10,720 –&gt; 00:28:11,880<br>And how do you update X?</p>
+<p>352<br>00:28:11,880 –&gt; 00:28:17,360<br>You take them to the machine to where it would go if it were in state X.</p>
+<p>353<br>00:28:17,360 –&gt; 00:28:22,720<br>And it got the current pattern character.</p>
+<p>354<br>00:28:22,720 –&gt; 00:28:30,079<br>So that’s the DFA construction amazingly little code.</p>
+<p>355<br>00:28:30,079 –&gt; 00:28:41,600<br>So the only flaw in this code is that it does take time proportional to R times M,</p>
+<p>356<br>00:28:41,600 –&gt; 00:28:47,519<br>where R is the radix and M is the length of the pattern.</p>
+<p>357<br>00:28:47,519 –&gt; 00:28:50,879<br>And as we’ll see, this way is to get around this.</p>
+<p>358<br>00:28:50,879 –&gt; 00:28:59,720<br>But for relatively small alphabets, this is no problem because the search is so efficient</p>
+<p>359<br>00:28:59,720 –&gt; 00:29:04,000<br>this way in the construction as well.</p>
+<p>360<br>00:29:04,000 –&gt; 00:29:11,000<br>But if you’re doing this for unicode, for a long pattern, maybe that’s too much memory</p>
+<p>361<br>00:29:11,000 –&gt; 00:29:16,440<br>to devote to the DFA representation.</p>
+<p>362<br>00:29:16,440 –&gt; 00:29:23,240<br>So the bottom line is in this file is immediately from examining the code,</p>
+<p>363<br>00:29:23,240 –&gt; 00:29:28,840<br>is that the sub-string, KMP sub-string search is linear time.</p>
+<p>364<br>00:29:28,840 –&gt; 00:29:35,640<br>It only access most each character in the pattern, each character in the text once.</p>
+<p>365<br>00:29:35,640 –&gt; 00:29:37,400<br>Quite remarkable.</p>
+<p>366<br>00:29:37,400 –&gt; 00:29:42,680<br>Each pattern character, you access once when you’re making the DFA,</p>
+<p>367<br>00:29:42,680 –&gt; 00:29:49,560<br>and each text character is access once when you’re simulating a DFA, and that’s in the worst case.</p>
+<p>368<br>00:29:49,560 –&gt; 00:29:58,039<br>Now, the space, again, is proportional to RM because we have all those mismatches.</p>
+<p>369<br>00:29:58,039 –&gt; 00:30:07,480<br>It is possible to develop a version of Knuth-Morris Pratt that constructs the automaton</p>
+<p>370<br>00:30:07,480 –&gt; 00:30:13,240<br>in time and space proportional to M. It’s actually a non-deterministic automaton because</p>
+<p>371<br>00:30:13,240 –&gt; 00:30:21,039<br>it’s either a match or all mismatches and mismatch might evolve multiple hops.</p>
+<p>372<br>00:30:21,039 –&gt; 00:30:27,559<br>So if you’re interested, you can read about that version of KMP.</p>
+<p>373<br>00:30:27,559 –&gt; 00:30:34,519<br>But it’s sufficiently more complicated that you should be prepared to study it carefully</p>
+<p>374<br>00:30:34,519 –&gt; 00:30:37,440<br>to really understand it.</p>
+<p>375<br>00:30:38,400 –&gt; 00:30:42,720<br>This algorithm is really interesting because of its history.</p>
+<p>376<br>00:30:42,720 –&gt; 00:30:48,720<br>It was actually independently discovered by two theoreticians in a hacker.</p>
+<p>377<br>00:30:48,720 –&gt; 00:30:56,160<br>So there’s Knuth, who’s one of the fathers of computer science, who read a paper</p>
+<p>378<br>00:30:56,160 –&gt; 00:31:02,640<br>that was a very, by Steve Cook, a very esoteric theoretical result,</p>
+<p>379<br>00:31:02,720 –&gt; 00:31:10,000<br>that he realized implied that it should be possible to solve the substring search problem</p>
+<p>380<br>00:31:10,000 –&gt; 00:31:12,000<br>in linear time.</p>
+<p>381<br>00:31:12,000 –&gt; 00:31:18,240<br>The theorem really didn’t give any way to solve it, but it indicated that it should be possible</p>
+<p>382<br>00:31:18,240 –&gt; 00:31:20,240<br>to solve it in linear time.</p>
+<p>383<br>00:31:20,240 –&gt; 00:31:23,840<br>So Knuth worked on it and figured out a way.</p>
+<p>384<br>00:31:23,840 –&gt; 00:31:29,920<br>And then Pratt, who was a student of Knuth’s Stanford at the time, figured out a way to</p>
+<p>385<br>00:31:30,880 –&gt; 00:31:36,240<br>take care of this mismatch independent of the alphabet size.</p>
+<p>386<br>00:31:36,240 –&gt; 00:31:43,680<br>And in the meantime, across the Bay of Berkeley, Jim Morris was busy writing a text editor.</p>
+<p>387<br>00:31:43,680 –&gt; 00:31:50,560<br>In those days, people were using typewriters and other people were realizing that computers</p>
+<p>388<br>00:31:50,560 –&gt; 00:31:52,560<br>would be really good at editing text.</p>
+<p>389<br>00:31:52,560 –&gt; 00:31:59,440<br>And so many people would work on text editing and formatting systems.</p>
+<p>390<br>00:32:00,240 –&gt; 00:32:01,680<br>It was kind of a badge of honor.</p>
+<p>391<br>00:32:01,680 –&gt; 00:32:08,640<br>And those times, Morris actually worked for the computer center at Berkeley and wanted to have a</p>
+<p>392<br>00:32:09,680 –&gt; 00:32:12,799<br>really bulletproof text editor that everyone could use.</p>
+<p>393<br>00:32:12,799 –&gt; 00:32:15,759<br>And one of the things he wanted to do was avoid backup.</p>
+<p>394<br>00:32:16,559 –&gt; 00:32:22,080<br>Because backup was just really inconvenient and involved a lot of code and just something</p>
+<p>395<br>00:32:22,080 –&gt; 00:32:23,680<br>that he didn’t want to have.</p>
+<p>396<br>00:32:23,759 –&gt; 00:32:26,400<br>He basically came up with the same algorithm.</p>
+<p>397<br>00:32:27,519 –&gt; 00:32:32,000<br>And the community was kind of small at that time.</p>
+<p>398<br>00:32:32,880 –&gt; 00:32:34,640<br>And theory meets practice.</p>
+<p>399<br>00:32:34,640 –&gt; 00:32:38,720<br>And that’s where this paper came from 1977.</p>
+<p>400<br>00:32:39,840 –&gt; 00:32:44,400<br>Morris then went on to get his PhD and to work at the Arts Park.</p>
+<p>401<br>00:32:44,400 –&gt; 00:32:51,519<br>And unfortunately, later on, another system’s program came and took a look at Morris’s code</p>
+<p>402<br>00:32:51,519 –&gt; 00:32:55,279<br>and couldn’t understand it and put the brute force algorithm back in.</p>
+<p>403<br>00:32:55,279 –&gt; 00:33:01,920<br>But not part of the story is maybe a less successful example of theory meeting practice.</p>
+<p>404<br>00:33:02,480 –&gt; 00:33:04,400<br>That’s the Knuth Morris Pratt algorithm.</p>
+<p>405<br>00:33:04,400 –&gt; 00:33:07,440<br>One of the most ingenious algorithms that we’ll see.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P100Part29 04_knuth Morris Pratt</div>
+      <div>http://example.com/2025/10/23/PrincetonAlgorithms P100Part29-04_knuth-morris-pratt/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/PrincetonAlgorithms%20P101Part29-05_boyer-moore/" title="PrincetonAlgorithms P101Part29 05_boyer Moore">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P101Part29 05_boyer Moore</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P97Part28-05_character-based-operations/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

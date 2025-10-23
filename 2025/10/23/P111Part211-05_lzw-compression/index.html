@@ -1,0 +1,937 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,480So Huffman Coding is an optimal prefix-free code. 200:00:07,480 –&gt; 00:00:10,880Can we have a better data compression algorithm? 300:00:10,880 –&gt; 00:00:13,400As yo">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P111Part211-05_lzw-compression/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,480So Huffman Coding is an optimal prefix-free code. 200:00:07,480 –&gt; 00:00:10,880Can we have a better data compression algorithm? 300:00:10,880 –&gt; 00:00:13,400As yo">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.663Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:19.015Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,480<br>So Huffman Coding is an optimal prefix-free code.</p>
+<p>2<br>00:00:07,480 –&gt; 00:00:10,880<br>Can we have a better data compression algorithm?</p>
+<p>3<br>00:00:10,880 –&gt; 00:00:13,400<br>As you might suspect, the answer is yes.</p>
+<p>4<br>00:00:13,400 –&gt; 00:00:19,679<br>And that’s what we’re going to look at next is the LZW algorithm named after Abraham Lumpel</p>
+<p>5<br>00:00:19,679 –&gt; 00:00:26,879<br>and Jacob Ziv and W’s for third individual wealth to get involved.</p>
+<p>6<br>00:00:26,879 –&gt; 00:00:33,879<br>And so the way that we improve on Huffman Coding is by changing the rules under which it operates.</p>
+<p>7<br>00:00:33,879 –&gt; 00:00:38,560<br>And we’ve already changed the rules once, so let’s just take a high level view.</p>
+<p>8<br>00:00:38,560 –&gt; 00:00:45,519<br>So one idea for codes is that we’re going to, for all text that we’re ever encounter,</p>
+<p>9<br>00:00:45,519 –&gt; 00:00:51,679<br>we’re going to use the same code or the same model of the text.</p>
+<p>10<br>00:00:51,679 –&gt; 00:00:55,599<br>And so everybody’s got that model, we don’t have to transmit it.</p>
+<p>11<br>00:00:55,600 –&gt; 00:01:01,000<br>But the problem is that one text might have a lot of A’s and other one might have a lot of Z’s.</p>
+<p>12<br>00:01:01,000 –&gt; 00:01:03,600<br>They have different statistical properties.</p>
+<p>13<br>00:01:03,600 –&gt; 00:01:06,599<br>So it’s not going to be optimal for a given text.</p>
+<p>14<br>00:01:06,599 –&gt; 00:01:12,200<br>But still over the proponents of text that we see this can be effective.</p>
+<p>15<br>00:01:12,200 –&gt; 00:01:16,799<br>And so that’s really what ASCII is.</p>
+<p>16<br>00:01:16,799 –&gt; 00:01:20,000<br>But now for Huffman while we consider, we change that rule.</p>
+<p>17<br>00:01:20,000 –&gt; 00:01:26,400<br>And we said, well, we’re going to use different encodings depending on what the text is.</p>
+<p>18<br>00:01:26,400 –&gt; 00:01:29,799<br>So we’re going to look at the text, figure out the frequency,</p>
+<p>19<br>00:01:29,799 –&gt; 00:01:35,400<br>and then go ahead and create a code that works for that text.</p>
+<p>20<br>00:01:35,400 –&gt; 00:01:37,599<br>Now we have to transmit the code.</p>
+<p>21<br>00:01:37,599 –&gt; 00:01:41,400<br>That’s what the Huffman code is.</p>
+<p>22<br>00:01:41,400 –&gt; 00:01:46,400<br>For every text we’ve got a code that’s suited for that text.</p>
+<p>23<br>00:01:46,400 –&gt; 00:01:51,800<br>What we’re going to look at now is another change in the rules where it’s called an adaptive model.</p>
+<p>24<br>00:01:51,800 –&gt; 00:01:56,600<br>Where we’re going to just read the text one character at a time.</p>
+<p>25<br>00:01:56,600 –&gt; 00:02:04,400<br>But we’re going to use the text to update the model and learn about the model as we read it.</p>
+<p>26<br>00:02:04,400 –&gt; 00:02:08,800<br>And we’re going to assume the decoder does the same thing.</p>
+<p>27<br>00:02:08,800 –&gt; 00:02:15,200<br>And this gives, perhaps, it does get more accurate modeling and better compression</p>
+<p>28<br>00:02:15,200 –&gt; 00:02:18,200<br>throughout the text.</p>
+<p>29<br>00:02:18,200 –&gt; 00:02:19,800<br>And it’s a very effective method.</p>
+<p>30<br>00:02:19,800 –&gt; 00:02:22,200<br>So let’s look at how it works.</p>
+<p>31<br>00:02:22,200 –&gt; 00:02:25,800<br>We’ll just do this through an example.</p>
+<p>32<br>00:02:25,800 –&gt; 00:02:29,800<br>Now this is how we’re going to use Hex values.</p>
+<p>33<br>00:02:29,800 –&gt; 00:02:37,200<br>So in LCW encoding, we start with our input, which is characters.</p>
+<p>34<br>00:02:37,199 –&gt; 00:02:40,599<br>Say, ASCII characters.</p>
+<p>35<br>00:02:40,599 –&gt; 00:02:48,399<br>And what we’re going to do is keep a dictionary of code words.</p>
+<p>36<br>00:02:48,399 –&gt; 00:02:51,000<br>And the code words are going to be fixed length.</p>
+<p>37<br>00:02:51,000 –&gt; 00:02:57,399<br>And so we’ll use eight bits or two Hex characters as output.</p>
+<p>38<br>00:02:57,399 –&gt; 00:03:05,599<br>And we’ll start out with just the ASCII value for all the characters that we’re going to use in the message.</p>
+<p>39<br>00:03:05,599 –&gt; 00:03:08,199<br>So that’s the starting point.</p>
+<p>40<br>00:03:08,199 –&gt; 00:03:15,199<br>So at the beginning, this is where we’re going to do compression for this string here.</p>
+<p>41<br>00:03:15,199 –&gt; 00:03:25,199<br>At the beginning, we just pick off characters and output their value from the table.</p>
+<p>42<br>00:03:25,199 –&gt; 00:03:31,400<br>But every character that we read, it gives us a little new information.</p>
+<p>43<br>00:03:31,400 –&gt; 00:03:35,000<br>For example, in this case, we’ve seen AB.</p>
+<p>44<br>00:03:35,000 –&gt; 00:03:37,599<br>And what we’re going to do is say, OK, we’ve seen AB.</p>
+<p>45<br>00:03:37,599 –&gt; 00:03:41,000<br>Maybe it occurs again in the text.</p>
+<p>46<br>00:03:41,000 –&gt; 00:03:47,000<br>If it does, since we’ve seen it, we know where it is.</p>
+<p>47<br>00:03:47,000 –&gt; 00:03:49,000<br>We know what it is.</p>
+<p>48<br>00:03:49,000 –&gt; 00:03:52,300<br>We’ll just give it the value 81.</p>
+<p>49<br>00:03:52,300 –&gt; 00:03:54,400<br>And we’ll maintain this table.</p>
+<p>50<br>00:03:54,400 –&gt; 00:03:59,099<br>If we see AB again, we’ll use those eight bits.</p>
+<p>51<br>00:03:59,099 –&gt; 00:04:05,099<br>So we put out the B, but we remember the fact that we saw AB.</p>
+<p>52<br>00:04:05,099 –&gt; 00:04:13,299<br>And similarly, when we see BR, then that’ll be an 8-bit code word that we can put out.</p>
+<p>53<br>00:04:13,299 –&gt; 00:04:21,100<br>And the idea is that the decoder or the expander can do the same thing.</p>
+<p>54<br>00:04:21,100 –&gt; 00:04:24,600<br>We don’t actually have to transmit this table.</p>
+<p>55<br>00:04:24,600 –&gt; 00:04:28,100<br>We can know that the expander is going to do the same thing</p>
+<p>56<br>00:04:28,100 –&gt; 00:04:31,500<br>and we’ll have the same table.</p>
+<p>57<br>00:04:31,500 –&gt; 00:04:36,500<br>So now we see the R, since it’s BR, and that’s going to be encoded with 82.</p>
+<p>58<br>00:04:36,500 –&gt; 00:04:41,600<br>But the R, the ASCII for R is 52, so we put that out.</p>
+<p>59<br>00:04:41,600 –&gt; 00:04:45,100<br>Now we see the A. And so that’s going to be 83.</p>
+<p>60<br>00:04:45,100 –&gt; 00:04:49,900<br>If we see it again, but the A is just 41.</p>
+<p>61<br>00:04:49,899 –&gt; 00:04:52,500<br>And then A, C is going to be 84.</p>
+<p>62<br>00:04:52,500 –&gt; 00:04:55,500<br>The C is 43.</p>
+<p>63<br>00:04:55,500 –&gt; 00:05:03,199<br>C, A, yes, they’re going to be 85 again, 41.</p>
+<p>64<br>00:05:03,199 –&gt; 00:05:11,599<br>And so what we’re doing is building up a table that is a model for what the string has.</p>
+<p>65<br>00:05:11,599 –&gt; 00:05:18,899<br>And it’ll allow us to get better compression as we get later into the message.</p>
+<p>66<br>00:05:18,899 –&gt; 00:05:27,899<br>So now we’re reading the A after the D and so D is going to be 87.</p>
+<p>67<br>00:05:27,899 –&gt; 00:05:33,299<br>But now we see that the next letter is B.</p>
+<p>68<br>00:05:33,299 –&gt; 00:05:38,699<br>And we look in our table for AB and it’s there.</p>
+<p>69<br>00:05:38,699 –&gt; 00:05:42,899<br>So we can put out 81 instead of just putting that AL.</p>
+<p>70<br>00:05:42,899 –&gt; 00:05:47,899<br>So at this point when we look at the B,</p>
+<p>71<br>00:05:47,899 –&gt; 00:05:53,899<br>we can know that we had AB and we can look that up on the table and just put out 81.</p>
+<p>72<br>00:05:53,899 –&gt; 00:06:00,899<br>And similarly, when we, but now when we look at the R,</p>
+<p>73<br>00:06:00,899 –&gt; 00:06:02,699<br>our previous character was AB.</p>
+<p>74<br>00:06:02,699 –&gt; 00:06:08,699<br>So now we’re going to code ABR with 88.</p>
+<p>75<br>00:06:08,699 –&gt; 00:06:15,899<br>And again, R A, we looked that up in the table and we can put out 83.</p>
+<p>76<br>00:06:15,899 –&gt; 00:06:20,699<br>And now we can remember R AB is going to be 89.</p>
+<p>77<br>00:06:20,699 –&gt; 00:06:21,899<br>So now what happens next?</p>
+<p>78<br>00:06:21,899 –&gt; 00:06:25,500<br>Now we look at our next characters.</p>
+<p>79<br>00:06:25,500 –&gt; 00:06:30,699<br>We look for the longest prefix that we can match in the table.</p>
+<p>80<br>00:06:30,699 –&gt; 00:06:34,299<br>And that’s going to be the code word that we put out.</p>
+<p>81<br>00:06:34,299 –&gt; 00:06:38,099<br>So in this case, we have BR is in there.</p>
+<p>82<br>00:06:38,099 –&gt; 00:06:40,299<br>That’s 82.</p>
+<p>83<br>00:06:40,299 –&gt; 00:06:44,699<br>Next character is A. So I’m going to put BRA in there.</p>
+<p>84<br>00:06:44,699 –&gt; 00:06:49,699<br>And now this is the remaining to be encoded.</p>
+<p>85<br>00:06:49,699 –&gt; 00:06:52,899<br>And we’re going to look for the longest prefix that we know the code for.</p>
+<p>86<br>00:06:52,899 –&gt; 00:06:56,300<br>In this case, it’s going to be ABR, which is 88.</p>
+<p>87<br>00:06:56,300 –&gt; 00:07:06,699<br>So the previous characters in the text built a model that allows to more effectively encode the text.</p>
+<p>88<br>00:07:06,699 –&gt; 00:07:09,300<br>And that’s 88.</p>
+<p>89<br>00:07:09,500 –&gt; 00:07:14,699<br>ABR and then all that’s left is the last A.</p>
+<p>90<br>00:07:14,699 –&gt; 00:07:23,500<br>So for this small example, the compression is not great, but the idea is still.</p>
+<p>91<br>00:07:23,500 –&gt; 00:07:30,699<br>There’s definitely some savings in there because these code words, the input was 8 bit,</p>
+<p>92<br>00:07:30,699 –&gt; 00:07:34,300<br>ASCII code words and these code words are also 8 bits.</p>
+<p>93<br>00:07:34,300 –&gt; 00:07:45,699<br>And the key thing is we don’t have to transmit the table because we can assume that the expander is going to rebuild the table the same way that we built it.</p>
+<p>94<br>00:07:45,699 –&gt; 00:07:50,300<br>So that’s the basic idea behind LZW compression.</p>
+<p>95<br>00:07:50,300 –&gt; 00:07:54,900<br>We also have a stop character at the end that says it’s the end of the message.</p>
+<p>96<br>00:07:54,900 –&gt; 00:07:59,100<br>So this is the summary of LZW compression.</p>
+<p>97<br>00:07:59,100 –&gt; 00:08:06,100<br>So we create a symbol table that associates fixed-length code words with string key.</p>
+<p>98<br>00:08:06,100 –&gt; 00:08:10,500<br>We initialize it with code words for single character keys.</p>
+<p>99<br>00:08:10,500 –&gt; 00:08:18,300<br>Now, when it’s time to encode part of the input, we look for the longest string in the symbol table.</p>
+<p>100<br>00:08:18,300 –&gt; 00:08:22,900<br>That’s a prefix of the part of the input we haven’t seen.</p>
+<p>101<br>00:08:22,900 –&gt; 00:08:26,900<br>And that string, that’s the longest one, that’s the best we can do.</p>
+<p>102<br>00:08:26,899 –&gt; 00:08:31,299<br>We’re going to have a fixed-length code word for that string.</p>
+<p>103<br>00:08:31,299 –&gt; 00:08:40,699<br>And then we look ahead to the next character in the input and add a new entry to the symbol table with that one extra character.</p>
+<p>104<br>00:08:40,699 –&gt; 00:08:44,399<br>That’s LZW compression.</p>
+<p>105<br>00:08:44,399 –&gt; 00:08:51,899<br>So one question that comes up is how do we represent that code table in code?</p>
+<p>106<br>00:08:51,899 –&gt; 00:08:55,299<br>And actually, the answer is really simple.</p>
+<p>107<br>00:08:55,299 –&gt; 00:08:57,500<br>We’re going to use a try.</p>
+<p>108<br>00:08:57,500 –&gt; 00:09:15,299<br>Because what a try can do for us is if you remember when we looked at tries, or if you don’t, when we looked at tries, what we did was support longest prefix match operation.</p>
+<p>109<br>00:09:15,299 –&gt; 00:09:23,500<br>So this try represents all the prefixes that we’ve seen so far in the message.</p>
+<p>110<br>00:09:23,500 –&gt; 00:09:33,500<br>And it’s very easy if the next four characters in the texture, A, B, R, A, then we have the code word for it.</p>
+<p>111<br>00:09:33,500 –&gt; 00:09:40,500<br>For anything that we’ve seen in the text, we’ve got a code word for fixed-length code words.</p>
+<p>112<br>00:09:40,500 –&gt; 00:09:54,500<br>And as the try gets bigger, and as we move down more into the try, we get better compression because we’re using the same length code word to compress more letters.</p>
+<p>113<br>00:09:54,500 –&gt; 00:09:59,899<br>So here’s the implementation of LZW compression.</p>
+<p>114<br>00:09:59,899 –&gt; 00:10:08,100<br>Again, very simple implementation for such a sophisticated algorithm reading.</p>
+<p>115<br>00:10:08,100 –&gt; 00:10:18,500<br>We’re actually going to use a TST so that we’re not to worry about the extra space.</p>
+<p>116<br>00:10:18,500 –&gt; 00:10:30,500<br>And so first thing we do is initialize the TST with a code word for each of the single characters.</p>
+<p>117<br>00:10:30,500 –&gt; 00:10:33,899<br>So we use radix R to this R different letters.</p>
+<p>118<br>00:10:33,899 –&gt; 00:10:44,899<br>And we’ll just put an entry into the try for each one of the letters along with this coding.</p>
+<p>119<br>00:10:44,899 –&gt; 00:10:57,299<br>And so we didn’t show, we didn’t show it a few letters in the example, but in general, we’ll assign the code word I to each one of the, to the I letter.</p>
+<p>120<br>00:10:57,299 –&gt; 00:11:03,899<br>And then the rest of the try is built from the input string.</p>
+<p>121<br>00:11:03,899 –&gt; 00:11:15,299<br>And so very first thing we do is find the longest prefix of the input string in the symbol table.</p>
+<p>122<br>00:11:15,299 –&gt; 00:11:27,199<br>And that longest prefix of method just marches down the try, eating off the characters in the input string one character at time until it gets to the bottom.</p>
+<p>123<br>00:11:27,200 –&gt; 00:11:30,600<br>It has a code word.</p>
+<p>124<br>00:11:30,600 –&gt; 00:11:40,100<br>So it actually, the symbol table method actually gives us back the string.</p>
+<p>125<br>00:11:40,100 –&gt; 00:11:51,800<br>And so then we can use that to get the value associated with that string out in a symbol clause in a second call.</p>
+<p>126<br>00:11:51,799 –&gt; 00:11:55,000<br>And that gives us the code word.</p>
+<p>127<br>00:11:55,000 –&gt; 00:12:21,699<br>And then what we want to do is get the length of that longest prefix match and add one more character to it and add, which is the next character in the input and add that code word to the symbol table and then scan past that in the input.</p>
+<p>128<br>00:12:21,700 –&gt; 00:12:32,300<br>So that’s the entire compression algorithm for LZW compression using a try.</p>
+<p>129<br>00:12:32,300 –&gt; 00:12:41,100<br>And so what it’s doing is writing out fixed length code words and chewing up the longest substring that we’ve seen before.</p>
+<p>130<br>00:12:41,100 –&gt; 00:12:47,600<br>And then at the end, it writes out a stop code word and closes out the input string.</p>
+<p>131<br>00:12:47,600 –&gt; 00:12:57,000<br>So using the tech try technology that we’ve developed, we have a compact implementation of LZW compression.</p>
+<p>132<br>00:12:57,000 –&gt; 00:13:11,200<br>Now let’s look at expansion and expansion is going to be basically the same code all that the expansion algorithm gets is the list of fixed length code words.</p>
+<p>133<br>00:13:11,200 –&gt; 00:13:18,000<br>And it’s going to maintain its own code word table in order to get the expansion done.</p>
+<p>134<br>00:13:18,000 –&gt; 00:13:34,600<br>Now we can start out again by generating the table for each of the single letters that are going to be in the in the message or if there’s only a few, maybe there’s some other sliding coding that needs to be done at the beginning.</p>
+<p>135<br>00:13:34,600 –&gt; 00:13:42,000<br>But so it sees 41 and now the rules are switched.</p>
+<p>136<br>00:13:42,000 –&gt; 00:13:45,700<br>The fixed length code words of the key and the values are strings.</p>
+<p>137<br>00:13:45,700 –&gt; 00:13:49,399<br>So we just look up the key and write out the value.</p>
+<p>138<br>00:13:49,399 –&gt; 00:14:01,399<br>So we see a 42 that’s a B we see a 41 it’s an A. But not only do we want to put put out the.</p>
+<p>139<br>00:14:01,399 –&gt; 00:14:11,000<br>The character corresponding to the code word but we also want to build up code word in the same way that the compression method would have done it.</p>
+<p>140<br>00:14:11,000 –&gt; 00:14:18,299<br>So the compression method I want to see is an A B would have associated the string A B with a new key.</p>
+<p>141<br>00:14:18,299 –&gt; 00:14:31,000<br>And now we read a 52 look up 52 that’s an R but we also put a new entry in the table for the string B are same way the compression algorithm would have done.</p>
+<p>142<br>00:14:31,000 –&gt; 00:14:47,600<br>We see 41 we get an A and we put R A in the table 43 we put a C and we put a C in the table 41 we put an A we put C A in the table.</p>
+<p>143<br>00:14:47,600 –&gt; 00:14:59,000<br>Now 81 we look up on our table and it’s sorry the D is 44 but AD in the table and now 81 we look it up and we have A B.</p>
+<p>144<br>00:14:59,000 –&gt; 00:15:09,000<br>And once we have seen the A B then we know the compression would have put DA in the table.</p>
+<p>145<br>00:15:09,000 –&gt; 00:15:17,200<br>And it’s a little bit tricky because the expansion is kind of one step behind the compression that’s got to put out the characters before it knows it.</p>
+<p>146<br>00:15:17,200 –&gt; 00:15:21,399<br>And that does lead to a slightly tricky situation that we’ll talk about.</p>
+<p>147<br>00:15:21,399 –&gt; 00:15:33,399<br>So now 83 is going to be R A and once we put out the R A and we know that compression would have done A B R.</p>
+<p>148<br>00:15:33,399 –&gt; 00:15:43,799<br>So now 82 is B R and again we know compression would have put R A B in there.</p>
+<p>149<br>00:15:43,799 –&gt; 00:15:49,799<br>And 88 is A B R and compression would have put B R A in there.</p>
+<p>150<br>00:15:49,799 –&gt; 00:15:54,799<br>41 is A and then 80 to stop character.</p>
+<p>151<br>00:15:54,799 –&gt; 00:16:02,199<br>Oh and we would have put when it once it did the A then it would have put A B R A in there and then 80 to stop character.</p>
+<p>152<br>00:16:02,200 –&gt; 00:16:05,400<br>So that’s a expansion.</p>
+<p>153<br>00:16:05,400 –&gt; 00:16:17,000<br>Just building the table in the same way that compression would have and then using the table to figure out the string associated with each fixed length code word.</p>
+<p>154<br>00:16:17,000 –&gt; 00:16:25,000<br>So this is a summary of expansion which is pretty much the same as for compression except reverse.</p>
+<p>155<br>00:16:25,000 –&gt; 00:16:33,000<br>So we’re going to create a symbol table that has fixed length keys and associate string values with them.</p>
+<p>156<br>00:16:33,000 –&gt; 00:16:36,200<br>We put in the single character values.</p>
+<p>157<br>00:16:36,200 –&gt; 00:16:45,799<br>We read a key, we find the string value and write it out and then we update the symbol table from the last two things.</p>
+<p>158<br>00:16:45,799 –&gt; 00:16:51,600<br>The first character, the thing we just wrote out and the thing we wrote out before that.</p>
+<p>159<br>00:16:51,600 –&gt; 00:17:02,000<br>And again, now to represent the code table this time, we can just use an array.</p>
+<p>160<br>00:17:02,000 –&gt; 00:17:09,200<br>And because we are keys or are fixed length and we assign them one bit at a time.</p>
+<p>161<br>00:17:09,200 –&gt; 00:17:20,200<br>So we just store the strings in an array and use the key values, the key values that fixed big key values.</p>
+<p>162<br>00:17:20,200 –&gt; 00:17:24,000<br>We get the index into the array and give us the right string.</p>
+<p>163<br>00:17:24,000 –&gt; 00:17:27,600<br>So that part is easier.</p>
+<p>164<br>00:17:27,600 –&gt; 00:17:39,400<br>So now there’s a tricky case that really everyone needs to work through this case a few times to really understand what’s going on.</p>
+<p>165<br>00:17:39,400 –&gt; 00:17:42,400<br>And then it’s worth doing once even in lecture.</p>
+<p>166<br>00:17:42,400 –&gt; 00:17:47,400<br>So let’s look at this case where we have a, b, a, b, a, b, a.</p>
+<p>167<br>00:17:47,400 –&gt; 00:17:52,400<br>And just follow through the algorithm for this case.</p>
+<p>168<br>00:17:52,400 –&gt; 00:17:56,600<br>So we get an a and we look it up and it’s 41.</p>
+<p>169<br>00:17:56,600 –&gt; 00:18:00,000<br>And so that’s what we’re going to put out.</p>
+<p>170<br>00:18:00,000 –&gt; 00:18:03,200<br>And then we look at the next character and it’s a, b.</p>
+<p>171<br>00:18:03,200 –&gt; 00:18:09,000<br>So we’re going to remember 81 in our code word table.</p>
+<p>172<br>00:18:09,000 –&gt; 00:18:13,000<br>Then we read a b and we look it up and it’s 42.</p>
+<p>173<br>00:18:13,000 –&gt; 00:18:15,400<br>And next character is a.</p>
+<p>174<br>00:18:15,400 –&gt; 00:18:21,400<br>So we’re going to say, b is going to be 82.</p>
+<p>175<br>00:18:21,400 –&gt; 00:18:28,000<br>And then next character is b and we look up a, b and we have 81.</p>
+<p>176<br>00:18:28,000 –&gt; 00:18:31,799<br>And so we can put out the 81.</p>
+<p>177<br>00:18:31,799 –&gt; 00:18:35,200<br>And now the next look ahead, the next character is a.</p>
+<p>178<br>00:18:35,200 –&gt; 00:18:40,200<br>So we’re going to do a code for a, b, a, that’s going to be 83.</p>
+<p>179<br>00:18:40,200 –&gt; 00:18:47,799<br>Now we have the rest of our string to be encoded as a, b, a,</p>
+<p>180<br>00:18:47,799 –&gt; 00:18:51,000<br>in our longest prefix matches, a, b, a.</p>
+<p>181<br>00:18:51,000 –&gt; 00:18:54,000<br>So we’re going to put out 83.</p>
+<p>182<br>00:18:54,000 –&gt; 00:18:57,000<br>And that’s the end of the string.</p>
+<p>183<br>00:18:57,000 –&gt; 00:19:00,200<br>So we do the 80, which is the end of the string.</p>
+<p>184<br>00:19:00,200 –&gt; 00:19:04,799<br>So that’s compression for that string working the same way as for</p>
+<p>185<br>00:19:04,799 –&gt; 00:19:06,399<br>the other example.</p>
+<p>186<br>00:19:06,399 –&gt; 00:19:10,399<br>Now let’s look at expansion for this case.</p>
+<p>187<br>00:19:10,399 –&gt; 00:19:12,799<br>So start out the same way.</p>
+<p>188<br>00:19:12,799 –&gt; 00:19:17,200<br>So now we see a 41 and we look it up in our table.</p>
+<p>189<br>00:19:17,200 –&gt; 00:19:19,799<br>And again, this can be just an index to array.</p>
+<p>190<br>00:19:19,799 –&gt; 00:19:24,799<br>So it’s going to be a.</p>
+<p>191<br>00:19:24,799 –&gt; 00:19:26,000<br>So that’s the starting point.</p>
+<p>192<br>00:19:26,000 –&gt; 00:19:30,200<br>And now 42 is going to be a b.</p>
+<p>193<br>00:19:30,200 –&gt; 00:19:33,200<br>And then we look back, we just put out an a and a b.</p>
+<p>194<br>00:19:33,200 –&gt; 00:19:39,200<br>So our compression algorithm would have encoded a, b as 81.</p>
+<p>195<br>00:19:39,200 –&gt; 00:19:40,799<br>We know that.</p>
+<p>196<br>00:19:40,799 –&gt; 00:19:45,279<br>So now we can, when we see 81, we’ve got a, b.</p>
+<p>197<br>00:19:45,279 –&gt; 00:19:48,759<br>So we can put out a, b.</p>
+<p>198<br>00:19:48,759 –&gt; 00:19:54,000<br>And so now we look at the end.</p>
+<p>199<br>00:19:54,000 –&gt; 00:19:57,600<br>We put out the a, b in the next entry in our table.</p>
+<p>200<br>00:19:57,600 –&gt; 00:20:01,000<br>It’s going to be b, a, because that’s what our compression algorithm</p>
+<p>201<br>00:20:01,000 –&gt; 00:20:02,680<br>would have put out.</p>
+<p>202<br>00:20:02,680 –&gt; 00:20:05,320<br>But now we’ve got a problem.</p>
+<p>203<br>00:20:05,320 –&gt; 00:20:12,920<br>The next character that we see that we need to expand is 83.</p>
+<p>204<br>00:20:12,920 –&gt; 00:20:17,120<br>But we need to know what key has value 83.</p>
+<p>205<br>00:20:17,120 –&gt; 00:20:20,000<br>But it’s not an assemble thing we get.</p>
+<p>206<br>00:20:20,000 –&gt; 00:20:25,360<br>So that’s definitely a tricky case for the expansion.</p>
+<p>207<br>00:20:25,360 –&gt; 00:20:32,360<br>Now it is possible to, let me go through that one again.</p>
+<p>208<br>00:20:32,359 –&gt; 00:20:40,240<br>So at the time that we read the 83, we need to know which key has</p>
+<p>209<br>00:20:40,240 –&gt; 00:20:44,519<br>value 83 before it gets into the symbol table.</p>
+<p>210<br>00:20:44,519 –&gt; 00:20:46,919<br>And while its first character is going to be a,</p>
+<p>211<br>00:20:46,919 –&gt; 00:20:48,519<br>that means a, b, a has to be in there.</p>
+<p>212<br>00:20:48,519 –&gt; 00:20:52,799<br>So the code in the book, which you can examine, has a way</p>
+<p>213<br>00:20:52,799 –&gt; 00:20:55,039<br>to test for this case.</p>
+<p>214<br>00:20:55,039 –&gt; 00:20:58,639<br>And it’s definitely a tricky case that needs to be considered</p>
+<p>215<br>00:20:58,639 –&gt; 00:21:02,079<br>for LZW expansion.</p>
+<p>216<br>00:21:02,079 –&gt; 00:21:08,199<br>We expand 83 at the same time that we put it in the symbol table.</p>
+<p>217<br>00:21:08,199 –&gt; 00:21:09,079<br>And this example.</p>
+<p>218<br>00:21:12,119 –&gt; 00:21:19,919<br>OK, so there are all different kinds of details for LZW.</p>
+<p>219<br>00:21:19,919 –&gt; 00:21:23,119<br>We’ve just given one version.</p>
+<p>220<br>00:21:23,119 –&gt; 00:21:29,119<br>Sometimes people find it effective to clear out the symbol table</p>
+<p>221<br>00:21:29,119 –&gt; 00:21:32,359<br>after a while.</p>
+<p>222<br>00:21:32,359 –&gt; 00:21:34,239<br>Maybe how big do we make the symbol table?</p>
+<p>223<br>00:21:34,239 –&gt; 00:21:36,319<br>How big do we let it get?</p>
+<p>224<br>00:21:36,319 –&gt; 00:21:39,879<br>Maybe it’s not worthwhile to keep older parts of the message.</p>
+<p>225<br>00:21:39,879 –&gt; 00:21:42,359<br>It should adapt the pieces of the message.</p>
+<p>226<br>00:21:42,359 –&gt; 00:21:47,079<br>There’s many other variations like that that have been developed.</p>
+<p>227<br>00:21:47,079 –&gt; 00:21:52,679<br>So sort of, for example, what GIF does is, when the symbol table is full,</p>
+<p>228<br>00:21:52,679 –&gt; 00:21:55,679<br>we just throw it away and start over.</p>
+<p>229<br>00:21:55,680 –&gt; 00:22:01,480<br>Unix compress keeps a measure of how well it’s doing</p>
+<p>230<br>00:22:01,480 –&gt; 00:22:05,120<br>and throws it away when it’s not being effective.</p>
+<p>231<br>00:22:05,120 –&gt; 00:22:08,920<br>And there’s many, many other variations.</p>
+<p>232<br>00:22:08,920 –&gt; 00:22:10,680<br>Why not put even longer substrings?</p>
+<p>233<br>00:22:10,680 –&gt; 00:22:12,240<br>Why just one character at a time?</p>
+<p>234<br>00:22:12,240 –&gt; 00:22:13,960<br>Why not the double ones and so forth?</p>
+<p>235<br>00:22:13,960 –&gt; 00:22:19,640<br>And there have been many variations like that have been developed.</p>
+<p>236<br>00:22:19,640 –&gt; 00:22:23,799<br>And actually, in the real world, the development</p>
+<p>237<br>00:22:23,799 –&gt; 00:22:29,200<br>of this technology was influenced by patent law.</p>
+<p>238<br>00:22:29,200 –&gt; 00:22:33,639<br>There’s a version called LZ77 and another version called LZW</p>
+<p>239<br>00:22:33,639 –&gt; 00:22:37,720<br>because these guys worked for a company in the summer.</p>
+<p>240<br>00:22:37,720 –&gt; 00:22:39,359<br>And it was patented.</p>
+<p>241<br>00:22:39,359 –&gt; 00:22:44,559<br>For a while, you couldn’t use LZW unless you paid the patent holder.</p>
+<p>242<br>00:22:44,559 –&gt; 00:22:50,039<br>But that expired in 2003 and then things started to go up again.</p>
+<p>243<br>00:22:50,039 –&gt; 00:22:55,079<br>So there’s lots and lots of different effective methods</p>
+<p>244<br>00:22:55,079 –&gt; 00:22:57,440<br>that are variants of LZW.</p>
+<p>245<br>00:22:57,440 –&gt; 00:23:01,839<br>And really, to do a good job, you might also</p>
+<p>246<br>00:23:01,839 –&gt; 00:23:05,720<br>need to include Huffman coding for the characters</p>
+<p>247<br>00:23:05,720 –&gt; 00:23:09,399<br>or run length encoding in really its combinations</p>
+<p>248<br>00:23:09,399 –&gt; 00:23:15,920<br>of these basic methods that we talk about that are most effective.</p>
+<p>249<br>00:23:15,920 –&gt; 00:23:19,840<br>So you see this technology all throughout</p>
+<p>250<br>00:23:19,840 –&gt; 00:23:24,240<br>the computational infrastructure that you use every day.</p>
+<p>251<br>00:23:24,240 –&gt; 00:23:28,759<br>And at the time that we were talking about tries,</p>
+<p>252<br>00:23:28,759 –&gt; 00:23:29,920<br>they seemed a bit abstract.</p>
+<p>253<br>00:23:29,920 –&gt; 00:23:34,800<br>But actually, our tries are definitely</p>
+<p>254<br>00:23:34,800 –&gt; 00:23:38,039<br>part of the algorithmic infrastructure.</p>
+<p>255<br>00:23:38,039 –&gt; 00:23:40,360<br>And they’re a really fine example</p>
+<p>256<br>00:23:40,360 –&gt; 00:23:44,039<br>of a clear, clean, elegant data structure</p>
+<p>257<br>00:23:44,039 –&gt; 00:23:47,720<br>and algorithmic idea being used to great effect</p>
+<p>258<br>00:23:47,720 –&gt; 00:23:49,920<br>in the real world.</p>
+<p>259<br>00:23:49,920 –&gt; 00:23:54,879<br>And there’s people, plenty of people still doing research,</p>
+<p>260<br>00:23:54,879 –&gt; 00:23:57,159<br>even on lossless data compression.</p>
+<p>261<br>00:23:57,159 –&gt; 00:24:00,399<br>There’s still ideas being developed.</p>
+<p>262<br>00:24:00,399 –&gt; 00:24:03,480<br>In these are the kinds, there’s a famous benchmark,</p>
+<p>263<br>00:24:03,480 –&gt; 00:24:07,279<br>a set of text that if you think you have a good new compression</p>
+<p>264<br>00:24:07,279 –&gt; 00:24:10,879<br>algorithm, you can run it on this benchmark.</p>
+<p>265<br>00:24:10,879 –&gt; 00:24:13,440<br>Whereas asking you to use the seven bits per character,</p>
+<p>266<br>00:24:13,440 –&gt; 00:24:15,480<br>it’s eight bit, one of the bits is redundant.</p>
+<p>267<br>00:24:15,480 –&gt; 00:24:19,039<br>So you’ll immediately get down to seven.</p>
+<p>268<br>00:24:19,039 –&gt; 00:24:21,039<br>These are the kind of compression ratios</p>
+<p>269<br>00:24:21,039 –&gt; 00:24:26,759<br>that people have achieved with various mostly</p>
+<p>270<br>00:24:26,759 –&gt; 00:24:30,960<br>lentils of variance down to less than half</p>
+<p>271<br>00:24:30,960 –&gt; 00:24:33,160<br>what you can get with asking.</p>
+<p>272<br>00:24:33,160 –&gt; 00:24:34,920<br>But it continues to drive down.</p>
+<p>273<br>00:24:34,920 –&gt; 00:24:39,039<br>And there was a completely new method called the Burles Wheeler</p>
+<p>274<br>00:24:39,039 –&gt; 00:24:42,200<br>Method developed in the 90s that</p>
+<p>275<br>00:24:42,200 –&gt; 00:24:44,759<br>took a big jump down.</p>
+<p>276<br>00:24:44,759 –&gt; 00:24:48,840<br>And there’s a few more that have continued to improve</p>
+<p>277<br>00:24:48,840 –&gt; 00:24:50,519<br>even through the 90s.</p>
+<p>278<br>00:24:50,519 –&gt; 00:24:54,720<br>So there’s still room for improvement</p>
+<p>279<br>00:24:54,720 –&gt; 00:24:56,640<br>in lossless data compression.</p>
+<p>280<br>00:24:56,640 –&gt; 00:25:00,160<br>But it’s a really fine example of the power</p>
+<p>281<br>00:25:00,160 –&gt; 00:25:03,680<br>of good algorithmic technology.</p>
+<p>282<br>00:25:03,680 –&gt; 00:25:07,759<br>So here’s our quick summary on data compression.</p>
+<p>283<br>00:25:07,759 –&gt; 00:25:11,279<br>So we considered two classic fundamental algorithms.</p>
+<p>284<br>00:25:11,279 –&gt; 00:25:13,399<br>The first one, Hoffman and Coding,</p>
+<p>285<br>00:25:13,399 –&gt; 00:25:18,839<br>represents fixed length symbols with variable length code.</p>
+<p>286<br>00:25:18,839 –&gt; 00:25:23,359<br>So the prefix code uses tries to use</p>
+<p>287<br>00:25:23,359 –&gt; 00:25:28,480<br>smaller number of bits for the most frequently used symbols.</p>
+<p>288<br>00:25:28,480 –&gt; 00:25:33,639<br>The other way, the lentil-sive method</p>
+<p>289<br>00:25:33,639 –&gt; 00:25:36,480<br>takes variable length symbols and uses fixed length</p>
+<p>290<br>00:25:36,480 –&gt; 00:25:36,879<br>code.</p>
+<p>291<br>00:25:36,879 –&gt; 00:25:41,240<br>So it’s interesting to think about those two ends of the spectrum.</p>
+<p>292<br>00:25:41,720 –&gt; 00:25:43,920<br>There’s plenty of compression algorithms out there</p>
+<p>293<br>00:25:43,920 –&gt; 00:25:49,400<br>that don’t try to get an exact compression,</p>
+<p>294<br>00:25:49,400 –&gt; 00:25:54,120<br>but just try to get an approximation using FFT and wavelets</p>
+<p>295<br>00:25:54,120 –&gt; 00:25:58,839<br>and many other mathematical techniques.</p>
+<p>296<br>00:25:58,839 –&gt; 00:26:01,640<br>And that’s appropriate for things like pictures and movies</p>
+<p>297<br>00:26:01,640 –&gt; 00:26:03,799<br>where maybe you can miss a few bits.</p>
+<p>298<br>00:26:03,799 –&gt; 00:26:07,440<br>But lossless compression is still very important.</p>
+<p>299<br>00:26:07,440 –&gt; 00:26:10,279<br>When you download an application, which</p>
+<p>300<br>00:26:10,279 –&gt; 00:26:13,720<br>is machine code onto your computer,</p>
+<p>301<br>00:26:13,720 –&gt; 00:26:16,440<br>you can’t afford to have one of the bits be wrong.</p>
+<p>302<br>00:26:16,440 –&gt; 00:26:21,680<br>So that’s why lossless compression will always be with us.</p>
+<p>303<br>00:26:21,680 –&gt; 00:26:24,279<br>There’s a theory on compression.</p>
+<p>304<br>00:26:24,279 –&gt; 00:26:27,359<br>There’s theoretical limits that measure</p>
+<p>305<br>00:26:27,359 –&gt; 00:26:35,839<br>of the entropy, Shannon entropy of a text that says</p>
+<p>306<br>00:26:35,839 –&gt; 00:26:41,559<br>is a very fundamental way to indicate how much information</p>
+<p>307<br>00:26:41,559 –&gt; 00:26:45,559<br>there is in the text as a function of its frequency.</p>
+<p>308<br>00:26:45,559 –&gt; 00:26:49,679<br>So it’s a sum overall character, so the product</p>
+<p>309<br>00:26:49,679 –&gt; 00:26:53,240<br>of the frequency in the log of the frequency.</p>
+<p>310<br>00:26:53,240 –&gt; 00:26:59,599<br>And with these methods, we can get very close</p>
+<p>311<br>00:26:59,599 –&gt; 00:27:03,639<br>to the entropy in some theoretical settings,</p>
+<p>312<br>00:27:03,640 –&gt; 00:27:08,200<br>but actually in practice, the most effective methods</p>
+<p>313<br>00:27:08,200 –&gt; 00:27:12,040<br>use tricks and techniques that have extra knowledge</p>
+<p>314<br>00:27:12,040 –&gt; 00:27:16,240<br>about the data being compressed to really get the most</p>
+<p>315<br>00:27:16,240 –&gt; 00:27:18,640<br>effective pattern of results.</p>
+<p>316<br>00:27:18,640 –&gt; 00:27:20,960<br>As I explained, if you’re doing a page like this,</p>
+<p>317<br>00:27:20,960 –&gt; 00:27:23,240<br>you better use a method that does really well</p>
+<p>318<br>00:27:23,240 –&gt; 00:27:27,480<br>on huge amounts of white space, for example.</p>
+<p>319<br>00:27:27,480 –&gt; 00:27:31,000<br>That’s LZW compression and our last compression algorithm.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P111Part211-05_lzw-compression/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P112Part212-03_introduction-to-reductions/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P10Part13-05_order-of-growth-classifications/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

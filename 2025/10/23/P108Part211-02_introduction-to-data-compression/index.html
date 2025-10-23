@@ -1,0 +1,907 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,000Today we’re going to talk about data compression. 200:00:06,000 –&gt; 00:00:10,200This is a family of algorithms that everyone uses. 300:00:10,200 –&gt; 00:00:15,720And">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P108Part211-02_introduction-to-data-compression/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,000Today we’re going to talk about data compression. 200:00:06,000 –&gt; 00:00:10,200This is a family of algorithms that everyone uses. 300:00:10,200 –&gt; 00:00:15,720And">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.661Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:19.037Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          24 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,000<br>Today we’re going to talk about data compression.</p>
+<p>2<br>00:00:06,000 –&gt; 00:00:10,200<br>This is a family of algorithms that everyone uses.</p>
+<p>3<br>00:00:10,200 –&gt; 00:00:15,720<br>And it’s based on many of the classical ideas that we’ve covered in terms of implementing</p>
+<p>4<br>00:00:15,720 –&gt; 00:00:17,039<br>basic algorithms.</p>
+<p>5<br>00:00:17,039 –&gt; 00:00:21,719<br>We’ll start with an introduction of just what data compression is.</p>
+<p>6<br>00:00:21,719 –&gt; 00:00:29,359<br>So the idea is to reduce the size of a file, really for two primary reasons.</p>
+<p>7<br>00:00:29,359 –&gt; 00:00:34,200<br>One is to save some space when storing it, and the other is to save some time with</p>
+<p>8<br>00:00:34,200 –&gt; 00:00:36,000<br>transmitting it.</p>
+<p>9<br>00:00:36,000 –&gt; 00:00:42,960<br>And often having significant savings is not too difficult because most files have plenty</p>
+<p>10<br>00:00:42,960 –&gt; 00:00:44,640<br>of redundancy.</p>
+<p>11<br>00:00:44,640 –&gt; 00:00:52,039<br>But of course we’re interested in efficient algorithms that can get the best savings possible.</p>
+<p>12<br>00:00:52,039 –&gt; 00:01:00,920<br>So you might think that with the way that technology has been improving over recent years,</p>
+<p>13<br>00:01:00,920 –&gt; 00:01:02,640<br>that we wouldn’t really need compression.</p>
+<p>14<br>00:01:02,640 –&gt; 00:01:05,879<br>We can just buy a bigger, faster disk.</p>
+<p>15<br>00:01:05,879 –&gt; 00:01:12,120<br>But the problem with that idea is that even though Moore’s Law tells us that we’re going</p>
+<p>16<br>00:01:12,120 –&gt; 00:01:19,920<br>to get twice as much space every one and a half to two years, it’s also the case that</p>
+<p>17<br>00:01:19,920 –&gt; 00:01:25,719<br>whatever space we have, we’re going to want to fill it up with better higher quality</p>
+<p>18<br>00:01:25,719 –&gt; 00:01:26,719<br>data.</p>
+<p>19<br>00:01:26,719 –&gt; 00:01:30,519<br>So you want a higher resolution movie if you get more space.</p>
+<p>20<br>00:01:30,519 –&gt; 00:01:34,159<br>And if you can remove redundancy, you’re always going to want to do that.</p>
+<p>21<br>00:01:34,159 –&gt; 00:01:43,680<br>So it’s a cheap way to save space that allows us to do more with the space that we have available.</p>
+<p>22<br>00:01:43,680 –&gt; 00:01:46,879<br>This is a report last year on big data.</p>
+<p>23<br>00:01:46,879 –&gt; 00:01:51,239<br>Every day we could create 2.5 quintillion bytes of data.</p>
+<p>24<br>00:01:51,239 –&gt; 00:01:57,599<br>So much that 90% of the data in the world today has been created in the last two years alone.</p>
+<p>25<br>00:01:57,599 –&gt; 00:02:04,280<br>If we can use data compression to cut that amount of data in half, then that’s all the data</p>
+<p>26<br>00:02:04,280 –&gt; 00:02:08,960<br>in the world created in a year.</p>
+<p>27<br>00:02:08,960 –&gt; 00:02:17,240<br>So this is a very interesting topic to consider from an algorithmic point of view because</p>
+<p>28<br>00:02:17,240 –&gt; 00:02:24,600<br>the basic concepts, the song of them, date back to the 1950s when it was extremely important</p>
+<p>29<br>00:02:24,600 –&gt; 00:02:31,000<br>to save time when transmitting information or space, not because it was so costly.</p>
+<p>30<br>00:02:31,000 –&gt; 00:02:37,080<br>But some of the best technology algorithmic technology has been developed recently.</p>
+<p>31<br>00:02:37,080 –&gt; 00:02:43,000<br>And much of it uses the data structures that we’ve considered for other applications.</p>
+<p>32<br>00:02:43,000 –&gt; 00:02:46,680<br>And we’ll see that as we get into the topic.</p>
+<p>33<br>00:02:46,680 –&gt; 00:02:53,760<br>So just specific applications that maybe are familiar for file compression, all file systems</p>
+<p>34<br>00:02:53,760 –&gt; 00:03:05,080<br>and disks that have built-in compression technologies such as ZIP and BZIP and many other</p>
+<p>35<br>00:03:05,080 –&gt; 00:03:08,440<br>similar type technologies.</p>
+<p>36<br>00:03:08,440 –&gt; 00:03:14,040<br>And in multimedia, everybody’s familiar with that JPEG and MP3 and MPG and all those sorts</p>
+<p>37<br>00:03:14,040 –&gt; 00:03:16,520<br>of things for images sound and video.</p>
+<p>38<br>00:03:16,520 –&gt; 00:03:21,000<br>Those are all about data compression and for communication.</p>
+<p>39<br>00:03:21,000 –&gt; 00:03:30,960<br>That’s what enabled FACS and also enables new technologies like Skype, the ability to</p>
+<p>40<br>00:03:30,960 –&gt; 00:03:37,480<br>reduce the amount of data that you actually need to send for any kind of technology is</p>
+<p>41<br>00:03:37,480 –&gt; 00:03:45,000<br>going to help improve things and improve the quality of what you can do.</p>
+<p>42<br>00:03:45,000 –&gt; 00:03:51,080<br>Also the types of massive amounts of data that people are saving nowadays, Google and</p>
+<p>43<br>00:03:51,080 –&gt; 00:03:57,439<br>Facebook, and other web giants saving lots of data and they’re going to be able to save</p>
+<p>44<br>00:03:57,439 –&gt; 00:04:01,400<br>more of the data compression.</p>
+<p>45<br>00:04:01,400 –&gt; 00:04:05,319<br>Now from a theoretical point of view, the type of compression that we’re going to consider</p>
+<p>46<br>00:04:05,319 –&gt; 00:04:10,039<br>lossless compression is very simple conceptually.</p>
+<p>47<br>00:04:10,039 –&gt; 00:04:12,919<br>So we think of, we’ve talked about a bit stream.</p>
+<p>48<br>00:04:12,919 –&gt; 00:04:19,120<br>Everything can be encoded in bits, so we might as well just consider a stream of bits that</p>
+<p>49<br>00:04:19,120 –&gt; 00:04:21,600<br>we want to compress and we call that B.</p>
+<p>50<br>00:04:21,600 –&gt; 00:04:26,680<br>And a data compression algorithm is going to be a black box that goes ahead and takes</p>
+<p>51<br>00:04:26,680 –&gt; 00:04:34,519<br>those bits and produces a compressed version which is many fewer bits and that we’ll call</p>
+<p>52<br>00:04:34,519 –&gt; 00:04:39,000<br>that C of B. We hope that it’s many fewer bits.</p>
+<p>53<br>00:04:39,000 –&gt; 00:04:41,519<br>And so that’s what we save or we send.</p>
+<p>54<br>00:04:41,519 –&gt; 00:04:47,120<br>But then we need a companion algorithm, an expansion algorithm that takes C of B and produces</p>
+<p>55<br>00:04:47,120 –&gt; 00:04:48,680<br>B back.</p>
+<p>56<br>00:04:48,680 –&gt; 00:04:50,240<br>That’s lossless compression.</p>
+<p>57<br>00:04:50,240 –&gt; 00:04:54,079<br>We want to get back precisely the same bits that we put in.</p>
+<p>58<br>00:04:54,079 –&gt; 00:04:57,519<br>And that’s very important in many applications.</p>
+<p>59<br>00:04:57,519 –&gt; 00:05:03,159<br>It’s not so important in some applications like images and video where you’re happy with</p>
+<p>60<br>00:05:03,159 –&gt; 00:05:06,159<br>an approximation in the original bit stream.</p>
+<p>61<br>00:05:06,159 –&gt; 00:05:08,879<br>But we’re not going to consider that kind of algorithm.</p>
+<p>62<br>00:05:08,879 –&gt; 00:05:16,279<br>We’re just going to consider lossless compression where maybe it’s a program or that you can’t</p>
+<p>63<br>00:05:16,279 –&gt; 00:05:20,399<br>afford to lose a single bit.</p>
+<p>64<br>00:05:20,399 –&gt; 00:05:26,560<br>Now it turns out that for what we talk about in terms of evaluating our algorithms is</p>
+<p>65<br>00:05:26,560 –&gt; 00:05:28,839<br>what’s the compression ratio.</p>
+<p>66<br>00:05:28,839 –&gt; 00:05:30,439<br>We also care about efficiency.</p>
+<p>67<br>00:05:30,439 –&gt; 00:05:35,759<br>We don’t want to spend a lot of time creating C of B. But the compression ratio is the</p>
+<p>68<br>00:05:35,759 –&gt; 00:05:38,279<br>measure that we use to compare algorithms.</p>
+<p>69<br>00:05:38,279 –&gt; 00:05:44,919<br>And we’re interested in knowing the percentage of bits, percentage of the size of B that</p>
+<p>70<br>00:05:44,919 –&gt; 00:05:46,479<br>we’re able to save.</p>
+<p>71<br>00:05:46,480 –&gt; 00:05:52,520<br>And surprisingly, even for natural language text, we can get 50 to 75 percent or even</p>
+<p>72<br>00:05:52,520 –&gt; 00:05:55,960<br>better compression ratios.</p>
+<p>73<br>00:05:55,960 –&gt; 00:06:04,439<br>Now just in the larger context, data compression has been with us since antiquity.</p>
+<p>74<br>00:06:04,439 –&gt; 00:06:09,200<br>It’s always better to try to express what you’re doing concisely.</p>
+<p>75<br>00:06:09,200 –&gt; 00:06:14,640<br>And in mathematical mutations, an example of that or number systems or even natural</p>
+<p>76<br>00:06:14,639 –&gt; 00:06:17,599<br>languages.</p>
+<p>77<br>00:06:17,599 –&gt; 00:06:19,839<br>Communications technology has evolved.</p>
+<p>78<br>00:06:19,839 –&gt; 00:06:25,639<br>It definitely has to do with data compression from Braille to Morse code to the telephone</p>
+<p>79<br>00:06:25,639 –&gt; 00:06:26,959<br>system.</p>
+<p>80<br>00:06:26,959 –&gt; 00:06:32,959<br>Those are all ways of trying to, or they depend on trying to achieve good data compression.</p>
+<p>81<br>00:06:32,959 –&gt; 00:06:40,000<br>In a modern life, everybody’s trying to get more pictures of your movies on their devices.</p>
+<p>82<br>00:06:40,000 –&gt; 00:06:46,040<br>And it’s definitely enabled by good data compression.</p>
+<p>83<br>00:06:46,040 –&gt; 00:06:50,639<br>It’s something to think about what role data compression is going to play in the future.</p>
+<p>84<br>00:06:50,639 –&gt; 00:06:54,240<br>But it’s really hard to see it going away.</p>
+<p>85<br>00:06:54,240 –&gt; 00:06:56,040<br>Number one, it’s effective.</p>
+<p>86<br>00:06:56,040 –&gt; 00:06:58,759<br>Number two, it’s not that difficult to implement.</p>
+<p>87<br>00:06:58,759 –&gt; 00:07:00,639<br>And it’s in software.</p>
+<p>88<br>00:07:00,639 –&gt; 00:07:03,800<br>So you don’t have to buy a bigger disk.</p>
+<p>89<br>00:07:03,800 –&gt; 00:07:08,160<br>You have a good compression algorithm in many situations.</p>
+<p>90<br>00:07:09,000 –&gt; 00:07:13,880<br>Here’s a simple example that sprung up just in recent years.</p>
+<p>91<br>00:07:13,880 –&gt; 00:07:16,520<br>So we’ve talked about another application.</p>
+<p>92<br>00:07:16,520 –&gt; 00:07:23,280<br>The genome is string over four-letter alphabet.</p>
+<p>93<br>00:07:23,280 –&gt; 00:07:24,760<br>And the string might be huge.</p>
+<p>94<br>00:07:24,760 –&gt; 00:07:26,760<br>It might be billions of letters.</p>
+<p>95<br>00:07:26,760 –&gt; 00:07:32,400<br>And so there might be lots of them for different individuals and different species.</p>
+<p>96<br>00:07:32,399 –&gt; 00:07:39,359<br>So there’s huge genome databases out there with these very long strings of the alphabet</p>
+<p>97<br>00:07:39,359 –&gt; 00:07:41,279<br>A, C, T, and G.</p>
+<p>98<br>00:07:41,279 –&gt; 00:07:48,199<br>Now the standard way to store them in a standard program, you want to use a standard computer,</p>
+<p>99<br>00:07:48,199 –&gt; 00:07:50,519<br>is to use ASCII.</p>
+<p>100<br>00:07:50,519 –&gt; 00:07:52,079<br>And there’s eight bits per character.</p>
+<p>101<br>00:07:52,079 –&gt; 00:07:58,719<br>And so if you have an N bit genome, a genomic string, it’ll be 8N bits.</p>
+<p>102<br>00:07:58,720 –&gt; 00:08:03,440<br>If it’s a billion characters, it’s 8B.</p>
+<p>103<br>00:08:03,440 –&gt; 00:08:06,320<br>But just look at the problem.</p>
+<p>104<br>00:08:06,320 –&gt; 00:08:08,640<br>Really, there’s only four characters.</p>
+<p>105<br>00:08:08,640 –&gt; 00:08:11,600<br>You can get by with just two bits per character.</p>
+<p>106<br>00:08:11,600 –&gt; 00:08:14,480<br>So that’s one quarter of the storage.</p>
+<p>107<br>00:08:14,480 –&gt; 00:08:20,720<br>If you spent X dollars on this space, the store, your stuff, you could spend X over $4.</p>
+<p>108<br>00:08:20,720 –&gt; 00:08:23,400<br>And that might be a significant number.</p>
+<p>109<br>00:08:23,399 –&gt; 00:08:30,759<br>And in fact, in general, if you know you have a small alphabet, you can get a savings</p>
+<p>110<br>00:08:30,759 –&gt; 00:08:32,279<br>in this way.</p>
+<p>111<br>00:08:32,279 –&gt; 00:08:37,360<br>This seems very obvious and straightforward, but it’s amazing, but true that in the 1990s,</p>
+<p>112<br>00:08:37,360 –&gt; 00:08:42,720<br>when genomic databases started to emerge, there were four times too big because they used</p>
+<p>113<br>00:08:42,720 –&gt; 00:08:43,720<br>ASCII.</p>
+<p>114<br>00:08:43,720 –&gt; 00:08:52,679<br>And didn’t think to even use this trivial encoding that could have cut costs by one</p>
+<p>115<br>00:08:52,679 –&gt; 00:08:54,519<br>and four.</p>
+<p>116<br>00:08:54,519 –&gt; 00:08:56,239<br>So again, it’s so easy to do.</p>
+<p>117<br>00:08:56,239 –&gt; 00:08:59,239<br>Why not do it if you can cut your cost by a factor of four?</p>
+<p>118<br>00:08:59,239 –&gt; 00:09:06,239<br>Now, where else in modern life would you give up reducing cost by a factor of four so</p>
+<p>119<br>00:09:06,239 –&gt; 00:09:07,239<br>easily?</p>
+<p>120<br>00:09:07,239 –&gt; 00:09:10,559<br>So that’s why we’re interested in data compression.</p>
+<p>121<br>00:09:10,559 –&gt; 00:09:15,399<br>Now we’re going to need some tools that are slightly different from the tools that we’ve</p>
+<p>122<br>00:09:15,399 –&gt; 00:09:20,319<br>been using in order to write effective data compression algorithms.</p>
+<p>123<br>00:09:20,320 –&gt; 00:09:27,920<br>And so we’ve got extensions to our standard in and standard out libraries that work with</p>
+<p>124<br>00:09:27,920 –&gt; 00:09:29,760<br>bits.</p>
+<p>125<br>00:09:29,760 –&gt; 00:09:36,720<br>So these are what we want to, the methods that we’re going to use to write bits to standard</p>
+<p>126<br>00:09:36,720 –&gt; 00:09:39,760<br>output and standard input.</p>
+<p>127<br>00:09:39,760 –&gt; 00:09:44,440<br>So these bit streams are different than standard in, standard out there, binary standard in,</p>
+<p>128<br>00:09:44,440 –&gt; 00:09:46,080<br>binary standard out.</p>
+<p>129<br>00:09:46,080 –&gt; 00:09:56,400<br>And so what we can do is read Boolean, which is just read one bit or to save some processing,</p>
+<p>130<br>00:09:56,400 –&gt; 00:10:00,560<br>we can read eight bits of data and put it in a care.</p>
+<p>131<br>00:10:00,560 –&gt; 00:10:07,160<br>Or in general, our bits, where I was less than eight, and put it into a care value.</p>
+<p>132<br>00:10:07,160 –&gt; 00:10:12,040<br>And we can also, if we want, put them into int values long and double similar methods.</p>
+<p>133<br>00:10:12,039 –&gt; 00:10:17,360<br>And we don’t have to read all the bits if we’ve got some scheme where we only want to</p>
+<p>134<br>00:10:17,360 –&gt; 00:10:19,559<br>use a certain number of them.</p>
+<p>135<br>00:10:19,559 –&gt; 00:10:25,959<br>But the idea is that we can read a variable number of bits and get them ready for processing</p>
+<p>136<br>00:10:25,959 –&gt; 00:10:31,559<br>easily by putting them in one of Java’s primitive types.</p>
+<p>137<br>00:10:31,559 –&gt; 00:10:38,039<br>And conversely, we have binary standard out where we can write a bit or we can write eight</p>
+<p>138<br>00:10:38,039 –&gt; 00:10:43,399<br>bits or we can write any number of bits from a care value or from an int value or any</p>
+<p>139<br>00:10:43,399 –&gt; 00:10:44,399<br>others.</p>
+<p>140<br>00:10:44,399 –&gt; 00:10:50,759<br>So this allows us to take in bit streams and to write out bit streams and take care of</p>
+<p>141<br>00:10:50,759 –&gt; 00:10:56,799<br>all the encoding between Java primitive types and bit streams.</p>
+<p>142<br>00:10:56,799 –&gt; 00:10:58,799<br>And it’s not too difficult to use.</p>
+<p>143<br>00:10:58,799 –&gt; 00:10:59,799<br>It’s very intuitive.</p>
+<p>144<br>00:10:59,799 –&gt; 00:11:03,319<br>And you’ll see when we come to code.</p>
+<p>145<br>00:11:03,320 –&gt; 00:11:10,920<br>Just to give an example of how just having this can save space, this is just a simple example</p>
+<p>146<br>00:11:10,920 –&gt; 00:11:13,160<br>of representing a date.</p>
+<p>147<br>00:11:13,160 –&gt; 00:11:24,280<br>So if you represent the date 1231 1999 as an ASCII character string in Java, then when</p>
+<p>148<br>00:11:24,280 –&gt; 00:11:30,160<br>you write out the string, you’ve got one, two, three, four, five, six, seven, eight,</p>
+<p>149<br>00:11:30,160 –&gt; 00:11:32,880<br>nine, ten characters.</p>
+<p>150<br>00:11:32,879 –&gt; 00:11:34,879<br>And each one of the characters is eight bits.</p>
+<p>151<br>00:11:34,879 –&gt; 00:11:37,399<br>So that’s a total of 80 bits.</p>
+<p>152<br>00:11:37,399 –&gt; 00:11:46,039<br>So the standard ASCII encoding is to just look up the ASCII of the one and that’s 0, 0,</p>
+<p>153<br>00:11:46,039 –&gt; 00:11:50,120<br>1, 0, 0, 0, 1 and then the two and so forth.</p>
+<p>154<br>00:11:50,120 –&gt; 00:11:54,039<br>So in the slash 31 and so forth.</p>
+<p>155<br>00:11:54,039 –&gt; 00:11:57,679<br>So for each character, we’ve got eight bits and we put them out.</p>
+<p>156<br>00:11:57,679 –&gt; 00:11:58,679<br>That’s 80 bits.</p>
+<p>157<br>00:11:58,679 –&gt; 00:12:00,799<br>If it was unicode, it would be even more bits.</p>
+<p>158<br>00:12:00,799 –&gt; 00:12:07,120<br>So that’s one way that you might consider representing a date with bits.</p>
+<p>159<br>00:12:07,120 –&gt; 00:12:14,559<br>Now if we represent it as three int values, that’s not so effective a way to do it.</p>
+<p>160<br>00:12:14,559 –&gt; 00:12:17,599<br>The month is an int, the days an int and the years an int.</p>
+<p>161<br>00:12:17,599 –&gt; 00:12:21,559<br>And each one of those is going to be 32 bits.</p>
+<p>162<br>00:12:21,559 –&gt; 00:12:24,000<br>And that’s a total of 96 bits.</p>
+<p>163<br>00:12:24,000 –&gt; 00:12:26,599<br>That’s actually even worse.</p>
+<p>164<br>00:12:27,000 –&gt; 00:12:31,159<br>The month and all of these things are within small ranges.</p>
+<p>165<br>00:12:31,159 –&gt; 00:12:38,920<br>So with binary standard out, we can say, well, we’ll only write out the right most four bits</p>
+<p>166<br>00:12:38,920 –&gt; 00:12:44,639<br>of the month int because that gives us a number between 0 and 16 and our months are between</p>
+<p>167<br>00:12:44,639 –&gt; 00:12:46,040<br>1 and 12.</p>
+<p>168<br>00:12:46,040 –&gt; 00:12:51,440<br>And the five bits of the day, int and that again, that’s between 0 and 31.</p>
+<p>169<br>00:12:51,440 –&gt; 00:12:54,600<br>And that’s going to cover any possible day.</p>
+<p>170<br>00:12:54,600 –&gt; 00:12:56,560<br>And then 12 bits for the year.</p>
+<p>171<br>00:12:56,559 –&gt; 00:13:00,119<br>And if we do that, then we have a total of 21 bits.</p>
+<p>172<br>00:13:00,119 –&gt; 00:13:10,079<br>And this little bit of extra at the end because our byte streams, our bits really are implemented</p>
+<p>173<br>00:13:10,079 –&gt; 00:13:14,199<br>reasonably in most situations as byte streams.</p>
+<p>174<br>00:13:14,199 –&gt; 00:13:21,079<br>So they’re going to get carved into chunks of size 8 by hardware or drivers.</p>
+<p>175<br>00:13:21,080 –&gt; 00:13:28,000<br>And so we always round up to the nearest multiple of 8 to get the proper alignment on bytes.</p>
+<p>176<br>00:13:28,000 –&gt; 00:13:35,639<br>But that’s still a pretty significant savings from 80 to 24 just by having the ability to</p>
+<p>177<br>00:13:35,639 –&gt; 00:13:40,080<br>write out portions of int value.</p>
+<p>178<br>00:13:40,080 –&gt; 00:13:44,120<br>And if we had a billion dates, then that would be a huge cost savings that would translate</p>
+<p>179<br>00:13:44,120 –&gt; 00:13:47,840<br>to dollars as well.</p>
+<p>180<br>00:13:47,840 –&gt; 00:13:56,280<br>The other thing that we do to give some visual impression of our effectiveness of our</p>
+<p>181<br>00:13:56,280 –&gt; 00:14:03,399<br>compression algorithms, particularly in the text, is to look at different ways to examine</p>
+<p>182<br>00:14:03,399 –&gt; 00:14:06,240<br>the contents of a bit stream.</p>
+<p>183<br>00:14:06,240 –&gt; 00:14:16,240<br>So we have on the book site, a binary dump program that prints out the bits, 16 bits of</p>
+<p>184<br>00:14:16,240 –&gt; 00:14:21,360<br>the time, rows of 16 bits at a time, and then the total number of bits.</p>
+<p>185<br>00:14:21,360 –&gt; 00:14:27,159<br>So this file, abrad.text, is a standard character stream.</p>
+<p>186<br>00:14:27,159 –&gt; 00:14:30,080<br>So everything’s encoded with 8 bits.</p>
+<p>187<br>00:14:30,080 –&gt; 00:14:32,279<br>And so there’s 12 characters and 96 bits.</p>
+<p>188<br>00:14:32,279 –&gt; 00:14:35,399<br>And you can see what all the bits are.</p>
+<p>189<br>00:14:35,399 –&gt; 00:14:41,080<br>Or sometimes it’s convenient to use a hexa dump where we just write the hex digits considering</p>
+<p>190<br>00:14:41,080 –&gt; 00:14:44,560<br>the bits 4 bits at a time.</p>
+<p>191<br>00:14:44,559 –&gt; 00:14:51,279<br>And so those 96 bits are 12 bytes or 24 hex digits.</p>
+<p>192<br>00:14:51,279 –&gt; 00:14:53,719<br>And we print them out so that we can see them.</p>
+<p>193<br>00:14:53,719 –&gt; 00:15:00,959<br>Another thing that’s useful sometimes for big files is to look at the bits as a picture</p>
+<p>194<br>00:15:00,959 –&gt; 00:15:10,199<br>where we just do a, give the width and the height of a pixel window and just map the bits</p>
+<p>195<br>00:15:10,199 –&gt; 00:15:12,479<br>to white squares and black squares.</p>
+<p>196<br>00:15:12,480 –&gt; 00:15:15,360<br>So this is the same abrad.text.</p>
+<p>197<br>00:15:15,360 –&gt; 00:15:20,399<br>It’s just that you can see that they all start with 0 and 1 much more easily.</p>
+<p>198<br>00:15:20,399 –&gt; 00:15:28,680<br>This visual representation sometimes gives an interesting perspective into what a bunch</p>
+<p>199<br>00:15:28,680 –&gt; 00:15:31,759<br>of bits looks like.</p>
+<p>200<br>00:15:31,759 –&gt; 00:15:39,960<br>So this is just the hexa-asky conversion table that if you’re not familiar with it as</p>
+<p>201<br>00:15:39,960 –&gt; 00:15:46,680<br>a quick way to find the hexadecimal corresponding to an ASCII character.</p>
+<p>202<br>00:15:46,680 –&gt; 00:15:52,720<br>So you look up say R in the table and that’s in row 5 and column 2.</p>
+<p>203<br>00:15:52,720 –&gt; 00:15:53,720<br>So it’s 52.</p>
+<p>204<br>00:15:53,720 –&gt; 00:15:59,519<br>So this is a 52 for the R in abrad.</p>
+<p>205<br>00:15:59,519 –&gt; 00:16:05,360<br>So those are the basic tools that we’re going to use to talk about compression algorithms.</p>
+<p>206<br>00:16:05,360 –&gt; 00:16:08,400<br>Now there’s one thing that’s really important to think about.</p>
+<p>207<br>00:16:08,399 –&gt; 00:16:14,299<br>And that’s the idea that you cannot have a compression algorithm that can compress every</p>
+<p>208<br>00:16:14,299 –&gt; 00:16:15,959<br>file.</p>
+<p>209<br>00:16:15,959 –&gt; 00:16:22,279<br>Despite the fact that somebody has patented that and there’s a claim that methods for data</p>
+<p>210<br>00:16:22,279 –&gt; 00:16:26,879<br>compression is capable of compressing all files.</p>
+<p>211<br>00:16:26,879 –&gt; 00:16:34,559<br>And also this is another thing that came out in slash dot a few years ago where a company</p>
+<p>212<br>00:16:34,559 –&gt; 00:16:40,599<br>had announced a breakthrough in data compression that does 100 to 1 lossless compression of</p>
+<p>213<br>00:16:40,599 –&gt; 00:16:42,599<br>random data.</p>
+<p>214<br>00:16:42,599 –&gt; 00:16:47,000<br>And unfortunately they do say if this is true or bandwidth problems got a lot smaller</p>
+<p>215<br>00:16:47,000 –&gt; 00:16:49,759<br>because there’s no way that it’s true.</p>
+<p>216<br>00:16:49,759 –&gt; 00:16:52,479<br>And let’s look at why that’s the case.</p>
+<p>217<br>00:16:52,479 –&gt; 00:16:56,599<br>Proposition is no algorithm can compress every bit string.</p>
+<p>218<br>00:16:56,599 –&gt; 00:17:00,079<br>Here’s one easy way to prove it by contradiction.</p>
+<p>219<br>00:17:00,080 –&gt; 00:17:05,720<br>So let’s suppose that we have an algorithm you that can go ahead and compress every possible</p>
+<p>220<br>00:17:05,720 –&gt; 00:17:07,440<br>bit string.</p>
+<p>221<br>00:17:07,440 –&gt; 00:17:13,640<br>So we take a bit string and we use our algorithm to compress it to get a smaller bit</p>
+<p>222<br>00:17:13,640 –&gt; 00:17:14,640<br>string.</p>
+<p>223<br>00:17:14,640 –&gt; 00:17:19,279<br>But since our algorithm can compress every bit string why not use it on that one?</p>
+<p>224<br>00:17:19,279 –&gt; 00:17:21,600<br>Use it on that one we get a smaller one.</p>
+<p>225<br>00:17:21,600 –&gt; 00:17:26,039<br>And we keep going since it compress can compress every bit string.</p>
+<p>226<br>00:17:26,039 –&gt; 00:17:30,000<br>Eventually we get down to a bit string of size one and since it can compress that one</p>
+<p>227<br>00:17:30,000 –&gt; 00:17:32,000<br>it gets down to zero.</p>
+<p>228<br>00:17:32,000 –&gt; 00:17:38,359<br>So if you can have an algorithm that compresses every bit string it means that you can compress</p>
+<p>229<br>00:17:38,359 –&gt; 00:17:43,039<br>all bit strings to zero bits in that’s absurd.</p>
+<p>230<br>00:17:43,039 –&gt; 00:17:45,319<br>That’s approved by contradiction.</p>
+<p>231<br>00:17:45,319 –&gt; 00:17:50,519<br>Or another way to see the same thing is just by counting.</p>
+<p>232<br>00:17:50,519 –&gt; 00:17:56,839<br>So let’s say you’ve got an algorithm that can compress all thousand bit strings just</p>
+<p>233<br>00:17:56,839 –&gt; 00:17:57,839<br>to pick a number.</p>
+<p>234<br>00:17:57,839 –&gt; 00:17:59,759<br>Now there’s a lot of thousand bit strings.</p>
+<p>235<br>00:17:59,759 –&gt; 00:18:03,000<br>There’s two to the thousandth of them.</p>
+<p>236<br>00:18:03,000 –&gt; 00:18:10,359<br>But how many of those can be encoded with 99, 99 bits or fewer?</p>
+<p>237<br>00:18:10,359 –&gt; 00:18:21,679<br>Well just one plus two plus four and the power is a two up to two to the 99, 99, 99.</p>
+<p>238<br>00:18:21,679 –&gt; 00:18:25,399<br>Or like less than 500 bits.</p>
+<p>239<br>00:18:25,399 –&gt; 00:18:30,319<br>So that’s way fewer than the total number of possible bit strings.</p>
+<p>240<br>00:18:30,319 –&gt; 00:18:35,599<br>Well it says there’s one that if you add up this sum that’s two thousandth minus one.</p>
+<p>241<br>00:18:35,599 –&gt; 00:18:37,679<br>So there’s one that can’t be compressed with that.</p>
+<p>242<br>00:18:37,680 –&gt; 00:18:41,920<br>But if you want to say you do fewer bits you have much worse problem.</p>
+<p>243<br>00:18:41,920 –&gt; 00:18:46,279<br>Only one out of every two to the 49 can be encoded with less than 500 bits.</p>
+<p>244<br>00:18:46,279 –&gt; 00:18:55,600<br>It’s just the smaller number of bits gives you way number of way fewer possible bit strings.</p>
+<p>245<br>00:18:55,600 –&gt; 00:18:59,440<br>You have to be able to get your original bit string back.</p>
+<p>246<br>00:18:59,440 –&gt; 00:19:05,519<br>So the smaller number of bits gives you a limit on the number of bit strings that you</p>
+<p>247<br>00:19:05,519 –&gt; 00:19:08,080<br>can possibly compress.</p>
+<p>248<br>00:19:08,080 –&gt; 00:19:10,720<br>So it can’t have universal data compression.</p>
+<p>249<br>00:19:10,720 –&gt; 00:19:15,880<br>And if you want to convince yourself of that, not just try running your favorite compression</p>
+<p>250<br>00:19:15,880 –&gt; 00:19:23,880<br>algorithm on the result of what it produces say for a photo.</p>
+<p>251<br>00:19:23,880 –&gt; 00:19:27,440<br>Most good compression algorithms will figure out that you’re doing that and just give you</p>
+<p>252<br>00:19:27,440 –&gt; 00:19:28,600<br>the same file back.</p>
+<p>253<br>00:19:28,599 –&gt; 00:19:31,399<br>So at least it won’t make it get larger.</p>
+<p>254<br>00:19:31,399 –&gt; 00:19:39,039<br>But there’s plenty of methods out there that will make your file larger.</p>
+<p>255<br>00:19:39,039 –&gt; 00:19:46,480<br>There’s another kind of basic idea and that is that there’s no way to find the best way</p>
+<p>256<br>00:19:46,480 –&gt; 00:19:48,319<br>to compress a file.</p>
+<p>257<br>00:19:48,319 –&gt; 00:19:51,079<br>If you think about it can be extremely complicated.</p>
+<p>258<br>00:19:51,079 –&gt; 00:19:55,639<br>This is just an example that illustrates the point but it’s also a relevant example because</p>
+<p>259<br>00:19:55,640 –&gt; 00:19:59,240<br>it applies to so much of the data that we deal with.</p>
+<p>260<br>00:19:59,240 –&gt; 00:20:02,759<br>So at the top is a picture dump of a million bit file.</p>
+<p>261<br>00:20:02,759 –&gt; 00:20:05,360<br>So that’s a million bits and those are random bits.</p>
+<p>262<br>00:20:05,360 –&gt; 00:20:06,960<br>Well, they’re not random.</p>
+<p>263<br>00:20:06,960 –&gt; 00:20:07,960<br>They’re pseudo random.</p>
+<p>264<br>00:20:07,960 –&gt; 00:20:09,800<br>What do I mean pseudo random?</p>
+<p>265<br>00:20:09,800 –&gt; 00:20:11,560<br>Well, we talked about that.</p>
+<p>266<br>00:20:11,560 –&gt; 00:20:13,640<br>They’re generated by a program.</p>
+<p>267<br>00:20:13,640 –&gt; 00:20:20,440<br>And this is a Java program that uses a pseudo random number generator to generate bits.</p>
+<p>268<br>00:20:20,440 –&gt; 00:20:22,920<br>And that’s where those bits came from.</p>
+<p>269<br>00:20:22,920 –&gt; 00:20:28,200<br>If you think about it, this program is a representation of those million bits.</p>
+<p>270<br>00:20:28,200 –&gt; 00:20:30,360<br>It’s only a couple dozen characters.</p>
+<p>271<br>00:20:30,360 –&gt; 00:20:36,400<br>So if you wanted to find the optimal way to compress those bits, one of the things you’d</p>
+<p>272<br>00:20:36,400 –&gt; 00:20:39,440<br>have to consider is this program.</p>
+<p>273<br>00:20:39,440 –&gt; 00:20:43,400<br>That’s a pretty compact way to represent a million bits.</p>
+<p>274<br>00:20:43,400 –&gt; 00:20:50,560<br>And we think about it so much of the data that’s out there actually was created by a program.</p>
+<p>275<br>00:20:50,559 –&gt; 00:20:56,359<br>So compression amounts to finding the program that creates, created the data.</p>
+<p>276<br>00:20:56,359 –&gt; 00:20:58,480<br>That’s obviously a pretty difficult problem.</p>
+<p>277<br>00:20:58,480 –&gt; 00:21:02,319<br>In fact, it’s known that it’s undecidable.</p>
+<p>278<br>00:21:02,319 –&gt; 00:21:09,159<br>So let’s not think that we can find the best possible compression algorithm.</p>
+<p>279<br>00:21:09,159 –&gt; 00:21:14,759<br>In the other point that I want to finish with in the introduction is to realize that when</p>
+<p>280<br>00:21:14,759 –&gt; 00:21:22,240<br>we’re talking about compressing, say, English language, it’s amazing to see that actually</p>
+<p>281<br>00:21:22,240 –&gt; 00:21:28,000<br>there’s a lot of redundancy in English language.</p>
+<p>282<br>00:21:28,000 –&gt; 00:21:42,000<br>And so this is a perturbed version of an English language paragraph that shows that you can</p>
+<p>283<br>00:21:42,000 –&gt; 00:21:49,480<br>change letters and even delete letters and still figure out what it says.</p>
+<p>284<br>00:21:49,480 –&gt; 00:21:55,119<br>And actually at the end it says you only need the first and last two letters in a lot of</p>
+<p>285<br>00:21:55,119 –&gt; 00:22:00,839<br>situations to really figure out the readability.</p>
+<p>286<br>00:22:00,839 –&gt; 00:22:06,480<br>So there’s a lot of freedom because there’s so much redundancy.</p>
+<p>287<br>00:22:06,480 –&gt; 00:22:13,039<br>And since it’s so much redundancy, we can actually do really well on compressing English</p>
+<p>288<br>00:22:13,039 –&gt; 00:22:15,880<br>language text, for example.</p>
+<p>289<br>00:22:15,880 –&gt; 00:22:20,200<br>So that’s an introduction to data compression and we’ll take a look at algorithms next.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P108Part211-02_introduction-to-data-compression/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P109Part211-03_run-length-coding/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P106Part210-06_nfa-construction/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

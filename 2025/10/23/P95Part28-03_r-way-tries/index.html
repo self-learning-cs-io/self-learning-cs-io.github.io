@@ -1,0 +1,1010 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,439Today we’re going to talk about tribes, which is a data structure for searching with string 200:00:09,439 –&gt; 00:00:15,359keys that is remarkably effective in enablin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P95Part28-03_r-way-tries/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,439Today we’re going to talk about tribes, which is a data structure for searching with string 200:00:09,439 –&gt; 00:00:15,359keys that is remarkably effective in enablin">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.698Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:18.489Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,439<br>Today we’re going to talk about tribes, which is a data structure for searching with string</p>
+<p>2<br>00:00:09,439 –&gt; 00:00:15,359<br>keys that is remarkably effective in enabling us to deal with huge amounts of data that we</p>
+<p>3<br>00:00:15,359 –&gt; 00:00:18,039<br>have to process nowadays.</p>
+<p>4<br>00:00:18,039 –&gt; 00:00:26,440<br>Just as motivation, when we left off talking about searching algorithms or symbol table implementations,</p>
+<p>5<br>00:00:26,440 –&gt; 00:00:28,200<br>here’s where we were.</p>
+<p>6<br>00:00:28,200 –&gt; 00:00:37,039<br>The best algorithms that we examined were balanced red-black binary search trees and hash tables.</p>
+<p>7<br>00:00:37,039 –&gt; 00:00:44,520<br>And with respect to the basic search, insert, and delete operations, red-black BSTs were</p>
+<p>8<br>00:00:44,520 –&gt; 00:00:51,280<br>able to guarantee that we can get those done in logarithmic time, actually pretty efficiently.</p>
+<p>9<br>00:00:51,280 –&gt; 00:00:55,799<br>And for hashing, we get them done in constant time under certain assumptions that we could</p>
+<p>10<br>00:00:55,799 –&gt; 00:00:59,079<br>have a uniform hash function.</p>
+<p>11<br>00:00:59,079 –&gt; 00:01:06,099<br>And also for hashing, we need to compute a hash code for binary search trees we use a</p>
+<p>12<br>00:01:06,099 –&gt; 00:01:07,920<br>comparative function.</p>
+<p>13<br>00:01:07,920 –&gt; 00:01:12,599<br>And another difference is binary search trees, we can support more operations than we can</p>
+<p>14<br>00:01:12,599 –&gt; 00:01:18,400<br>support with hashing ordered operations, for example, with getting the rank of a key in</p>
+<p>15<br>00:01:18,400 –&gt; 00:01:20,759<br>the tree and other things.</p>
+<p>16<br>00:01:20,760 –&gt; 00:01:26,120<br>And those are terrific algorithms and we looked at plenty of good applications of those</p>
+<p>17<br>00:01:26,120 –&gt; 00:01:27,120<br>algorithms.</p>
+<p>18<br>00:01:27,120 –&gt; 00:01:31,040<br>But still there’s a question, could we do better?</p>
+<p>19<br>00:01:31,040 –&gt; 00:01:35,040<br>And the answer is that yes, we can do better.</p>
+<p>20<br>00:01:35,040 –&gt; 00:01:41,760<br>As with string sorting, we can avoid examining the entire key, which is going to give us algorithms</p>
+<p>21<br>00:01:41,760 –&gt; 00:01:46,600<br>that can compete and even beat these classic algorithms.</p>
+<p>22<br>00:01:46,599 –&gt; 00:01:54,599<br>So to get started, we’re going to articulate in API for symbol tables that specialize for</p>
+<p>23<br>00:01:54,599 –&gt; 00:01:57,879<br>the case when the keys are strings.</p>
+<p>24<br>00:01:57,879 –&gt; 00:02:05,879<br>So simply we just add the modifier string to our standard symbol table API.</p>
+<p>25<br>00:02:05,879 –&gt; 00:02:10,039<br>And we can take a generic value, but the keys are strings.</p>
+<p>26<br>00:02:10,039 –&gt; 00:02:18,680<br>And then we take all the methods that we articulated before and for key type instead of generic</p>
+<p>27<br>00:02:18,680 –&gt; 00:02:20,399<br>we use string.</p>
+<p>28<br>00:02:20,399 –&gt; 00:02:25,639<br>And this is going to allow us to develop efficient algorithms that take advantage of properties</p>
+<p>29<br>00:02:25,639 –&gt; 00:02:28,319<br>of strings.</p>
+<p>30<br>00:02:28,319 –&gt; 00:02:36,000<br>Our goal is to get some algorithms that are even faster than hashing and maybe more flexible</p>
+<p>31<br>00:02:36,000 –&gt; 00:02:37,000<br>than BSTs.</p>
+<p>32<br>00:02:37,000 –&gt; 00:02:41,759<br>And we’re going to be able to achieve both those goals.</p>
+<p>33<br>00:02:41,759 –&gt; 00:02:52,800<br>So this again is the summary of the running times for when in the case that the keys are</p>
+<p>34<br>00:02:52,800 –&gt; 00:02:57,560<br>strings for red-black BSTs and for hashing.</p>
+<p>35<br>00:02:57,560 –&gt; 00:02:59,639<br>Let’s take a look at those.</p>
+<p>36<br>00:02:59,639 –&gt; 00:03:05,639<br>So if L is the length of the string and N is the number of strings.</p>
+<p>37<br>00:03:05,639 –&gt; 00:03:12,839<br>And then also the radix R is going to be a factor later on, but it isn’t for these two.</p>
+<p>38<br>00:03:12,839 –&gt; 00:03:19,279<br>Then for hashing for every operation we have to compute a hash function, which basically</p>
+<p>39<br>00:03:19,279 –&gt; 00:03:22,879<br>means looking at every character in the string.</p>
+<p>40<br>00:03:22,879 –&gt; 00:03:26,919<br>Actually in Java string hash functions are cache.</p>
+<p>41<br>00:03:26,919 –&gt; 00:03:31,639<br>So sometimes there’s efficiencies because you only have to in their mutable, you only</p>
+<p>42<br>00:03:31,639 –&gt; 00:03:34,919<br>have to compute the hash function once.</p>
+<p>43<br>00:03:34,919 –&gt; 00:03:38,719<br>And then this is roughly the amount of space that takes into account the table in the</p>
+<p>44<br>00:03:38,719 –&gt; 00:03:40,759<br>string size.</p>
+<p>45<br>00:03:40,759 –&gt; 00:03:47,199<br>For red-black BSTs, the analysis is a bit more complicated.</p>
+<p>46<br>00:03:47,199 –&gt; 00:03:53,039<br>For a search hit you have to look at the entire string, entire key to check that every character</p>
+<p>47<br>00:03:53,039 –&gt; 00:03:54,839<br>is the same.</p>
+<p>48<br>00:03:54,839 –&gt; 00:04:00,039<br>And then the comparisons, depending on the nature of the keys for a typical case though,</p>
+<p>49<br>00:04:00,039 –&gt; 00:04:02,879<br>it’s something like log squared.</p>
+<p>50<br>00:04:02,879 –&gt; 00:04:08,319<br>We had log N comparisons, but usually you have to look at something like log N characters</p>
+<p>51<br>00:04:08,319 –&gt; 00:04:13,319<br>in the key in order to get down the tree.</p>
+<p>52<br>00:04:13,319 –&gt; 00:04:17,920<br>For a search miss, you might find out before you get to the end of the tree and same for</p>
+<p>53<br>00:04:17,920 –&gt; 00:04:19,279<br>insert.</p>
+<p>54<br>00:04:19,279 –&gt; 00:04:23,040<br>So the running times are something like this.</p>
+<p>55<br>00:04:23,040 –&gt; 00:04:32,439<br>And then here’s some experimental evidence that we can use to test out these analytic hypotheses.</p>
+<p>56<br>00:04:32,439 –&gt; 00:04:35,920<br>And we’ll just look at two examples.</p>
+<p>57<br>00:04:35,920 –&gt; 00:04:41,199<br>One is the entire text of Melville’s Movedick, which we’ve used before.</p>
+<p>58<br>00:04:41,199 –&gt; 00:04:46,040<br>And that’s about a million characters and maybe 200,000 strings.</p>
+<p>59<br>00:04:46,040 –&gt; 00:04:50,680<br>And out of those 200,000 strings, about 32,000 are distinct.</p>
+<p>60<br>00:04:50,680 –&gt; 00:04:56,279<br>And then this is another file of actors from the internet movie database that’s much bigger,</p>
+<p>61<br>00:04:56,279 –&gt; 00:04:58,920<br>maybe two orders of magnitude bigger.</p>
+<p>62<br>00:04:58,920 –&gt; 00:05:02,399<br>And it’s got maybe about a million different words.</p>
+<p>63<br>00:05:02,399 –&gt; 00:05:12,279<br>So we’ll want our algorithms to do better than or at least as well as red-black BSTs in</p>
+<p>64<br>00:05:12,279 –&gt; 00:05:15,799<br>hashing on these data sets.</p>
+<p>65<br>00:05:15,799 –&gt; 00:05:19,679<br>I think our test is to dedupe these data sets.</p>
+<p>66<br>00:05:19,679 –&gt; 00:05:24,599<br>So that’s our challenge, efficient performance for string keys and try to come up with algorithms</p>
+<p>67<br>00:05:24,599 –&gt; 00:05:28,759<br>that can compete with the best classic algorithms.</p>
+<p>68<br>00:05:28,759 –&gt; 00:05:33,240<br>Now in order to do that, we’re going to look at our way tries.</p>
+<p>69<br>00:05:33,240 –&gt; 00:05:38,759<br>That’s a particular data structure that was invented actually really quite a while ago.</p>
+<p>70<br>00:05:38,759 –&gt; 00:05:44,079<br>This data structure dates back to the 60s.</p>
+<p>71<br>00:05:44,079 –&gt; 00:05:52,360<br>And the first thing to know about it is that the name is based a little bit on a pun.</p>
+<p>72<br>00:05:52,360 –&gt; 00:05:57,360<br>It actually is the middle letters of the word retrieval.</p>
+<p>73<br>00:05:57,360 –&gt; 00:06:01,759<br>But we don’t pronounce it tree because then we couldn’t distinguish it from binary research</p>
+<p>74<br>00:06:01,759 –&gt; 00:06:02,759<br>trees.</p>
+<p>75<br>00:06:02,759 –&gt; 00:06:04,800<br>So we pronounce it try.</p>
+<p>76<br>00:06:04,800 –&gt; 00:06:08,720<br>And this is a confusing fact of life that we’ve been living with for many decades now with</p>
+<p>77<br>00:06:08,720 –&gt; 00:06:10,560<br>this data structure.</p>
+<p>78<br>00:06:10,560 –&gt; 00:06:12,040<br>And let’s look at what a try is.</p>
+<p>79<br>00:06:12,040 –&gt; 00:06:16,840<br>And we’ll look at some examples before we get to the code.</p>
+<p>80<br>00:06:16,839 –&gt; 00:06:23,519<br>So for now, we’re going to think of a try as some nodes, tree structure with nodes,</p>
+<p>81<br>00:06:23,519 –&gt; 00:06:27,279<br>where we store characters in the nodes, not keys.</p>
+<p>82<br>00:06:27,279 –&gt; 00:06:33,199<br>And the other thing is that each node has our children where ours, the rate, it’s the</p>
+<p>83<br>00:06:33,199 –&gt; 00:06:36,079<br>number of possible characters.</p>
+<p>84<br>00:06:36,079 –&gt; 00:06:42,239<br>And there’s the possibility of a child for each possible character.</p>
+<p>85<br>00:06:42,240 –&gt; 00:06:46,759<br>Now in the standard implementation, this is going to involve on all links.</p>
+<p>86<br>00:06:46,759 –&gt; 00:06:51,360<br>We have to have a placeholder for each possible character.</p>
+<p>87<br>00:06:51,360 –&gt; 00:06:53,319<br>So there’s a lot of no links in tries.</p>
+<p>88<br>00:06:53,319 –&gt; 00:06:55,000<br>And we’ll get back to that in a minute.</p>
+<p>89<br>00:06:55,000 –&gt; 00:07:00,680<br>But to get the concept, we’ll use this graphical representation where we have characters in</p>
+<p>90<br>00:07:00,680 –&gt; 00:07:03,600<br>nodes and we don’t show any no links.</p>
+<p>91<br>00:07:03,600 –&gt; 00:07:08,400<br>And the other thing is remember a symbol table is associating a key with a value.</p>
+<p>92<br>00:07:08,399 –&gt; 00:07:14,120<br>So this try is built for this set of key value pairs.</p>
+<p>93<br>00:07:14,120 –&gt; 00:07:21,079<br>And what we do is we store values in nodes that correspond to the last characters in keys.</p>
+<p>94<br>00:07:21,079 –&gt; 00:07:23,079<br>And we’ll look at, so that’s what these numbers here are.</p>
+<p>95<br>00:07:23,079 –&gt; 00:07:28,759<br>And we’ll look a little more in detail on how this try is built in just a second.</p>
+<p>96<br>00:07:28,759 –&gt; 00:07:30,399<br>So that’s the basic idea.</p>
+<p>97<br>00:07:30,399 –&gt; 00:07:32,879<br>We’re going to have string keys.</p>
+<p>98<br>00:07:32,879 –&gt; 00:07:34,479<br>We’re going to associate values.</p>
+<p>99<br>00:07:34,480 –&gt; 00:07:38,759<br>And we’re going to use this tree data structure.</p>
+<p>100<br>00:07:38,759 –&gt; 00:07:42,680<br>But we’re not going to draw the implied no links for now.</p>
+<p>101<br>00:07:42,680 –&gt; 00:07:48,400<br>So for example, in this try, so the root represents all strings.</p>
+<p>102<br>00:07:48,400 –&gt; 00:07:52,600<br>And coming out of the root is one link for each possible letter.</p>
+<p>103<br>00:07:52,600 –&gt; 00:07:58,480<br>In particular in this try, the middle link is the link to a sub-try that contains all</p>
+<p>104<br>00:07:58,480 –&gt; 00:08:01,800<br>the keys that start with S.</p>
+<p>105<br>00:08:01,800 –&gt; 00:08:03,800<br>And we go further down.</p>
+<p>106<br>00:08:03,800 –&gt; 00:08:11,000<br>Each time we go by a node, we pick off a letter so that this link, for example, goes to the</p>
+<p>107<br>00:08:11,000 –&gt; 00:08:19,120<br>try for all keys that start with S, followed by H, followed by E, and so forth.</p>
+<p>108<br>00:08:19,120 –&gt; 00:08:25,680<br>So now out of all the keys that start with SHE, actually one of them, the one that has</p>
+<p>109<br>00:08:25,680 –&gt; 00:08:30,280<br>just those letters and then ends, has a value associated with it.</p>
+<p>110<br>00:08:30,279 –&gt; 00:08:36,039<br>So in the node corresponding to the last letter, the E, we put the value zero.</p>
+<p>111<br>00:08:36,039 –&gt; 00:08:38,919<br>And so that’s how the try is going to look.</p>
+<p>112<br>00:08:38,919 –&gt; 00:08:45,559<br>So just given that definition, then let’s look at how to do search in a try.</p>
+<p>113<br>00:08:45,559 –&gt; 00:08:51,120<br>All we do is use the characters in the key to guide our search down the data structure.</p>
+<p>114<br>00:08:51,120 –&gt; 00:08:54,879<br>So let’s say we’re looking for the key shells.</p>
+<p>115<br>00:08:54,879 –&gt; 00:08:59,480<br>So we start at the root and we go down the S link since we started with an S.</p>
+<p>116<br>00:08:59,480 –&gt; 00:09:05,560<br>Now our second letter is H. So we look to see if there’s a non-null link that corresponding</p>
+<p>117<br>00:09:05,560 –&gt; 00:09:11,759<br>to H. And in this case, there is our next letter is E. So we look for an E.</p>
+<p>118<br>00:09:11,759 –&gt; 00:09:18,399<br>Now no need to examine the value here because we haven’t looked at all the letters in our</p>
+<p>119<br>00:09:18,399 –&gt; 00:09:20,039<br>key yet.</p>
+<p>120<br>00:09:20,039 –&gt; 00:09:26,480<br>So now we look for L. Now we look for another L. And then finally, we find the S. And when</p>
+<p>121<br>00:09:26,480 –&gt; 00:09:30,480<br>we find the S, we look to see if there’s a value there.</p>
+<p>122<br>00:09:30,480 –&gt; 00:09:32,080<br>In this case, there is a value.</p>
+<p>123<br>00:09:32,080 –&gt; 00:09:34,240<br>And so that’s what we return.</p>
+<p>124<br>00:09:34,240 –&gt; 00:09:37,399<br>The value associated with the last key character.</p>
+<p>125<br>00:09:37,399 –&gt; 00:09:42,240<br>So that’s a typical search hit in a try.</p>
+<p>126<br>00:09:42,240 –&gt; 00:09:44,800<br>Another way is so that node was down at the bottom.</p>
+<p>127<br>00:09:44,800 –&gt; 00:09:49,680<br>But if you were doing a search for SHE, you follow the same path.</p>
+<p>128<br>00:09:49,680 –&gt; 00:09:54,120<br>But now when you get to the E, that’s the last character of that key.</p>
+<p>129<br>00:09:54,120 –&gt; 00:09:59,240<br>And so we just return that value associated with that node.</p>
+<p>130<br>00:09:59,240 –&gt; 00:10:01,560<br>That is, the search doesn’t have to go all the way to the bottom.</p>
+<p>131<br>00:10:01,560 –&gt; 00:10:04,279<br>It might terminate at an intermediate node.</p>
+<p>132<br>00:10:04,279 –&gt; 00:10:09,440<br>And we just return the value associated with the node corresponding to the last character</p>
+<p>133<br>00:10:09,440 –&gt; 00:10:11,759<br>in the key.</p>
+<p>134<br>00:10:11,759 –&gt; 00:10:13,159<br>What about a search miss?</p>
+<p>135<br>00:10:13,159 –&gt; 00:10:16,519<br>Well, there’s two cases for a search miss.</p>
+<p>136<br>00:10:16,519 –&gt; 00:10:24,000<br>So one of them is we’ve followed down the tree picking off the letters in the key one</p>
+<p>137<br>00:10:24,000 –&gt; 00:10:26,600<br>letter at time as before.</p>
+<p>138<br>00:10:26,600 –&gt; 00:10:32,000<br>And then when we get to the end of the key, we take a look to see if there’s a value.</p>
+<p>139<br>00:10:32,000 –&gt; 00:10:36,240<br>In this case, there’s no value associated with the last key character.</p>
+<p>140<br>00:10:36,240 –&gt; 00:10:42,039<br>That means there’s no key in the data structure that’s been associated with a value.</p>
+<p>141<br>00:10:42,039 –&gt; 00:10:44,360<br>So we just return null.</p>
+<p>142<br>00:10:44,360 –&gt; 00:10:48,840<br>Or the other thing that can happen is we can reach a null link.</p>
+<p>143<br>00:10:48,840 –&gt; 00:10:55,440<br>So our key now starts with S and then H and then E and then L.</p>
+<p>144<br>00:10:55,440 –&gt; 00:11:00,840<br>And now our next letter is T. So we’d look to see if there’s a non-null link coming from</p>
+<p>145<br>00:11:00,840 –&gt; 00:11:05,800<br>this node associated with T. And in this case, there’s no such link.</p>
+<p>146<br>00:11:05,800 –&gt; 00:11:07,840<br>So we return null.</p>
+<p>147<br>00:11:07,840 –&gt; 00:11:13,000<br>That’s evidence that that string, there’s no key associated with that string in our data</p>
+<p>148<br>00:11:13,000 –&gt; 00:11:14,320<br>structure.</p>
+<p>149<br>00:11:14,320 –&gt; 00:11:16,879<br>So that’s a search miss.</p>
+<p>150<br>00:11:16,879 –&gt; 00:11:18,879<br>Now what about insertion?</p>
+<p>151<br>00:11:18,879 –&gt; 00:11:22,879<br>Well, insertion is also pretty simple.</p>
+<p>152<br>00:11:22,879 –&gt; 00:11:26,159<br>So we follow two rules.</p>
+<p>153<br>00:11:26,159 –&gt; 00:11:30,519<br>One is again, we go down links corresponding to each character in the key.</p>
+<p>154<br>00:11:30,519 –&gt; 00:11:35,679<br>If we come on a null link, we create a new node that’s associated with the character that</p>
+<p>155<br>00:11:35,679 –&gt; 00:11:37,279<br>we’re on.</p>
+<p>156<br>00:11:37,279 –&gt; 00:11:41,879<br>And just keep doing that until we get to the last character, the key in which case we put</p>
+<p>157<br>00:11:41,879 –&gt; 00:11:43,279<br>the value.</p>
+<p>158<br>00:11:43,279 –&gt; 00:11:49,519<br>So if in this try, we’re supposed to associate the value 7 with short.</p>
+<p>159<br>00:11:49,519 –&gt; 00:11:54,519<br>We follow our path from the root to S because our first letter is S and then H because our</p>
+<p>160<br>00:11:54,519 –&gt; 00:12:00,000<br>next letter is H. And then oh, we had an encounter in a null link.</p>
+<p>161<br>00:12:00,000 –&gt; 00:12:06,240<br>So we have to put a node there with the character associated with the character, oh.</p>
+<p>162<br>00:12:06,240 –&gt; 00:12:11,679<br>So the later searches for this key will be able to find it by passing through that node.</p>
+<p>163<br>00:12:11,679 –&gt; 00:12:15,279<br>And now we move to the next letter and there’s no node again.</p>
+<p>164<br>00:12:15,279 –&gt; 00:12:17,599<br>And the next letter, there’s still no node.</p>
+<p>165<br>00:12:17,599 –&gt; 00:12:23,319<br>When we get to the end, then that’s the last character in the key and we put our value</p>
+<p>166<br>00:12:23,319 –&gt; 00:12:24,479<br>7.</p>
+<p>167<br>00:12:24,479 –&gt; 00:12:30,659<br>And now we’ve modified the data structure, adding the nodes that are necessary for a later</p>
+<p>168<br>00:12:30,659 –&gt; 00:12:36,879<br>search to go through character by character and find the value associated with that key.</p>
+<p>169<br>00:12:36,879 –&gt; 00:12:39,919<br>So that’s insertion into a try.</p>
+<p>170<br>00:12:39,919 –&gt; 00:12:48,599<br>To cement all these ideas, let’s do a demo of how that tree was constructed from scratch.</p>
+<p>171<br>00:12:48,599 –&gt; 00:12:51,759<br>So we have an all try.</p>
+<p>172<br>00:12:51,759 –&gt; 00:13:02,120<br>So we’re going to start by putting the associating the value 0 with the string SHE.</p>
+<p>173<br>00:13:02,120 –&gt; 00:13:06,039<br>So we start at the root node with an all try.</p>
+<p>174<br>00:13:06,039 –&gt; 00:13:08,039<br>It’s just as that one node.</p>
+<p>175<br>00:13:08,039 –&gt; 00:13:13,719<br>Create a new node for S. Create a new node for H. Create a new node for E.</p>
+<p>176<br>00:13:13,719 –&gt; 00:13:15,959<br>Associate 0.</p>
+<p>177<br>00:13:15,959 –&gt; 00:13:19,480<br>So the key is the sequence of characters from the root to the value.</p>
+<p>178<br>00:13:19,480 –&gt; 00:13:23,399<br>And the value is in the node corresponding to the last character.</p>
+<p>179<br>00:13:23,399 –&gt; 00:13:31,000<br>This try represents a symbol table that contains just one string SHE and associated with 0.</p>
+<p>180<br>00:13:31,000 –&gt; 00:13:35,679<br>Every other string, if you search for any other string in this try,</p>
+<p>181<br>00:13:35,679 –&gt; 00:13:41,279<br>you’ll either end at a node that doesn’t have a value or you’ll end at a null link.</p>
+<p>182<br>00:13:41,279 –&gt; 00:13:47,399<br>All right, so now let’s say we put in the key SELS.</p>
+<p>183<br>00:13:47,399 –&gt; 00:13:49,639<br>And you can kind of tell where it’s going.</p>
+<p>184<br>00:13:49,639 –&gt; 00:13:51,719<br>We made room for it in the try.</p>
+<p>185<br>00:13:51,719 –&gt; 00:13:53,679<br>So we go for S.</p>
+<p>186<br>00:13:53,679 –&gt; 00:13:59,079<br>And now the second letter E corresponds to a null link.</p>
+<p>187<br>00:13:59,079 –&gt; 00:14:00,919<br>So we create a new node.</p>
+<p>188<br>00:14:00,919 –&gt; 00:14:05,120<br>And similarly, we go through and create new nodes for each of the remaining</p>
+<p>189<br>00:14:05,120 –&gt; 00:14:11,679<br>characters in the key and then associate the value one at the end.</p>
+<p>190<br>00:14:11,679 –&gt; 00:14:17,519<br>So now we have a try that has two keys in it, SHE and SELS.</p>
+<p>191<br>00:14:17,519 –&gt; 00:14:20,240<br>Now our next is to insert SEA.</p>
+<p>192<br>00:14:20,240 –&gt; 00:14:21,799<br>So now we have S.</p>
+<p>193<br>00:14:21,799 –&gt; 00:14:24,360<br>We already have a node corresponding to E.</p>
+<p>194<br>00:14:24,360 –&gt; 00:14:28,519<br>And so now we just have to create one new node, the one corresponding to A,</p>
+<p>195<br>00:14:28,519 –&gt; 00:14:30,919<br>and put our value to there.</p>
+<p>196<br>00:14:30,919 –&gt; 00:14:34,480<br>And now we’re going to put SHE LLS in.</p>
+<p>197<br>00:14:34,480 –&gt; 00:14:36,480<br>So we already have the S.</p>
+<p>198<br>00:14:36,480 –&gt; 00:14:38,480<br>And we already have the H. And we already have the E.</p>
+<p>199<br>00:14:38,480 –&gt; 00:14:43,680<br>So now we have to add nodes to the last three letters in that string and</p>
+<p>200<br>00:14:43,680 –&gt; 00:14:46,480<br>associate the value three with it.</p>
+<p>201<br>00:14:46,480 –&gt; 00:14:49,680<br>Now we’re going to put finally a key that doesn’t start with S.</p>
+<p>202<br>00:14:49,680 –&gt; 00:14:54,279<br>So that means we create a new node corresponding to the first letter of that</p>
+<p>203<br>00:14:54,279 –&gt; 00:14:59,960<br>string into the other letter two and then associate the value four.</p>
+<p>204<br>00:14:59,960 –&gt; 00:15:02,120<br>And here’s another one that doesn’t start with S.</p>
+<p>205<br>00:15:02,120 –&gt; 00:15:05,879<br>So we create new nodes corresponding to each one of its characters and</p>
+<p>206<br>00:15:05,879 –&gt; 00:15:10,720<br>associate the value five with the last one.</p>
+<p>207<br>00:15:10,720 –&gt; 00:15:13,399<br>And now here’s SEA.</p>
+<p>208<br>00:15:13,399 –&gt; 00:15:19,919<br>So this is, remember, our symbol table API is associated, which means that if</p>
+<p>209<br>00:15:19,919 –&gt; 00:15:25,840<br>we get a new value for a key that’s already in the table, we overwrite the old</p>
+<p>210<br>00:15:25,840 –&gt; 00:15:27,680<br>value with the new value.</p>
+<p>211<br>00:15:27,679 –&gt; 00:15:33,000<br>Now that’s the way the convention that we’ve chosen for symbol table.</p>
+<p>212<br>00:15:33,000 –&gt; 00:15:38,399<br>So that is easily done with tribes as well.</p>
+<p>213<br>00:15:38,399 –&gt; 00:15:42,439<br>Now here’s one more key, SH.</p>
+<p>214<br>00:15:42,439 –&gt; 00:15:50,759<br>And now we have to add a new node because there’s no node that’s a child of H,</p>
+<p>215<br>00:15:50,759 –&gt; 00:15:51,839<br>the corresponding letter O.</p>
+<p>216<br>00:15:51,839 –&gt; 00:15:57,319<br>So we have to create new nodes for O, R and E and associate the value seven with it.</p>
+<p>217<br>00:15:58,320 –&gt; 00:16:02,400<br>So that’s a try that has precisely eight keys.</p>
+<p>218<br>00:16:02,400 –&gt; 00:16:05,600<br>If you look for any one of those eight keys, you’ll get the value.</p>
+<p>219<br>00:16:05,600 –&gt; 00:16:11,040<br>If you look for any other string, you’ll either come to a node that has a null</p>
+<p>220<br>00:16:11,040 –&gt; 00:16:12,960<br>value or go out on a null link.</p>
+<p>221<br>00:16:12,960 –&gt; 00:16:16,760<br>And so search would be unsuccessful.</p>
+<p>222<br>00:16:16,760 –&gt; 00:16:20,960<br>That’s a demo of tri-construction.</p>
+<p>223<br>00:16:20,960 –&gt; 00:16:25,720<br>Now they have a basic idea of what tries are and how they work.</p>
+<p>224<br>00:16:25,720 –&gt; 00:16:31,200<br>Let’s take a look at what’s needed to implement them in Java.</p>
+<p>225<br>00:16:31,200 –&gt; 00:16:38,639<br>The key idea in the tri-representation for an implementation in Java or any computer</p>
+<p>226<br>00:16:38,639 –&gt; 00:16:47,720<br>language is that instead of representing a node as a character in the node,</p>
+<p>227<br>00:16:47,720 –&gt; 00:16:54,000<br>what we do is we represent the links as an index to array with one entry</p>
+<p>228<br>00:16:54,000 –&gt; 00:16:57,399<br>for each possible character.</p>
+<p>229<br>00:16:57,399 –&gt; 00:17:05,039<br>And the idea is that the characters are actually implicitly defined by link indices.</p>
+<p>230<br>00:17:05,039 –&gt; 00:17:10,480<br>So just for example, we have this small tri that we built over here.</p>
+<p>231<br>00:17:10,480 –&gt; 00:17:18,400<br>In this case, the root has only one node below it that’s for all the keys to start with S.</p>
+<p>232<br>00:17:18,400 –&gt; 00:17:23,440<br>The way that’s represented in the real representation, and this is for efficiency,</p>
+<p>233<br>00:17:23,440 –&gt; 00:17:29,120<br>and it’s the way that tries get their efficiency, is we have one link corresponding each possible</p>
+<p>234<br>00:17:29,120 –&gt; 00:17:33,840<br>letter and the only one that is non-null is S.</p>
+<p>235<br>00:17:33,840 –&gt; 00:17:38,759<br>So the character S is defined implicitly by the fact that that</p>
+<p>236<br>00:17:38,759 –&gt; 00:17:46,480<br>that corresponds to S is not null.</p>
+<p>237<br>00:17:46,480 –&gt; 00:17:52,680<br>Over here, there’s from E to A, there’s two links coming out of E.</p>
+<p>238<br>00:17:52,680 –&gt; 00:17:59,600<br>And the only way that we represent A is by having the first link be not null.</p>
+<p>239<br>00:17:59,600 –&gt; 00:18:05,000<br>If the link corresponding to a letter is not null, that corresponds to having that letter</p>
+<p>240<br>00:18:05,000 –&gt; 00:18:07,799<br>in the node that it points to.</p>
+<p>241<br>00:18:07,799 –&gt; 00:18:12,640<br>So in this case, we have E connected to A and L, so we have the entries corresponding to</p>
+<p>242<br>00:18:12,640 –&gt; 00:18:17,279<br>A and L filled with non-null values.</p>
+<p>243<br>00:18:17,279 –&gt; 00:18:23,720<br>So you can see immediately the correspondence between this tri, the way we’ve been drawing</p>
+<p>244<br>00:18:23,720 –&gt; 00:18:32,039<br>it, and the Java representation of it, where each node contains two hundred or</p>
+<p>245<br>00:18:32,039 –&gt; 00:18:35,279<br>R links, if there’s R different letters.</p>
+<p>246<br>00:18:35,279 –&gt; 00:18:39,879<br>And letters are implicitly represented by non-null links.</p>
+<p>247<br>00:18:39,879 –&gt; 00:18:41,759<br>Values go in the node.</p>
+<p>248<br>00:18:41,759 –&gt; 00:18:49,480<br>So for example, in this tri S E A, which is easy to follow down through the tri, we’re</p>
+<p>249<br>00:18:49,480 –&gt; 00:18:55,599<br>looking for an S, and S is the twenty-enth letter in the alphabet.</p>
+<p>250<br>00:18:55,599 –&gt; 00:19:02,599<br>Or so, we index into the twenty-enth position, and that takes us right to S.</p>
+<p>251<br>00:19:02,599 –&gt; 00:19:06,160<br>And then E is the fifth letter, we take the fifth link, and then A is the first letter,</p>
+<p>252<br>00:19:06,160 –&gt; 00:19:07,720<br>we take the first link.</p>
+<p>253<br>00:19:07,720 –&gt; 00:19:14,960<br>So we can use the character as index into the array of links to quickly travel down the</p>
+<p>254<br>00:19:14,960 –&gt; 00:19:15,960<br>tree.</p>
+<p>255<br>00:19:15,960 –&gt; 00:19:21,920<br>Then we get to the last character, we can check the value at that node that’s stored in</p>
+<p>256<br>00:19:21,920 –&gt; 00:19:24,279<br>the node.</p>
+<p>257<br>00:19:24,279 –&gt; 00:19:33,039<br>One slight complication in the implementation that we encountered before with hashing algorithms</p>
+<p>258<br>00:19:33,039 –&gt; 00:19:34,920<br>and other things.</p>
+<p>259<br>00:19:34,920 –&gt; 00:19:37,960<br>We’re going to need arrays of nodes.</p>
+<p>260<br>00:19:37,960 –&gt; 00:19:40,360<br>That’s what our links are.</p>
+<p>261<br>00:19:40,360 –&gt; 00:19:45,880<br>So we can’t have any generics within node, even though it would like to.</p>
+<p>262<br>00:19:45,880 –&gt; 00:19:50,680<br>So we have to declare the value to be of type object, and then we’ll have to cast it back</p>
+<p>263<br>00:19:50,680 –&gt; 00:19:56,800<br>to whatever type it should be when we return it, and we’ll see that in the code.</p>
+<p>264<br>00:19:56,800 –&gt; 00:20:02,380<br>Other than that little complication, this is a quite straightforward representation of</p>
+<p>265<br>00:20:02,380 –&gt; 00:20:07,660<br>tries, and it leads to a very easy implementation.</p>
+<p>266<br>00:20:07,660 –&gt; 00:20:11,820<br>So the keys and the characters are not explicitly stored.</p>
+<p>267<br>00:20:11,820 –&gt; 00:20:17,660<br>They’re there implicitly because of the links, and that’s a very important point to think</p>
+<p>268<br>00:20:17,660 –&gt; 00:20:23,540<br>about when it comes to implementing using tries.</p>
+<p>269<br>00:20:23,540 –&gt; 00:20:30,580<br>Given that representation, this code for implementing a try symbol table in Java almost writes</p>
+<p>270<br>00:20:30,579 –&gt; 00:20:32,500<br>itself.</p>
+<p>271<br>00:20:32,500 –&gt; 00:20:39,299<br>So it’s a symbol table implementation, and this slide has the implementation of put using</p>
+<p>272<br>00:20:39,299 –&gt; 00:20:45,339<br>the same recursive scheme that we’ve used many other times in building trees.</p>
+<p>273<br>00:20:45,339 –&gt; 00:20:47,220<br>What are the instance variables?</p>
+<p>274<br>00:20:47,220 –&gt; 00:20:53,379<br>Well, we declare R to be 256, as usual, and our string implementations were working with</p>
+<p>275<br>00:20:53,379 –&gt; 00:20:55,740<br>extended ASCII.</p>
+<p>276<br>00:20:55,740 –&gt; 00:21:02,579<br>And then we have one instance variable that matters, and that is the root of the try.</p>
+<p>277<br>00:21:02,579 –&gt; 00:21:07,819<br>So tries begin with, all tries start with null node.</p>
+<p>278<br>00:21:07,819 –&gt; 00:21:13,579<br>So first thing we do is create a new node and put a reference to that node in the root.</p>
+<p>279<br>00:21:13,579 –&gt; 00:21:23,859<br>So our empty try consists of a node that’s got a, remember when you create a new node, we</p>
+<p>280<br>00:21:23,859 –&gt; 00:21:28,500<br>build an array of R links to nodes.</p>
+<p>281<br>00:21:28,500 –&gt; 00:21:32,579<br>And at the beginning those will all be empty links, or all null links.</p>
+<p>282<br>00:21:32,579 –&gt; 00:21:36,939<br>So the root points to a node that has 256 null links.</p>
+<p>283<br>00:21:36,939 –&gt; 00:21:47,659<br>Now to put, or to associate a key with a value in a try, we use this instance method that</p>
+<p>284<br>00:21:47,659 –&gt; 00:21:52,819<br>calls a recursive method, again the same way that we’ve done for other tree construction</p>
+<p>285<br>00:21:52,819 –&gt; 00:21:55,220<br>schemes before.</p>
+<p>286<br>00:21:55,220 –&gt; 00:22:01,179<br>So the recursive method takes a node as argument and returns a node.</p>
+<p>287<br>00:22:01,179 –&gt; 00:22:08,899<br>So it takes a reference to a try and returns a reference to the try that it constructs after</p>
+<p>288<br>00:22:08,899 –&gt; 00:22:11,700<br>associating the key with a value.</p>
+<p>289<br>00:22:11,700 –&gt; 00:22:17,939<br>Just to get started, suppose that our first key has just one character.</p>
+<p>290<br>00:22:17,940 –&gt; 00:22:27,660<br>So in that case we would call another recursive put for the root with our one character.</p>
+<p>291<br>00:22:27,660 –&gt; 00:22:35,259<br>And so our one character key, and call the recursive routine.</p>
+<p>292<br>00:22:35,259 –&gt; 00:22:40,420<br>Now our node is not null, it’s the root node.</p>
+<p>293<br>00:22:40,420 –&gt; 00:22:47,460<br>So in our key is linked to one and we call it starting at zero.</p>
+<p>294<br>00:22:47,460 –&gt; 00:22:56,500<br>So the first thing that we do is pick out the beef character of our key.</p>
+<p>295<br>00:22:56,500 –&gt; 00:23:01,140<br>So the zero of character, which is our one character, and that gives us an index, whatever letter</p>
+<p>296<br>00:23:01,140 –&gt; 00:23:02,620<br>it might happen to be.</p>
+<p>297<br>00:23:02,620 –&gt; 00:23:07,140<br>I say it’s b, then c would be 2, that sort of thing.</p>
+<p>298<br>00:23:07,140 –&gt; 00:23:17,420<br>And then all we do is recursively follow that link, associate our key value in the try,</p>
+<p>299<br>00:23:17,420 –&gt; 00:23:26,779<br>point it to by that link, and then take the link that we get and put it back into that link out of the root node.</p>
+<p>300<br>00:23:26,779 –&gt; 00:23:32,700<br>So the next call, there’s nothing in the root dot next.</p>
+<p>301<br>00:23:32,700 –&gt; 00:23:37,980<br>It’s null, so the next call we get null, so we create a new node.</p>
+<p>302<br>00:23:37,980 –&gt; 00:23:43,180<br>And in that new node, at this point, we’ve called with d plus 1 moving to the next character.</p>
+<p>303<br>00:23:43,180 –&gt; 00:23:46,940<br>So now we have d equals 1, which is equal to our key dot link.</p>
+<p>304<br>00:23:46,940 –&gt; 00:23:52,059<br>So we associate the value in that node with our node and we return it.</p>
+<p>305<br>00:23:52,059 –&gt; 00:24:01,019<br>So that return, one level up, will set the link of the new node in the appropriate entry corresponding to the root.</p>
+<p>306<br>00:24:01,019 –&gt; 00:24:13,660<br>Again, once you’ve learned our normal recursive way of structuring building tree structures, this code is very natural.</p>
+<p>307<br>00:24:13,660 –&gt; 00:24:30,540<br>So for a longer key, again, thinking recursively, we find the, if we’re supposed to insert the key, associate the key with the value and we’re working on the df character.</p>
+<p>308<br>00:24:30,540 –&gt; 00:24:34,779<br>We pick out the character at the df position.</p>
+<p>309<br>00:24:34,779 –&gt; 00:24:39,500<br>We use that to index into the link array, the current node.</p>
+<p>310<br>00:24:39,500 –&gt; 00:24:44,859<br>And then that’s the link that we set when we do a put of the new node.</p>
+<p>311<br>00:24:44,859 –&gt; 00:24:56,700<br>So when we start with a longer string in a perfectly empty tree, we create new nodes all the way down and then put their links to their parents all the way up in this recursive structure.</p>
+<p>312<br>00:24:56,700 –&gt; 00:25:00,259<br>And it’s a very simple and natural recursive code.</p>
+<p>313<br>00:25:00,259 –&gt; 00:25:01,380<br>So that’s the put.</p>
+<p>314<br>00:25:01,380 –&gt; 00:25:10,340<br>Now that takes a little study, but not so much once you’re used to our standard recursive way of producing tree structures.</p>
+<p>315<br>00:25:10,340 –&gt; 00:25:13,300<br>And get is even simpler.</p>
+<p>316<br>00:25:13,300 –&gt; 00:25:21,140<br>So contains and get so our standard convention is to return null.</p>
+<p>317<br>00:25:21,140 –&gt; 00:25:25,940<br>If we have a key that’s not there, that’s contains.</p>
+<p>318<br>00:25:25,940 –&gt; 00:25:39,539<br>And the get function is a, again, a recursive procedure that will return a reference to the node.</p>
+<p>319<br>00:25:39,539 –&gt; 00:25:42,259<br>And if that’s null, we return null.</p>
+<p>320<br>00:25:42,259 –&gt; 00:25:48,180<br>Otherwise, we can get the value out of the node returned by the recursive procedure.</p>
+<p>321<br>00:25:48,180 –&gt; 00:25:52,820<br>And then remember, we had to make our value in nodes of type objects.</p>
+<p>322<br>00:25:52,819 –&gt; 00:25:56,819<br>So we have to cast that back to the type value.</p>
+<p>323<br>00:25:56,819 –&gt; 00:26:07,859<br>And the recursive get is very simple to find the node, the contains the value associated with a given key.</p>
+<p>324<br>00:26:07,859 –&gt; 00:26:09,779<br>And we’re working on the deep character.</p>
+<p>325<br>00:26:09,779 –&gt; 00:26:12,740<br>And we’re currently on node x.</p>
+<p>326<br>00:26:12,740 –&gt; 00:26:14,179<br>We just return null.</p>
+<p>327<br>00:26:14,179 –&gt; 00:26:17,819<br>If x happens to be null, that means it’s not there.</p>
+<p>328<br>00:26:17,819 –&gt; 00:26:25,339<br>If we’re at the last character in the key, we return our current node.</p>
+<p>329<br>00:26:25,339 –&gt; 00:26:28,939<br>Otherwise, we get that deep character.</p>
+<p>330<br>00:26:28,939 –&gt; 00:26:33,819<br>And we use that to index into the next array of the current node.</p>
+<p>331<br>00:26:33,819 –&gt; 00:26:40,299<br>And recursively call the get routine for that node moving one down the tree,</p>
+<p>332<br>00:26:40,299 –&gt; 00:26:43,220<br>and incrementing our key point by one.</p>
+<p>333<br>00:26:43,220 –&gt; 00:26:50,259<br>Extremely simple recursive code to do the try implementation.</p>
+<p>334<br>00:26:50,259 –&gt; 00:26:52,299<br>So what about the performance?</p>
+<p>335<br>00:26:52,299 –&gt; 00:27:00,740<br>Well, in a search hit, we simply go down the try examining all L characters,</p>
+<p>336<br>00:27:00,740 –&gt; 00:27:04,779<br>just using each one to index into an x-terrade some node.</p>
+<p>337<br>00:27:04,779 –&gt; 00:27:09,100<br>And then go down to the end to see if there’s a value there.</p>
+<p>338<br>00:27:09,100 –&gt; 00:27:12,860<br>Search and miss, we might have to go all the way down to the last character.</p>
+<p>339<br>00:27:12,859 –&gt; 00:27:18,619<br>But we could also just have a mismatch on the first character and find a null link right away.</p>
+<p>340<br>00:27:18,619 –&gt; 00:27:27,059<br>And actually, typically in a try in typical applications, we only examine a few characters.</p>
+<p>341<br>00:27:27,059 –&gt; 00:27:34,059<br>So right away, you can see by thinking about a search miss, that try algorithms can be sublinear.</p>
+<p>342<br>00:27:34,059 –&gt; 00:27:39,539<br>We can find out that the key’s not in the tree by only examining a few characters.</p>
+<p>343<br>00:27:39,539 –&gt; 00:27:46,539<br>If we don’t have any strings in our try, that begin with the same few characters as our search key,</p>
+<p>344<br>00:27:46,539 –&gt; 00:27:49,539<br>then it’s not there.</p>
+<p>345<br>00:27:49,539 –&gt; 00:27:51,859<br>That’s a typical case.</p>
+<p>346<br>00:27:51,859 –&gt; 00:28:01,139<br>Now, the downside of try performance in lots of applications is the amount of space use.</p>
+<p>347<br>00:28:01,140 –&gt; 00:28:07,140<br>There is the problem that every node’s got our links in it.</p>
+<p>348<br>00:28:07,140 –&gt; 00:28:16,140<br>And particularly down at the bottom, they leave nodes that correspond to the last characters in keys,</p>
+<p>349<br>00:28:16,140 –&gt; 00:28:19,140<br>and no prefix in the key in the try.</p>
+<p>350<br>00:28:19,140 –&gt; 00:28:21,340<br>That’s going to be null links.</p>
+<p>351<br>00:28:21,340 –&gt; 00:28:28,940<br>Now, it is possible in a huge try with lots of strings that are sharing common prefixes</p>
+<p>352<br>00:28:28,940 –&gt; 00:28:33,940<br>that actually use much less space than this.</p>
+<p>353<br>00:28:33,940 –&gt; 00:28:39,940<br>But the R null links at each leaf is a real problem in some applications,</p>
+<p>354<br>00:28:39,940 –&gt; 00:28:42,940<br>and we’re going to take a look at how to deal with that.</p>
+<p>355<br>00:28:42,940 –&gt; 00:28:50,940<br>So the bottom line is for symbol tables with relatively small numbers of string keys,</p>
+<p>356<br>00:28:50,940 –&gt; 00:28:57,940<br>where the amount of space used by the null links at least is not a problem.</p>
+<p>357<br>00:28:57,940 –&gt; 00:29:03,940<br>Then we get very fast search it, and even faster search myths.</p>
+<p>358<br>00:29:03,940 –&gt; 00:29:05,940<br>But we burn up some space.</p>
+<p>359<br>00:29:05,940 –&gt; 00:29:09,940<br>That’s the bottom line about try performance.</p>
+<p>360<br>00:29:09,940 –&gt; 00:29:20,940<br>And just a typical application that maybe you get a job interview question about what data structure you use for spell checking.</p>
+<p>361<br>00:29:20,940 –&gt; 00:29:31,940<br>And so, and this is just an example to show how effective tries can be for such an application,</p>
+<p>362<br>00:29:31,940 –&gt; 00:29:34,940<br>where all the words are three letters.</p>
+<p>363<br>00:29:34,940 –&gt; 00:29:38,940<br>And the solution is build a 26-way try.</p>
+<p>364<br>00:29:38,940 –&gt; 00:29:45,940<br>So spell checking usually they’ll be pre-processing to strip out everything,</p>
+<p>365<br>00:29:45,940 –&gt; 00:29:48,940<br>but the lower case letters to make up the word.</p>
+<p>366<br>00:29:48,940 –&gt; 00:29:57,940<br>So you can build a 26-way try that will immediately tell you whether you have a misspelled word or not.</p>
+<p>367<br>00:29:57,940 –&gt; 00:30:05,940<br>Another interesting thing about tries is that deletion is very easy.</p>
+<p>368<br>00:30:05,940 –&gt; 00:30:08,940<br>What do we do to delete a key value pair?</p>
+<p>369<br>00:30:08,940 –&gt; 00:30:16,940<br>Well, you find the node corresponding the key, and set the value there corresponding to null.</p>
+<p>370<br>00:30:16,940 –&gt; 00:30:19,940<br>So we want to delete shells.</p>
+<p>371<br>00:30:19,940 –&gt; 00:30:22,940<br>We cross out the value there.</p>
+<p>372<br>00:30:22,940 –&gt; 00:30:25,940<br>And now there’s two cases.</p>
+<p>373<br>00:30:25,940 –&gt; 00:30:29,940<br>One case is this one, where that node.</p>
+<p>374<br>00:30:29,940 –&gt; 00:30:34,940<br>Now we set its value to null, and it’s got all null links.</p>
+<p>375<br>00:30:34,940 –&gt; 00:30:37,940<br>Now there’s no reason for its existence.</p>
+<p>376<br>00:30:37,940 –&gt; 00:30:42,940<br>So it wouldn’t have been created except for the fact that we inserted shells.</p>
+<p>377<br>00:30:43,940 –&gt; 00:30:47,940<br>So if the nodes got all links, you just remove it.</p>
+<p>378<br>00:30:47,940 –&gt; 00:30:50,940<br>And then just delete it.</p>
+<p>379<br>00:30:50,940 –&gt; 00:30:55,940<br>And then when you go back up the tree, which you do because you got down there,</p>
+<p>380<br>00:30:55,940 –&gt; 00:31:01,940<br>every node that you touch, you check if it’s got an null value,</p>
+<p>381<br>00:31:01,940 –&gt; 00:31:06,940<br>and all null links just delete it.</p>
+<p>382<br>00:31:06,940 –&gt; 00:31:16,940<br>And you keep going until you find one that has either a value or a null link.</p>
+<p>383<br>00:31:16,940 –&gt; 00:31:19,940<br>And that’s where you can stop deleting nodes.</p>
+<p>384<br>00:31:19,940 –&gt; 00:31:23,940<br>So it’s pretty easy to delete a key value pair in our way, try.</p>
+<p>385<br>00:31:23,940 –&gt; 00:31:29,940<br>And that’s unusual for other search structures that we saw.</p>
+<p>386<br>00:31:29,940 –&gt; 00:31:33,940<br>The deletion was a significant challenge to implement often.</p>
+<p>387<br>00:31:33,940 –&gt; 00:31:40,940<br>So our challenge is to find a way to use less memory, particularly because nowadays,</p>
+<p>388<br>00:31:40,940 –&gt; 00:31:48,940<br>many strings are built with Unicode, and the number of null links in a try would be truly huge.</p>
+<p>389<br>00:31:48,940 –&gt; 00:31:52,940<br>Again, we talked about this with Radix Sorting.</p>
+<p>390<br>00:31:52,940 –&gt; 00:31:58,940<br>A lot of programs broke when the switch went from Ask It Unicode,</p>
+<p>391<br>00:31:59,940 –&gt; 00:32:06,940<br>and any program that used this representation for tries certainly broke.</p>
+<p>392<br>00:32:06,940 –&gt; 00:32:12,940<br>So that’s an introduction to tries with our way tries.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P95Part28-03_r-way-tries/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P94Part27-07_suffix-arrays/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P96Part28-04_ternary-search-tries/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

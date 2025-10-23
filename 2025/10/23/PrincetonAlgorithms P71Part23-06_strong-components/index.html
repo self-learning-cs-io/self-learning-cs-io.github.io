@@ -1,0 +1,774 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:12,560As our final die graph processing algorithm, we’ll take a look at computing strong components. 200:00:12,560 –&gt; 00:00:19,800So definition two vertices, V and W in a">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P71Part23 06_strong Components">
+<meta property="og:url" content="http://example.com/2025/10/23/PrincetonAlgorithms%20P71Part23-06_strong-components/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:12,560As our final die graph processing algorithm, we’ll take a look at computing strong components. 200:00:12,560 –&gt; 00:00:19,800So definition two vertices, V and W in a">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:33:27.240Z">
+<meta property="article:modified_time" content="2025-10-23T14:34:26.510Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P71Part23 06_strong Components - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P71Part23 06_strong Components"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:33" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P71Part23 06_strong Components</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:12,560<br>As our final die graph processing algorithm, we’ll take a look at computing strong components.</p>
+<p>2<br>00:00:12,560 –&gt; 00:00:19,800<br>So definition two vertices, V and W in a die graph, are strongly connected if there’s</p>
+<p>3<br>00:00:19,800 –&gt; 00:00:26,839<br>a directed path from V to W and another directed path from W to V. And the thing about strongly</p>
+<p>4<br>00:00:26,839 –&gt; 00:00:33,799<br>connected is that it’s an equivalence relation. That is, each vertex is strongly connected</p>
+<p>5<br>00:00:33,799 –&gt; 00:00:42,039<br>to itself. If V is connected to W strongly and W is strongly connected to V, that just</p>
+<p>6<br>00:00:42,039 –&gt; 00:00:47,640<br>means this direct path is connecting them. And it’s also transitive. If V is connected</p>
+<p>7<br>00:00:47,640 –&gt; 00:00:55,120<br>to W and W to X, then V is strongly connected to X. To get from V to X, you go from V to</p>
+<p>8<br>00:00:55,119 –&gt; 00:01:03,000<br>W and W to X, you get from X to V, you go from X to W and W to V. So that means that since</p>
+<p>9<br>00:01:03,000 –&gt; 00:01:09,239<br>it’s an equivalence relation, it divides the die graph up into components, into sets,</p>
+<p>10<br>00:01:09,239 –&gt; 00:01:14,840<br>called strongly connected components, that have the property that there’s directed paths</p>
+<p>11<br>00:01:14,840 –&gt; 00:01:24,439<br>connecting each pair of vertices in the set. So for example, nine in 12 are strongly connected</p>
+<p>12<br>00:01:24,439 –&gt; 00:01:34,280<br>as a path from 12 to 9, another one from 9 to 12 and so forth. So our challenge is to compute</p>
+<p>13<br>00:01:34,280 –&gt; 00:01:44,039<br>the strong components in die graphs. And it’s worth comparing this to what we did for</p>
+<p>14<br>00:01:44,039 –&gt; 00:01:51,799<br>connected components in undirected graphs. So this is just a quick review in an undirected</p>
+<p>15<br>00:01:51,799 –&gt; 00:01:56,359<br>graph. If there’s a path between two vertices, they’re connected, that’s an equivalence relation,</p>
+<p>16<br>00:01:56,359 –&gt; 00:02:05,359<br>divides them up into connected components. And what we did was our design pattern is to build</p>
+<p>17<br>00:02:05,359 –&gt; 00:02:11,960<br>our graph processing algorithm as a constructor that takes a graph and does the pre-processing</p>
+<p>18<br>00:02:11,960 –&gt; 00:02:19,719<br>to create a table like this one, which assigns a unique ID to all the vertices in each given</p>
+<p>19<br>00:02:19,719 –&gt; 00:02:27,520<br>component so that we can have a constant time client query to check whether two given vertices</p>
+<p>20<br>00:02:27,520 –&gt; 00:02:34,000<br>are in the same connected component or not. So linear time processing, pre-processing in the</p>
+<p>21<br>00:02:34,000 –&gt; 00:02:41,879<br>constructor to build the table constant time client queries. And that’s as good performance as we</p>
+<p>22<br>00:02:41,879 –&gt; 00:02:48,759<br>could expect to have for a graph processing algorithm. Remarkably, we’re able to do the same</p>
+<p>23<br>00:02:48,759 –&gt; 00:02:57,159<br>thing for strong connectivity. It’s a much more sophisticated algorithm, but the design pattern</p>
+<p>24<br>00:02:57,159 –&gt; 00:03:03,639<br>in the bottom line for the client is the same. There’s a constructor that processes the graph in</p>
+<p>25<br>00:03:03,639 –&gt; 00:03:10,439<br>linear time and it signs a unique ID to each one of the strongly connected components in the graph.</p>
+<p>26<br>00:03:10,599 –&gt; 00:03:19,079<br>So one’s in a component by itself, 0, 2, 3, 4, and 5, 6, and 8, 7, and 9, 10, and 12. There’s five</p>
+<p>27<br>00:03:19,079 –&gt; 00:03:24,759<br>different strongly connected components in this graph. The constructor builds that array and the</p>
+<p>28<br>00:03:24,759 –&gt; 00:03:33,079<br>client gets to in constant time, whether two vertices are strongly connected or not. It’s quite</p>
+<p>29<br>00:03:33,080 –&gt; 00:03:40,440<br>amazing that we can solve this problem in this way. And as I mentioned, it’s got an interesting</p>
+<p>30<br>00:03:40,440 –&gt; 00:03:47,240<br>history that I’ll talk about in a second. So here’s an example of strong component application.</p>
+<p>31<br>00:03:47,240 –&gt; 00:03:55,240<br>So the food-wed graph, this is a very small subset of that graph. The vertices are all the species</p>
+<p>32<br>00:03:56,200 –&gt; 00:04:05,640<br>and an edge goes from producer to consumer. So if an animal A eats animal B, there’s an edge from A to B.</p>
+<p>33<br>00:04:06,760 –&gt; 00:04:14,280<br>And what a strong component corresponds to in this graph is kind of a subset of species that</p>
+<p>34<br>00:04:14,280 –&gt; 00:04:21,960<br>have a common energy flow. They mutually eat each other. And that’s extremely important in ecological</p>
+<p>35<br>00:04:21,959 –&gt; 00:04:32,439<br>studies. Another example is, again, in processing software, big software is made up of modules.</p>
+<p>36<br>00:04:33,319 –&gt; 00:04:42,519<br>And the vertices are the modules and the edges if one depends on another. And so a strong</p>
+<p>37<br>00:04:42,519 –&gt; 00:04:50,279<br>component in this graph is a subset of mutually interacting modules. In a huge program like internet</p>
+<p>38<br>00:04:50,279 –&gt; 00:04:55,719<br>explorer, you want to know what the strong components are so that you can package them together</p>
+<p>39<br>00:04:56,439 –&gt; 00:05:05,639<br>and maybe improve the design. So again, these graphs can be huge. And this kind of graph processing</p>
+<p>40<br>00:05:05,639 –&gt; 00:05:14,839<br>can be extremely important in improving the design of software. Now again, this algorithm has</p>
+<p>41<br>00:05:14,919 –&gt; 00:05:21,399<br>an interesting history, along with scheduling and other things. It’s a core problem in operations</p>
+<p>42<br>00:05:21,399 –&gt; 00:05:30,120<br>research that was widely studied but really not understood how difficult it was. In Targets paper</p>
+<p>43<br>00:05:30,120 –&gt; 00:05:39,879<br>in 1972 was a big surprise that this could be solved in a linear time with depth for search.</p>
+<p>44<br>00:05:40,439 –&gt; 00:05:48,120<br>Now, this algorithm had a couple of other data structures and is, I guess, a diligent student in</p>
+<p>45<br>00:05:48,120 –&gt; 00:05:55,399<br>this class could understand it with quite a bit of work. But it really demonstrated the importance</p>
+<p>46<br>00:05:55,399 –&gt; 00:06:02,199<br>of depth for search in graph processing. Now, the algorithm that we’re going to talk about today</p>
+<p>47<br>00:06:02,759 –&gt; 00:06:11,639<br>actually was invented in the 80s by Kossaraju independently by Shireer. The story goes that Kossaraju</p>
+<p>48<br>00:06:12,519 –&gt; 00:06:18,680<br>had to go lecture about Targets’ algorithm and he forgot his notes and he had taught it a number</p>
+<p>49<br>00:06:18,680 –&gt; 00:06:24,199<br>of times. He was trying to figure out what Targets’ algorithm did and he developed this other</p>
+<p>50<br>00:06:24,199 –&gt; 00:06:30,360<br>algorithm that’s extremely simple to implement. That’s what we’re going to look at today.</p>
+<p>51<br>00:06:31,319 –&gt; 00:06:42,040<br>And actually, in the 1990s, Gebao and Melhorn, particularly Melhorn, had to implement this algorithm</p>
+<p>52<br>00:06:42,840 –&gt; 00:06:50,360<br>for a big software package and I found another simple linear time algorithm. So this story</p>
+<p>53<br>00:06:50,360 –&gt; 00:06:57,960<br>indicates even from fundamental problems in graph processing, there’s algorithms out there</p>
+<p>54<br>00:06:57,959 –&gt; 00:07:05,399<br>still waiting to be discovered. This algorithm is a good example of that. So I get the intuition</p>
+<p>55<br>00:07:05,399 –&gt; 00:07:10,599<br>in the code and you see how the algorithm works. Fully convincing yourself or approving</p>
+<p>56<br>00:07:11,959 –&gt; 00:07:18,679<br>why it works is a bit more of a challenge. We’ll leave that mostly for the book. But let’s describe</p>
+<p>57<br>00:07:18,679 –&gt; 00:07:27,639<br>what it is. So the first idea is to think about the reverse graph. So if we take a graph and we</p>
+<p>58<br>00:07:27,639 –&gt; 00:07:33,000<br>reverse the sense of all the edges, we’re going to get the same strong components. We need edges</p>
+<p>59<br>00:07:33,000 –&gt; 00:07:37,560<br>in both directions. So if we switch the directions, we’re still going to have edges in both directions.</p>
+<p>60<br>00:07:39,240 –&gt; 00:07:47,719<br>The second concept is called the kernel DAG. And what that does is it kind of, you think about</p>
+<p>61<br>00:07:48,360 –&gt; 00:07:55,319<br>contracting each strong component into a single vertex and then just worry about the edges that</p>
+<p>62<br>00:07:56,040 –&gt; 00:08:07,000<br>go from one strong component to another. So the digraph that you get that way turns out to be a</p>
+<p>63<br>00:08:07,000 –&gt; 00:08:15,560<br>cyclic. If it was cyclic, it would involve, it would create a bigger strong component,</p>
+<p>64<br>00:08:15,560 –&gt; 00:08:24,519<br>a couple of strong components into one. So we think about that processing that kernel DAG,</p>
+<p>65<br>00:08:24,519 –&gt; 00:08:31,319<br>that’s the edges that go between strong components. And we get a DAG and we know how to deal with a</p>
+<p>66<br>00:08:31,319 –&gt; 00:08:40,600<br>DAG. So the idea of the algorithm is to go ahead and compute the topological order or the reverse</p>
+<p>67<br>00:08:40,600 –&gt; 00:08:49,720<br>post order in the kernel DAG. At least put out the edges of the original digraph in order so that</p>
+<p>68<br>00:08:49,720 –&gt; 00:08:55,000<br>all the edges in the kernel DAG point from right to left. That’s like a topological sort.</p>
+<p>69<br>00:08:56,120 –&gt; 00:09:03,560<br>And then we run DFS, but instead of considering the vertices in numerical order for the DFS,</p>
+<p>70<br>00:09:03,560 –&gt; 00:09:11,240<br>we consider them in that reverse topological order. So it’s extremely easy to implement this algorithm.</p>
+<p>71<br>00:09:11,240 –&gt; 00:09:20,200<br>So of course we’re going to use DFS. So let’s look at a demo at how the algorithm works.</p>
+<p>72<br>00:09:24,200 –&gt; 00:09:29,720<br>Okay, so this is a diagram and our goal is to compute the strong components. And we’re going to do it in</p>
+<p>73<br>00:09:29,720 –&gt; 00:09:37,159<br>two phases, two DFSs. One is to compute the reverse post order in the reverse of the graph.</p>
+<p>74<br>00:09:38,039 –&gt; 00:09:43,719<br>And the other is to run the DFS, but for the order in which we visit the vertices, we use</p>
+<p>75<br>00:09:44,279 –&gt; 00:09:52,439<br>that reverse post order that we compute it. So here goes. So first we’ll do the DFS in the reverse graph.</p>
+<p>76<br>00:09:54,360 –&gt; 00:10:01,559<br>So that’s the graph. That’s the reverse graph. Remember these two have the same strong components.</p>
+<p>77<br>00:10:02,519 –&gt; 00:10:08,759<br>So there’s our marked array. We do the DFS and reverse post order means that when we’re done with</p>
+<p>78<br>00:10:08,759 –&gt; 00:10:21,639<br>the vertex, we put it out. So check six on mark, check eight on mark, check six, it’s marked. So we’re</p>
+<p>79<br>00:10:21,639 –&gt; 00:10:27,639<br>done with eight. And so that’s the reverse post order. And again, as before, we put it on a stack,</p>
+<p>80<br>00:10:28,600 –&gt; 00:10:38,199<br>but we’ll just list them in reverse order in this demo. So each done, so six, lots of places to go from six.</p>
+<p>81<br>00:10:39,000 –&gt; 00:10:45,480<br>So let’s check seven. That’s unmarked. So we go to seven. No place to go from seven. So we’re done</p>
+<p>82<br>00:10:45,480 –&gt; 00:10:52,200<br>with seven. We put it on the reverse post order list. We’re also done with six, because four and</p>
+<p>83<br>00:10:52,200 –&gt; 00:11:00,840<br>nine are coming in in this example. So put it on the list. Next place to go from zero is two. So we</p>
+<p>84<br>00:11:00,840 –&gt; 00:11:09,400<br>check two. That’s unmarked. So we mark it in reverse and we check the vertices adjacent to two.</p>
+<p>85<br>00:11:10,200 –&gt; 00:11:19,720<br>First four, that’s unmarked. So we go to four. We got to go to 11 first in reverse. So now we’re at 11.</p>
+<p>86<br>00:11:19,720 –&gt; 00:11:28,120<br>And from 11, we go to nine, which is unmarked. So we have a pretty long recursive stack right here.</p>
+<p>87<br>00:11:29,000 –&gt; 00:11:36,200<br>So from nine, we have to check a bunch of things. We’ll check 12 first. And then visit 12. It’s unmarked.</p>
+<p>88<br>00:11:37,160 –&gt; 00:11:43,560<br>From 12, we check 11, which is marked. Now we’re at a go. Then we check 10. That’s unmarked. So we go to 10.</p>
+<p>89<br>00:11:44,519 –&gt; 00:11:50,759<br>Visit 10. It’s unmarked. So we’re a recurs. And then go to nine.</p>
+<p>90<br>00:11:52,119 –&gt; 00:11:57,079<br>And that’s marked. And that’s everywhere we get from 10. So we’re done with 10. So we put it on the list</p>
+<p>91<br>00:11:58,199 –&gt; 00:12:05,000<br>in return. And now we’re done with 12. So we put it on the list in return. And now at nine, we have to</p>
+<p>92<br>00:12:05,000 –&gt; 00:12:10,199<br>check seven, which is marked and six, which is marked. And then we’re done. So we put it on the list.</p>
+<p>93<br>00:12:11,160 –&gt; 00:12:17,480<br>Then we’re done with 11. We put it on the list. Then we’re finished with four. So we check six, which is marked.</p>
+<p>94<br>00:12:17,480 –&gt; 00:12:25,080<br>And we check five, which is unmarked. So we recurse to five. From five, we check three, which is unmarked.</p>
+<p>95<br>00:12:25,080 –&gt; 00:12:32,120<br>So we recurse. Then we check four, which is marked. We check two, which is marked. And then we’re done with three.</p>
+<p>96<br>00:12:32,120 –&gt; 00:12:39,720<br>So we put it on the list. And then from five, we check zero. It’s marked. So we’re done with five.</p>
+<p>97<br>00:12:39,720 –&gt; 00:12:48,759<br>We put on the list. And that means that we’re now done with four. And then we’re also done with two.</p>
+<p>98<br>00:12:49,560 –&gt; 00:12:59,080<br>After checking three. And then we go to zero and put it on the list. So that’s all the vertices that</p>
+<p>99<br>00:12:59,080 –&gt; 00:13:06,040<br>you get to from zero. So we look for more vertices. And it’s one in its mark. So that’s the last one in</p>
+<p>100<br>00:13:06,040 –&gt; 00:13:12,680<br>the reverse post order. So that’s a reverse post order of the reverse graph. And all we’re going to do is</p>
+<p>101<br>00:13:12,680 –&gt; 00:13:20,680<br>take that order and use that order to check vertices at the top level in the depth first search of our</p>
+<p>102<br>00:13:20,680 –&gt; 00:13:26,280<br>regular graph. We have to check all the other vertices to make sure we’re done. So that’s phase one.</p>
+<p>103<br>00:13:27,159 –&gt; 00:13:32,439<br>So now we just do a DFS in the original graph using that order that we just compute it.</p>
+<p>104<br>00:13:32,439 –&gt; 00:13:40,120<br>So we don’t start with zero the way we always have. Now we start with one. We visit one. It’s unmarked.</p>
+<p>105<br>00:13:41,079 –&gt; 00:13:47,319<br>And now all the vertices that we visit during that DFS are going to be in the same strong component.</p>
+<p>106<br>00:13:47,319 –&gt; 00:13:53,399<br>That’s the theorem that makes this algorithm work. In this case, there’s the only the only the one. So</p>
+<p>107<br>00:13:56,439 –&gt; 00:14:01,399<br>vertex one is the only is it’s in its own strong component with label zero.</p>
+<p>108<br>00:14:02,279 –&gt; 00:14:08,120<br>So now we’ve got to start one’s all done. So now we have to start with looking for another vertex to</p>
+<p>109<br>00:14:08,120 –&gt; 00:14:14,439<br>search from. In this case, it’s zero is second on the list. So that’s where we start with zero.</p>
+<p>110<br>00:14:15,079 –&gt; 00:14:20,839<br>And now all the vertices that we can reach from zero are going to have a strong in this graph are</p>
+<p>111<br>00:14:20,840 –&gt; 00:14:27,480<br>going to have strong component label one. So we do the DFS. So first we get to five. That’s in the same</p>
+<p>112<br>00:14:27,480 –&gt; 00:14:35,879<br>strong component. We check four and it’s unmarked. So we label it. We check three. It’s unmarked. We check</p>
+<p>113<br>00:14:36,440 –&gt; 00:14:45,639<br>five, which is marked. We check two, which is unmarked. So now we have shown that zero, two, three,</p>
+<p>114<br>00:14:45,639 –&gt; 00:14:53,319<br>four and five are all in the same strong component. And now we’re going to find both vertices we</p>
+<p>115<br>00:14:53,319 –&gt; 00:15:00,759<br>get to from two or mark. So we’re done with two. Then we’re done with three. Four, we have to check</p>
+<p>116<br>00:15:00,759 –&gt; 00:15:08,120<br>two, which is marked. And then we’re done with four and five. From zero, we can check one, but</p>
+<p>117<br>00:15:08,120 –&gt; 00:15:15,399<br>that’s already marked. So that’s not relevant for this search. And then we’re done with zero. And we</p>
+<p>118<br>00:15:15,399 –&gt; 00:15:20,199<br>have established that zero, two, three, four and five are all in the same strong component.</p>
+<p>119<br>00:15:21,480 –&gt; 00:15:28,120<br>So that’s the second one. So now we continue and we check all of those in their all marked.</p>
+<p>120<br>00:15:29,240 –&gt; 00:15:36,439<br>So the next vertex in the reverse post sort of reverse graph is 11. So we visit 11.</p>
+<p>121<br>00:15:37,159 –&gt; 00:15:43,240<br>Check four. It’s already marked. Check 12. It’s not so we mark it. And these are the third</p>
+<p>122<br>00:15:43,240 –&gt; 00:15:50,360<br>strong component. They get labeled with two. Then we get to nine. From nine, we check 11.</p>
+<p>123<br>00:15:51,480 –&gt; 00:15:57,960<br>And nowhere to go. Then we check 10. And so that’s in the strong component. From 10, we check 12,</p>
+<p>124<br>00:15:57,960 –&gt; 00:16:03,639<br>which is marked. We’re done with 10. We’re done with nine. We’re done with 12. And we’re done with</p>
+<p>125<br>00:16:03,639 –&gt; 00:16:11,159<br>11. So that’s our third strong component, 9, 10, 11 and 12.</p>
+<p>126<br>00:16:11,719 –&gt; 00:16:19,159<br>So we’re done with those. And now we go through the list to find another unmarked vertex.</p>
+<p>127<br>00:16:19,159 –&gt; 00:16:26,519<br>9’s marked, 12’s marked, 10’s marked. We get to six from six. Nine’s already marked.</p>
+<p>128<br>00:16:27,799 –&gt; 00:16:35,720<br>Four’s already marked. Eight’s not marked. So we go there. From eight, we can get to six. And that’s it.</p>
+<p>129<br>00:16:35,720 –&gt; 00:16:43,160<br>Zero’s already marked. So we can only get to eight from six at this point. And so that’s a strong</p>
+<p>130<br>00:16:43,160 –&gt; 00:16:50,360<br>component. And then finally, we finish up by doing seven. So the end of the computation</p>
+<p>131<br>00:16:51,000 –&gt; 00:16:58,120<br>gives us the strong component array, which is a unique ID for each of the vertices. So that two</p>
+<p>132<br>00:16:58,120 –&gt; 00:17:05,160<br>vertices in the same strong component have the same ID. And that’s a sports constant time,</p>
+<p>133<br>00:17:05,640 –&gt; 00:17:13,320<br>strong connectivity checks for clients. So the bottom line is that this algorithm is a very simple,</p>
+<p>134<br>00:17:14,120 –&gt; 00:17:21,240<br>even though it might be mysterious, algorithm for computing the strong component. First, run DFS</p>
+<p>135<br>00:17:21,240 –&gt; 00:17:27,720<br>on the reverse graph to compute the reverse post-order. Then run DFS on the original graph,</p>
+<p>136<br>00:17:27,720 –&gt; 00:17:37,319<br>considering the vertices in the order given by the first DFS. And so these diagrams give a</p>
+<p>137<br>00:17:37,319 –&gt; 00:17:45,240<br>summary of the computation. I’m not going to spend too much time explaining why and how it works</p>
+<p>138<br>00:17:45,240 –&gt; 00:17:53,319<br>in this lecture. But these kinds of diagrams give the detail that can give some intuition</p>
+<p>139<br>00:17:54,119 –&gt; 00:18:04,279<br>about how and why the algorithm works. The proof is required some mathematical sophistication</p>
+<p>140<br>00:18:04,279 –&gt; 00:18:11,799<br>and you’ll find it in the book. But the programming of it is quite simple and prove that it’s</p>
+<p>141<br>00:18:12,279 –&gt; 00:18:20,519<br>efficient. All it does is run DFS twice. But to really see the correctness proof, you want to</p>
+<p>142<br>00:18:20,519 –&gt; 00:18:26,839<br>look at the second printing of the textbook. We got it wrong in the first printing. But look</p>
+<p>143<br>00:18:26,839 –&gt; 00:18:32,920<br>at the implementation. So this is connected components in an undirected graph with DFS that we did</p>
+<p>144<br>00:18:32,920 –&gt; 00:18:38,920<br>last time. And I’m sure many of you thought it was one of the simplest algorithms that we looked at.</p>
+<p>145<br>00:18:39,720 –&gt; 00:18:45,960<br>We just marked the vertices and do recursive DFS and that’s the end of it. If you take that code</p>
+<p>146<br>00:18:46,840 –&gt; 00:18:57,960<br>and just add, well, change the names. And then just instead of going for the vertices from zero</p>
+<p>147<br>00:18:57,960 –&gt; 00:19:05,960<br>through V minus one, if you first compute the depth first order that you get by running</p>
+<p>148<br>00:19:08,360 –&gt; 00:19:14,200<br>doing a depth first search of the reverse graph and then you iterate through the vertices in that</p>
+<p>149<br>00:19:14,200 –&gt; 00:19:20,279<br>order, you get an algorithm for strong connectivity. It’s really remarkable that just changing that one</p>
+<p>150<br>00:19:20,279 –&gt; 00:19:31,080<br>line will perform this computation that was thought to be difficult for many years and people were</p>
+<p>151<br>00:19:31,080 –&gt; 00:19:40,360<br>learning quite difficult codes for many, many years. So that’s a quick summary of die graph processing.</p>
+<p>152<br>00:19:40,359 –&gt; 00:19:47,719<br>We talked about single source reachability, getting the paths from a vertex to any vertex that</p>
+<p>153<br>00:19:47,719 –&gt; 00:19:54,199<br>can be reached from that vertex with a directed path. We talked about topological sort in graphs that</p>
+<p>154<br>00:19:54,199 –&gt; 00:20:02,519<br>have no cycles and that uses DFS. And we talked about computing strong components in a die graph with</p>
+<p>155<br>00:20:02,519 –&gt; 00:20:12,759<br>two DFSs. Die graph processing is really a testimony to the ingenuity that’s possible in algorithmic</p>
+<p>156<br>00:20:12,759 –&gt; 00:20:14,599<br>graph processing.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P71Part23 06_strong Components</div>
+      <div>http://example.com/2025/10/23/PrincetonAlgorithms P71Part23-06_strong-components/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/PrincetonAlgorithms%20P69Part23-04_digraph-search/" title="PrincetonAlgorithms P69Part23 04_digraph Search">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P69Part23 04_digraph Search</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/PrincetonAlgorithms%20P67Part23-02_introduction-to-digraphs/" title="PrincetonAlgorithms P67Part23 02_introduction To Digraphs">
+                        <span class="hidden-mobile">PrincetonAlgorithms P67Part23 02_introduction To Digraphs</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

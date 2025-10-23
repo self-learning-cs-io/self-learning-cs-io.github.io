@@ -1,0 +1,664 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,740So Knuth Morris Pratt is a linear time algorithm. Surely we can’t do better than that, can 200:00:09,740 –&gt; 00:00:16,140we? Well, it’s not the end of the story. Now">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P101Part29-05_boyer-moore/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,740So Knuth Morris Pratt is a linear time algorithm. Surely we can’t do better than that, can 200:00:09,740 –&gt; 00:00:16,140we? Well, it’s not the end of the story. Now">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.657Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:19.072Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          583 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,740<br>So Knuth Morris Pratt is a linear time algorithm. Surely we can’t do better than that, can</p>
+<p>2<br>00:00:09,740 –&gt; 00:00:16,140<br>we? Well, it’s not the end of the story. Now we’re going to look at the boy or more algorithm.</p>
+<p>3<br>00:00:16,140 –&gt; 00:00:24,900<br>And it’s also a very simple idea that’s extremely effective in practice. So here’s the idea.</p>
+<p>4<br>00:00:24,899 –&gt; 00:00:32,899<br>Instead of matching the pattern against the text, moving from left to right in both pattern and text,</p>
+<p>5<br>00:00:32,899 –&gt; 00:00:40,899<br>Borer Moore said, what if we try to scan the characters in the pattern from right to left?</p>
+<p>6<br>00:00:40,899 –&gt; 00:00:51,899<br>So when then when we find a mismatch, we can skip, we know all the characters in the pattern.</p>
+<p>7<br>00:00:51,899 –&gt; 00:00:58,899<br>So for example, if we’re looking for needle and a haystack, if we first look at the last character in the pattern, which is an E,</p>
+<p>8<br>00:00:58,899 –&gt; 00:01:07,900<br>and we find that N in the text, then it’s clear that the next possible match is when the N’s lined up.</p>
+<p>9<br>00:01:07,900 –&gt; 00:01:12,900<br>Because if there’s any other line up, it’d be all these characters that we know are not N compared against N,</p>
+<p>10<br>00:01:12,900 –&gt; 00:01:19,900<br>so when I was just moving to the N’s are lined up. And that’s good, but that’s not as good as the next case.</p>
+<p>11<br>00:01:19,900 –&gt; 00:01:27,900<br>If we happen to run into a character that’s not in the pattern, then we can just skip all the way over.</p>
+<p>12<br>00:01:27,900 –&gt; 00:01:35,900<br>We don’t have to compare any of our pattern characters against that one. So we can just add M if we have M pattern characters.</p>
+<p>13<br>00:01:35,900 –&gt; 00:01:42,900<br>And so then in this case, we have a more complicated situation.</p>
+<p>14<br>00:01:42,900 –&gt; 00:01:53,900<br>We match the E and we have a bunch of E’s, and so part of the algorithm is to figure out when you do match a character that’s in the pattern, now what do you do?</p>
+<p>15<br>00:01:53,900 –&gt; 00:02:00,900<br>But the intuition is it’s fast because you’re often going to have this kind of case where you find a mismatch.</p>
+<p>16<br>00:02:00,900 –&gt; 00:02:11,900<br>And since you’re going from right to left, you know that if there’s a character in the text that’s not in the pattern at all, you can shift over M characters at a time.</p>
+<p>17<br>00:02:11,900 –&gt; 00:02:16,900<br>And that’s a huge win in a lot of practical situations.</p>
+<p>18<br>00:02:16,900 –&gt; 00:02:23,900<br>So how much do we skip? So the first case is clear.</p>
+<p>19<br>00:02:23,900 –&gt; 00:02:39,900<br>If you run into a text character that’s not in the pattern, then you just move I from wherever it was to one character beyond the current one that you’re looking at.</p>
+<p>20<br>00:02:39,900 –&gt; 00:02:50,900<br>So and that’s an easy, easy calculation. It’s just the anchor in a pie the number of pattern characters that you’ve not looked at.</p>
+<p>21<br>00:02:50,900 –&gt; 00:03:04,900<br>Now, but if you have a character in the pattern, then you want to align the text and in this case with the right most pattern and that’s pretty good.</p>
+<p>22<br>00:03:04,900 –&gt; 00:03:20,900<br>But you don’t always want to do that. If you, for example, we have a mismatch on E. If you were to say, oh, let’s line up on the right most E in the pattern, that would involve backup.</p>
+<p>23<br>00:03:20,900 –&gt; 00:03:25,900<br>So you don’t want to do backup in that case. You just move on by one.</p>
+<p>24<br>00:03:25,900 –&gt; 00:03:34,900<br>So there are times when the heuristic is no help. So what you really want to do is just increment by one in that case.</p>
+<p>25<br>00:03:34,900 –&gt; 00:03:50,900<br>So just given those basic preliminaries, it’s clear that it’s actually easy to go ahead and pre-compute how much you might want to skip.</p>
+<p>26<br>00:03:51,900 –&gt; 00:04:07,900<br>So you start out with with minus once this is the amount that you’re going to increment the text pointer.</p>
+<p>27<br>00:04:07,900 –&gt; 00:04:14,900<br>And minus one means you just, if you’re not in the patterns, you’re just going to move on one.</p>
+<p>28<br>00:04:14,900 –&gt; 00:04:22,899<br>And so all you do is go through the pattern.</p>
+<p>29<br>00:04:22,899 –&gt; 00:04:34,899<br>So let’s start with n. So we want to fill in this table for n. And it says, so if we are going to find an n in the text, what do we want to do?</p>
+<p>30<br>00:04:34,899 –&gt; 00:04:45,899<br>Well, we want to move to the next text character. Sorry, we want to compare the next text character against this one, which is zero.</p>
+<p>31<br>00:04:45,899 –&gt; 00:04:52,899<br>And so right of pat dot krat j equals j, I’m just going to fill in that zero.</p>
+<p>32<br>00:04:52,899 –&gt; 00:05:13,899<br>And then we go to j equals one for the EEDL. It’s the same. So for what happens is for if you do that for every letter in the pattern, if you have a letter that appears more often, it gets overwritten until the right most occurance is the one that’s there.</p>
+<p>33<br>00:05:13,899 –&gt; 00:05:34,899<br>So that pre computation is just one pass through the pattern. And then given that pre computation, then again, we’re going to implement this is an implementation of more for using for loop incrementing the text character.</p>
+<p>34<br>00:05:34,899 –&gt; 00:05:51,899<br>And so we are going to have the text pointer i. And in the course of the algorithm, we’re going to compute a value skip, which is the amount that we’re going to move the text character.</p>
+<p>35<br>00:05:51,899 –&gt; 00:06:04,899<br>So we go all the way through the pattern from right to left. If we get all the way through the pattern, and we find a match, and we don’t change the value of skip, then we found a match.</p>
+<p>36<br>00:06:04,899 –&gt; 00:06:12,899<br>Sorry, if we get all the way through the pattern, we don’t find a mismatch. It’s all matches. We don’t change the value of skip, and we found a match.</p>
+<p>37<br>00:06:12,899 –&gt; 00:06:24,899<br>If we do find a mismatch, then we’re going to compute the value that we skip, which is where we are, minus that table, that thing that we computed.</p>
+<p>38<br>00:06:24,899 –&gt; 00:06:37,899<br>And that’s the amount that we’re going to add to the text character to take care of the mismatch for the right to left mismatch.</p>
+<p>39<br>00:06:37,899 –&gt; 00:06:57,899<br>And if it’s always going to be at least one, but if this thing is negative, we’re not going to back up. That’s it. So it’s a very simple implementation based on this idea of moving from right to left and skipping over the whole thing if we find a mismatch.</p>
+<p>40<br>00:06:57,899 –&gt; 00:07:15,899<br>And the key thing about Boy or More, you can start an implementation and figure it out easily. But the key thing is that this mismatch character, heuristic, takes time proportional to n over m. That’s kind of amazing. We had started out with a brute force, which was n times m.</p>
+<p>41<br>00:07:15,899 –&gt; 00:07:32,899<br>And then we got a linear time. We’re happy with n. But actually, there’s a lot of practical situations where you can do the search in n over m. The longer the pattern gets, the faster the search gets. It’s not only sublinear, it gets better. That’s kind of amazing.</p>
+<p>42<br>00:07:32,899 –&gt; 00:07:41,899<br>Now, there’s a caveat there because there is a worst case that could be as bad as the brute force.</p>
+<p>43<br>00:07:41,899 –&gt; 00:07:55,899<br>So this is just the example of the worst case where you go from right to left and always get to the first character before finding a mismatch. And you can’t do anything better than move over one.</p>
+<p>44<br>00:07:55,899 –&gt; 00:08:08,899<br>But actually, what you can do is build something kind of like Knuth-Morris Pratt to make sure that you don’t do something like this with a repetitive pattern.</p>
+<p>45<br>00:08:08,899 –&gt; 00:08:18,899<br>And you can get the worst case to the linear. But it’s really of importance for intermediate-length patterns.</p>
+<p>46<br>00:08:18,899 –&gt; 00:08:28,899<br>Because you’re so often going to be able to get this n over m performance, and that’s a widely used algorithm, the Boyer-Morra algorithm.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P101Part29-05_boyer-moore/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P103Part210-03_regular-expressions/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P102Part29-06_rabin-karp/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

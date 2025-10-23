@@ -1,0 +1,763 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,400Welcome back. Today we’re going to look at hashing, which is another approach to implementing 200:00:06,400 –&gt; 00:00:13,640symbol tables that can also be very effect">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P52Part112 03_hash Tables">
+<meta property="og:url" content="http://example.com/2025/10/23/PrincetonAlgorithms%20P52Part112-03_hash-tables/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,400Welcome back. Today we’re going to look at hashing, which is another approach to implementing 200:00:06,400 –&gt; 00:00:13,640symbol tables that can also be very effect">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:33:27.233Z">
+<meta property="article:modified_time" content="2025-10-23T14:34:26.508Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P52Part112 03_hash Tables - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P52Part112 03_hash Tables"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:33" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P52Part112 03_hash Tables</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,400<br>Welcome back. Today we’re going to look at hashing, which is another approach to implementing</p>
+<p>2<br>00:00:06,400 –&gt; 00:00:13,640<br>symbol tables that can also be very effective in practical applications. Here’s our summary</p>
+<p>3<br>00:00:13,640 –&gt; 00:00:18,960<br>where we left off with red-black BSTs where we could get guaranteed logarithmic performance</p>
+<p>4<br>00:00:18,960 –&gt; 00:00:25,800<br>for a broad range of symbol table operations. And the question is, can we do better than</p>
+<p>5<br>00:00:25,800 –&gt; 00:00:32,160<br>that? Is logarithmic performance the best we can do? And the answer is that actually we</p>
+<p>6<br>00:00:32,160 –&gt; 00:00:38,719<br>can, but it’s a different way of accessing the data and also doesn’t support ordered</p>
+<p>7<br>00:00:38,719 –&gt; 00:00:44,960<br>operations. But there’s plenty of applications where the extra speed for search and insert</p>
+<p>8<br>00:00:44,960 –&gt; 00:00:54,159<br>that we can get this way is worthwhile. The basic plan is to think of the symbol table</p>
+<p>9<br>00:00:54,159 –&gt; 00:01:03,239<br>as really try to reduce the problem to being like an array. And what we do is use a function</p>
+<p>10<br>00:01:03,239 –&gt; 00:01:12,359<br>known as a hash function that takes the key, our symbol table key, and reduces it to an</p>
+<p>11<br>00:01:12,359 –&gt; 00:01:21,319<br>integer, an array index. And we use that array index to store the key and the value in an</p>
+<p>12<br>00:01:21,319 –&gt; 00:01:27,279<br>array, maybe the value in a parallel array. Now there’s a lot of issues in doing this. First</p>
+<p>13<br>00:01:27,279 –&gt; 00:01:34,639<br>thing is we need to be able to compute the hash function. That is easy for some types of data,</p>
+<p>14<br>00:01:34,639 –&gt; 00:01:43,639<br>but it can get complicated for more complicated types of data. Then the other thing is that instead</p>
+<p>15<br>00:01:43,639 –&gt; 00:01:48,919<br>of doing compare to’s, we’re going to be doing equality tests. So we have to be sure we’ve got</p>
+<p>16<br>00:01:48,920 –&gt; 00:01:54,200<br>the method that we want for checking whether two keys are equal. All we’re going to do is look</p>
+<p>17<br>00:01:54,200 –&gt; 00:02:01,680<br>in the table and try to see if the key that’s there is equal to the key we’re looking for. And then</p>
+<p>18<br>00:02:01,680 –&gt; 00:02:11,319<br>there’s the problem of collision resolution where since there are so many possible values for</p>
+<p>19<br>00:02:11,319 –&gt; 00:02:17,719<br>a typical data type, we’re going to get the situation where two values hash to the same array</p>
+<p>20<br>00:02:17,719 –&gt; 00:02:23,319<br>index. And we need a collision resolution strategy to try to figure out what to do in that case.</p>
+<p>21<br>00:02:23,319 –&gt; 00:02:29,199<br>In these things are not difficult, but they’re all worth articulating as separate issues that we</p>
+<p>22<br>00:02:29,199 –&gt; 00:02:38,360<br>have to deal with in order to get an effective symbol table implementation. The hashing really at</p>
+<p>23<br>00:02:38,360 –&gt; 00:02:45,719<br>its core is a classic space time trade-off. If we had no limitation on space at all, then we could</p>
+<p>24<br>00:02:45,719 –&gt; 00:02:53,479<br>have a very huge array with space for every possible key and just use the key itself as an index.</p>
+<p>25<br>00:02:53,479 –&gt; 00:03:00,199<br>If our keys are 32-bit integer keys and we’ve got a table of size 2 to 30 second, then we’re just fine.</p>
+<p>26<br>00:03:00,199 –&gt; 00:03:08,360<br>If there were no time limitation at all, then I would just hash everything to the same place and then</p>
+<p>27<br>00:03:08,360 –&gt; 00:03:15,240<br>do sequential search. But sequential search can be slow if we have lots of keys. So</p>
+<p>28<br>00:03:15,719 –&gt; 00:03:21,159<br>what hashing is kind of in the real world where we’re trying to trade off this idea that we don’t</p>
+<p>29<br>00:03:21,159 –&gt; 00:03:26,280<br>have unlimited space and we also don’t have unlimited time so we’re trying to find something in between.</p>
+<p>30<br>00:03:28,520 –&gt; 00:03:34,439<br>So we’ll look at hash functions, separate chaining, and then two collision resolution methods</p>
+<p>31<br>00:03:34,439 –&gt; 00:03:42,600<br>called separate chaining and linear perving. Now we’ll look at the implementation of hash functions.</p>
+<p>32<br>00:03:43,239 –&gt; 00:03:51,000<br>So, idealistically what we’d like is to be able to take any key and uniformly scramble it to</p>
+<p>33<br>00:03:51,000 –&gt; 00:03:57,560<br>produce a table index. We have two requirements. One is that we have to be able to compute the</p>
+<p>34<br>00:03:57,560 –&gt; 00:04:04,120<br>thing efficiently in a reasonable amount of time. And the other is that it should be the case that</p>
+<p>35<br>00:04:04,120 –&gt; 00:04:12,280<br>every table index is equally likely for each key. Now mathematicians and computer scientists have</p>
+<p>36<br>00:04:12,280 –&gt; 00:04:18,920<br>researched this problem in a lot of detail and there’s quite a bit known about it. But in practice,</p>
+<p>37<br>00:04:18,920 –&gt; 00:04:26,120<br>this is something that still we have to worry about somewhat. So for example, let’s suppose that</p>
+<p>38<br>00:04:26,120 –&gt; 00:04:33,000<br>our keys are phone numbers. Probably a bad idea to use the first three digits of the phone number</p>
+<p>39<br>00:04:33,000 –&gt; 00:04:37,879<br>as a hash function because so many phone numbers will have the same area code and it’s not equally</p>
+<p>40<br>00:04:37,879 –&gt; 00:04:44,360<br>likely that each phone number has the same first three digits. You have a better chance using</p>
+<p>41<br>00:04:44,360 –&gt; 00:04:50,279<br>the last three digits. But actually in most cases, I want to find a way to use all the data.</p>
+<p>42<br>00:04:51,159 –&gt; 00:04:55,560<br>Another example is social security numbers. Again, it’s not too good to use the first three</p>
+<p>43<br>00:04:55,560 –&gt; 00:05:01,159<br>digits because they’re associated with some geographic region and it’s better to try to use the</p>
+<p>44<br>00:05:01,160 –&gt; 00:05:09,320<br>last three digits. And the real practical challenge with hashing is that developing a hash function is</p>
+<p>45<br>00:05:09,320 –&gt; 00:05:15,400<br>that every type of key needs a hash function and you need a different approach for every key type.</p>
+<p>46<br>00:05:15,400 –&gt; 00:05:20,120<br>Now for standard keys like integers and strings and doubles and so forth,</p>
+<p>47<br>00:05:21,879 –&gt; 00:05:27,560<br>we can count on the implement designers and implementers of Java to implement good hash functions.</p>
+<p>48<br>00:05:27,560 –&gt; 00:05:32,600<br>But if we’re going to be implementing symbol with our own types of data,</p>
+<p>49<br>00:05:32,600 –&gt; 00:05:36,519<br>we’re going to have to worry about these things in order to get a hash function that’s effective.</p>
+<p>50<br>00:05:36,519 –&gt; 00:05:45,240<br>That leads to an effective symbol table implementation. So hashing is widely used for systems programming</p>
+<p>51<br>00:05:45,240 –&gt; 00:05:51,800<br>and applications. So some conventions for hashing are built into Java. In particular,</p>
+<p>52<br>00:05:51,800 –&gt; 00:05:59,800<br>all Java classes inherit a method called hash code which is returns a 32-bit int value.</p>
+<p>53<br>00:06:01,000 –&gt; 00:06:06,439<br>And it’s a requirement that if x and y are equal, then their hash code should be equal.</p>
+<p>54<br>00:06:07,480 –&gt; 00:06:17,800<br>So that’s something that is a convention that’s built into Java and that enables the hash code</p>
+<p>55<br>00:06:17,800 –&gt; 00:06:25,720<br>to be used for hashing. Also, of course, if they’re not equal, then it’d like it to be that their</p>
+<p>56<br>00:06:25,720 –&gt; 00:06:31,879<br>hash codes are not equal, but you can’t always get that. Now the default implementation</p>
+<p>57<br>00:06:32,600 –&gt; 00:06:39,240<br>for hashing is the memory address of the object. For hashing an object is the memory address of</p>
+<p>58<br>00:06:39,240 –&gt; 00:06:45,960<br>an object. So that kind of meets these two requirements for Java. The one that it doesn’t maybe</p>
+<p>59<br>00:06:45,959 –&gt; 00:06:53,319<br>meet is the idea that every table position should be equally likely. So usually we’ll do some</p>
+<p>60<br>00:06:53,319 –&gt; 00:07:00,839<br>more work to try to make that one happen. As far as the algorithms go, as far as the rules go,</p>
+<p>61<br>00:07:00,839 –&gt; 00:07:09,159<br>you could always return 17. That’s legal. It doesn’t have this highly desirable attribute,</p>
+<p>62<br>00:07:09,879 –&gt; 00:07:15,560<br>but everything would compile. So you have to be a little careful that somebody isn’t in there.</p>
+<p>63<br>00:07:15,959 –&gt; 00:07:24,759<br>Doing that. So Java has customized implementations for the standard data types that people would use</p>
+<p>64<br>00:07:24,759 –&gt; 00:07:32,759<br>for symbol table keys, and that’s the sweet spot for hashing, where some expert has done</p>
+<p>65<br>00:07:32,759 –&gt; 00:07:40,199<br>implementation of the hash code, and also your application does not need ordering.</p>
+<p>66<br>00:07:41,159 –&gt; 00:07:46,439<br>But for user defined types, you’re on your own, and we’ll talk a little bit about how to implement</p>
+<p>67<br>00:07:46,439 –&gt; 00:07:56,439<br>hash codes. So here’s the Java library implementations for a few standard types. They are what they are,</p>
+<p>68<br>00:07:57,000 –&gt; 00:08:05,079<br>and what we’ll do is with knowledge that that’s what the hash code is, we’ll do some extra work to</p>
+<p>69<br>00:08:05,079 –&gt; 00:08:11,800<br>try to get this extra property that every table position should seem to be equally likely.</p>
+<p>70<br>00:08:11,800 –&gt; 00:08:16,839<br>So if it’s an integer, the hash code’s supposed to be 32 bits. The integer’s supposed to be 32 bits,</p>
+<p>71<br>00:08:16,839 –&gt; 00:08:23,159<br>so they just return the value. If it’s a bullion, they pick out a couple of particular values that</p>
+<p>72<br>00:08:23,159 –&gt; 00:08:30,839<br>they return. So hashing bullion types, there’s only two different values. So well, it’s hard to</p>
+<p>73<br>00:08:30,839 –&gt; 00:08:39,000<br>think about what you really might want there. For double value, this is the code. They convert to</p>
+<p>74<br>00:08:39,000 –&gt; 00:08:46,360<br>64-bit and X-or the most significant 32 bits with the least significant 32 bits. This illustrates</p>
+<p>75<br>00:08:46,360 –&gt; 00:08:50,600<br>something that you want to do if you have a lot of bits. You want to try to involve all the bits</p>
+<p>76<br>00:08:50,600 –&gt; 00:08:59,639<br>somehow in the hash function. And for strings, it kind of treats the string as a huge number.</p>
+<p>77<br>00:09:00,840 –&gt; 00:09:09,639<br>And then really computes the value of that number, mod 32. It uses an arithmetic</p>
+<p>78<br>00:09:11,560 –&gt; 00:09:19,800<br>a way of evaluating a polynomial or a number, so-called Hörner’s Method, where for each digit,</p>
+<p>79<br>00:09:19,800 –&gt; 00:09:27,720<br>you just multiply. So it treats it as a base 31 number. And to get to compute that whole number,</p>
+<p>80<br>00:09:27,720 –&gt; 00:09:35,160<br>you multiply 31 times what you have so far and add the next digit. And that’s called Hörner’s</p>
+<p>81<br>00:09:35,160 –&gt; 00:09:40,600<br>Rule. And if you’re familiar with it, fine. If you’re not, you can look at this little example</p>
+<p>82<br>00:09:40,600 –&gt; 00:09:47,240<br>and decide what it is. And again, it involves all the characters of the string in computing the</p>
+<p>83<br>00:09:47,480 –&gt; 00:10:02,360<br>hash function. And actually, since strings are immutable, what Java does is keep the hash value</p>
+<p>84<br>00:10:02,360 –&gt; 00:10:10,759<br>in an instance variable, so it only gets computed once. And that is going to be very effective for</p>
+<p>85<br>00:10:10,759 –&gt; 00:10:16,200<br>performance in lots of applications. So once it computes the hash code, it stores it as an instance</p>
+<p>86<br>00:10:16,200 –&gt; 00:10:20,520<br>variable. And the next time you ask for the hash code, that string, it’ll just provide it.</p>
+<p>87<br>00:10:20,520 –&gt; 00:10:30,200<br>And that works because strings are immutable. So how about implementing a hash code for our own</p>
+<p>88<br>00:10:30,200 –&gt; 00:10:37,800<br>type of data? And so we might have a, our transaction type might have a couple of instance variables,</p>
+<p>89<br>00:10:37,800 –&gt; 00:10:45,640<br>a string, a date, and a double. And we need to compute a hash code. So we turn a 32-bit</p>
+<p>90<br>00:10:46,600 –&gt; 00:10:53,799<br>value. And again, we want to try to make use of all the pieces of data that we have. And we also</p>
+<p>91<br>00:10:53,799 –&gt; 00:11:01,720<br>want to make use of the hash code implementations for the types of data that we’re using. So one thing</p>
+<p>92<br>00:11:02,519 –&gt; 00:11:09,399<br>to do is start out with some small prime number. And this kind of mimics Hörner’s method</p>
+<p>93<br>00:11:10,120 –&gt; 00:11:15,159<br>to just add in more data as we get it. So we pick some other small prime number.</p>
+<p>94<br>00:11:16,279 –&gt; 00:11:23,480<br>And for each field, we multiply by 31 and then add the hash code for that field.</p>
+<p>95<br>00:11:25,240 –&gt; 00:11:32,120<br>So if it’s a reference type, we just use the hash code. So who is a string? So string is a</p>
+<p>96<br>00:11:32,120 –&gt; 00:11:37,559<br>hash code method. So we add that in and date, wins a date. So we add that hash code,</p>
+<p>97<br>00:11:37,559 –&gt; 00:11:43,239<br>multiply by 31 and add that hash code in. Trying to take all the bits and scramble all the bits and</p>
+<p>98<br>00:11:43,239 –&gt; 00:11:49,959<br>use them. And for primitive types, take the wrapper type and use the hash code. So that’s a</p>
+<p>99<br>00:11:51,639 –&gt; 00:11:58,039<br>a simple example of implementing a hash code for our own type of data that might include</p>
+<p>100<br>00:11:58,759 –&gt; 00:12:04,839<br>several different types of instance variables. So that’s a standard recipe.</p>
+<p>101<br>00:12:05,720 –&gt; 00:12:12,280<br>Use the 31X plus Y rule to combine all the fields. If it’s a primitive type, use the wrapper hash</p>
+<p>102<br>00:12:12,280 –&gt; 00:12:19,480<br>code. If the field’s null, return zero. If it’s a reference type, use that hash code and apply</p>
+<p>103<br>00:12:19,480 –&gt; 00:12:25,720<br>it recursively. And if you have an array, you have to apply it to each entry or actually Java</p>
+<p>104<br>00:12:25,720 –&gt; 00:12:33,560<br>implements that in the array in its array’s library. So this recipe works pretty well in practice.</p>
+<p>105<br>00:12:33,559 –&gt; 00:12:45,159<br>And it’s used in several in Java’s libraries. Now in theory, it’s possible to do something that</p>
+<p>106<br>00:12:45,159 –&gt; 00:12:56,519<br>has the property that all positions are equally likely. It’s called universal ashronctions.</p>
+<p>107<br>00:12:56,600 –&gt; 00:13:01,480<br>These things exist, but they’re not so widely applied in practice.</p>
+<p>108<br>00:13:02,919 –&gt; 00:13:08,840<br>So the basic rule is if you’re computing your own, try to use the whole key, but consult an expert</p>
+<p>109<br>00:13:09,480 –&gt; 00:13:16,120<br>if you’re seeing some performance problems or you really want to be certain in some performance</p>
+<p>110<br>00:13:16,120 –&gt; 00:13:27,399<br>critical situation. Now what we get back from the hash code is a int value that’s between minus</p>
+<p>111<br>00:13:27,399 –&gt; 00:13:35,879<br>2 to the 31st and 2 to the 31st minus 1. Now what we need is if we have a table of size m,</p>
+<p>112<br>00:13:36,759 –&gt; 00:13:42,680<br>an array of size m that we’re going to use to store the keys, we need an int value between zero</p>
+<p>113<br>00:13:42,679 –&gt; 00:13:51,879<br>and m minus 1. And the value of m is maybe a power of 2 or sometimes we pick a prime</p>
+<p>114<br>00:13:52,919 –&gt; 00:14:01,159<br>because of the way that we normally would get the big hash code value down to be a number</p>
+<p>115<br>00:14:01,159 –&gt; 00:14:09,079<br>between zero and m minus 1 is to just do mod m. And if mod, if m is a prime then from math,</p>
+<p>116<br>00:14:10,040 –&gt; 00:14:15,720<br>modular arithmetic we know that we’re using all the bits and the number in that point too.</p>
+<p>117<br>00:14:16,759 –&gt; 00:14:24,120<br>Now since the hash code can be negative, this doesn’t quite work the way this arithmetic is</p>
+<p>118<br>00:14:24,120 –&gt; 00:14:32,200<br>implemented in Java because it’s one in a billion times. You really have to take the absolute value.</p>
+<p>119<br>00:14:32,520 –&gt; 00:14:40,759<br>Well sorry, you have to take the absolute value because otherwise it’d be negative and you can’t</p>
+<p>120<br>00:14:40,759 –&gt; 00:14:45,240<br>have a negative, you want to be between zero and a minus 1. But even if you take the absolute value,</p>
+<p>121<br>00:14:46,200 –&gt; 00:14:54,440<br>there’s going to have minus 2 to the 31st is possible. So you have to just take the 31 bits.</p>
+<p>122<br>00:14:55,320 –&gt; 00:14:59,320<br>You get the hash code out, make it positive and then mod m is the way to go.</p>
+<p>123<br>00:14:59,320 –&gt; 00:15:08,200<br>The math doesn’t quite work out right. So anyway, that code down at the bottom is, you can</p>
+<p>124<br>00:15:08,840 –&gt; 00:15:16,040<br>use that as a template for what you might want to do. That’s what we do in order to get the hash code</p>
+<p>125<br>00:15:16,760 –&gt; 00:15:23,960<br>to be a number between zero and m minus 1. And if m is prime it gives us some comfort that we have</p>
+<p>126<br>00:15:24,440 –&gt; 00:15:32,280<br>some possibility of each table position appearing with equal likelihood. So that’s our assumption that</p>
+<p>127<br>00:15:32,280 –&gt; 00:15:39,560<br>each key is equally likely to hash to an integer between zero and m minus 1. And this assumption,</p>
+<p>128<br>00:15:39,560 –&gt; 00:15:46,680<br>again, it’s with work, it’s possible to come close to this. Lots of researchers have done good work</p>
+<p>129<br>00:15:46,679 –&gt; 00:15:55,799<br>to show this. So we’ll assume that as a starting point. And that allows us to model the situation with</p>
+<p>130<br>00:15:55,799 –&gt; 00:16:02,679<br>the so-called bins and balls model that directly relates the study of hash functions to classical</p>
+<p>131<br>00:16:02,679 –&gt; 00:16:11,879<br>probability theory. So we’ve got m bins, that’s our, that’s our corresponds to our hash table.</p>
+<p>132<br>00:16:12,679 –&gt; 00:16:19,559<br>And we’ve got m balls and we have some number of balls, however many keys we have. And we throw</p>
+<p>133<br>00:16:19,559 –&gt; 00:16:27,000<br>them uniformly at random into m bins. And these things are studied in classical combinatoric analysis.</p>
+<p>134<br>00:16:27,000 –&gt; 00:16:34,519<br>For example, there’s the birthday problem, which how many balls do you throw before you find two</p>
+<p>135<br>00:16:34,519 –&gt; 00:16:40,200<br>hitting the same bin when you get the first collision? And the answer to that is it’s about</p>
+<p>136<br>00:16:40,200 –&gt; 00:16:47,720<br>square root of pi m over 2. When does all the bins fill up? That’s called the coupon collector problem.</p>
+<p>137<br>00:16:47,720 –&gt; 00:16:55,160<br>After about m natural log m tosses, every bin has at least one ball. And those are just examples of</p>
+<p>138<br>00:16:55,960 –&gt; 00:17:02,440<br>classic results from combinatorial analysis that help us understand what happens when we do this,</p>
+<p>139<br>00:17:02,440 –&gt; 00:17:09,480<br>which is what we’re doing with hashing. And we’ll look at more advanced versions of these problems</p>
+<p>140<br>00:17:09,480 –&gt; 00:17:19,319<br>when we want to study hashing. And in particular, it’s known that after you’ve thrown m balls into the</p>
+<p>141<br>00:17:19,319 –&gt; 00:17:29,720<br>m bins, then the most loaded bin has about log m over log m balls. So that’s going to help us get</p>
+<p>142<br>00:17:29,720 –&gt; 00:17:35,559<br>a handle on the performance of hashing algorithms when we get to the implementations.</p>
+<p>143<br>00:17:35,960 –&gt; 00:17:47,000<br>So this is just an example showing all the words in a tale of two cities using the modular hashing</p>
+<p>144<br>00:17:47,000 –&gt; 00:17:53,480<br>function for strings like the one that Javi uses. And they’re pretty uniformly distributed. That’s the</p>
+<p>145<br>00:17:54,519 –&gt; 00:17:57,319<br>summary for hash functions.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P52Part112 03_hash Tables</div>
+      <div>http://example.com/2025/10/23/PrincetonAlgorithms P52Part112-03_hash-tables/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/PrincetonAlgorithms%20P51Part111-06_rectangle-intersection/" title="PrincetonAlgorithms P51Part111 06_rectangle Intersection">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P51Part111 06_rectangle Intersection</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/PrincetonAlgorithms%20P53Part112-04_separate-chaining/" title="PrincetonAlgorithms P53Part112 04_separate Chaining">
+                        <span class="hidden-mobile">PrincetonAlgorithms P53Part112 04_separate Chaining</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

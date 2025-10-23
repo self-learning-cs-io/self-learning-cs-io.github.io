@@ -1,0 +1,714 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,000Before we can get to the algorithm, we have to consider another abstract concept, the NFA. 200:00:09,000 –&gt; 00:00:13,000We’ll take a look at the NFAs now. 300:00:13,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P104Part210-04_res-and-nfas/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,000Before we can get to the algorithm, we have to consider another abstract concept, the NFA. 200:00:09,000 –&gt; 00:00:13,000We’ll take a look at the NFAs now. 300:00:13,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.659Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:19.057Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,000<br>Before we can get to the algorithm, we have to consider another abstract concept, the NFA.</p>
+<p>2<br>00:00:09,000 –&gt; 00:00:13,000<br>We’ll take a look at the NFAs now.</p>
+<p>3<br>00:00:13,000 –&gt; 00:00:20,000<br>First of all, there’s a duality, well-known duality between regular expressions in DFA.</p>
+<p>4<br>00:00:20,000 –&gt; 00:00:24,000<br>DFA is a discrete finite automaton.</p>
+<p>5<br>00:00:24,000 –&gt; 00:00:29,000<br>That’s an abstract machine from theoretical computer science.</p>
+<p>6<br>00:00:29,000 –&gt; 00:00:36,000<br>Which is a very simple idea, it’s a state machine for recognizing whether a given string is in a given set.</p>
+<p>7<br>00:00:36,000 –&gt; 00:00:42,000<br>And if you’re not familiar with those, they’re very easy to understand and we’ll look at some examples.</p>
+<p>8<br>00:00:42,000 –&gt; 00:00:50,000<br>In a little summary from basic theoretical computer science, there’s a very important theorem called cleanys theorem</p>
+<p>9<br>00:00:50,000 –&gt; 00:00:55,000<br>that was developed to actually hear Princeton in the 30s.</p>
+<p>10<br>00:00:55,000 –&gt; 00:01:04,000<br>And it says that for any discrete finite state automaton, there exists a regular expression that describes the same set of strings.</p>
+<p>11<br>00:01:04,000 –&gt; 00:01:10,000<br>And equivalently, for any regular expression, there’s a DFA that recognizes the same set of strings.</p>
+<p>12<br>00:01:10,000 –&gt; 00:01:13,000<br>And this is just an example.</p>
+<p>13<br>00:01:13,000 –&gt; 00:01:17,000<br>And if you have seen this sort of thing, it’ll be familiar.</p>
+<p>14<br>00:01:17,000 –&gt; 00:01:22,000<br>And if you have it, you will understand better as we get into it.</p>
+<p>15<br>00:01:22,000 –&gt; 00:01:27,000<br>So a discrete finite state machine is a machine that has states that are labeled.</p>
+<p>16<br>00:01:27,000 –&gt; 00:01:32,000<br>And it has transitions from state to state that are labeled with characters.</p>
+<p>17<br>00:01:32,000 –&gt; 00:01:39,000<br>And the way that it works is if it’s in a state and it reads again, for every state, it’s well defined.</p>
+<p>18<br>00:01:39,000 –&gt; 00:01:44,000<br>If the next character is zero or one, there’s another state to go to.</p>
+<p>19<br>00:01:44,000 –&gt; 00:01:50,000<br>So for example, at state zero, if you see a zero, you stay in state zero, if you see a one, you go to state one.</p>
+<p>20<br>00:01:50,000 –&gt; 00:01:53,000<br>In state one, if you see a zero, you stay in state one.</p>
+<p>21<br>00:01:53,000 –&gt; 00:01:56,000<br>If you see a one, you go to state two and so forth.</p>
+<p>22<br>00:01:56,000 –&gt; 00:02:01,000<br>So at every state, read a character and go to the well defined next state.</p>
+<p>23<br>00:02:01,000 –&gt; 00:02:06,000<br>That’s a discrete, a deterministic finite state automaton.</p>
+<p>24<br>00:02:06,000 –&gt; 00:02:09,000<br>And so that’s the machine.</p>
+<p>25<br>00:02:09,000 –&gt; 00:02:14,000<br>You start it up on a string and it reads all the characters in the string.</p>
+<p>26<br>00:02:14,000 –&gt; 00:02:28,000<br>And then if it ends up in a state that’s so-called terminal state, and started on the start state, terminal state is just indicated by this exit error on this example.</p>
+<p>27<br>00:02:28,000 –&gt; 00:02:33,000<br>It ends up in the right state. You say that it recognizes the set of string.</p>
+<p>28<br>00:02:33,000 –&gt; 00:02:38,000<br>And so that’s a way to determine if a given string is in a specified set.</p>
+<p>29<br>00:02:38,000 –&gt; 00:02:41,000<br>The machine specifies the set.</p>
+<p>30<br>00:02:41,000 –&gt; 00:02:48,000<br>In an RE, we specify the set by writing characters and stars and meta characters and parentheses.</p>
+<p>31<br>00:02:48,000 –&gt; 00:02:55,000<br>And this regular expression recognizes the same set of strings.</p>
+<p>32<br>00:02:55,000 –&gt; 00:02:59,000<br>Describes the same set of strings that’s recognized by this DFA.</p>
+<p>33<br>00:02:59,000 –&gt; 00:03:05,000<br>I’m cleaning this theorem show that it’s always possible to construct such a machine.</p>
+<p>34<br>00:03:05,000 –&gt; 00:03:13,000<br>So that gives a basic plan for developing a pattern matching implementation.</p>
+<p>35<br>00:03:13,000 –&gt; 00:03:24,000<br>And this is developed by Ken Thompson that Bell Labs, one of the developers of UNIX, and this facility was an important part of early UNIX.</p>
+<p>36<br>00:03:24,000 –&gt; 00:03:30,000<br>Developed this idea based on the well known theorem from theoretical computer science.</p>
+<p>37<br>00:03:30,000 –&gt; 00:03:40,000<br>It’s let’s try to build a machine the same way as we did for Knuthmores Pratt, where we have no backup in the text input string.</p>
+<p>38<br>00:03:40,000 –&gt; 00:03:48,000<br>So we just got a finite state machine, but Knuthmores Pratt, we built a machine for recognizing the one string.</p>
+<p>39<br>00:03:48,000 –&gt; 00:03:53,000<br>How about building one for multiple strings? And that would give us a linear time guarantee.</p>
+<p>40<br>00:03:54,000 –&gt; 00:03:59,000<br>So the underlying extraction is a deterministic FSA or DFA.</p>
+<p>41<br>00:03:59,000 –&gt; 00:04:11,000<br>And the basic plan is to just go ahead and take your pattern that describes a set of strings and use that to build a DFA.</p>
+<p>42<br>00:04:11,000 –&gt; 00:04:17,000<br>And then simulate the DFA with the text as input, same way we did for Knuthmores Pratt.</p>
+<p>43<br>00:04:17,000 –&gt; 00:04:21,000<br>And if it accepts, we say we have a match, if it rejects, we don’t have a match.</p>
+<p>44<br>00:04:22,000 –&gt; 00:04:39,000<br>This is a fine plan, but it’s got a flaw. The bad news is that the plan is infeasible because the number of states in the DFA might be exponential in the length of the R-R.</p>
+<p>45<br>00:04:40,000 –&gt; 00:04:52,000<br>So it’s got too many states, the proof of cleanies theorem, the standard proof of cleanies theorem, involves exponential number of states.</p>
+<p>46<br>00:04:52,000 –&gt; 00:04:57,000<br>And it’s not that difficult to prove if you’re interested, be sure to look it up.</p>
+<p>47<br>00:04:57,000 –&gt; 00:05:04,000<br>But for practical standpoint, too many states can’t use that as the basis for our algorithm.</p>
+<p>48<br>00:05:05,000 –&gt; 00:05:09,000<br>But there’s an easy revision. And again, this gets back.</p>
+<p>49<br>00:05:09,000 –&gt; 00:05:16,000<br>It’ll give us a quadratic time guarantee in real life, it’s usually linear.</p>
+<p>50<br>00:05:16,000 –&gt; 00:05:25,000<br>And all we do is change the abstraction to use a non-deterministic finite state machine and an NFA rather than a DFA.</p>
+<p>51<br>00:05:26,000 –&gt; 00:05:43,000<br>So in the same basic plan, we’re going to build an NFA. It’s a different kind of machine, but actually it’s also the case that, for any regular expression, we can build an NFA.</p>
+<p>52<br>00:05:43,000 –&gt; 00:05:51,000<br>So in vice versa, cleanies theorem can extend to this. And so we’re going to simulate the NFA with the text as input.</p>
+<p>53<br>00:05:51,000 –&gt; 00:05:57,000<br>And so what do we mean by non-deterministic finite state machine? That’s where we have to talk about next.</p>
+<p>54<br>00:05:57,000 –&gt; 00:06:03,000<br>And we’ll just do it with this example that we’ll use throughout this lecture.</p>
+<p>55<br>00:06:03,000 –&gt; 00:06:09,000<br>So it’s very similar to the DFA that we had before.</p>
+<p>56<br>00:06:09,000 –&gt; 00:06:20,000<br>Now we’re going to put the characters in the states. And actually the kind of NFA that we’re going to build, we’re going to have one state for every character in the regular expression.</p>
+<p>57<br>00:06:21,000 –&gt; 00:06:27,000<br>So this is an NFA corresponding to this regular expression.</p>
+<p>58<br>00:06:27,000 –&gt; 00:06:35,000<br>We always enclose the regular expressions in parentheses just to make everything work.</p>
+<p>59<br>00:06:35,000 –&gt; 00:06:47,000<br>And then we’ve got this regular expression here, A star B or A C D, then we’re going to show how to build this NFA.</p>
+<p>60<br>00:06:48,000 –&gt; 00:06:52,000<br>And then I’ve simulated it to recognize the regular expression.</p>
+<p>61<br>00:06:52,000 –&gt; 00:07:01,000<br>And how is it different than a DFA? So there’s a character in every state. And if the characters it text character, it’s the same as before.</p>
+<p>62<br>00:07:01,000 –&gt; 00:07:04,000<br>We read that text character and move to the next state.</p>
+<p>63<br>00:07:04,000 –&gt; 00:07:12,000<br>But it’s more general kind of machine because states also have what’s called epsilon transition.</p>
+<p>64<br>00:07:12,000 –&gt; 00:07:19,000<br>And with an epsilon transition, the machine is allowed to change the state without scanning any text.</p>
+<p>65<br>00:07:19,000 –&gt; 00:07:26,000<br>So at the beginning, the machine can go from 0 to 1 to 2 back to 1.</p>
+<p>66<br>00:07:26,000 –&gt; 00:07:33,000<br>Sorry, 2 to 3 back to 2. Or it could go from 0 to 1 over to 6.</p>
+<p>67<br>00:07:33,000 –&gt; 00:07:39,000<br>There’s lots of places the machine could go without scanning any text character.</p>
+<p>68<br>00:07:39,000 –&gt; 00:07:44,000<br>But we do have the black match transitions that scan text characters.</p>
+<p>69<br>00:07:44,000 –&gt; 00:07:51,000<br>And so those are the rules the machine operates by. And the final rule is when does it accept?</p>
+<p>70<br>00:07:51,000 –&gt; 00:08:02,000<br>When does it decide a string is in the pattern? It accepts if there’s any sequence of transitions that scans all the text characters and and in the except case.</p>
+<p>71<br>00:08:02,000 –&gt; 00:08:09,000<br>It’s a way of specifying an infinite set of strings. But it’s got this non-determinism.</p>
+<p>72<br>00:08:09,000 –&gt; 00:08:13,000<br>It’s not always determined what the machine will do next.</p>
+<p>73<br>00:08:13,000 –&gt; 00:08:17,000<br>It’s a little bit of a mind blowing concept in theoretical computer science.</p>
+<p>74<br>00:08:17,000 –&gt; 00:08:27,000<br>But this particular example actually shows how such a concept can be made concrete and actually give us a widely useful algorithm.</p>
+<p>75<br>00:08:27,000 –&gt; 00:08:37,000<br>One way to think of a non-deterministic machine is a machine that has superpowers and can guess the proper sequence of state transitions to get to the end.</p>
+<p>76<br>00:08:37,000 –&gt; 00:08:50,000<br>Get to the except state. Another way to think of it is the sequence is if you provide a particular sequence, that’s a proof that the machine accepts the text.</p>
+<p>77<br>00:08:50,000 –&gt; 00:08:57,000<br>And so this is a real machine. We don’t have real machines that can guess the right answer.</p>
+<p>78<br>00:08:57,000 –&gt; 00:09:09,000<br>But it’s a completely well specified abstract machine and we can write a program to simulate its operation. And that’s what we’re going to do.</p>
+<p>79<br>00:09:09,000 –&gt; 00:09:23,000<br>So let’s just make sure that everyone’s got the concept down. So say we have the question is for a followed by BD. Is that accepted by this NFA down here?</p>
+<p>80<br>00:09:23,000 –&gt; 00:09:30,000<br>Any answer is yes because there is a sequence of legal transitions that ends up in state 11.</p>
+<p>81<br>00:09:30,000 –&gt; 00:09:42,000<br>So in this case we’ll take an epsilon transition from 0 to 1 to 2. And then we’ve got 4A. So we’ll chew up 4A’s 1.</p>
+<p>82<br>00:09:42,000 –&gt; 00:09:56,000<br>Sorry, 1. And then go back 2 and then go back 3 and then go back 4. And then we’ll be in state 3. And then at that point we’ll decide to take this epsilon transition.</p>
+<p>83<br>00:09:56,000 –&gt; 00:10:13,000<br>Well, assume the machines in this size take this one. Then it recognizes the B and moves to state 5. And then at state 5 it’s no place to go but 2 state 8.</p>
+<p>84<br>00:10:13,000 –&gt; 00:10:31,000<br>And then it takes the epsilon transition to state 9 and recognizes the D and it takes it out to 10 and 11. So there is a sequence of state transitions that get to 11 and recognizes all the characters in the string. So therefore it’s matched.</p>
+<p>85<br>00:10:31,000 –&gt; 00:10:46,000<br>So it’s true that there are sequences that the machine might guess and go the wrong state or stall doesn’t matter as long as there’s some sequence. And we’re going to assume that the machine always guesses the right one.</p>
+<p>86<br>00:10:46,000 –&gt; 00:11:04,000<br>So for example, if the machine just recognized 3A’s 1, 2, 3 and then went to state 4 it would get stuck because there’s no way for it to get out of state 4 because state 4 is looking for a B and it’s sitting on an A and so forth.</p>
+<p>87<br>00:11:04,000 –&gt; 00:11:13,000<br>So there’s definitely things that the machine could do to be wrong but we don’t care as long as there’s some way for it to get through.</p>
+<p>88<br>00:11:13,000 –&gt; 00:11:33,000<br>And then what about if it’s a string that’s not in the language recognized by the state by the machine. Well, so we have to argue about all possible sequences and prove that no sequence of legal transition as transitions ends in state 11.</p>
+<p>89<br>00:11:33,000 –&gt; 00:11:52,000<br>And that seems to be a fairly complicated sort of argument. So in this case the machine could recognize a bunch of A’s and then go to state 4 but again there’s no B so there’s no way it’s going to get out of state 4.</p>
+<p>90<br>00:11:52,000 –&gt; 00:12:03,000<br>And so you can make a general argument like looking at the machine, any string that it recognizes has to end in D and this one doesn’t end in D.</p>
+<p>91<br>00:12:03,000 –&gt; 00:12:19,000<br>But that’s a much more complicated thing than we’re talking about is to try to come up with a simple machine that will decide whether or not a string is in the language that it’s specified.</p>
+<p>92<br>00:12:19,000 –&gt; 00:12:31,000<br>So the question, the question that we have is we have this non-deterministic machine how are we going to decide whether a given string is in the language that it recognizes.</p>
+<p>93<br>00:12:31,000 –&gt; 00:12:39,000<br>So for deterministic machines like we use for Knuth-Morris Pratt it’s very easy because that every time there’s only one possible transition.</p>
+<p>94<br>00:12:39,000 –&gt; 00:12:49,000<br>But for non-deterministic if you’re in some states there’s multiple ways to go and you have to figure out the right transition.</p>
+<p>95<br>00:12:49,000 –&gt; 00:13:02,000<br>But actually the situation isn’t so bad. What we can do is to simulate the NFA is just make sure that we consider all possible transition sequences.</p>
+<p>96<br>00:13:02,000 –&gt; 00:13:09,000<br>And that’s what our algorithm for regular expression pattern matching is going to be based on that’s what we’ll look at next.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P104Part210-04_res-and-nfas/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P107Part210-07_regular-expression-applications/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P105Part210-05_nfa-simulation/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

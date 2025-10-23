@@ -1,0 +1,805 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,000First, we’re going to look at the process of simulating the operation of an NFA. 200:00:09,000 –&gt; 00:00:14,000In order to do that, we have to look at the representat">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/P105Part210-05_nfa-simulation/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,000First, we’re going to look at the process of simulating the operation of an NFA. 200:00:09,000 –&gt; 00:00:14,000In order to do that, we have to look at the representat">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T14:29:08.659Z">
+<meta property="article:modified_time" content="2025-10-23T14:31:19.048Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 22:29" pubdate>
+          2025年10月23日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          17 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,000<br>First, we’re going to look at the process of simulating the operation of an NFA.</p>
+<p>2<br>00:00:09,000 –&gt; 00:00:14,000<br>In order to do that, we have to look at the representation.</p>
+<p>3<br>00:00:14,000 –&gt; 00:00:21,000<br>So, for state names, we’re just going to use the integers from 0 to M.</p>
+<p>4<br>00:00:21,000 –&gt; 00:00:26,000<br>And those are just indexes into the regular expression string,</p>
+<p>5<br>00:00:26,000 –&gt; 00:00:29,000<br>with one extra one for the except state.</p>
+<p>6<br>00:00:29,000 –&gt; 00:00:35,000<br>So, if the RE has M characters, we’ve got M plus 1 states.</p>
+<p>7<br>00:00:35,000 –&gt; 00:00:38,000<br>And then we’ve got the match transitions.</p>
+<p>8<br>00:00:38,000 –&gt; 00:00:45,000<br>So, we’ll just keep the regular expression in an array.</p>
+<p>9<br>00:00:45,000 –&gt; 00:00:55,000<br>And then for characters that are not meta characters that are just characters from the alphabet,</p>
+<p>10<br>00:00:55,000 –&gt; 00:01:00,000<br>there’s a match transition just to the next element, just add 1.</p>
+<p>11<br>00:01:00,000 –&gt; 00:01:05,000<br>So, that’s an implicit representation of the match transitions.</p>
+<p>12<br>00:01:05,000 –&gt; 00:01:09,000<br>And then the next thing is the epsilon transitions.</p>
+<p>13<br>00:01:09,000 –&gt; 00:01:15,000<br>So, since there might be multiple edges leaving from any given state,</p>
+<p>14<br>00:01:15,000 –&gt; 00:01:19,000<br>and it’s directed, it always says go from this state to another one,</p>
+<p>15<br>00:01:19,000 –&gt; 00:01:22,000<br>we’ll use a directed graph.</p>
+<p>16<br>00:01:22,000 –&gt; 00:01:27,000<br>So, we just have a bunch of edges with given vertex names.</p>
+<p>17<br>00:01:27,000 –&gt; 00:01:31,000<br>And that’s convenient. That’s what we use for our graph processing algorithms,</p>
+<p>18<br>00:01:31,000 –&gt; 00:01:34,000<br>was indexes for vertex names.</p>
+<p>19<br>00:01:34,000 –&gt; 00:01:42,000<br>So, this is totally well suited to building a di-graph using the basic di-graph processing methods</p>
+<p>20<br>00:01:42,000 –&gt; 00:01:45,000<br>that we talked about when doing graph processing.</p>
+<p>21<br>00:01:45,000 –&gt; 00:01:48,000<br>So, that’s the representation.</p>
+<p>22<br>00:01:48,000 –&gt; 00:01:57,000<br>And then given that representation, it’s very straightforward to find out for any state,</p>
+<p>23<br>00:01:57,000 –&gt; 00:02:00,000<br>what of the possible next state.</p>
+<p>24<br>00:02:00,000 –&gt; 00:02:03,000<br>If it’s got a character in the possible next state,</p>
+<p>25<br>00:02:03,000 –&gt; 00:02:06,000<br>it’s the match character angle up one.</p>
+<p>26<br>00:02:06,000 –&gt; 00:02:14,000<br>Otherwise, it’s the vertices that are pointed to by the edges in its adjacency list,</p>
+<p>27<br>00:02:14,000 –&gt; 00:02:17,000<br>those of the epsilon transitions.</p>
+<p>28<br>00:02:17,000 –&gt; 00:02:24,000<br>So, let’s take a look at just given that basic idea that we can always get to the transitions</p>
+<p>29<br>00:02:24,000 –&gt; 00:02:28,000<br>from any given state how we’re going to do a simulation.</p>
+<p>30<br>00:02:28,000 –&gt; 00:02:35,000<br>And so, the idea is summarized by this diagram here.</p>
+<p>31<br>00:02:35,000 –&gt; 00:02:43,000<br>What we’re going to do is, at every step, each text character that the machine does read,</p>
+<p>32<br>00:02:43,000 –&gt; 00:02:49,000<br>we’re going to keep track of the set of all possible states where the NFA could be</p>
+<p>33<br>00:02:49,000 –&gt; 00:02:52,000<br>after reading in the i-text character.</p>
+<p>34<br>00:02:52,000 –&gt; 00:02:57,000<br>So, say we’ve done that, and this is just a schematic.</p>
+<p>35<br>00:02:57,000 –&gt; 00:03:03,000<br>So, there’s a bunch of states that we could get to after reading i-characters.</p>
+<p>36<br>00:03:03,000 –&gt; 00:03:10,000<br>Now, in some of those states, they are labeled with characters.</p>
+<p>37<br>00:03:10,000 –&gt; 00:03:16,000<br>And if that character matches our text character, they can take us to another state.</p>
+<p>38<br>00:03:16,000 –&gt; 00:03:19,000<br>So, say in this case, there’s three of them that matches.</p>
+<p>39<br>00:03:19,000 –&gt; 00:03:24,000<br>And the other one has a medic character or a different character,</p>
+<p>40<br>00:03:24,000 –&gt; 00:03:27,000<br>and it couldn’t take us to another state.</p>
+<p>41<br>00:03:27,000 –&gt; 00:03:35,000<br>So, that gives us all the possible states that you could be in just after reading the i-plus for a symbol.</p>
+<p>42<br>00:03:35,000 –&gt; 00:03:43,000<br>And now, what we do is take a look at the possible naltransitions that we could go to from those states.</p>
+<p>43<br>00:03:43,000 –&gt; 00:03:46,000<br>And that might take us to lots of other states.</p>
+<p>44<br>00:03:46,000 –&gt; 00:03:48,000<br>But that’s all the machine could do.</p>
+<p>45<br>00:03:48,000 –&gt; 00:03:53,000<br>It could read a character, and then it can take a bunch of naltransitions.</p>
+<p>46<br>00:03:53,000 –&gt; 00:04:01,000<br>But that’s all it knows how to do, and that’ll give us all the possible states that it could be in after reading i-plus-1 symbols.</p>
+<p>47<br>00:04:01,000 –&gt; 00:04:05,000<br>And then we just continue in that from everyone of those states.</p>
+<p>48<br>00:04:05,000 –&gt; 00:04:10,000<br>Some of them match the character, match the character, and then look at all the epsilon transitions.</p>
+<p>49<br>00:04:10,000 –&gt; 00:04:21,000<br>So, that’s the basic idea is to simply keep track of all possible states the NFA could be in after reading the first i-text characters.</p>
+<p>50<br>00:04:21,000 –&gt; 00:04:29,000<br>So, the only thing that’s complicated is how do we get all the states that we could reach by epsilon transitions.</p>
+<p>51<br>00:04:29,000 –&gt; 00:04:33,000<br>And we’ll look at that in just a second. It’s actually very straightforward.</p>
+<p>52<br>00:04:33,000 –&gt; 00:04:36,000<br>But let’s look at a demo first.</p>
+<p>53<br>00:04:36,000 –&gt; 00:04:42,000<br>So, this is our machine for a star b or a c followed by d.</p>
+<p>54<br>00:04:42,000 –&gt; 00:04:49,000<br>And let’s suppose it has this input. So, let’s do this demo.</p>
+<p>55<br>00:04:49,000 –&gt; 00:04:52,000<br>Okay, so we’re going to check if the input matches the pattern.</p>
+<p>56<br>00:04:52,000 –&gt; 00:04:56,000<br>We’re going to start the machine in state zero.</p>
+<p>57<br>00:04:56,000 –&gt; 00:05:01,000<br>And so, the zeroes of the states you could reach from the start.</p>
+<p>58<br>00:05:01,000 –&gt; 00:05:09,000<br>And then now we want to get to all the states that you could reach by epsilon transitions from the start.</p>
+<p>59<br>00:05:09,000 –&gt; 00:05:13,000<br>And so, there’s a bunch of them. So, we could go to one.</p>
+<p>60<br>00:05:13,000 –&gt; 00:05:20,000<br>And from one, we could get to go to two or six. From two, we could go to three. From three, we could go to two or four.</p>
+<p>61<br>00:05:20,000 –&gt; 00:05:26,000<br>So, we can get to all of those places from the start without scanning a single character.</p>
+<p>62<br>00:05:26,000 –&gt; 00:05:30,000<br>So, zero, one, two, three, four, and six.</p>
+<p>63<br>00:05:30,000 –&gt; 00:05:35,000<br>The machine could be in any one of those states before it scans a single character.</p>
+<p>64<br>00:05:35,000 –&gt; 00:05:38,000<br>So, that’s where it could be after zero characters.</p>
+<p>65<br>00:05:38,000 –&gt; 00:05:41,000<br>But what about now after the first character?</p>
+<p>66<br>00:05:41,000 –&gt; 00:05:47,000<br>Well, out of those states, only two and six involved matching an a.</p>
+<p>67<br>00:05:47,000 –&gt; 00:05:53,000<br>So, the only thing that could happen next to the machine could do next is to read the a.</p>
+<p>68<br>00:05:53,000 –&gt; 00:05:56,000<br>Either state two or state six.</p>
+<p>69<br>00:05:56,000 –&gt; 00:05:59,000<br>And those are going to be matched transitions.</p>
+<p>70<br>00:05:59,000 –&gt; 00:06:06,000<br>So, in the first case, it goes to three. And in the second case, it goes to seven.</p>
+<p>71<br>00:06:06,000 –&gt; 00:06:10,000<br>So, the state of states, it can be reachable just after matching the a.</p>
+<p>72<br>00:06:10,000 –&gt; 00:06:13,000<br>It’s just three and seven.</p>
+<p>73<br>00:06:13,000 –&gt; 00:06:17,000<br>But now from those states, it might get somewhere with epsilon transitions.</p>
+<p>74<br>00:06:17,000 –&gt; 00:06:20,000<br>We have to look at the epsilon transition graph.</p>
+<p>75<br>00:06:20,000 –&gt; 00:06:25,000<br>And what states could it go to from epsilon transitions from these two?</p>
+<p>76<br>00:06:25,000 –&gt; 00:06:33,000<br>Well, from three, seven is nowhere to go. And from three, it can go either to two or four.</p>
+<p>77<br>00:06:33,000 –&gt; 00:06:35,000<br>From two, it could go back to three.</p>
+<p>78<br>00:06:35,000 –&gt; 00:06:42,000<br>So, the total number of states that it could be after matching a is two, three, four, and seven.</p>
+<p>79<br>00:06:43,000 –&gt; 00:06:48,000<br>And so, that’s one step. We’ve matched one character.</p>
+<p>80<br>00:06:48,000 –&gt; 00:06:55,000<br>And we have kept track of all possible states the machine could be in after matching that character.</p>
+<p>81<br>00:06:55,000 –&gt; 00:06:57,000<br>Now, what about the next character?</p>
+<p>82<br>00:06:57,000 –&gt; 00:06:59,000<br>And you see, these four states take us all different ways.</p>
+<p>83<br>00:06:59,000 –&gt; 00:07:02,000<br>You could have an a, a, b, or a c next, and it could get somewhere.</p>
+<p>84<br>00:07:02,000 –&gt; 00:07:04,000<br>But it happens we have an a.</p>
+<p>85<br>00:07:04,000 –&gt; 00:07:08,000<br>And the only one of these states that matches an a is two.</p>
+<p>86<br>00:07:09,000 –&gt; 00:07:16,000<br>So, after matching the second a, the only place it could get to is three.</p>
+<p>87<br>00:07:16,000 –&gt; 00:07:20,000<br>And so, now we have only one state to work with.</p>
+<p>88<br>00:07:20,000 –&gt; 00:07:25,000<br>But where could we get with via epsilon transitions from three?</p>
+<p>89<br>00:07:25,000 –&gt; 00:07:31,000<br>And so, well, you can go from three to four or two while we did this before and then from two back to three.</p>
+<p>90<br>00:07:31,000 –&gt; 00:07:36,000<br>So, we could be in two, three or four after matching two ways.</p>
+<p>91<br>00:07:37,000 –&gt; 00:07:42,000<br>So, that’s all the possible states we could be in after matching the two a’s.</p>
+<p>92<br>00:07:42,000 –&gt; 00:07:46,000<br>Now, what’s next is the b, only state four matches the b.</p>
+<p>93<br>00:07:46,000 –&gt; 00:07:51,000<br>So, the only place we could be right after matching the b is in state five.</p>
+<p>94<br>00:07:51,000 –&gt; 00:07:56,000<br>And that’s after matching the b, now what about epsilon transitions?</p>
+<p>95<br>00:07:56,000 –&gt; 00:08:03,000<br>Well, state five has an epsilon transition to state eight.</p>
+<p>96<br>00:08:04,000 –&gt; 00:08:09,000<br>So, we could take that one and eight’s got one to nine.</p>
+<p>97<br>00:08:09,000 –&gt; 00:08:18,000<br>So, it could be in either five, eight, or nine after matching a a b and then following all the epsilon transitions.</p>
+<p>98<br>00:08:18,000 –&gt; 00:08:23,000<br>But it’s really important to keep in mind there’s no other state the machine could be in.</p>
+<p>99<br>00:08:23,000 –&gt; 00:08:27,000<br>It doesn’t have any other way to get through after matching a a b.</p>
+<p>100<br>00:08:27,000 –&gt; 00:08:30,000<br>It couldn’t get to state seven or six or two.</p>
+<p>101<br>00:08:30,000 –&gt; 00:08:33,000<br>Those are the only possible states it could be in.</p>
+<p>102<br>00:08:33,000 –&gt; 00:08:40,000<br>And since we’re each time progressing through the input, now we’re making progress to the end for sure.</p>
+<p>103<br>00:08:40,000 –&gt; 00:08:49,000<br>So, now to finish up this example, the only state out of those three that matches d is state nine.</p>
+<p>104<br>00:08:49,000 –&gt; 00:08:57,000<br>And so, that’s a match transition that reads the d and the only place you could be after matching a a b d is state ten.</p>
+<p>105<br>00:08:57,000 –&gt; 00:09:00,000<br>And then now we follow epsilon transitions.</p>
+<p>106<br>00:09:00,000 –&gt; 00:09:05,000<br>And that epsilon transition could take us to eleven.</p>
+<p>107<br>00:09:05,000 –&gt; 00:09:10,000<br>So, the only place the machine could be after matching a a b d is ten or eleven.</p>
+<p>108<br>00:09:10,000 –&gt; 00:09:18,000<br>Now, our condition on whether we accept the string or not is whether we could get to the accept state.</p>
+<p>109<br>00:09:18,000 –&gt; 00:09:26,000<br>And in this case, we could, it is possible for the machine to get from zero to the accept state and read all the input characters.</p>
+<p>110<br>00:09:26,000 –&gt; 00:09:35,000<br>So, that simulation is a proof that the machine accepts the input a a b d.</p>
+<p>111<br>00:09:35,000 –&gt; 00:09:43,000<br>We simulated its operation all possible ways and we managed to find the accept state.</p>
+<p>112<br>00:09:43,000 –&gt; 00:09:51,000<br>Of course, if we tried some input that the machine doesn’t recognize, we’d get stuck somewhere and either not get through the input,</p>
+<p>113<br>00:09:51,000 –&gt; 00:09:54,000<br>or have no possible states it could be in.</p>
+<p>114<br>00:09:54,000 –&gt; 00:10:00,000<br>And that would be approved that it does not accept since we try all possibilities.</p>
+<p>115<br>00:10:00,000 –&gt; 00:10:05,000<br>So, the only thing that’s complicated in this computation is reachability.</p>
+<p>116<br>00:10:05,000 –&gt; 00:10:12,000<br>But actually, from our study of the digraphs, this is one of the simplest problems that we discussed.</p>
+<p>117<br>00:10:12,000 –&gt; 00:10:15,000<br>What we really discussed was single source reachability.</p>
+<p>118<br>00:10:15,000 –&gt; 00:10:21,000<br>That is, given the source, can you find all vertices that are reachable from that source?</p>
+<p>119<br>00:10:21,000 –&gt; 00:10:24,000<br>And that was depth-first search.</p>
+<p>120<br>00:10:24,000 –&gt; 00:10:28,000<br>So, we had very simple depth-first search.</p>
+<p>121<br>00:10:28,000 –&gt; 00:10:39,000<br>But also, in that API, we put vertices reachable from a set of sources, so an iterable of sources.</p>
+<p>122<br>00:10:40,000 –&gt; 00:10:51,000<br>And so, can we get what we really need is all vertices reachable from a given source, from a source set of vertices.</p>
+<p>123<br>00:10:51,000 –&gt; 00:10:59,000<br>And it’s easy using DFS. You just run it from each of the sources and you don’t unmark the ones that you get to.</p>
+<p>124<br>00:10:59,000 –&gt; 00:11:07,000<br>And that stops DFS from revisiting any vertices and it marks all the vertices that you can get to from that set.</p>
+<p>125<br>00:11:07,000 –&gt; 00:11:13,000<br>So, it’s just a simple extension of our DFS implementation.</p>
+<p>126<br>00:11:13,000 –&gt; 00:11:20,000<br>It’s going to run in time proportional to the number of edges plus and over vertices in the digraph.</p>
+<p>127<br>00:11:20,000 –&gt; 00:11:24,000<br>And it’s a very simple computation, digraph reachability.</p>
+<p>128<br>00:11:24,000 –&gt; 00:11:30,000<br>So, given that capability, which we discussed in graph processing,</p>
+<p>129<br>00:11:30,000 –&gt; 00:11:38,000<br>the implementation of the NFA simulation is very straightforward.</p>
+<p>130<br>00:11:38,000 –&gt; 00:11:44,000<br>So, this is a data type that implements the NFA.</p>
+<p>131<br>00:11:44,000 –&gt; 00:11:51,000<br>So, we have a constructor that takes regular expression as its argument.</p>
+<p>132<br>00:11:51,000 –&gt; 00:11:56,000<br>And it’s going to build the NFA.</p>
+<p>133<br>00:11:56,000 –&gt; 00:12:05,000<br>And it’s got a method to build the digraph that we’ll talk about later.</p>
+<p>134<br>00:12:05,000 –&gt; 00:12:15,000<br>But it’s also got a client method recognizes where the client can after the NFA is constructed.</p>
+<p>135<br>00:12:15,000 –&gt; 00:12:25,000<br>It can take a text string and return true or false by simulating the operation.</p>
+<p>136<br>00:12:25,000 –&gt; 00:12:31,000<br>So, we’ll take a look at the building the digraph in a second.</p>
+<p>137<br>00:12:31,000 –&gt; 00:12:42,000<br>But the one that we’re talking about now is simulating the operation of the NFA once it’s built for a given text string.</p>
+<p>138<br>00:12:42,000 –&gt; 00:12:45,000<br>And this is the complete code.</p>
+<p>139<br>00:12:45,000 –&gt; 00:12:51,000<br>And it expresses in code what we talked about in English during the demo.</p>
+<p>140<br>00:12:51,000 –&gt; 00:12:59,000<br>It’s amazingly compact implementation of this idea of simulating the operation of an NFA.</p>
+<p>141<br>00:12:59,000 –&gt; 00:13:05,000<br>So, we keep a bag of integers or set of integers called PC.</p>
+<p>142<br>00:13:05,000 –&gt; 00:13:08,000<br>That’s kind of like program counter.</p>
+<p>143<br>00:13:08,000 –&gt; 00:13:15,000<br>So, that’s the set of all possible states that the NFA could be in.</p>
+<p>144<br>00:13:15,000 –&gt; 00:13:21,000<br>So, we build a DFS from our F-Land transition graph.</p>
+<p>145<br>00:13:21,000 –&gt; 00:13:30,000<br>So, the first thing that we do is do it a…</p>
+<p>146<br>00:13:30,000 –&gt; 00:13:34,000<br>For…</p>
+<p>147<br>00:13:34,000 –&gt; 00:13:43,000<br>We put on to the PC all the states that you can get to from state zero.</p>
+<p>148<br>00:13:43,000 –&gt; 00:13:49,000<br>So, that’s build a DFS that marks all the states you can get to from state zero.</p>
+<p>149<br>00:13:49,000 –&gt; 00:13:52,000<br>And then go through and put all of the states onto the PC.</p>
+<p>150<br>00:13:52,000 –&gt; 00:14:00,000<br>So, that’s our starting point is all the places that you get to via epsilon transitions from state zero.</p>
+<p>151<br>00:14:00,000 –&gt; 00:14:09,000<br>So, now during the execution of this for loop, PC is the thing that we have.</p>
+<p>152<br>00:14:09,000 –&gt; 00:14:13,000<br>All the states you can reach after scanning past the I-the character.</p>
+<p>153<br>00:14:13,000 –&gt; 00:14:16,000<br>So, we initialize for the zero character.</p>
+<p>154<br>00:14:16,000 –&gt; 00:14:20,000<br>And then all we do is for every one of those states,</p>
+<p>155<br>00:14:20,000 –&gt; 00:14:24,000<br>well, first thing we do is test if we reach the accept state.</p>
+<p>156<br>00:14:24,000 –&gt; 00:14:29,000<br>If we reach the accept state, we’re going to have nothing…</p>
+<p>157<br>00:14:29,000 –&gt; 00:14:32,000<br>We’re going to claim we have nothing left to do.</p>
+<p>158<br>00:14:33,000 –&gt; 00:14:47,000<br>If we have a match, that is, if the character in the RE at that state position matches our I-the-the-tex character,</p>
+<p>159<br>00:14:47,000 –&gt; 00:14:51,000<br>then we’re going to keep another set of possible states called match.</p>
+<p>160<br>00:14:51,000 –&gt; 00:14:55,000<br>So, those are the ones you can get to just after matching a text character.</p>
+<p>161<br>00:14:55,000 –&gt; 00:14:58,000<br>And so, we’ll just add B plus one.</p>
+<p>162<br>00:14:58,000 –&gt; 00:15:02,000<br>So, if we find a matching character at B, we just go to B plus one.</p>
+<p>163<br>00:15:02,000 –&gt; 00:15:05,000<br>That’s the implicit match transition.</p>
+<p>164<br>00:15:05,000 –&gt; 00:15:11,000<br>And here we’ll throw in don’t care because it’s so easy to do after regular expressions as I don’t care</p>
+<p>165<br>00:15:11,000 –&gt; 00:15:14,000<br>what character matches, then throw that one and two.</p>
+<p>166<br>00:15:14,000 –&gt; 00:15:19,000<br>So, this just adds don’t care to the implementation.</p>
+<p>167<br>00:15:19,000 –&gt; 00:15:27,000<br>And so, we do that for all states in our PC and the states that we could be in</p>
+<p>168<br>00:15:27,000 –&gt; 00:15:37,000<br>just before, just while looking at the I-the-tex character, if we have a match, then we put the next states into match.</p>
+<p>169<br>00:15:37,000 –&gt; 00:15:44,000<br>So, now, what we have to do is follow the epsilon transitions from match.</p>
+<p>170<br>00:15:44,000 –&gt; 00:15:55,000<br>So, now we build another DFS, which gives us marks all the states that you could reach by starting with any of the states in match.</p>
+<p>171<br>00:15:55,000 –&gt; 00:15:58,000<br>And now, we’ll rebuild a new PC.</p>
+<p>172<br>00:15:58,000 –&gt; 00:16:04,000<br>We’ll just set Bc to a new bag and put all the marked states for that search.</p>
+<p>173<br>00:16:04,000 –&gt; 00:16:10,000<br>So, those are all the ones that you could get to via epsilon transitions right after a match and put that in the PC.</p>
+<p>174<br>00:16:10,000 –&gt; 00:16:21,000<br>Now, we have a new PC and we’ve read the I-the-te character and we go to the I-plus-first character and simply continue.</p>
+<p>175<br>00:16:21,000 –&gt; 00:16:32,000<br>So, when we’re done with all of the text, then we can test if we made it to the accept state.</p>
+<p>176<br>00:16:32,000 –&gt; 00:16:38,000<br>That is, if any of the states in our current set of states is the accept state, we return true.</p>
+<p>177<br>00:16:38,000 –&gt; 00:16:42,000<br>And if we didn’t get to the accept state, after all of that, we return false.</p>
+<p>178<br>00:16:42,000 –&gt; 00:17:03,000<br>Very compact code that takes advantage of our implementation of reachability for diagrams in a reasonable way to simulate the operation of an NFA by keeping track of all reachable states.</p>
+<p>179<br>00:17:04,000 –&gt; 00:17:24,000<br>So, what about the analysis? Well, it’s easy to see that the not difficult to see that if our text is N characters and we have an M character pattern, the worst that could happen is that we take time proportional to M times N.</p>
+<p>180<br>00:17:25,000 –&gt; 00:17:36,000<br>And that’s just because for every one of the characters, we have a set of states and set of all possible states and we iterate through that set of possible states a few times.</p>
+<p>181<br>00:17:36,000 –&gt; 00:17:40,000<br>We even run DFS on it, but that’s linear.</p>
+<p>182<br>00:17:40,000 –&gt; 00:17:53,000<br>And there’s the extra point that the number of edges that we have is less than 3M. No node has more than 3 edges leaving it.</p>
+<p>183<br>00:17:53,000 –&gt; 00:18:03,000<br>So, the total amount of time for each character is proportional to M and there’s M characters, so there are any times proportional to M times N.</p>
+<p>184<br>00:18:03,000 –&gt; 00:18:06,000<br>That’s the cost of the simulation.</p>
+<p>185<br>00:18:06,000 –&gt; 00:18:12,000<br>Of course, a lot of times the size of the set of the states is much smaller than that.</p>
+<p>186<br>00:18:12,000 –&gt; 00:18:19,000<br>So, in many real world problems, it’s closer to linear. That’s an NFA simulation.</p>
+<p>187<br>00:18:23,000 –&gt; 00:18:24,000<br>So, we have a set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and set of states and</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/P105Part210-05_nfa-simulation/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/P104Part210-04_res-and-nfas/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/P103Part210-03_regular-expressions/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
