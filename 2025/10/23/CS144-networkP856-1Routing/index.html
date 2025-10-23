@@ -1,0 +1,854 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP856-1Routing.md100:00:00,000 –&gt; 00:00:05,000In the next few videos, we’re going to look at a number of different ways that packets can be routed across a network. 200:00:05,00">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP856-1Routing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP856-1Routing.md100:00:00,000 –&gt; 00:00:05,000In the next few videos, we’re going to look at a number of different ways that packets can be routed across a network. 200:00:05,00">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:55.133Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:16.858Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP856-1Routing-md"><a href="#title-CS144-networkP856-1Routing-md" class="headerlink" title="title: CS144-networkP856-1Routing.md"></a>title: CS144-networkP856-1Routing.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:05,000<br>In the next few videos, we’re going to look at a number of different ways that packets can be routed across a network.</p>
+<p>2<br>00:00:05,000 –&gt; 00:00:09,000<br>In this video, I’m going to stop with some of the basic concepts and principles of routing,</p>
+<p>3<br>00:00:09,000 –&gt; 00:00:13,000<br>regardless of whether we’re routing packets based on the layer 3 or IP addresses,</p>
+<p>4<br>00:00:13,000 –&gt; 00:00:18,000<br>or if we’re using the Ethernet address and Ethernet switches.</p>
+<p>5<br>00:00:18,000 –&gt; 00:00:26,000<br>The basic problem that we’re trying to solve when routing packets is how should packets be routed from A to B?</p>
+<p>6<br>00:00:26,000 –&gt; 00:00:37,000<br>Should the path be picked by the end host A over here by the network in the middle or by some other entity?</p>
+<p>7<br>00:00:37,000 –&gt; 00:00:42,000<br>So what path should they pick and what are the most important metrics for them to consider?</p>
+<p>8<br>00:00:42,000 –&gt; 00:00:47,000<br>Should they take the shortest path, the least congested path, a randomly picked path,</p>
+<p>9<br>00:00:47,000 –&gt; 00:00:50,000<br>the safest and most reliable path? Does it matter?</p>
+<p>10<br>00:00:51,000 –&gt; 00:00:58,000<br>So in the next few minutes, we’re going to look through at some different techniques and some different metrics for solving this basic problem.</p>
+<p>11<br>00:00:58,000 –&gt; 00:01:01,000<br>So I’m going to look at a number of different approaches.</p>
+<p>12<br>00:01:01,000 –&gt; 00:01:05,000<br>Flooding, source routing, forwarding table and spanning tree.</p>
+<p>13<br>00:01:05,000 –&gt; 00:01:09,000<br>We’ll look at some metrics, and then I’ll describe what a shortest path spanning tree is,</p>
+<p>14<br>00:01:09,000 –&gt; 00:01:14,000<br>and then describe some other types of routing, multi-path and multi-cast.</p>
+<p>15<br>00:01:15,000 –&gt; 00:01:23,000<br>Flooding is perhaps the simplest way to make sure at least one copy of a packet is delivered to every destination in the network,</p>
+<p>16<br>00:01:23,000 –&gt; 00:01:26,000<br>and therefore to the destination that it’s wanting to go to.</p>
+<p>17<br>00:01:26,000 –&gt; 00:01:31,000<br>With flooding, each router is going to forward the packet to every interface.</p>
+<p>18<br>00:01:31,000 –&gt; 00:01:37,000<br>So if A is sending a packet, and let’s say that it’s sending it to B, so it has B is addressing it.</p>
+<p>19<br>00:01:38,000 –&gt; 00:01:44,000<br>When it reaches the first router, it’s going to send it out of every interface except the one through which it arrived.</p>
+<p>20<br>00:01:44,000 –&gt; 00:01:49,000<br>That’s going to happen at the next router as well, so it’ll send it out of these interfaces.</p>
+<p>21<br>00:01:49,000 –&gt; 00:01:53,000<br>It will come down to this one here, which will send it out here and here.</p>
+<p>22<br>00:01:53,000 –&gt; 00:01:58,000<br>Then it’ll go out from here, and then it’ll go from this one out of here.</p>
+<p>23<br>00:01:58,000 –&gt; 00:02:03,000<br>But it’ll also go in this direction, and it’ll come back around here and come back around here.</p>
+<p>24<br>00:02:03,000 –&gt; 00:02:09,000<br>And you can see very quickly that there’s a loop that’s going to form in the middle with the packet going around and around forever.</p>
+<p>25<br>00:02:09,000 –&gt; 00:02:16,000<br>But we can be sure in this case, because every packet will be delivered to at least once to every leaf.</p>
+<p>26<br>00:02:16,000 –&gt; 00:02:18,000<br>It will therefore reach every destination.</p>
+<p>27<br>00:02:18,000 –&gt; 00:02:28,000<br>And if it contains B’s address, which it does, then we can be sure that B can find the packet or receive the packet by simply filtering on packets matching its address.</p>
+<p>28<br>00:02:29,000 –&gt; 00:02:31,000<br>This is a clearly very inefficient.</p>
+<p>29<br>00:02:31,000 –&gt; 00:02:37,000<br>All packets are going to cross every link, potentially multiple times, and packets can loop forever.</p>
+<p>30<br>00:02:37,000 –&gt; 00:02:45,000<br>Therefore, it’s common to use a hop count or a time to live field like we do in IP to stop packets looping forever.</p>
+<p>31<br>00:02:45,000 –&gt; 00:02:49,000<br>But at least we can be sure that packets are going to reach their eventual destination.</p>
+<p>32<br>00:02:49,000 –&gt; 00:02:51,000<br>We can be absolutely sure of that.</p>
+<p>33<br>00:02:51,000 –&gt; 00:02:53,000<br>So, flooding is nice and simple.</p>
+<p>34<br>00:02:53,000 –&gt; 00:02:57,000<br>It requires no state in the routers.</p>
+<p>35<br>00:02:57,000 –&gt; 00:03:03,000<br>It doesn’t require any understanding by A of the topology of the network.</p>
+<p>36<br>00:03:03,000 –&gt; 00:03:05,000<br>So, it’s very, very simple.</p>
+<p>37<br>00:03:05,000 –&gt; 00:03:14,000<br>But because it’s so inefficient, it’s really only used at times and instances when we know nothing about the topology, or we can’t trust our knowledge of it.</p>
+<p>38<br>00:03:14,000 –&gt; 00:03:16,000<br>And we need to be able to reach every node.</p>
+<p>39<br>00:03:16,000 –&gt; 00:03:21,000<br>So, we’ll see a couple of examples of this later, particularly at times of transition, when we’re not quite sure what’s going on.</p>
+<p>40<br>00:03:21,000 –&gt; 00:03:25,000<br>So, in summary, it’s inefficient in link usage.</p>
+<p>41<br>00:03:25,000 –&gt; 00:03:30,000<br>Packets can loop forever, and it’s used when we don’t know or can’t trust the topology.</p>
+<p>42<br>00:03:30,000 –&gt; 00:03:33,000<br>Now, let’s look at another method called source routing.</p>
+<p>43<br>00:03:33,000 –&gt; 00:03:39,000<br>Source routing is when the source populates the packet with a sequence of hops that it will visit along its path.</p>
+<p>44<br>00:03:39,000 –&gt; 00:03:50,000<br>So, if we give names to these routers, let’s call them R1, R2, R3, R4, R5, and R6.</p>
+<p>45<br>00:03:50,000 –&gt; 00:04:00,000<br>And so, if A is sending to B with source routing, it might, for example, put in the header, R1, R3, R6.</p>
+<p>46<br>00:04:00,000 –&gt; 00:04:05,000<br>To indicate that it wants the packet to go through that sequence before it gets to B.</p>
+<p>47<br>00:04:05,000 –&gt; 00:04:10,000<br>So, that would just say, go to R1 first, go to R3, R6, and then to B.</p>
+<p>48<br>00:04:10,000 –&gt; 00:04:13,000<br>I just have to draw them in the order in which they’ll be visited.</p>
+<p>49<br>00:04:13,000 –&gt; 00:04:16,000<br>That’s going to depend on the way in which we use source routing.</p>
+<p>50<br>00:04:16,000 –&gt; 00:04:18,000<br>We’ll see that a little bit later.</p>
+<p>51<br>00:04:18,000 –&gt; 00:04:21,000<br>It’s specifically here, A knows the topology.</p>
+<p>52<br>00:04:21,000 –&gt; 00:04:25,000<br>It knows the order in which it wants the routers to be visited.</p>
+<p>53<br>00:04:25,000 –&gt; 00:04:32,000<br>And it’s giving the final destination to make sure that it works and reaches B.</p>
+<p>54<br>00:04:32,000 –&gt; 00:04:37,000<br>Likewise, with flooding, the routers need no forwarding tables to be populated in advance.</p>
+<p>55<br>00:04:37,000 –&gt; 00:04:40,000<br>All the decision making is made by the end host.</p>
+<p>56<br>00:04:40,000 –&gt; 00:04:44,000<br>It’s actually a pretty good example of the end-to-end principle in action.</p>
+<p>57<br>00:04:44,000 –&gt; 00:04:46,000<br>The function is implemented at the end host.</p>
+<p>58<br>00:04:46,000 –&gt; 00:04:51,000<br>A is the one that knew the route, and so it picked the path that would be taken.</p>
+<p>59<br>00:04:51,000 –&gt; 00:04:55,000<br>And this way we can make sure it’s done correctly.</p>
+<p>60<br>00:04:55,000 –&gt; 00:04:59,000<br>But it’s a lot of work for the end host, and packets are a variable length,</p>
+<p>61<br>00:04:59,000 –&gt; 00:05:01,000<br>and might carry a lot of addresses.</p>
+<p>62<br>00:05:01,000 –&gt; 00:05:06,000<br>So, on the face of it, it’s kind of a good scheme, but clearly we would like to do something</p>
+<p>63<br>00:05:06,000 –&gt; 00:05:10,000<br>that was a little less heavyweight on the end host.</p>
+<p>64<br>00:05:10,000 –&gt; 00:05:13,000<br>So, it’s an end-to-end solution, no support needed from the network.</p>
+<p>65<br>00:05:13,000 –&gt; 00:05:16,000<br>Packet care is a variable and maybe long list of addresses.</p>
+<p>66<br>00:05:16,000 –&gt; 00:05:19,000<br>End hosts must know the topology and choose the route.</p>
+<p>67<br>00:05:19,000 –&gt; 00:05:25,000<br>And this is used when the end host wants to control the route.</p>
+<p>68<br>00:05:25,000 –&gt; 00:05:29,000<br>So now let’s look at the method that we already know is used by the internet.</p>
+<p>69<br>00:05:29,000 –&gt; 00:05:36,000<br>And this is when we actually have a forwarding table that’s used throughout the network</p>
+<p>70<br>00:05:36,000 –&gt; 00:05:38,000<br>to route the packets hot by hot.</p>
+<p>71<br>00:05:38,000 –&gt; 00:05:41,000<br>And as you know already, I’ll go through this fairly quickly.</p>
+<p>72<br>00:05:41,000 –&gt; 00:05:45,000<br>If we’re sending a packet from A to B, along this particular path,</p>
+<p>73<br>00:05:45,000 –&gt; 00:05:49,000<br>S1, S2, S4, and then to B, with a forwarding table case,</p>
+<p>74<br>00:05:49,000 –&gt; 00:05:54,000<br>we use a forwarding table at each hop in order to decide where the packet will go next.</p>
+<p>75<br>00:05:54,000 –&gt; 00:05:56,000<br>So we’ve seen this example before.</p>
+<p>76<br>00:05:56,000 –&gt; 00:05:59,000<br>You can really think of this as an optimization.</p>
+<p>77<br>00:05:59,000 –&gt; 00:06:05,000<br>It’s an optimization in the sense that, although we could correctly have the behavior work</p>
+<p>78<br>00:06:05,000 –&gt; 00:06:11,000<br>by populating the packets with the route using source routing,</p>
+<p>79<br>00:06:11,000 –&gt; 00:06:15,000<br>we’ve decided to have the network take on this function to optimize it</p>
+<p>80<br>00:06:15,000 –&gt; 00:06:20,000<br>because it’s such a common function, common to everybody that’s using the network.</p>
+<p>81<br>00:06:20,000 –&gt; 00:06:24,000<br>So it’s an optimization in the sense that the network is going to handle the</p>
+<p>82<br>00:06:24,000 –&gt; 00:06:27,000<br>not hot by hot routing on behalf of everybody.</p>
+<p>83<br>00:06:27,000 –&gt; 00:06:30,000<br>It does require a population of the forwarding tables.</p>
+<p>84<br>00:06:30,000 –&gt; 00:06:33,000<br>So we need a way to populate these forwarding tables.</p>
+<p>85<br>00:06:33,000 –&gt; 00:06:39,000<br>And we’re going to see in the next few videos various ways in which we can populate this table.</p>
+<p>86<br>00:06:39,000 –&gt; 00:06:44,000<br>So from here on, we’re going to be making the assumption that we’re using forwarding tables</p>
+<p>87<br>00:06:44,000 –&gt; 00:06:50,000<br>and that we need some method in order to populate this table in order to decide</p>
+<p>88<br>00:06:50,000 –&gt; 00:06:53,000<br>how the routing will take place.</p>
+<p>89<br>00:06:53,000 –&gt; 00:06:59,000<br>We have a predestination state in the network because we are going to, for each of the destinations,</p>
+<p>90<br>00:06:59,000 –&gt; 00:07:04,000<br>we’re going to have to have a next hop address, populated in the table,</p>
+<p>91<br>00:07:04,000 –&gt; 00:07:07,000<br>although we don’t necessarily have to have per flow state.</p>
+<p>92<br>00:07:07,000 –&gt; 00:07:12,000<br>Any flows in the network that are heading towards the same destination can all use the same entries.</p>
+<p>93<br>00:07:12,000 –&gt; 00:07:16,000<br>When I’m populating the forwarding tables with entries,</p>
+<p>94<br>00:07:16,000 –&gt; 00:07:20,000<br>it’s often the goal to create what we call a spanning tree.</p>
+<p>95<br>00:07:20,000 –&gt; 00:07:23,000<br>And we’re going to see many examples of this.</p>
+<p>96<br>00:07:23,000 –&gt; 00:07:28,000<br>Spanning tree is spanning in the sense that it reaches all leaves</p>
+<p>97<br>00:07:28,000 –&gt; 00:07:31,000<br>and it’s a tree in the sense that it has no loops.</p>
+<p>98<br>00:07:31,000 –&gt; 00:07:35,000<br>So we want to make sure that we can reach every destination</p>
+<p>99<br>00:07:35,000 –&gt; 00:07:38,000<br>or every source can reach a particular destination</p>
+<p>100<br>00:07:38,000 –&gt; 00:07:41,000<br>and we want to make sure that there are no loops.</p>
+<p>101<br>00:07:41,000 –&gt; 00:07:43,000<br>Let me give you an example of this.</p>
+<p>102<br>00:07:43,000 –&gt; 00:07:48,000<br>Imagine that we want to create the spanning tree that ABC and D, the hosts at the top,</p>
+<p>103<br>00:07:48,000 –&gt; 00:07:53,000<br>will use in order to send packets to X, the destination at the bottom.</p>
+<p>104<br>00:07:53,000 –&gt; 00:08:00,000<br>So A, its packets could follow this path, B’s might follow this path, C’s might follow this path,</p>
+<p>105<br>00:08:00,000 –&gt; 00:08:03,000<br>and D’s might follow that path.</p>
+<p>106<br>00:08:03,000 –&gt; 00:08:07,000<br>So you can see I’ve created a tree with the root at X,</p>
+<p>107<br>00:08:07,000 –&gt; 00:08:11,000<br>and it’s spanning all of the sources that might send to it.</p>
+<p>108<br>00:08:11,000 –&gt; 00:08:14,000<br>So tree in the sense that it has no loops.</p>
+<p>109<br>00:08:15,000 –&gt; 00:08:21,000<br>This would be implemented by populating the routing, the forwarding table at R1</p>
+<p>110<br>00:08:21,000 –&gt; 00:08:28,000<br>with the entry. If I want to go to X, then I go to R3 as my next hop.</p>
+<p>111<br>00:08:28,000 –&gt; 00:08:31,000<br>That’s telling it what to do here.</p>
+<p>112<br>00:08:31,000 –&gt; 00:08:37,000<br>Likewise, at R3, we would have an entry that said if I want to go to X,</p>
+<p>113<br>00:08:37,000 –&gt; 00:08:40,000<br>then I will go directly to X.</p>
+<p>114<br>00:08:41,000 –&gt; 00:08:50,000<br>Similarly, over here in R4, I will say if I’m going to go to X, then I’ll go there via R7.</p>
+<p>115<br>00:08:50,000 –&gt; 00:08:55,000<br>So the spanning tree is used in order to create the routing entries</p>
+<p>116<br>00:08:55,000 –&gt; 00:09:02,000<br>so that we can populate the forwarding tables and therefore route paths along that spanning tree.</p>
+<p>117<br>00:09:02,000 –&gt; 00:09:06,000<br>When calculating the spanning tree, we need to know what our objective is,</p>
+<p>118<br>00:09:06,000 –&gt; 00:09:11,000<br>or what our metrics of success are, how we know amongst all of the possible spanning trees,</p>
+<p>119<br>00:09:11,000 –&gt; 00:09:15,000<br>which one we’re going to pick.</p>
+<p>120<br>00:09:15,000 –&gt; 00:09:17,000<br>So this is going to depend on what our metric is.</p>
+<p>121<br>00:09:17,000 –&gt; 00:09:20,000<br>So let’s look at some choices that we might have.</p>
+<p>122<br>00:09:20,000 –&gt; 00:09:24,000<br>We might choose to pick the spanning tree that minimizes the distance.</p>
+<p>123<br>00:09:24,000 –&gt; 00:09:28,000<br>This could be the geographic distance or the minimized the length of the links</p>
+<p>124<br>00:09:28,000 –&gt; 00:09:30,000<br>between the source and the destination.</p>
+<p>125<br>00:09:30,000 –&gt; 00:09:36,000<br>So for example, noticing that this link along here is long,</p>
+<p>126<br>00:09:36,000 –&gt; 00:09:43,000<br>we might decide that this path is actually geographically shorter than this one down here,</p>
+<p>127<br>00:09:43,000 –&gt; 00:09:46,000<br>and therefore prefer it.</p>
+<p>128<br>00:09:46,000 –&gt; 00:09:49,000<br>We might also choose the one with the minimum hop count.</p>
+<p>129<br>00:09:49,000 –&gt; 00:09:53,000<br>So the example I showed you before was generally following the shortest hop count.</p>
+<p>130<br>00:09:53,000 –&gt; 00:10:00,000<br>So for example, D would take this path here because it’s the shortest number of hops.</p>
+<p>131<br>00:10:00,000 –&gt; 00:10:02,000<br>It will also be the one that minimizes delay.</p>
+<p>132<br>00:10:02,000 –&gt; 00:10:06,000<br>I’ve got no way of telling directly from the graph what will minimize the delay,</p>
+<p>133<br>00:10:06,000 –&gt; 00:10:08,000<br>but that might be something that I can measure.</p>
+<p>134<br>00:10:08,000 –&gt; 00:10:12,000<br>In recent past, what have been the links that have experienced the minimum delay</p>
+<p>135<br>00:10:12,000 –&gt; 00:10:15,000<br>and therefore give preference to those?</p>
+<p>136<br>00:10:15,000 –&gt; 00:10:19,000<br>I might use the ones that maximize the throughput, they may be the least congested,</p>
+<p>137<br>00:10:19,000 –&gt; 00:10:21,000<br>or the path that is least loaded.</p>
+<p>138<br>00:10:21,000 –&gt; 00:10:26,000<br>Or it may be the most reliable path, the one that in the recent past has failed least often.</p>
+<p>139<br>00:10:26,000 –&gt; 00:10:28,000<br>That may be my metric.</p>
+<p>140<br>00:10:28,000 –&gt; 00:10:30,000<br>It could also be the lowest cost path.</p>
+<p>141<br>00:10:30,000 –&gt; 00:10:34,000<br>I may have a price or a cost associated with using any one link and I want to minimize it.</p>
+<p>142<br>00:10:34,000 –&gt; 00:10:41,000<br>Or it could be the most secure path, the one that most recently has had the fewest security attacks,</p>
+<p>143<br>00:10:41,000 –&gt; 00:10:45,000<br>or it might be one of which I have a virtual private network running.</p>
+<p>144<br>00:10:45,000 –&gt; 00:10:48,000<br>And so on, there are many, many metrics that I could use.</p>
+<p>145<br>00:10:48,000 –&gt; 00:10:52,000<br>In fact, I could actually use a combination of any of those.</p>
+<p>146<br>00:10:52,000 –&gt; 00:10:57,000<br>So typically, how we do this is we start by creating an annotated graph</p>
+<p>147<br>00:10:57,000 –&gt; 00:11:00,000<br>with whatever cost metric we’ve chosen and I could have picked any of those ones.</p>
+<p>148<br>00:11:00,000 –&gt; 00:11:04,000<br>So we can represent our metric as a cost for using a link.</p>
+<p>149<br>00:11:04,000 –&gt; 00:11:08,000<br>So this is a set of costs that I made up, just as an example.</p>
+<p>150<br>00:11:08,000 –&gt; 00:11:11,000<br>In general, the cost might be different in each direction,</p>
+<p>151<br>00:11:11,000 –&gt; 00:11:16,000<br>just because of the congested maybe more in one direction or the throughput may be different.</p>
+<p>152<br>00:11:16,000 –&gt; 00:11:21,000<br>But for ease of drawing, I’m going to show one number per link here.</p>
+<p>153<br>00:11:21,000 –&gt; 00:11:26,000<br>So one natural choice is to try to find the spanning tree from every host to X.</p>
+<p>154<br>00:11:26,000 –&gt; 00:11:30,000<br>And I might try to find the one that is minimizing the cost.</p>
+<p>155<br>00:11:30,000 –&gt; 00:11:33,000<br>In which case, I’m going to call it the minimum cost spanning tree.</p>
+<p>156<br>00:11:33,000 –&gt; 00:11:37,000<br>In this example, the solution is fairly obvious.</p>
+<p>157<br>00:11:37,000 –&gt; 00:11:40,000<br>Let’s have a look at what that would be.</p>
+<p>158<br>00:11:40,000 –&gt; 00:11:45,000<br>So coming to X, if I’m coming from B,</p>
+<p>159<br>00:11:45,000 –&gt; 00:11:52,000<br>then the minimum cost is going to be to take that path here, because that has a cost of four.</p>
+<p>160<br>00:11:52,000 –&gt; 00:11:58,000<br>When I’m going from C, the minimum cost is going to be this one here,</p>
+<p>161<br>00:11:58,000 –&gt; 00:12:01,000<br>which has a cost of five, three plus two.</p>
+<p>162<br>00:12:01,000 –&gt; 00:12:04,000<br>Coming from D, it’s pretty easy. It’s going to be down here.</p>
+<p>163<br>00:12:04,000 –&gt; 00:12:07,000<br>A is a little bit more subtle. It’s not the one down here.</p>
+<p>164<br>00:12:07,000 –&gt; 00:12:12,000<br>The lowest cost one is the one that goes this way, which has a cost of five.</p>
+<p>165<br>00:12:12,000 –&gt; 00:12:15,000<br>So there’s my minimum cost spanning tree.</p>
+<p>166<br>00:12:15,000 –&gt; 00:12:17,000<br>Here’s an example of that drawn out.</p>
+<p>167<br>00:12:17,000 –&gt; 00:12:20,000<br>So in this case, it’s very simple to calculate it.</p>
+<p>168<br>00:12:20,000 –&gt; 00:12:23,000<br>What we need is a method that will work in much more complicated networks.</p>
+<p>169<br>00:12:23,000 –&gt; 00:12:25,000<br>For example, this one.</p>
+<p>170<br>00:12:25,000 –&gt; 00:12:28,000<br>This is clearly way beyond something a human could do in their head.</p>
+<p>171<br>00:12:28,000 –&gt; 00:12:32,000<br>This is a picture of the topology map for the backbone of the internet.</p>
+<p>172<br>00:12:32,000 –&gt; 00:12:35,000<br>Well, I couldn’t do this in my head. Maybe you can.</p>
+<p>173<br>00:12:35,000 –&gt; 00:12:39,000<br>So we need automated algorithms to calculate the route and put the necessary forwarding entries</p>
+<p>174<br>00:12:39,000 –&gt; 00:12:41,000<br>into the forwarding tables in the routers.</p>
+<p>175<br>00:12:41,000 –&gt; 00:12:44,000<br>So to calculate the routes, the routers are going to exchange information</p>
+<p>176<br>00:12:44,000 –&gt; 00:12:47,000<br>with each other about the current topology as they know it.</p>
+<p>177<br>00:12:47,000 –&gt; 00:12:52,000<br>This is the job of what we call the routing algorithm or the routing protocol.</p>
+<p>178<br>00:12:52,000 –&gt; 00:12:55,000<br>In some cases, the algorithm to calculate the route is wrapped in</p>
+<p>179<br>00:12:55,000 –&gt; 00:12:58,000<br>with the exchange of the state itself. In other cases, they’re separate.</p>
+<p>180<br>00:12:58,000 –&gt; 00:13:00,000<br>We’re going to look at examples of both.</p>
+<p>181<br>00:13:00,000 –&gt; 00:13:05,000<br>Going back to our outline, we’ve got down to the shortest path spanning tree.</p>
+<p>182<br>00:13:05,000 –&gt; 00:13:09,000<br>We’re going to be looking at several examples of this over the next few videos.</p>
+<p>183<br>00:13:09,000 –&gt; 00:13:16,000<br>I just want to finish up by telling you about two other types of routing that are commonly used.</p>
+<p>184<br>00:13:16,000 –&gt; 00:13:18,000<br>The first one is multi-path.</p>
+<p>185<br>00:13:18,000 –&gt; 00:13:22,000<br>So far, we’ve assumed that all the packets to a given destination</p>
+<p>186<br>00:13:22,000 –&gt; 00:13:23,000<br>are going to follow the same path.</p>
+<p>187<br>00:13:23,000 –&gt; 00:13:26,000<br>In particular, the shortest path spanning tree.</p>
+<p>188<br>00:13:26,000 –&gt; 00:13:32,000<br>The downside of the shortest path spanning tree is that some links can become very popular.</p>
+<p>189<br>00:13:32,000 –&gt; 00:13:36,000<br>We saw that we had a path that went down here before and a path that went down here.</p>
+<p>190<br>00:13:36,000 –&gt; 00:13:42,000<br>You can see that this whole area here is going to become quite popular and could become congested.</p>
+<p>191<br>00:13:42,000 –&gt; 00:13:45,000<br>It means we might need to keep adapting the algorithm.</p>
+<p>192<br>00:13:45,000 –&gt; 00:13:48,000<br>An alternative would be, instead of adapting the algorithm, is to from the beginning,</p>
+<p>193<br>00:13:48,000 –&gt; 00:13:51,000<br>spread all of the traffic all over all of the links.</p>
+<p>194<br>00:13:51,000 –&gt; 00:13:54,000<br>This is quite different from the shortest path spanning tree.</p>
+<p>195<br>00:13:54,000 –&gt; 00:14:00,000<br>This might be a case where we send some of the packets from a to x this way.</p>
+<p>196<br>00:14:00,000 –&gt; 00:14:02,000<br>We might choose to send some of them this way.</p>
+<p>197<br>00:14:02,000 –&gt; 00:14:09,000<br>This is called multi-path, where we’re spreading the packets to a destination over multiple paths.</p>
+<p>198<br>00:14:09,000 –&gt; 00:14:14,000<br>Essentially, we’re load balancing traffic over some or possibly all of the paths.</p>
+<p>199<br>00:14:14,000 –&gt; 00:14:20,000<br>We’re going to see the details later, but for now, it’s enough to know that it might look something like what I just drew.</p>
+<p>200<br>00:14:20,000 –&gt; 00:14:27,000<br>So in principle, it’s okay for packets to take different length paths and to get miss ordered.</p>
+<p>201<br>00:14:27,000 –&gt; 00:14:35,000<br>So it might be that in the example I had here, that a packet taking this path here might get there much sooner than one taking this path here.</p>
+<p>202<br>00:14:35,000 –&gt; 00:14:39,000<br>Therefore, get me sequence relative to it.</p>
+<p>203<br>00:14:39,000 –&gt; 00:14:42,000<br>The internet makes no promise of in sequence delivery.</p>
+<p>204<br>00:14:42,000 –&gt; 00:14:45,000<br>That’s the job of TCP to put them back in the right order.</p>
+<p>205<br>00:14:45,000 –&gt; 00:14:51,000<br>We’re going to see later that in practice, it’s common to make sure that packets within a given application flow don’t get miss sequenced.</p>
+<p>206<br>00:14:51,000 –&gt; 00:14:57,000<br>Just to make life a bit easier for TCP, but this is just really an optimization in the network.</p>
+<p>207<br>00:14:57,000 –&gt; 00:15:06,000<br>So multi-path is when we spread the packets over multiple links in order to spread the load as evenly as we can across the network.</p>
+<p>208<br>00:15:06,000 –&gt; 00:15:11,000<br>Another type of routing, another method is called multi-cast.</p>
+<p>209<br>00:15:11,000 –&gt; 00:15:17,000<br>So far, we’ve assumed that all packets are going to a single destination, something we call unicast.</p>
+<p>210<br>00:15:17,000 –&gt; 00:15:24,000<br>For example, the packets in the last few examples of showing them going from a to x as a single packet.</p>
+<p>211<br>00:15:24,000 –&gt; 00:15:31,000<br>In some applications, an end host might want to send packets to a set of hosts.</p>
+<p>212<br>00:15:31,000 –&gt; 00:15:41,000<br>For example, a might want to send packets to a single packet that gets delivered to b, c, and x maybe.</p>
+<p>213<br>00:15:41,000 –&gt; 00:15:44,000<br>But not d.</p>
+<p>214<br>00:15:44,000 –&gt; 00:15:58,000<br>Applications that might want to do this could be like a broadcast TV or radio station where currently b, c, and x are listening to a TV station being broadcast from a could be automatic updates to a large number of hosts.</p>
+<p>215<br>00:15:58,000 –&gt; 00:16:03,000<br>For example, a car company updating its inventory every night to all of its dealerships.</p>
+<p>216<br>00:16:03,000 –&gt; 00:16:10,000<br>Or it could be stock prices being updated in a trading room where you want everybody to receive the update very, very, very at the same time.</p>
+<p>217<br>00:16:11,000 –&gt; 00:16:16,000<br>So why we can obviously send each packet one at a time to its destination, that would be fine.</p>
+<p>218<br>00:16:16,000 –&gt; 00:16:20,000<br>A could send individual packets to b, c, and x.</p>
+<p>219<br>00:16:20,000 –&gt; 00:16:27,000<br>It’s natural to ask if the network can help, whether it can and whether it should do the replication for us.</p>
+<p>220<br>00:16:27,000 –&gt; 00:16:31,000<br>So for example, a could send a single packet.</p>
+<p>221<br>00:16:31,000 –&gt; 00:16:39,000<br>It could come down until it reaches b and then it could be replicated one packet going this way and one packet going this way.</p>
+<p>222<br>00:16:39,000 –&gt; 00:16:45,000<br>And another packet going on to c and so on at every branching point within the network.</p>
+<p>223<br>00:16:45,000 –&gt; 00:16:54,000<br>So now we send one packet and it’s delivered to everybody and we’re using the graph structure of the network to do the replication for us.</p>
+<p>224<br>00:16:54,000 –&gt; 00:17:01,000<br>So notice that in order to send for a to b, c, and x have essentially drawn a spanning tree.</p>
+<p>225<br>00:17:01,000 –&gt; 00:17:03,000<br>And this is actually going to prove to be quite interesting later.</p>
+<p>226<br>00:17:03,000 –&gt; 00:17:06,000<br>I’ve got a spanning tree across the set of destinations.</p>
+<p>227<br>00:17:06,000 –&gt; 00:17:09,000<br>And we’re going to see some examples of how this works later.</p>
+<p>228<br>00:17:09,000 –&gt; 00:17:17,000<br>It’s enough for us to know right now that just that this is a one way of routing packets.</p>
+<p>229<br>00:17:17,000 –&gt; 00:17:21,000<br>And we’ll see later how this is done specifically in the internet.</p>
+<p>230<br>00:17:21,000 –&gt; 00:17:28,000<br>So in summary, there are several ways to route packets across a network starting with the simplest method, flooding.</p>
+<p>231<br>00:17:28,000 –&gt; 00:17:36,000<br>So in practice, we use routing algorithms or also known as routing protocols to calculate the routes and populate the forwarding tables.</p>
+<p>232<br>00:17:36,000 –&gt; 00:17:41,000<br>Often the algorithms calculate the minimum cost spanning tree to the destination.</p>
+<p>233<br>00:17:41,000 –&gt; 00:17:45,000<br>And we’re going to see lots of examples of that soon.</p>
+<p>234<br>00:17:45,000 –&gt; 00:17:53,000<br>Other types of routing include multi path to spread traffic over links and multi-cast to deliver the multiple end hosts.</p>
+<p>235<br>00:17:53,000 –&gt; 00:17:55,000<br>That’s the end of this video.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP856-1Routing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP866-2Routing/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP846-0Routing/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

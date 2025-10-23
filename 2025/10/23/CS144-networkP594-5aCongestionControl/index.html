@@ -1,0 +1,837 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP594-5aCongestionControl.md100:00:00,000 –&gt; 00:00:04,639So in this video, I talk about congestion control, particularly the basic motivation for 200:00:04,639 –&gt; 00:00:08,88">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP594-5aCongestionControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP594-5aCongestionControl.md100:00:00,000 –&gt; 00:00:04,639So in this video, I talk about congestion control, particularly the basic motivation for 200:00:04,639 –&gt; 00:00:08,88">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:54.688Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:17.019Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          20 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP594-5aCongestionControl-md"><a href="#title-CS144-networkP594-5aCongestionControl-md" class="headerlink" title="title: CS144-networkP594-5aCongestionControl.md"></a>title: CS144-networkP594-5aCongestionControl.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:04,639<br>So in this video, I talk about congestion control, particularly the basic motivation for</p>
+<p>2<br>00:00:04,639 –&gt; 00:00:08,880<br>congestion control and transport protocols in particles in general, and then walk through the</p>
+<p>3<br>00:00:08,880 –&gt; 00:00:14,880<br>first example of a protocol that really identified and tackled this problem with TCP,</p>
+<p>4<br>00:00:14,880 –&gt; 00:00:19,839<br>particularly version of TCP called TCP Tahoe. And I’ll talk about the first mechanism</p>
+<p>5<br>00:00:19,839 –&gt; 00:00:23,280<br>that TCP Tahoe uses to try and deal with congestion, something called slow start.</p>
+<p>6<br>00:00:24,080 –&gt; 00:00:32,160<br>So the basic motivation for congestion control is that flow control tells an endpoint, say,</p>
+<p>7<br>00:00:32,799 –&gt; 00:00:37,520<br>it’s going to tell Boston’s going to tell San Francisco the amount of data they can accept.</p>
+<p>8<br>00:00:37,520 –&gt; 00:00:43,760<br>And so flow control specifies the limitations of the endpoint.</p>
+<p>9<br>00:00:45,520 –&gt; 00:00:51,280<br>However, it can very well be that this node in Boston is able to receive data much, much faster</p>
+<p>10<br>00:00:51,280 –&gt; 00:00:57,840<br>than the network can support it. So for example, while this node in Boston might have a buffer that</p>
+<p>11<br>00:00:57,840 –&gt; 00:01:08,560<br>allows it to receive 100 packets per RTT, per RTT, it could be that some bottleneck link on the</p>
+<p>12<br>00:01:08,560 –&gt; 00:01:13,760<br>path from San Francisco to Boston can really only support about five packets per RTT.</p>
+<p>13<br>00:01:14,719 –&gt; 00:01:18,719<br>And so the idea is that if San Francisco communicates with Boston, this node in San Francisco</p>
+<p>14<br>00:01:18,719 –&gt; 00:01:23,439<br>communicates with the node in Boston at a rate which flow control would allow, then it’s going to</p>
+<p>15<br>00:01:23,439 –&gt; 00:01:27,359<br>send packets much faster than it can support. Most of these packets are going to be dropped and it’s</p>
+<p>16<br>00:01:27,359 –&gt; 00:01:32,159<br>going to spend a lot of its time doing retransmission sooner to cover from these heavy errors. You don’t</p>
+<p>17<br>00:01:32,159 –&gt; 00:01:37,599<br>want to saturate the network because everything will work less efficiently than if most packets arrive.</p>
+<p>18<br>00:01:37,599 –&gt; 00:01:40,879<br>You’ll require less control overhead. The rule would generally work better.</p>
+<p>19<br>00:01:43,359 –&gt; 00:01:47,840<br>And so the basic idea of congestion control is that endpoints should control their data rate</p>
+<p>20<br>00:01:47,840 –&gt; 00:01:52,560<br>so that they do not overload the network. This would generally increase the performance of the network.</p>
+<p>21<br>00:01:55,439 –&gt; 00:01:59,760<br>So if we just take a step back in terms of congestion control, what really led to it as this very</p>
+<p>22<br>00:01:59,760 –&gt; 00:02:05,439<br>important area of study and engineering in the internet, it all comes from TCP. So basically</p>
+<p>23<br>00:02:05,439 –&gt; 00:02:10,000<br>history of TCP in 1974, established the through a handshake, you know, SIN, SIN, AC, AC,</p>
+<p>24<br>00:02:10,879 –&gt; 00:02:16,400<br>in 1978, TCP and IP were split, were split. It used to be that the internet, just at that point,</p>
+<p>25<br>00:02:16,400 –&gt; 00:02:20,080<br>the ARPNet just supported TCP, but they realized, oh, we need to split them because we need stuff</p>
+<p>26<br>00:02:20,080 –&gt; 00:02:26,480<br>like UDP. Then January 1, 1983, that was, you know, the switch day when suddenly the entire ARPNet</p>
+<p>27<br>00:02:26,480 –&gt; 00:02:33,520<br>switched over to TCP IP, IPv4. Three years after that, the internet began to suffer congestion</p>
+<p>28<br>00:02:33,520 –&gt; 00:02:40,159<br>collapse, where links were saturated. They were sending, you know, operating at line speed, yet no</p>
+<p>29<br>00:02:40,240 –&gt; 00:02:46,400<br>worse useful work was being done. Instead, all the packets being transmitted were unnecessary</p>
+<p>30<br>00:02:46,400 –&gt; 00:02:52,159<br>retransmissions or acknowledgments. So you’re seeing full utilization of links,</p>
+<p>31<br>00:02:52,159 –&gt; 00:02:55,919<br>while simultaneously no application level throughput.</p>
+<p>32<br>00:02:57,359 –&gt; 00:03:02,560<br>So then van Jacobson in the seminal paper, fixed TCP, figured out what was going on,</p>
+<p>33<br>00:03:03,680 –&gt; 00:03:08,879<br>and he published the seminal TCP paper, which described TCP Tahoe. So these names Tahoe and Reno,</p>
+<p>34<br>00:03:10,159 –&gt; 00:03:18,319<br>come from the versions of hardware for Berkeley Unix that these TCP implementations occurred on.</p>
+<p>35<br>00:03:19,120 –&gt; 00:03:23,759<br>And so you read about Tahoe, Reno and the Nathlete started getting names like New Reno, Vegas,</p>
+<p>36<br>00:03:23,759 –&gt; 00:03:31,039<br>Daytona, just to follow that theme. But Tahoe and Reno were denoted by versions of Berkeley Unix,</p>
+<p>37<br>00:03:31,039 –&gt; 00:03:36,000<br>that were distributed in the hardware they were for. So then about a couple of years after this</p>
+<p>38<br>00:03:36,000 –&gt; 00:03:40,560<br>for TCP Tahoe, a fast recovery and fast recovery transmit something that’s in a future TCP</p>
+<p>39<br>00:03:40,560 –&gt; 00:03:46,080<br>version, I’ll talk about later, video TCP Reno, which are common today, but the time there are new ideas</p>
+<p>40<br>00:03:46,080 –&gt; 00:03:52,080<br>were added. And so if you look, basically all TCP implementations today have the mechanisms that</p>
+<p>41<br>00:03:52,080 –&gt; 00:03:56,879<br>are in TCP Tahoe and TCP Reno. And so we’re going to go through them in this series of videos.</p>
+<p>42<br>00:03:57,199 –&gt; 00:04:08,639<br>So there are basically three questions that a transport protocol needs to answer if it’s going to provide</p>
+<p>43<br>00:04:08,639 –&gt; 00:04:14,719<br>reliable transport. The first is when should it send new data? That is when should it send data,</p>
+<p>44<br>00:04:14,719 –&gt; 00:04:20,159<br>which it has never put on in our before? Second is when should it send a retransmission? When should</p>
+<p>45<br>00:04:20,159 –&gt; 00:04:25,519<br>it try to retransmit data it has sent before? And finally, when should it send acknowledgments for</p>
+<p>46<br>00:04:25,599 –&gt; 00:04:29,519<br>data that it successfully received? These are these basic things of stew. When is it going to generate</p>
+<p>47<br>00:04:29,519 –&gt; 00:04:34,479<br>packets? Whether they’re data packets, retransmissions of data packets, or acknowledgment packets?</p>
+<p>48<br>00:04:36,240 –&gt; 00:04:41,199<br>Now of course, often we talk about data acknowledgment packets as being independent, but in TCP they’re not.</p>
+<p>49<br>00:04:41,199 –&gt; 00:04:45,839<br>The acknowledgments are simply a field in the header, and you can of course pick you back data</p>
+<p>50<br>00:04:45,839 –&gt; 00:04:49,039<br>and acknowledge them. But often we just talk about data acknowledgments separately,</p>
+<p>51<br>00:04:49,039 –&gt; 00:04:52,719<br>just pretending that the flow is unidirectional, though often it might not be, it might be</p>
+<p>52<br>00:04:52,720 –&gt; 00:04:58,000<br>bidirectional. The point being that it can be that you have no data this time, but you do need to send</p>
+<p>53<br>00:04:58,000 –&gt; 00:05:05,760<br>an acknowledgment. So what did TCP look like before TCP Tahoe? So essentially what happens is</p>
+<p>54<br>00:05:05,760 –&gt; 00:05:10,160<br>you set up a connection through a handshake, and at endpoint now has the flow control window size,</p>
+<p>55<br>00:05:10,160 –&gt; 00:05:19,360<br>to be noted by the window field of a TCP header. And so what, pre- Tahoe, what TCP would do is this</p>
+<p>56<br>00:05:19,439 –&gt; 00:05:22,639<br>seems like a simple thing. It would just send the full window of packets. So if the window set up</p>
+<p>57<br>00:05:22,639 –&gt; 00:05:29,120<br>ha, I’m 30 kilobytes, it would send 30 kilobytes worth of packets. So this is obeying the flow control.</p>
+<p>58<br>00:05:30,080 –&gt; 00:05:36,800<br>It would then start a retransmit timer for each packet, and then if it didn’t receive an acknowledgment</p>
+<p>59<br>00:05:36,800 –&gt; 00:05:41,040<br>for that packet by the time the retransmit timer fired, it would then retransmit that packet.</p>
+<p>60<br>00:05:42,480 –&gt; 00:05:48,080<br>And so the basic problem this encounters, what happens if the flow control window is much larger</p>
+<p>61<br>00:05:48,159 –&gt; 00:05:52,639<br>than with the network and support? It might be that your endpoint has space for 30 kilobytes,</p>
+<p>62<br>00:05:52,639 –&gt; 00:05:57,279<br>but the link has already saturated. You can’t suddenly just dump another 30 kilobytes on it.</p>
+<p>63<br>00:05:57,279 –&gt; 00:06:03,039<br>I mean, these numbers might seem small now, but back then these were, you had relatively slow</p>
+<p>64<br>00:06:03,039 –&gt; 00:06:06,079<br>links in comparison to today’s speed. So think of this more of your windows suddenly</p>
+<p>65<br>00:06:06,079 –&gt; 00:06:11,120<br>were advertised to 30 megabytes. You don’t understand when I dump 30 megabytes onto your DSL or your</p>
+<p>66<br>00:06:11,120 –&gt; 00:06:18,000<br>cable modem link immediately. So if you implement that algorithm, you just send the window of packets</p>
+<p>67<br>00:06:18,000 –&gt; 00:06:23,120<br>what happens? Well, so here’s a picture. So here it’s showing on the x-axis this time in seconds,</p>
+<p>68<br>00:06:23,120 –&gt; 00:06:28,560<br>and the y-axis is the packet sequence number in terms of kilobytes. So the sequence number of the</p>
+<p>69<br>00:06:28,560 –&gt; 00:06:34,399<br>byte that TCP has sent. And so what you see is on connection establishment, it immediately sends a</p>
+<p>70<br>00:06:34,399 –&gt; 00:06:40,879<br>full buffer of packets about 20 kilobytes worth. And then it’s getting some acknowledgments</p>
+<p>71<br>00:06:40,879 –&gt; 00:06:47,040<br>so it’s sending some more data, but then suddenly its window is a certain size, the flow control window,</p>
+<p>72<br>00:06:47,760 –&gt; 00:06:59,040<br>and it hasn’t received an acknowledgment for this segment here. And so at this point, TCP is blocked,</p>
+<p>73<br>00:06:59,040 –&gt; 00:07:03,759<br>right? The dots are showing the packet that are transmitted, so at this point it’s blocked in that</p>
+<p>74<br>00:07:03,759 –&gt; 00:07:08,160<br>it is sent up to the last acknowledged byte plus the window size, and it can’t send anymore.</p>
+<p>75<br>00:07:08,160 –&gt; 00:07:14,000<br>And the reason is that this packet probably was lost. So then here’s the time out.</p>
+<p>76<br>00:07:14,720 –&gt; 00:07:24,160<br>And it retransments that packet. Then as you can see, it’s able to send a whole bunch more packets,</p>
+<p>77<br>00:07:24,160 –&gt; 00:07:28,240<br>it gets a whole bunch of acknowledgments, or it gets a cumulative acknowledgment lying in the</p>
+<p>78<br>00:07:28,240 –&gt; 00:07:34,959<br>window to move forward, etc, etc. But the basic point to see here is that there are these huge sawtooth</p>
+<p>79<br>00:07:35,680 –&gt; 00:07:42,639<br>that you see big bursts of packets followed by idle timeouts. Big bursts of packets followed by</p>
+<p>80<br>00:07:42,639 –&gt; 00:07:48,800<br>idle timeouts. And that many of these packets are redundant. Like this particular packet here is sent</p>
+<p>81<br>00:07:48,800 –&gt; 00:07:55,439<br>three times. Now this one is also sent three times. So you’re seeing lots of additional</p>
+<p>82<br>00:07:55,439 –&gt; 00:08:01,759<br>retransmissions. And overall, the protocol is not performing very well. It’s sending all these</p>
+<p>83<br>00:08:01,759 –&gt; 00:08:05,839<br>packets, but if you look at the actual slope of this line, the sense of the data out sending,</p>
+<p>84<br>00:08:05,839 –&gt; 00:08:13,119<br>the slope isn’t very high. If TCP were operating at line speed, operating at the correct speed,</p>
+<p>85<br>00:08:13,679 –&gt; 00:08:17,759<br>it should be following this line here. But instead, it’s following the line with the much slower slope.</p>
+<p>86<br>00:08:17,759 –&gt; 00:08:23,439<br>It’s actually sending data much slower than it should be able to. This is what was observed that</p>
+<p>87<br>00:08:23,439 –&gt; 00:08:30,159<br>TCP is very slow because it’s sending lots of retransmissions unnecessarily, and there are lots of timeouts.</p>
+<p>88<br>00:08:30,240 –&gt; 00:08:40,320<br>So based on this, then Jacobson proposed three improvements. The first is the idea of a congestion</p>
+<p>89<br>00:08:40,320 –&gt; 00:08:46,240<br>window. The second is better timeout estimation and the last is self-clocking. I’m going to walk</p>
+<p>90<br>00:08:46,240 –&gt; 00:08:50,879<br>through each of those. The congestion window, and talk about in this video and future videos,</p>
+<p>91<br>00:08:50,879 –&gt; 00:08:58,879<br>I’ll talk about timeout estimation and self-clocking. So the congestion window.</p>
+<p>92<br>00:09:00,959 –&gt; 00:09:04,879<br>So the basic insight is that the flow control window is only about the endpoint.</p>
+<p>93<br>00:09:05,600 –&gt; 00:09:12,159<br>And so what you want to do is have TCP estimate a congestion window that is how much can the network</p>
+<p>94<br>00:09:12,159 –&gt; 00:09:16,639<br>support when I, in the sense of how quickly can I send data and have the network deliver it reliably.</p>
+<p>95<br>00:09:17,519 –&gt; 00:09:20,959<br>And then the sender window is going to be the minimum of these two. In the sense of there’s no point</p>
+<p>96<br>00:09:20,959 –&gt; 00:09:24,559<br>sending data faster than the network can support, and nor is there any point sending data faster than</p>
+<p>97<br>00:09:24,639 –&gt; 00:09:30,959<br>the end-host can support. And then what you do is based on this idea of a congestion window,</p>
+<p>98<br>00:09:30,959 –&gt; 00:09:36,159<br>you separate how you behave in terms of sending packets in the size of this congestion window into</p>
+<p>99<br>00:09:36,159 –&gt; 00:09:42,719<br>two states. The first is something called slow start. The second is congestion of winds.</p>
+<p>100<br>00:09:44,000 –&gt; 00:09:48,559<br>You slow start when you’re doing connection startup or when there’s a packet timeout. When something</p>
+<p>101<br>00:09:48,559 –&gt; 00:09:54,399<br>is gone very wrong and you want to just back off completely and then figure out what it is the</p>
+<p>102<br>00:09:54,399 –&gt; 00:10:00,000<br>network can support. Conjection of winds in contrast is when the network, when you’re behaving pretty</p>
+<p>103<br>00:10:00,000 –&gt; 00:10:05,199<br>well, that is you’re operating close to the network capacity. And so you don’t want to start sending</p>
+<p>104<br>00:10:05,199 –&gt; 00:10:11,279<br>things much faster or much slower. You’re operating close to what you think the congestion window of the</p>
+<p>105<br>00:10:11,279 –&gt; 00:10:22,000<br>network is. So the idea of slow start is that what the node does is rather than start its window at the</p>
+<p>106<br>00:10:22,000 –&gt; 00:10:29,519<br>flow control window size, it starts its window at a size of a minimum maximum segment size. So basically</p>
+<p>107<br>00:10:29,519 –&gt; 00:10:36,639<br>one on packets worth of data today, nodes might start with two or four. There’s some rules about that</p>
+<p>108<br>00:10:37,039 –&gt; 00:10:45,199<br>two through two through four, but the original version started at one. And then every time a packet</p>
+<p>109<br>00:10:45,199 –&gt; 00:10:50,639<br>acknowledge, every time you receive a new acknowledgement, you increase this window by the maximum</p>
+<p>110<br>00:10:50,639 –&gt; 00:10:55,360<br>segment size. And what this means in terms of practice is that in the first round trip time, you’re</p>
+<p>111<br>00:10:55,360 –&gt; 00:10:59,199<br>going to send a single packet, they’ll be acknowledged. Now your segment size, now your window size is</p>
+<p>112<br>00:10:59,199 –&gt; 00:11:03,279<br>two. So you’ll send two packets. They’ll both be acknowledged. You increase by two, now they’ll send</p>
+<p>113<br>00:11:03,279 –&gt; 00:11:07,279<br>four packets. They’ll be acknowledged. You’ll then send eight packets. There’s this exponential growth.</p>
+<p>114<br>00:11:08,159 –&gt; 00:11:14,159<br>And so that’s what you’re seeing here. See here’s one packet, two packets, or there’s one, two, four,</p>
+<p>115<br>00:11:14,159 –&gt; 00:11:20,639<br>you know, eight, etc. This exponential growth scaling up. So in a logarithmic number of steps,</p>
+<p>116<br>00:11:20,639 –&gt; 00:11:26,240<br>you can hopefully discover what is the congestion window size of the network. So this might seem,</p>
+<p>117<br>00:11:26,240 –&gt; 00:11:30,319<br>I mean, exponential growth is not slow. And so the name is, it can be a little confusing.</p>
+<p>118<br>00:11:30,320 –&gt; 00:11:34,080<br>The reason it’s called slow is that it’s slow compared to the prior, which is actually the</p>
+<p>119<br>00:11:34,080 –&gt; 00:11:39,680<br>most faster mode of TCP today. But compared to sending an entire flow control window of packets,</p>
+<p>120<br>00:11:39,680 –&gt; 00:11:45,440<br>doing this exponential scale up through a logarithmic number of steps was comparatively so. So</p>
+<p>121<br>00:11:45,440 –&gt; 00:11:50,000<br>it’s interesting sort of historic compared to modern, modern idea.</p>
+<p>122<br>00:11:53,840 –&gt; 00:11:58,240<br>And so we can see in this figure, this is also from Van Jacobson’s paper that</p>
+<p>123<br>00:12:00,480 –&gt; 00:12:04,800<br>the packet sequence number, you know, is increasing this way and you see this exponential growth.</p>
+<p>124<br>00:12:04,800 –&gt; 00:12:09,840<br>And then using slow start, you end up plus than the congestion avoidance state that I’ll talk about</p>
+<p>125<br>00:12:09,840 –&gt; 00:12:14,400<br>in a moment. You end up hitting this nice steady state. And while it takes you a little bit of time</p>
+<p>126<br>00:12:14,400 –&gt; 00:12:19,760<br>to discover what the line speed is, eventually the behavior of the protocol is very close to this</p>
+<p>127<br>00:12:19,760 –&gt; 00:12:24,560<br>line speed. And it’s operating close to capacity. It’s not overwhelming it. And you’re not seeing</p>
+<p>128<br>00:12:24,639 –&gt; 00:12:33,439<br>these sawtooths of terrible performance. So that’s the slow start state. So in the slow start state,</p>
+<p>129<br>00:12:33,439 –&gt; 00:12:37,039<br>you are increasing the congestion window by a maximum segment size for each acknowledgment.</p>
+<p>130<br>00:12:37,039 –&gt; 00:12:41,759<br>This leads to an exponential increase in the window size. The second state that you can be in</p>
+<p>131<br>00:12:41,759 –&gt; 00:12:47,199<br>is called congestion avoidance. And in this model, when you’re in the congestion avoidance state,</p>
+<p>132<br>00:12:47,280 –&gt; 00:12:55,759<br>you increase the congestion window by, and the maximum segment size squared divided by the</p>
+<p>133<br>00:12:55,759 –&gt; 00:13:00,480<br>congestion window for each acknowledgment. The behavior results is rather than increase by</p>
+<p>134<br>00:13:01,200 –&gt; 00:13:04,720<br>the window by a maximum segment size for each acknowledgment, you end up increasing the maximum</p>
+<p>135<br>00:13:04,720 –&gt; 00:13:09,200<br>segment size for each round trip time. So it’s an additive increase. So rest this is growing the</p>
+<p>136<br>00:13:09,200 –&gt; 00:13:14,240<br>window size exponentially. This is growing the window size linearly.</p>
+<p>137<br>00:13:21,200 –&gt; 00:13:25,600<br>So we have these two states slow start congestion avoidance. How do we transition between them?</p>
+<p>138<br>00:13:25,600 –&gt; 00:13:29,520<br>Well, really, there are these two goals. When you slow start to quickly find what the network</p>
+<p>139<br>00:13:29,520 –&gt; 00:13:34,720<br>congestion capacity is that is how fast can we send things before the network enters congestion and</p>
+<p>140<br>00:13:34,720 –&gt; 00:13:40,240<br>starts buffering packets and dropping packets. And so then once we are close to that capacity,</p>
+<p>141<br>00:13:40,240 –&gt; 00:13:45,040<br>one is congestion avoidance to very carefully probe. So we’re below the congestion points,</p>
+<p>142<br>00:13:45,040 –&gt; 00:13:49,600<br>let’s just start slowly increasing until we reach it, then maybe drop down a little bit and start</p>
+<p>143<br>00:13:49,600 –&gt; 00:13:54,800<br>slowly increasing until we reach it. We basically can use that to stay close to that value and be close</p>
+<p>144<br>00:13:54,800 –&gt; 00:13:59,759<br>to the network capacity. And we have three signals to accomplish this. The first is if we’re seeing</p>
+<p>145<br>00:13:59,759 –&gt; 00:14:03,200<br>increasing acknowledgments, that means the data transfer is going well, maybe we can speed things</p>
+<p>146<br>00:14:03,200 –&gt; 00:14:08,400<br>up a bit. The second is if we have duplicate acknowledgments, remember TSP using cumulative</p>
+<p>147<br>00:14:08,400 –&gt; 00:14:11,920<br>acknowledgments. So if we’re seeing many acknowledgments for the same piece of data, that means TCP</p>
+<p>148<br>00:14:11,920 –&gt; 00:14:16,640<br>is receiving segments, but one of them is missing. So this means something was lost or delayed.</p>
+<p>149<br>00:14:17,440 –&gt; 00:14:21,360<br>The final signal is if there’s a timeout. If we set a whole bunch of packets or a window of packets</p>
+<p>150<br>00:14:21,360 –&gt; 00:14:25,600<br>and we’ve heard nothing and there’s a timeout, that means something very wrong has happened. Or maybe</p>
+<p>151<br>00:14:25,600 –&gt; 00:14:29,920<br>way off of what the congestion is moving the network has suddenly become congested because it itself</p>
+<p>152<br>00:14:29,919 –&gt; 00:14:39,279<br>can have dynamic traffic. So this is the TCP Tahoe Finance Day machine. I’m going to walk through a</p>
+<p>153<br>00:14:39,279 –&gt; 00:14:47,120<br>bit by bit. So when you open a TCP Tahoe connection, you start in the slow start state with a maximum</p>
+<p>154<br>00:14:47,120 –&gt; 00:14:53,039<br>with a window of a maximum segment size and recall that your actual window will never grow larger</p>
+<p>155<br>00:14:53,039 –&gt; 00:14:56,639<br>than your flow control window. The minimum of the flow control window and congestion control windows.</p>
+<p>156<br>00:14:56,639 –&gt; 00:15:02,319<br>So this is controlling the congestion control window size. Then every time we’re in the slow start</p>
+<p>157<br>00:15:02,319 –&gt; 00:15:09,600<br>state and we receive an acknowledgment, we increase the congestion window. This is C-wind</p>
+<p>158<br>00:15:10,799 –&gt; 00:15:13,360<br>by the maximum segment size. So this is the exponential increase here.</p>
+<p>159<br>00:15:13,680 –&gt; 00:15:29,919<br>Then we have a parameter SS threshold, which is this stands for slow start threshold. If the</p>
+<p>160<br>00:15:29,919 –&gt; 00:15:35,039<br>congestion window grows larger than the slow start threshold, then we transition to the congestion</p>
+<p>161<br>00:15:35,039 –&gt; 00:15:38,480<br>avoidance state. This means that hey, we suddenly have a big enough congestion window,</p>
+<p>162<br>00:15:39,360 –&gt; 00:15:43,279<br>then we should slow down our growth. It’s a transition to congestion avoidance.</p>
+<p>163<br>00:15:45,039 –&gt; 00:15:49,200<br>Now in the congestion avoidance state, if we receive an acknowledgment, we increase the congestion</p>
+<p>164<br>00:15:49,200 –&gt; 00:15:54,480<br>window by a maximum segment size squared divided by the congestion window. This is the linear increase.</p>
+<p>165<br>00:15:58,639 –&gt; 00:16:04,560<br>And so we see that the window size will look like this over time effectively. We’re here is when we</p>
+<p>166<br>00:16:04,559 –&gt; 00:16:12,959<br>hit SS threshold. This part corresponds to this state. This part corresponds to this state.</p>
+<p>167<br>00:16:17,279 –&gt; 00:16:22,559<br>But now what happens if we’re in the congestion avoidance state and this linear increase</p>
+<p>168<br>00:16:23,679 –&gt; 00:16:28,000<br>goes beyond the congestion capacity of the network? Well, what’s going to happen is we’re going to</p>
+<p>169<br>00:16:28,000 –&gt; 00:16:33,119<br>see a timeout or a triple duplicate act. A triple duplicate act, this implies a packet was lost.</p>
+<p>170<br>00:16:34,080 –&gt; 00:16:41,919<br>We’re seeing these many acknowledgments. And so what T.C.B. Tahoe does on seeing either a timeout</p>
+<p>171<br>00:16:41,919 –&gt; 00:16:49,919<br>or triple duplicate act is it resets the congestion window to be one and it sets the SS threshold</p>
+<p>172<br>00:16:49,919 –&gt; 00:16:57,440<br>to be the old congestion window divided by two. And so what this is going to do is after we see</p>
+<p>173<br>00:16:58,400 –&gt; 00:17:03,840<br>this linear growth and then at this point say we say a triple duplicate act. What will happen is</p>
+<p>174<br>00:17:03,840 –&gt; 00:17:13,120<br>that T.C.B. Tahoe is going to set, these blue, is going to set SS threshold to be half of what the</p>
+<p>175<br>00:17:13,120 –&gt; 00:17:24,320<br>congestion window is at that time. It’s then going to reenter a slow start, do an exponential increase</p>
+<p>176<br>00:17:24,319 –&gt; 00:17:29,919<br>until it reaches this SS threshold, which point then SS threshold will then enter congestion</p>
+<p>177<br>00:17:29,919 –&gt; 00:17:36,639<br>avoidance and do a linear increase. And so the way to think of this is that upon this triple duplicate</p>
+<p>178<br>00:17:36,639 –&gt; 00:17:44,159<br>act or this timeout, the T.C.B. Tahoe is discovered what it thinks is too much, too fast of transmission</p>
+<p>179<br>00:17:44,159 –&gt; 00:17:49,519<br>rates. Window is too big. So then what it does is it says, okay, I’m going to exponentially grow my</p>
+<p>180<br>00:17:49,519 –&gt; 00:17:54,559<br>window until I reach half of that point and then I’ll start linearly increasing it. Is that way</p>
+<p>181<br>00:17:54,559 –&gt; 00:17:59,440<br>you can hopefully quickly get back to close to capacity and a logarithmic number of steps,</p>
+<p>182<br>00:17:59,440 –&gt; 00:18:03,839<br>but then you don’t want to get too close and so you start at half of what that old value was and</p>
+<p>183<br>00:18:03,839 –&gt; 00:18:08,559<br>then start linearly increasing again. So this is the basic finance data machine for T.C.B. Tahoe.</p>
+<p>184<br>00:18:09,200 –&gt; 00:18:15,200<br>So here I will walk through a simple example. So you start with a sender and let’s just say SS threshold</p>
+<p>185<br>00:18:15,200 –&gt; 00:18:25,759<br>is equal to four when it starts up. So it’s first it’s going to send a single T.C.B. segment, single maximum</p>
+<p>186<br>00:18:25,759 –&gt; 00:18:31,360<br>segment size segment. The receiver, let’s just call this one. I’ll number them as packets for simplicity.</p>
+<p>187<br>00:18:31,360 –&gt; 00:18:40,080<br>The receiver sends an acknowledgement. So at this point here our congestion window is equal to one.</p>
+<p>188<br>00:18:40,559 –&gt; 00:18:48,399<br>Now since when the slow start state it’ll become two. It becomes two. And so the sender can send two</p>
+<p>189<br>00:18:48,400 –&gt; 00:18:56,960<br>packets. Three and four. The receiver receives them. I’m sorry. Two and three.</p>
+<p>190<br>00:19:09,200 –&gt; 00:19:13,440<br>The receiver receives them sends acknowledgements. Now our congestion window is four.</p>
+<p>191<br>00:19:13,680 –&gt; 00:19:23,680<br>Which means that we will send four packets.</p>
+<p>192<br>00:19:27,519 –&gt; 00:19:32,960<br>Which will be four, five, six, seven. Now at this point congestion window has reached the slow start</p>
+<p>193<br>00:19:32,960 –&gt; 00:19:40,000<br>threshold. Which means that T.C.B. Tahoe is going to exit this the slow start state and enter the</p>
+<p>194<br>00:19:40,000 –&gt; 00:19:46,880<br>congestion of wooden state. And so when these acknowledgements come back it’s going to increase the</p>
+<p>195<br>00:19:46,880 –&gt; 00:19:55,359<br>window by one. And so rather than send eight packets congestion window will be five. And it will send</p>
+<p>196<br>00:19:55,359 –&gt; 00:20:02,880<br>five packets. So let’s just say I’ll just draw one arrow here of packets eight nine ten eleven twelve.</p>
+<p>197<br>00:20:04,240 –&gt; 00:20:08,079<br>Now let’s say that packet eight is lost. It’s dropped in the network. We’ve actually reached</p>
+<p>198<br>00:20:08,079 –&gt; 00:20:13,759<br>our congestion point. Well what will happen? Well the receiver is going to acknowledge eight.</p>
+<p>199<br>00:20:14,240 –&gt; 00:20:17,679<br>It’s going to acknowledge that eight was received. Remember this T.C.B. is the aqueduct. Just say</p>
+<p>200<br>00:20:17,679 –&gt; 00:20:21,759<br>nine but I’ll just write eight for simplicity sake. It’s going to say a high I’ve received eight.</p>
+<p>201<br>00:20:22,879 –&gt; 00:20:31,759<br>Then ten eleven and twelve arrive. Now T.C.P. is going to then send acknowledgement eight eight</p>
+<p>202<br>00:20:33,679 –&gt; 00:20:37,439<br>eight. Because it’s cumulative acknowledgements that hasn’t received nine can only say I’ve received</p>
+<p>203<br>00:20:37,440 –&gt; 00:20:41,120<br>eight. I’ve received eight received eight. This is a triple duplicate acknowledgement. We have three</p>
+<p>204<br>00:20:41,120 –&gt; 00:20:47,360<br>duplicates. So what now T.C.P. Tahoe is going to do is is going to transition back to the slow start</p>
+<p>205<br>00:20:47,360 –&gt; 00:20:56,320<br>state. My congestion window is five. So I’m going to set my slow start threshold to be equal to half</p>
+<p>206<br>00:20:56,320 –&gt; 00:21:01,600<br>of the congestion window. So let’s just say we’re going to set it to basically it’s 2.5.</p>
+<p>207<br>00:21:02,559 –&gt; 00:21:06,319<br>And enter the slow start state again. So I’ll send a single packet.</p>
+<p>208<br>00:21:09,839 –&gt; 00:21:16,079<br>Now this packet is going to be sent on a timeout. So essentially I’m waiting for the acknowledgement</p>
+<p>209<br>00:21:16,079 –&gt; 00:21:22,879<br>nine. I haven’t heard it all time out and I will send I will resend nine. Then that’s the number</p>
+<p>210<br>00:21:22,879 –&gt; 00:21:30,399<br>packets I can have outstanding. Then if an acknowledgement for nine comes back I can set my congestion</p>
+<p>211<br>00:21:30,400 –&gt; 00:21:38,720<br>window to two. But this acknowledge won’t be just be for nine because it’s received 10, 11, and 12.</p>
+<p>212<br>00:21:38,720 –&gt; 00:21:43,360<br>So that acknowledgement’s actually going to say is acknowledge 12. So I now have my congestion</p>
+<p>213<br>00:21:43,360 –&gt; 00:21:50,080<br>window to two. I know 12 has been received. I can send 13 and 14 and I’m back in the slow start</p>
+<p>214<br>00:21:50,080 –&gt; 00:21:55,200<br>state. Until I reach this SS threshold which final transition back to congestion of winds.</p>
+<p>215<br>00:21:55,200 –&gt; 00:22:01,519<br>So that’s a basic walkthrough of TCP Tahoe and how it behaves. It’s moving between slow start and</p>
+<p>216<br>00:22:01,519 –&gt; 00:22:07,279<br>congestion avoidance and how it’s using triple duplicate acts in order to infer that something has</p>
+<p>217<br>00:22:07,279 –&gt; 00:22:11,200<br>gone wrong and return back to the slow start state. It’s using that to infer that there’s congestion</p>
+<p>218<br>00:22:11,200 –&gt; 00:22:12,799<br>in slow down.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP594-5aCongestionControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP604-6TCPRTTEstimation/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP584-5TCPTahoe/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

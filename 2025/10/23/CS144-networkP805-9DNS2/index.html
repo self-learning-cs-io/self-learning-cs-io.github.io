@@ -1,0 +1,749 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP805-9DNS2.md100:00:00,000 –&gt; 00:00:07,000This video goes into the details of what DNS queries actually look like and their format and their structure. 200:00:07,000 –&gt; 00:0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP805-9DNS2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP805-9DNS2.md100:00:00,000 –&gt; 00:00:07,000This video goes into the details of what DNS queries actually look like and their format and their structure. 200:00:07,000 –&gt; 00:0">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:55.050Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:16.889Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP805-9DNS2-md"><a href="#title-CS144-networkP805-9DNS2-md" class="headerlink" title="title: CS144-networkP805-9DNS2.md"></a>title: CS144-networkP805-9DNS2.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:07,000<br>This video goes into the details of what DNS queries actually look like and their format and their structure.</p>
+<p>2<br>00:00:07,000 –&gt; 00:00:10,000<br>So queries and the resource records that compose them.</p>
+<p>3<br>00:00:10,000 –&gt; 00:00:22,000<br>So recall, a DNS query starts from a client, say it asks a resolver, what’s <a target="_blank" rel="noopener" href="http://www.stampford.edu/">www.stampford.edu</a>, and is there a cursor query?</p>
+<p>4<br>00:00:22,000 –&gt; 00:00:36,000<br>And then a resolver might either answer from its cache or use cache entries, and if it doesn’t have a cache entry for any stage of the query, it can ask questions from external servers.</p>
+<p>5<br>00:00:36,000 –&gt; 00:00:44,000<br>So who would I ask about edu? Who would I ask about stanford.edu?</p>
+<p>6<br>00:00:44,000 –&gt; 00:00:52,000<br>Hey, what’s <a target="_blank" rel="noopener" href="http://www.stampford.edu/">www.stampford.edu</a>?</p>
+<p>7<br>00:00:52,000 –&gt; 00:01:07,000<br>Each of these are non-recursive queries, and the resolver then caches those results.</p>
+<p>8<br>00:01:07,000 –&gt; 00:01:12,000<br>So edu stanford.edu and <a target="_blank" rel="noopener" href="http://www.stampford.edu/">www.stampford.edu</a>.</p>
+<p>9<br>00:01:12,000 –&gt; 00:01:25,000<br>So that’s a query at a high level, but the way DNS works is that all DNS information, so every DNS message, is represented in terms of things called resource records, RRs.</p>
+<p>10<br>00:01:25,000 –&gt; 00:01:28,000<br>And the form of resource record is generally pretty simple.</p>
+<p>11<br>00:01:28,000 –&gt; 00:01:35,000<br>It has a name, also a kind of resource record, sort of the name of the name associated with this record.</p>
+<p>12<br>00:01:35,000 –&gt; 00:01:41,000<br>There can be a time to live in a class, then there’s the type of record, and then the record data.</p>
+<p>13<br>00:01:41,000 –&gt; 00:01:47,000<br>So for example, a resource record would be named, say <a target="_blank" rel="noopener" href="http://www.stampford.edu/">www.stampford.edu</a>.</p>
+<p>14<br>00:01:47,000 –&gt; 00:01:51,000<br>So this is a record for <a target="_blank" rel="noopener" href="http://www.stampford.edu/">www.stampford.edu</a>.</p>
+<p>15<br>00:01:51,000 –&gt; 00:01:57,000<br>TTL, how long is this record good? Class? This is the address class.</p>
+<p>16<br>00:01:57,000 –&gt; 00:02:04,000<br>So typically it’s almost always I am one of the, it’s class one, so for this for an internet, for the internet.</p>
+<p>17<br>00:02:04,000 –&gt; 00:02:08,000<br>There’s the type of the record, and then the data.</p>
+<p>18<br>00:02:08,000 –&gt; 00:02:14,000<br>And so here I’m going to walk through two critical RR types, resource record types.</p>
+<p>19<br>00:02:14,000 –&gt; 00:02:20,000<br>Type A, which is an IPv4 address, and NS, which is a name server.</p>
+<p>20<br>00:02:20,000 –&gt; 00:02:24,000<br>So an A record tells you an address associated with the name.</p>
+<p>21<br>00:02:24,000 –&gt; 00:02:29,000<br>So it’ll say type A, the R data is an address associated with the name.</p>
+<p>22<br>00:02:29,000 –&gt; 00:02:38,000<br>Whereas a name server record, an NS record, will tell you the address of a name server associated with the name.</p>
+<p>23<br>00:02:38,000 –&gt; 00:02:49,000<br>So greatly to explore DNS, and what records look like, and what kinds of records you get, is to use this tool called DIG, which I’ll use several times.</p>
+<p>24<br>00:02:50,000 –&gt; 00:02:56,000<br>A DNS message, an actual DNS message, it’s structure looks like this, it’s specified in RFC 1035.</p>
+<p>25<br>00:02:56,000 –&gt; 00:03:01,000<br>So beginning there’s a header, which describes overall what’s in the message.</p>
+<p>26<br>00:03:01,000 –&gt; 00:03:06,000<br>There’s the question that this message is for, if it’s a query, then it’s the question of the query.</p>
+<p>27<br>00:03:06,000 –&gt; 00:03:10,000<br>If it’s a response, then it’s the question it’s a response to.</p>
+<p>28<br>00:03:10,000 –&gt; 00:03:17,000<br>And then there are other sections, which are empty and queries, the answer, authority, and additional sections.</p>
+<p>29<br>00:03:17,000 –&gt; 00:03:23,000<br>So it’s possible, for example, to send a DNS query with multiple questions, and if you want, each of these can have multiple entries.</p>
+<p>30<br>00:03:23,000 –&gt; 00:03:30,000<br>So there’s a header, and the question, answer, authority, and additional sections are all made up of resource records.</p>
+<p>31<br>00:03:30,000 –&gt; 00:03:33,000<br>So let’s look at an example of this.</p>
+<p>32<br>00:03:33,000 –&gt; 00:03:41,000<br>So if I dig <a target="_blank" rel="noopener" href="http://www.stanford.edu/">www.stanford.edu</a>, now this simply is a dig.</p>
+<p>33<br>00:03:41,000 –&gt; 00:03:50,000<br>I’m asking, I’m basically saying I’d like to send a DNS query for the address of <a target="_blank" rel="noopener" href="http://www.stanford.edu/">www.stanford.edu</a>.</p>
+<p>34<br>00:03:50,000 –&gt; 00:03:53,000<br>And this is what we see come back.</p>
+<p>35<br>00:03:53,000 –&gt; 00:04:03,000<br>So here’s the day output, I’ll tell you the version of dig, here’s the header, some header information, I’ll talk a little bit more about that later.</p>
+<p>36<br>00:04:03,000 –&gt; 00:04:08,000<br>So here’s the question, I was asking for an address record of <a target="_blank" rel="noopener" href="http://www.stanford.edu/">www.stanford.edu</a>.</p>
+<p>37<br>00:04:08,000 –&gt; 00:04:12,000<br>So you see here’s a resource record within the question section.</p>
+<p>38<br>00:04:12,000 –&gt; 00:04:16,000<br>And the answer has two records in it.</p>
+<p>39<br>00:04:16,000 –&gt; 00:04:22,000<br>The first is what’s called a C name record, which I’ll talk a little bit more later.</p>
+<p>40<br>00:04:22,000 –&gt; 00:04:32,000<br>Basically it says that <a target="_blank" rel="noopener" href="http://www.stanford.edu/">www.stanford.edu</a> is actually the canonical name for that, so it’s C name stands for, C name stands for, is www-v6.stanford.edu.</p>
+<p>41<br>00:04:32,000 –&gt; 00:04:38,000<br>So there are six different, maybe there are six different, uh, well-o-app servers for stanford.</p>
+<p>42<br>00:04:38,000 –&gt; 00:04:48,000<br>Then the address of www-v6, uh, here’s, here’s the internet, uh, I ends, it’s I-N-1, that’s the class, TTL’s 1800.</p>
+<p>43<br>00:04:48,000 –&gt; 00:04:52,000<br>This is an A record, and it’s for this address.</p>
+<p>44<br>00:04:52,000 –&gt; 00:05:00,000<br>In addition to that, the authority section, uh, is telling me who are the authoritative names, these are the NS, the name server records for stanford.edu.</p>
+<p>45<br>00:05:00,000 –&gt; 00:05:05,000<br>So here are all of these different servers I could ask about addresses in stanford.</p>
+<p>46<br>00:05:05,000 –&gt; 00:05:09,000<br>Um, an additional section then gives me a whole bunch of just additional stuff.</p>
+<p>47<br>00:05:09,000 –&gt; 00:05:20,000<br>Like here’s the address record for argus, here’s the address record for erathea, here’s the address record for Atlanta, here’s the uh, Atlanta, here’s the address record for avalan.</p>
+<p>48<br>00:05:20,000 –&gt; 00:05:27,000<br>This one where you think of what DNS is often doing, and the reason why you see this message is so big is that, given that it’s going to send a response,</p>
+<p>49<br>00:05:27,000 –&gt; 00:05:33,000<br>it tries to send you a whole bunch of extra data, a whole bunch of extra information just to maybe prevent you from asking over query.</p>
+<p>50<br>00:05:33,000 –&gt; 00:05:40,000<br>And so these are A records, these are IPv4 addresses, uh, so quad A records, AA, AA, these are IPv6 addresses.</p>
+<p>51<br>00:05:40,000 –&gt; 00:05:53,000<br>And so it turns out stanfords, uh, DNS server is giving me not only the address records, um, of the stanford name servers, but also there, not only the A record, but also the IPv6, in case I want to query them over IPv6.</p>
+<p>52<br>00:05:53,000 –&gt; 00:06:06,000<br>So this is what a response to a DNS query looks like. So you can see that there’s the header, there’s the question section, the answer section, the authority section, and then the additional section.</p>
+<p>53<br>00:06:06,000 –&gt; 00:06:20,000<br>So if you look inside the header, um, it’s specified in our c10, uh, 35, um, the header is, uh, 10 bytes long, uh, sorry, 12 bytes long, so it’s pretty short.</p>
+<p>54<br>00:06:20,000 –&gt; 00:06:31,000<br>Uh, the first two bytes are an ID, this you compare queries and responses. Um, and then the second, so the first two bytes is an ID, the second two bytes are a bunch of flags.</p>
+<p>55<br>00:06:31,000 –&gt; 00:06:40,000<br>So there’s the first that bet I mentioned, whether this is a query or response, there is an op code, uh, so standard queries.</p>
+<p>56<br>00:06:40,000 –&gt; 00:06:50,000<br>And there’s a return code, if there’s an error code, there’s a bunch of flags. Um, so is this an authoritative answer is this truncated all of these, uh, such a thing.</p>
+<p>57<br>00:06:50,000 –&gt; 00:06:58,000<br>So you can see here, and the bottom recursion desired recursion available. So there are ways where you can, in fact, ask your resolver, a fri non recursive query, if you want.</p>
+<p>58<br>00:06:58,000 –&gt; 00:07:08,000<br>Then after these first four bytes, there are four two byte values, which say how many, uh, resource records are there in each section.</p>
+<p>59<br>00:07:08,000 –&gt; 00:07:19,000<br>So, um, how many queries are there? How many, um, answers are there? How many, uh, uh, authorities are there? Um, and how many additional records are there?</p>
+<p>60<br>00:07:19,000 –&gt; 00:07:27,000<br>Now then within each of these, of the, the four sections that have resource records, resource records is pretty simple.</p>
+<p>61<br>00:07:27,000 –&gt; 00:07:42,000<br>Um, it has a name that could be a variable number of, of bytes long playing along it is, um, then there’s a type class, the TTL, um, within an RD length field specifying the R data.</p>
+<p>62<br>00:07:42,000 –&gt; 00:07:49,000<br>So here, here’s the basic DNS name, then the type, then the class TTL RD length, our data.</p>
+<p>63<br>00:07:49,000 –&gt; 00:07:56,000<br>And so this is what the, sort of the on the wire with the byte format of a resource record looks like.</p>
+<p>64<br>00:07:56,000 –&gt; 00:08:03,000<br>Now notice that the beginning of a resource record is a name, but it doesn’t say how long the name is. That’s because the length of the name is self describing.</p>
+<p>65<br>00:08:03,000 –&gt; 00:08:10,000<br>Um, it turns out the DNS does a lot of name compression because it’s trying to pack everything into 512 bytes.</p>
+<p>66<br>00:08:10,000 –&gt; 00:08:18,000<br>Uh, then names that are repeated through the packet are just rather than repeated are just referenced.</p>
+<p>67<br>00:08:18,000 –&gt; 00:08:27,000<br>Um, and so imagine if I’m asking a query about say, uh, <a target="_blank" rel="noopener" href="http://www.standford.edu/">www.standford.edu</a>, um, I don’t know if you want to have the repeated many times in the packet.</p>
+<p>68<br>00:08:27,000 –&gt; 00:08:29,000<br>I can just put it once and then refer to it.</p>
+<p>69<br>00:08:29,000 –&gt; 00:08:36,000<br>So the first thing that DNS does is it breaks a name into separate labels related to the steps of the hierarchy.</p>
+<p>70<br>00:08:36,000 –&gt; 00:08:43,000<br>So <a target="_blank" rel="noopener" href="http://www.standford.edu/">www.standford.edu</a> is three separate labels, <a target="_blank" rel="noopener" href="http://www.standford.edu/">www.standford.edu</a>.</p>
+<p>71<br>00:08:43,000 –&gt; 00:08:49,000<br>Then each label is encoded as a length and then text values.</p>
+<p>72<br>00:08:49,000 –&gt; 00:08:56,000<br>The length is in binary. So it’s basically, uh, some number. It’s just one, um, one byte.</p>
+<p>73<br>00:08:56,000 –&gt; 00:08:59,000<br>Um, and then the text is in ASCII.</p>
+<p>74<br>00:08:59,000 –&gt; 00:09:06,000<br>So for example, uh, if I were to include three, www. So www is 0x77.</p>
+<p>75<br>00:09:06,000 –&gt; 00:09:10,000<br>The way this is encoded in the bits in the packet is 037777777.</p>
+<p>76<br>00:09:10,000 –&gt; 00:09:14,000<br>So this tells me these are three bytes and here they are.</p>
+<p>77<br>00:09:14,000 –&gt; 00:09:23,000<br>Um, now one trick then that the name compression uses in order to take advantage of the fact the names will be longer repeated several times in the packet.</p>
+<p>78<br>00:09:23,000 –&gt; 00:09:35,000<br>Um, is if the length field here in the label is greater than 192, um, that is some of the hierarchy of bits are set.</p>
+<p>79<br>00:09:35,000 –&gt; 00:09:41,000<br>Um, then the next 14 bits specify an offset in the packet.</p>
+<p>80<br>00:09:41,000 –&gt; 00:09:51,000<br>Um, and so the way you think of this is that if I see here that the first two bits of the length, um, so 128 plus 64 is 192, or 11,</p>
+<p>81<br>00:09:51,000 –&gt; 00:10:03,000<br>then this length is actually two bytes long, this length field, and the later 14 bits specify, specify an offset in the packet.</p>
+<p>82<br>00:10:03,000 –&gt; 00:10:19,000<br>So for example, if I see 0x, 0, 0c, this means that the name that this label, that this label of first two is at this value minus, um, take out those first two bits is at offset 12 within the packet.</p>
+<p>83<br>00:10:19,000 –&gt; 00:10:31,000<br>So if I were to go to offset 12, that’s the label of this refers to. So if I something like Stanford, which is eight characters long, rather than repeat Stanford many times, would actually be the ninth to the length, right?</p>
+<p>84<br>00:10:31,000 –&gt; 00:10:46,000<br>I’d be 0 at, I’d be 0x, 0, 8, then the bytes of Stanford, I can just say 0x, c0, and then the offset of Stanford, it’ll be only two bytes long.</p>
+<p>85<br>00:10:46,000 –&gt; 00:10:53,000<br>So this is a little bit detailed, but it’s important for when I’m going to open up bar, so I can show you what some DNS queries and responses look like.</p>
+<p>86<br>00:10:53,000 –&gt; 00:11:00,000<br>Otherwise, it can be really hard to figure out what these resource records and what are these weird values that aren’t actually specifying names.</p>
+<p>87<br>00:11:00,000 –&gt; 00:11:06,000<br>So just to give you an idea, so what a DNS, what a DNS A or address record looks like.</p>
+<p>88<br>00:11:06,000 –&gt; 00:11:18,000<br>So this is say for market.scs.stantford.edu. So the first the name region would say market.scs.stantford.edu. This might be compressed, so it might be much shorter.</p>
+<p>89<br>00:11:18,000 –&gt; 00:11:25,000<br>Then the next two bytes would say 1, this is an address record, the next two bytes would say 1, this is for the internet.</p>
+<p>90<br>00:11:25,000 –&gt; 00:11:36,000<br>The next four bytes say 3600, so the TTL of this record the time to live is an hour.</p>
+<p>91<br>00:11:36,000 –&gt; 00:11:43,000<br>Then the length of the R data, the length of the internet address is 4 bytes, and then here are the 4 bytes.</p>
+<p>92<br>00:11:43,000 –&gt; 00:11:52,000<br>And so if you see it printed out, say if you’re using dig, you’d see this, but the overall record actually looks like this.</p>
+<p>93<br>00:11:52,000 –&gt; 00:12:00,000<br>And an s record say the name server record for scs.stantford.edu looks similar, where here we have scs.stantford.edu in the name section.</p>
+<p>94<br>00:12:00,000 –&gt; 00:12:09,000<br>Again, it might be compressed, then we have two saying that this is an ns record against the internet, time to live 3600.</p>
+<p>95<br>00:12:09,000 –&gt; 00:12:18,000<br>And then the length is say 10, because it turns out that scs.stantford.edu is compressed because, well, it’s been mentioned elsewhere.</p>
+<p>96<br>00:12:18,000 –&gt; 00:12:36,000<br>So really have mission, 1, 2, 3, 4, 5, 6, 7, right? And then we have the 1, the 1, the length for mission, and then the 2, which is the compressed indication of scs.stantford.edu.</p>
+<p>97<br>00:12:36,000 –&gt; 00:12:47,000<br>So the first two bytes in the R data are going to point to scs.stantford.edu, then we have a byte saying the length of mission is 7, and the 7 mission bytes for a total of 10 bytes.</p>
+<p>98<br>00:12:47,000 –&gt; 00:12:54,000<br>So let’s dig for market.scs.stantford.edu. So just use the tool, see what happens.</p>
+<p>99<br>00:12:54,000 –&gt; 00:13:00,000<br>So we’re asking what is the address of market.scs.stantford.edu? So we’re asking for an address record. We get the answer.</p>
+<p>100<br>00:13:00,000 –&gt; 00:13:07,000<br>It’s address is 17166.3.10, and here’s the time to live of 2050.</p>
+<p>101<br>00:13:07,000 –&gt; 00:13:16,000<br>30 section. Here are the name servers that answered, can answer this question. Here’s a bunch of them.fs.n, mission.scs.stantford.edu.</p>
+<p>102<br>00:13:16,000 –&gt; 00:13:22,000<br>And here’s some additional information, address records for these name servers.</p>
+<p>103<br>00:13:22,000 –&gt; 00:13:37,000<br>So that’s what this looks like when you asked it. We can also ask dig what is the NS record for market for scs.stantford.edu.</p>
+<p>104<br>00:13:37,000 –&gt; 00:13:45,000<br>And so here’s recurring for the NS record.scs.stantford.edu. You can see there’s a whole bunch of name servers that serve scs.stantford.edu.</p>
+<p>105<br>00:13:45,000 –&gt; 00:13:53,000<br>NS3, NS1, garage, market, mission. And then here’s the additional section which is giving you their IP addresses.</p>
+<p>106<br>00:13:53,000 –&gt; 00:14:00,000<br>Some of them are just IPv4 addresses. Some of them are IPv4 and IPv6 addresses.</p>
+<p>107<br>00:14:00,000 –&gt; 00:14:08,000<br>And so here we can see there’s so many name servers and what that means is that if any one of these goes down, I can still ask, I can still go to another one.</p>
+<p>108<br>00:14:08,000 –&gt; 00:14:20,000<br>So even if say three of these name servers went down, let’s say the NS3, garage, and market, I can still contact NS1 or mission to ask questions about names in scs.stantford.edu.</p>
+<p>109<br>00:14:20,000 –&gt; 00:14:31,000<br>So now let’s see what those queries look like in Wireshark. So here I’ve opened a Wireshark and I set up a filter at UDPport53. So that’s the DNS port and IP address.</p>
+<p>110<br>00:14:31,000 –&gt; 00:14:38,000<br>There’s going to look at DNS requests and responses from my machine.</p>
+<p>111<br>00:14:38,000 –&gt; 00:14:44,000<br>And so if we were to ask this question, digmarket.scs.stantford.edu.</p>
+<p>112<br>00:14:44,000 –&gt; 00:14:52,000<br>And we see we get a query and a response. And so here’s the standard DNS query.</p>
+<p>113<br>00:14:52,000 –&gt; 00:15:01,000<br>Again, internet protocol version four source. There’s my DNS server.</p>
+<p>114<br>00:15:01,000 –&gt; 00:15:04,000<br>And so here’s the query.</p>
+<p>115<br>00:15:04,000 –&gt; 00:15:11,000<br>There’s a standard query. There’s one question, no other records.</p>
+<p>116<br>00:15:11,000 –&gt; 00:15:25,000<br>And so the question is market.scs.stantford.edu. Type A. So I’m asking for an address record class, I-N, name market.scs.stantford.edu, type A, host address, class, internet.</p>
+<p>117<br>00:15:25,000 –&gt; 00:15:35,000<br>And so here, in fact, we’re looking inside the bytes of the packet. Here’s all this information about the size, right? We can see here down in these bytes, 0, 0, 0, 0, 0, 0.</p>
+<p>118<br>00:15:35,000 –&gt; 00:15:50,000<br>Here is, this is the header of the DNS transaction ID right there, 0x3eA, flags, questions, etc. 0, 0. Then here’s the query itself.</p>
+<p>119<br>00:15:50,000 –&gt; 00:16:03,000<br>So this is the query section. This is market.scs.stantford.edu. If you look down at the bytes, this byte, this first byte for market is 06. That’s because market is six characters long.</p>
+<p>120<br>00:16:03,000 –&gt; 00:16:22,000<br>So we have 06, then M-A-R-K-E-T, then SCS, which is three. So three long, three SCS. Then Stanford, which is eight long. So here’s eight ST-AN-F-OR-D, then three long EDU.</p>
+<p>121<br>00:16:22,000 –&gt; 00:16:33,000<br>And then that’s the, and then type A, so 0, 1, class, IN, 0, 1. Great. Now if we look at the response, it’s a lot more complicated.</p>
+<p>122<br>00:16:33,000 –&gt; 00:16:45,000<br>Because remember how many entries there are in response. So let’s look inside this. So it’s telling us it’s for the transaction ID, 0, 3eA-A, Santa Cruz, sponsor, or error. There is one question.</p>
+<p>123<br>00:16:45,000 –&gt; 00:17:03,000<br>One answer, five authorities, seven additional. Now let’s look at the query section. So the query here, you can see again market.scs.stantford.edu, type A, class, IN. And so here’s the answer.</p>
+<p>124<br>00:17:03,000 –&gt; 00:17:29,000<br>Market.scs.stantford.edu, but well, here’s the address. But now if you look at this, the name section of this resource record is only two bytes long. It’s using name compression. So here’s that C-0, 0, C. When it’s saying is that C, the first two bits are one, this is a compressed name. And the start of the name is it offset 0, C, or 12 within the packet.</p>
+<p>125<br>00:17:29,000 –&gt; 00:17:45,000<br>And if you were to count the bytes within the DNS packet, you’d see that market starts at byte 12. So this saying this name is right there. And so then here’s type A, IN, 30, etc.</p>
+<p>126<br>00:17:45,000 –&gt; 00:18:08,000<br>So that you can see. So we’re going to take market.scs.stantford.edu and compress the name entirely. But it turns that you can reduce some other types of compression. So here is the authoritative. Here’s an answer for SCS.stantford.edu. And so we see again this name for SCS.stantford.edu is compressed. So C0, it’s compressed 13.</p>
+<p>127<br>00:18:09,000 –&gt; 00:18:28,000<br>So this is an address, the first one represents 16. So this is address 19 within the packet or offset 19. So why 19? Well, if you think the original market.scs name, which is an offset 12, then there’s the length byte for market and then the six market bytes. So total is seven bytes.</p>
+<p>128<br>00:18:29,000 –&gt; 00:18:39,000<br>And so offset 19 within the packet is SCS.stantford.edu. So you can address not only into the beginning of the series of labels, but any label within there.</p>
+<p>129<br>00:18:40,000 –&gt; 00:18:56,000<br>And so you’ll see this happen many times. And so if you start doing some digging some requests and opened up a bar shop, you’ll see this kind of name compression. And what this means in practice right is that this packet, which had all of this information in it.</p>
+<p>130<br>00:18:56,000 –&gt; 00:19:08,000<br>Right. Look at all this stuff that’s in this packet. All of these different records, address records, name server records, quad address records, fits in 311 bytes. It’s a 311 byte DNS response.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP805-9DNS2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP81-7Encapslationprinciple/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP795-8DNS1/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

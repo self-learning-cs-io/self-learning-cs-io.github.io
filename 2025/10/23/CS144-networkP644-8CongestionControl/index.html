@@ -1,0 +1,723 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP644-8CongestionControl.md100:00:00,000 –&gt; 00:00:05,000So in the video about TCP Reno and Neurino, I said that additive increase, multiplicative 200:00:05,000 –&gt; 00:00:10,43">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP644-8CongestionControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP644-8CongestionControl.md100:00:00,000 –&gt; 00:00:05,000So in the video about TCP Reno and Neurino, I said that additive increase, multiplicative 200:00:05,000 –&gt; 00:00:10,43">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:54.783Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:16.987Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP644-8CongestionControl-md"><a href="#title-CS144-networkP644-8CongestionControl-md" class="headerlink" title="title: CS144-networkP644-8CongestionControl.md"></a>title: CS144-networkP644-8CongestionControl.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:05,000<br>So in the video about TCP Reno and Neurino, I said that additive increase, multiplicative</p>
+<p>2<br>00:00:05,000 –&gt; 00:00:10,439<br>decrease, turns out to be really powerful and very effective mechanism for congestion control.</p>
+<p>3<br>00:00:10,439 –&gt; 00:00:14,320<br>This video, I’m trying to give you an intuition as to why.</p>
+<p>4<br>00:00:14,320 –&gt; 00:00:19,559<br>Why it turns out to work so well and why it is that it’s generally used on the internet.</p>
+<p>5<br>00:00:19,559 –&gt; 00:00:24,679<br>So the way to think about this problem of congestion control is that there really are two conflicting</p>
+<p>6<br>00:00:24,679 –&gt; 00:00:26,440<br>requirements in the network.</p>
+<p>7<br>00:00:26,440 –&gt; 00:00:28,320<br>The first is a service provider.</p>
+<p>8<br>00:00:28,320 –&gt; 00:00:31,120<br>What they want to do is they want to maximize their link utilization.</p>
+<p>9<br>00:00:31,120 –&gt; 00:00:33,200<br>That is they want their network to be completely utilized.</p>
+<p>10<br>00:00:33,200 –&gt; 00:00:39,280<br>They don’t want to have idle capacity, which is unused.</p>
+<p>11<br>00:00:39,280 –&gt; 00:00:42,160<br>But users want to get a fair share of that.</p>
+<p>12<br>00:00:42,160 –&gt; 00:00:46,799<br>A service provider would be happy if one user just got the entire pipe, but then you’re</p>
+<p>13<br>00:00:46,799 –&gt; 00:00:50,760<br>going to lose all of your clients and users will be unhappy.</p>
+<p>14<br>00:00:50,759 –&gt; 00:00:57,519<br>So the idea is that you’d like an algorithm for congestion control that has the links</p>
+<p>15<br>00:00:57,519 –&gt; 00:01:04,079<br>operate close to utilization, but will converge to a point where every user is assuming everything</p>
+<p>16<br>00:01:04,079 –&gt; 00:01:08,359<br>else is equal, we’ll get approximately one ant if they’re end users.</p>
+<p>17<br>00:01:08,359 –&gt; 00:01:11,280<br>And in doing this, it’s going to avoid congestion collapse that they’re still doing useful</p>
+<p>18<br>00:01:11,280 –&gt; 00:01:12,280<br>data.</p>
+<p>19<br>00:01:12,280 –&gt; 00:01:13,959<br>So these are the basic parameters of the problem.</p>
+<p>20<br>00:01:13,959 –&gt; 00:01:17,560<br>We want to maximize link utilization of high link utilization.</p>
+<p>21<br>00:01:17,560 –&gt; 00:01:22,519<br>And while everyone gets a fair share of that link utilization, and we want to make sure</p>
+<p>22<br>00:01:22,519 –&gt; 00:01:26,120<br>that the network does not rot itself into the ground.</p>
+<p>23<br>00:01:26,120 –&gt; 00:01:28,000<br>So what should your congestion window size be?</p>
+<p>24<br>00:01:28,000 –&gt; 00:01:31,680<br>So it turns out the optimal congestion window size, as you talked about before, is the bandwidth</p>
+<p>25<br>00:01:31,680 –&gt; 00:01:32,680<br>delay product.</p>
+<p>26<br>00:01:32,680 –&gt; 00:01:37,200<br>And this is basically the idea that let’s say I have my bandwidth between San Francisco</p>
+<p>27<br>00:01:37,200 –&gt; 00:01:43,840<br>and Boston is 10 megabytes per second.</p>
+<p>28<br>00:01:43,840 –&gt; 00:01:48,640<br>And the delay is 100 milliseconds.</p>
+<p>29<br>00:01:48,640 –&gt; 00:01:53,680<br>Well this means that if I can support 10 megabytes per second and a congestion window</p>
+<p>30<br>00:01:53,680 –&gt; 00:01:57,760<br>lasts 100 milliseconds, then my congestion window should essentially be one megabyte,</p>
+<p>31<br>00:01:57,760 –&gt; 00:01:58,760<br>right?</p>
+<p>32<br>00:01:58,760 –&gt; 00:02:01,159<br>The product of 100 megabytes per second times 100 milliseconds.</p>
+<p>33<br>00:02:01,159 –&gt; 00:02:12,800<br>Similarly, if my bandwidth is six megabytes per second and my delay is 90 milliseconds,</p>
+<p>34<br>00:02:12,800 –&gt; 00:02:19,800<br>then I should be sending approximately a congestion window of 540 kilobytes.</p>
+<p>35<br>00:02:19,800 –&gt; 00:02:21,120<br>And this falls out from these values.</p>
+<p>36<br>00:02:21,120 –&gt; 00:02:24,680<br>And then if I’m sending one megabyte per congestion window and there are 10 congestion windows,</p>
+<p>37<br>00:02:24,680 –&gt; 00:02:26,360<br>I’ll be sending 10 megabytes per second.</p>
+<p>38<br>00:02:26,360 –&gt; 00:02:28,200<br>But I’ll be sending 10 megabytes per second.</p>
+<p>39<br>00:02:28,200 –&gt; 00:02:33,760<br>Similarly, if my congestion window is 540 kilobytes and that’s a congestion window every</p>
+<p>40<br>00:02:33,760 –&gt; 00:02:42,360<br>90 milliseconds, they’ll break down to six megabytes per second.</p>
+<p>41<br>00:02:42,360 –&gt; 00:02:48,200<br>So now a way to think about how a congestion window works over time or rather how pairs</p>
+<p>42<br>00:02:48,200 –&gt; 00:02:51,800<br>of congestion windows work over time is something called the Choo Jane plot.</p>
+<p>43<br>00:02:51,800 –&gt; 00:02:56,480<br>And this is really part of the thing which sort of laid out some of the papers that laid</p>
+<p>44<br>00:02:56,480 –&gt; 00:03:00,400<br>out this first idea or so Y and D is a good idea.</p>
+<p>45<br>00:03:00,400 –&gt; 00:03:03,240<br>So a really nice graphical way.</p>
+<p>46<br>00:03:03,240 –&gt; 00:03:07,680<br>So what I want to do is plot, we have two flows that are competing for the network and</p>
+<p>47<br>00:03:07,680 –&gt; 00:03:13,599<br>we’re going to plot the rate of flow A based on its say congestion window size and the</p>
+<p>48<br>00:03:13,599 –&gt; 00:03:19,840<br>rate of on the x axis and the rate of flow B on the y axis is going to be a scatter plot.</p>
+<p>49<br>00:03:19,840 –&gt; 00:03:24,760<br>Now if the network is fair, it will be equal to B. That is the rate which A gets will be</p>
+<p>50<br>00:03:24,760 –&gt; 00:03:30,240<br>equal to the rate which B gets and so the point, the scatter point dot, should fall on this</p>
+<p>51<br>00:03:30,240 –&gt; 00:03:33,439<br>line.</p>
+<p>52<br>00:03:33,439 –&gt; 00:03:38,120<br>Now that’s the user requirement.</p>
+<p>53<br>00:03:38,120 –&gt; 00:03:43,719<br>Now if we are maintaining the service provider requirement as we’re actually running the</p>
+<p>54<br>00:03:43,719 –&gt; 00:03:48,680<br>network at capacity, then it should be that A plus B, the sum of these two flows equal</p>
+<p>55<br>00:03:48,680 –&gt; 00:03:50,520<br>to the capacity of the network.</p>
+<p>56<br>00:03:50,520 –&gt; 00:03:59,960<br>So this is the service provider requirement.</p>
+<p>57<br>00:03:59,960 –&gt; 00:04:04,280<br>And so what we’d like is a congestion control algorithm that causes, starting wherever</p>
+<p>58<br>00:04:04,280 –&gt; 00:04:09,879<br>we are in this design, where we pick some random point is going to cause flow A and flow</p>
+<p>59<br>00:04:09,879 –&gt; 00:04:17,000<br>B to gravitate towards this desired point in the center where we are fair and efficient.</p>
+<p>60<br>00:04:17,000 –&gt; 00:04:22,199<br>We’re fully utilizing the link.</p>
+<p>61<br>00:04:22,199 –&gt; 00:04:25,519<br>And so what you can show this is that if we’re to the right of this efficiency line that</p>
+<p>62<br>00:04:25,519 –&gt; 00:04:28,400<br>means we’ve overloaded the network, so chance our packets are going to be dropped from</p>
+<p>63<br>00:04:28,399 –&gt; 00:04:30,199<br>the frequency triple duplicate acts.</p>
+<p>64<br>00:04:30,199 –&gt; 00:04:34,959<br>If we’re in the green region, then we’re under load of the network.</p>
+<p>65<br>00:04:34,959 –&gt; 00:04:39,120<br>And so we want to get to this point where we’re operating right at the network capacity,</p>
+<p>66<br>00:04:39,120 –&gt; 00:04:43,439<br>but we have fair capacity.</p>
+<p>67<br>00:04:43,439 –&gt; 00:04:49,519<br>Now what this shows you, this series of T1 through T6, et cetera, is how additive increase</p>
+<p>68<br>00:04:49,519 –&gt; 00:04:51,159<br>multiplicative T-crease behaves.</p>
+<p>69<br>00:04:51,159 –&gt; 00:04:57,799<br>So let’s just pick this arbitrary point T1 where flow B is operating it well above its</p>
+<p>70<br>00:04:57,800 –&gt; 00:05:01,040<br>fair shares, you can see this distance.</p>
+<p>71<br>00:05:01,040 –&gt; 00:05:09,600<br>And the flow A is operating well below its fair share, as you can see by this distance here.</p>
+<p>72<br>00:05:09,600 –&gt; 00:05:10,600<br>So what’s going to happen?</p>
+<p>73<br>00:05:10,600 –&gt; 00:05:12,080<br>Both are in additive increase mode.</p>
+<p>74<br>00:05:12,080 –&gt; 00:05:16,759<br>And they’re both going to additively increase their congestion window size and their flow</p>
+<p>75<br>00:05:16,759 –&gt; 00:05:21,639<br>rate until at some point the network becomes overloaded and it drops some packets.</p>
+<p>76<br>00:05:21,639 –&gt; 00:05:26,600<br>At which point then they multiplicatively decrease their window size and go back into additive</p>
+<p>77<br>00:05:26,600 –&gt; 00:05:27,600<br>increase.</p>
+<p>78<br>00:05:27,600 –&gt; 00:05:30,160<br>And so here’s the multiplicative decrease.</p>
+<p>79<br>00:05:30,160 –&gt; 00:05:32,040<br>And then they additively increase.</p>
+<p>80<br>00:05:32,040 –&gt; 00:05:37,480<br>Now because the multiplicative decrease decreases B’s rate more than A, it’s a multiplicative</p>
+<p>81<br>00:05:37,480 –&gt; 00:05:38,960<br>factor.</p>
+<p>82<br>00:05:38,960 –&gt; 00:05:44,000<br>This then makes the plot, the comparison of A and B, closer to fair.</p>
+<p>83<br>00:05:44,000 –&gt; 00:05:51,240<br>You can see T3 here is bringing the pair of flows closer to the fair line.</p>
+<p>84<br>00:05:51,240 –&gt; 00:05:52,240<br>And that’s we’re seeing.</p>
+<p>85<br>00:05:52,240 –&gt; 00:05:58,759<br>So we’re reducing each flow by a multiplicative factor over time and then increasing by an additive</p>
+<p>86<br>00:05:58,759 –&gt; 00:05:59,759<br>factor.</p>
+<p>87<br>00:05:59,759 –&gt; 00:06:03,759<br>Over time, the oscillate between overload and under load.</p>
+<p>88<br>00:06:03,759 –&gt; 00:06:06,759<br>In the sense of they’re going to push the network until it’s just a little bit overloaded,</p>
+<p>89<br>00:06:06,759 –&gt; 00:06:08,480<br>then they back off a little bit.</p>
+<p>90<br>00:06:08,480 –&gt; 00:06:13,960<br>And over time, this scaling, this multiplicative decrease, causes them to converge towards</p>
+<p>91<br>00:06:13,960 –&gt; 00:06:18,439<br>this point.</p>
+<p>92<br>00:06:18,439 –&gt; 00:06:23,719<br>And so in fact, in the end case, what we’ll see is that depending on exactly what overload</p>
+<p>93<br>00:06:23,719 –&gt; 00:06:29,240<br>point causes triple duplicate acknowledgments, because there will be some cues, et cetera,</p>
+<p>94<br>00:06:29,240 –&gt; 00:06:34,439<br>you’ll see these two flows oscillating along the fair line, under loading the network,</p>
+<p>95<br>00:06:34,439 –&gt; 00:06:36,879<br>then increasing, then overloading it.</p>
+<p>96<br>00:06:36,879 –&gt; 00:06:39,360<br>Oh, they back off, increasing.</p>
+<p>97<br>00:06:39,360 –&gt; 00:06:45,480<br>And so over time, additive increase, multiplicative decrease, causes a pair of flows or a set of</p>
+<p>98<br>00:06:45,480 –&gt; 00:06:49,560<br>flow flows to achieve both desired properties.</p>
+<p>99<br>00:06:49,560 –&gt; 00:06:53,080<br>They get a fair share of the capacity of the network.</p>
+<p>100<br>00:06:53,080 –&gt; 00:06:57,759<br>They end up moving along this line here, but also through their additive increase, they’re</p>
+<p>101<br>00:06:57,759 –&gt; 00:07:00,439<br>going to be close to the network capacity.</p>
+<p>102<br>00:07:00,439 –&gt; 00:07:04,720<br>They’re going to go a little bit past, then a little bit back, then a little bit past.</p>
+<p>103<br>00:07:04,720 –&gt; 00:07:09,840<br>But generally speaking, additive increase multiplicative decrease will cause flows to converge</p>
+<p>104<br>00:07:09,840 –&gt; 00:07:13,120<br>on this point, the desired equilibrium point of the network.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP644-8CongestionControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP654-9Skills/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP634-7aTCPReno/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

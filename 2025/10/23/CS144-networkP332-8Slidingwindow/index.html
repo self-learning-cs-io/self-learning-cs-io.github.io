@@ -1,0 +1,786 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP332-8Slidingwindow.md100:00:00,000 –&gt; 00:00:10,000This video I’m going to talk about a slightly advanced flow control algorithm called sliding window used in most high perform">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP332-8Slidingwindow/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP332-8Slidingwindow.md100:00:00,000 –&gt; 00:00:10,000This video I’m going to talk about a slightly advanced flow control algorithm called sliding window used in most high perform">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:54.330Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:17.244Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP332-8Slidingwindow-md"><a href="#title-CS144-networkP332-8Slidingwindow-md" class="headerlink" title="title: CS144-networkP332-8Slidingwindow.md"></a>title: CS144-networkP332-8Slidingwindow.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:10,000<br>This video I’m going to talk about a slightly advanced flow control algorithm called sliding window used in most high performance protocols today.</p>
+<p>2<br>00:00:10,000 –&gt; 00:00:17,000<br>So we’re called a simple flow control algorithm, not called stop and wait, has it most one packet in flight and any time.</p>
+<p>3<br>00:00:17,000 –&gt; 00:00:23,000<br>So this is the basic simple protocol you might say algorithmally try to implement the first time you’re doing reliable communication.</p>
+<p>4<br>00:00:23,000 –&gt; 00:00:33,000<br>So sender sends a packet or a chunk of data, receiver sends acknowledgement, there’s sender if it doesn’t receive the acknowledgement times out tries to be sending, if it gets the acknowledgement it sends more data.</p>
+<p>5<br>00:00:33,000 –&gt; 00:00:42,000<br>And there’s some issues with duplicates you can maintain a counter or one bit counter to figure out if there’s a duplicate act or an actor duplicate or new data.</p>
+<p>6<br>00:00:42,000 –&gt; 00:00:48,000<br>As long as things aren’t duplicated for more than around trip time, stop and wait works, it’s great, it’s simple.</p>
+<p>7<br>00:00:49,000 –&gt; 00:00:55,000<br>So while stop and wait works correctly, it has one major problem.</p>
+<p>8<br>00:00:55,000 –&gt; 00:00:58,000<br>Let’s see your journey communicate between Boston and San Francisco.</p>
+<p>9<br>00:00:58,000 –&gt; 00:01:02,000<br>And how the bottleneck is say 10 megabits per second.</p>
+<p>10<br>00:01:02,000 –&gt; 00:01:09,000<br>So there’s a 10 megabits per second link here or let’s say the Boston node can receive a 10 megabits per second.</p>
+<p>11<br>00:01:09,000 –&gt; 00:01:12,000<br>That’s the way to which you can process to.</p>
+<p>12<br>00:01:12,000 –&gt; 00:01:15,000<br>In around trip time is 50 milliseconds.</p>
+<p>13<br>00:01:15,000 –&gt; 00:01:19,000<br>And let’s just say for simplicity sake we’re sending Ethernet frames.</p>
+<p>14<br>00:01:19,000 –&gt; 00:01:29,000<br>So that’s the size of the data, so which are basically 1.5 kilobytes or 12 kilobits.</p>
+<p>15<br>00:01:29,000 –&gt; 00:01:37,000<br>Now around trip time is 50 milliseconds. That means that San Francisco can send one packet, 50 in if that packets receive successfully, 50 milliseconds later will get an acknowledgement.</p>
+<p>16<br>00:01:38,000 –&gt; 00:01:44,000<br>So we have 1000 milliseconds per second, divided by 50 milliseconds.</p>
+<p>17<br>00:01:44,000 –&gt; 00:01:51,000<br>This means that we can send it most 20 packets per second on this on this path.</p>
+<p>18<br>00:01:51,000 –&gt; 00:02:06,000<br>20 packets per second times 12 kilobits per packet is equal to 240 kilobits per second.</p>
+<p>19<br>00:02:06,000 –&gt; 00:02:16,000<br>So this path between San Francisco and Boston using the stop and wait protocol can send at most 240 kilobits per second, assuming no packets are lost, just constant RTT 50 milliseconds.</p>
+<p>20<br>00:02:16,000 –&gt; 00:02:19,000<br>But the bottleneck is 10 megabits per second.</p>
+<p>21<br>00:02:19,000 –&gt; 00:02:30,000<br>This means that this stop and wait protocol is using 2% of the capacity of what the communication can be.</p>
+<p>22<br>00:02:30,000 –&gt; 00:02:36,000<br>So stop and wait while it works can be astoundingly inefficient.</p>
+<p>23<br>00:02:36,000 –&gt; 00:02:43,000<br>San Francisco could be sending it a much faster than what stop and wait allows.</p>
+<p>24<br>00:02:43,000 –&gt; 00:02:49,000<br>So the basic solution that most protocols use today for this problem is something called a sliding window.</p>
+<p>25<br>00:02:49,000 –&gt; 00:02:52,000<br>And sliding windows are a generalization of stop and wait.</p>
+<p>26<br>00:02:52,000 –&gt; 00:02:55,000<br>So a stop and wait allows one packet in flight at any time.</p>
+<p>27<br>00:02:55,000 –&gt; 00:02:59,000<br>A sliding window protocol allows up to end packets in flight.</p>
+<p>28<br>00:02:59,000 –&gt; 00:03:04,000<br>So when n equals is equal to 1, a sliding window protocol behaves like stop and wait.</p>
+<p>29<br>00:03:04,000 –&gt; 00:03:10,000<br>And so let’s say we have a sliding window protocol with an n equal to say 5 packets.</p>
+<p>30<br>00:03:10,000 –&gt; 00:03:18,000<br>So this means that San Francisco can have 5 packets in flight.</p>
+<p>31<br>00:03:18,000 –&gt; 00:03:28,000<br>And simultaneously there can be 5 acknowledgments coming back from Boston.</p>
+<p>32<br>00:03:28,000 –&gt; 00:03:37,000<br>And the idea here is that if you adapt, if you can set n to be the correct value,</p>
+<p>33<br>00:03:37,000 –&gt; 00:03:39,000<br>then you can keep the pipe full.</p>
+<p>34<br>00:03:39,000 –&gt; 00:03:46,000<br>That is San Francisco could send data to Boston at 10 megabits per second.</p>
+<p>35<br>00:03:46,000 –&gt; 00:03:48,000<br>So let’s say that’s Boston’s rate.</p>
+<p>36<br>00:03:48,000 –&gt; 00:03:57,000<br>And so Boston can by configuring the sliding window size can have San Francisco send data to rate equal to 10 megabits per second.</p>
+<p>37<br>00:03:57,000 –&gt; 00:04:05,000<br>And so in this particular case, if we have an RTT of 50 milliseconds and a bottleneck of 10 megabits per second,</p>
+<p>38<br>00:04:05,000 –&gt; 00:04:12,000<br>let’s say that we’re sending Ethernet frames, right, 10 kilobits per packet.</p>
+<p>39<br>00:04:12,000 –&gt; 00:04:16,000<br>And we have 20 round trip times.</p>
+<p>40<br>00:04:16,000 –&gt; 00:04:24,000<br>That essentially means that the sliding window is going to be 10 megabits per second,</p>
+<p>41<br>00:04:24,000 –&gt; 00:04:36,000<br>divided by 20 round trip times, which is equal to 500 kilobits per round trip time.</p>
+<p>42<br>00:04:36,000 –&gt; 00:04:48,000<br>So we’re looking at a sliding window of around 41 packets, right, 40 is 480 kilobits per round trip time.</p>
+<p>43<br>00:04:48,000 –&gt; 00:04:51,000<br>So 41 would be 492.</p>
+<p>44<br>00:04:51,000 –&gt; 00:05:03,000<br>And so if we had a sliding window of 40 packets, then we’d actually be able to sustain a 10 megabit connection from San Francisco to Boston with a round trip time of 50 milliseconds.</p>
+<p>45<br>00:05:03,000 –&gt; 00:05:07,000<br>So just to draw a picture, can show what this looks like.</p>
+<p>46<br>00:05:07,000 –&gt; 00:05:14,000<br>So here is the original, here’s the stop and wait with this one bit counter, a data zero, a data one, a data zero, a data zero, a data one, a data zero, a data zero.</p>
+<p>47<br>00:05:14,000 –&gt; 00:05:22,000<br>So the sliding window, let’s say we have a sliding window of size three.</p>
+<p>48<br>00:05:22,000 –&gt; 00:05:27,000<br>Well, the sender will send three packets.</p>
+<p>49<br>00:05:27,000 –&gt; 00:05:32,000<br>Let’s call them D zero, D one, D two.</p>
+<p>50<br>00:05:32,000 –&gt; 00:05:36,000<br>And the receiver can then acknowledge them.</p>
+<p>51<br>00:05:36,000 –&gt; 00:05:40,000<br>Right, act zero, act one, act two.</p>
+<p>52<br>00:05:40,000 –&gt; 00:05:45,000<br>Well, as soon as the acknowledge been zero arrives, the sender can send data three.</p>
+<p>53<br>00:05:45,000 –&gt; 00:05:48,000<br>As soon as the acknowledge one arrives, the sender can send data four.</p>
+<p>54<br>00:05:48,000 –&gt; 00:05:53,000<br>As soon as the acknowledge one two arrives, the sender can send data five.</p>
+<p>55<br>00:05:53,000 –&gt; 00:05:57,000<br>So this is the basic idea, rather than having this one packet, you could have many packets.</p>
+<p>56<br>00:05:57,000 –&gt; 00:06:04,000<br>So in the case of having a sending window of size 40, you can imagine there are tons and tons and tons of packets in flight.</p>
+<p>57<br>00:06:04,000 –&gt; 00:06:11,000<br>So let’s look at more concretely with this algorithm looks like for both the sender and the receiver, just as we did for stop and wait.</p>
+<p>58<br>00:06:11,000 –&gt; 00:06:18,000<br>So a sliding window sender, first in a sliding window protocol, every segment has a sequence number.</p>
+<p>59<br>00:06:18,000 –&gt; 00:06:23,000<br>So in protocols like TCP, this is usually done in terms of bytes because they can be variable size.</p>
+<p>60<br>00:06:23,000 –&gt; 00:06:27,000<br>For simplicity’s sake, we’ll just do it in terms of packet numbers.</p>
+<p>61<br>00:06:27,000 –&gt; 00:06:31,000<br>So there’s a sequence number for every segment.</p>
+<p>62<br>00:06:31,000 –&gt; 00:06:43,000<br>So the sender maintains three variables, the size of its sending window, the last acknowledgment it received from the receiver, and the last segment it sent.</p>
+<p>63<br>00:06:43,000 –&gt; 00:06:52,000<br>And the sender’s job is to maintain this invariant that the last segment sent minus the last acknowledgment received has to be less than or equal to the send window size.</p>
+<p>64<br>00:06:52,000 –&gt; 00:07:07,000<br>So this means that if it has received packet N by a packet with a sequence number of N, the sender cannot send a packet past N plus SWS.</p>
+<p>65<br>00:07:07,000 –&gt; 00:07:16,000<br>So let’s say we have a sending window is equal to five, an elastic acknowledgment that’s been received is equal to 11.</p>
+<p>66<br>00:07:16,000 –&gt; 00:07:25,000<br>Then this means that the sender cannot send a packet past 12, 13, 14, 15, 16.</p>
+<p>67<br>00:07:25,000 –&gt; 00:07:29,000<br>It’s not allowed to send 17 until it gets the acknowledgment for 12.</p>
+<p>68<br>00:07:29,000 –&gt; 00:07:42,000<br>When you get a new acknowledgment, you advance LAR as necessary, and you buffer up to sending window size segments in case suddenly you get an acknowledgment and then you want to send a whole bunch of data.</p>
+<p>69<br>00:07:42,000 –&gt; 00:07:47,000<br>And let’s pretend for a second we have a sending window size equal to three.</p>
+<p>70<br>00:07:47,000 –&gt; 00:07:55,000<br>And so here’s packets of zero, one, two, three, say zero, I’ve been sent and acknowledged.</p>
+<p>71<br>00:07:55,000 –&gt; 00:08:01,000<br>So our sending window size is three, the last acknowledgment for the receiver is zero.</p>
+<p>72<br>00:08:01,000 –&gt; 00:08:06,000<br>So LAR is equal to zero, SWS is equal to three.</p>
+<p>73<br>00:08:06,000 –&gt; 00:08:12,000<br>This means that the last segment sent is equal to three.</p>
+<p>74<br>00:08:12,000 –&gt; 00:08:18,000<br>So now when an acknowledgment arrives say for one, then the sending window can advance.</p>
+<p>75<br>00:08:18,000 –&gt; 00:08:22,000<br>And so now the protocol can send four.</p>
+<p>76<br>00:08:22,000 –&gt; 00:08:31,000<br>And let’s say an acknowledgment for four arrives, then the window can advance and it can send five, six, and seven.</p>
+<p>77<br>00:08:31,000 –&gt; 00:08:39,000<br>Now one thing that’s important here is that let’s say we have a send window which includes five, six, and seven, and five is lost.</p>
+<p>78<br>00:08:39,000 –&gt; 00:08:43,000<br>But six and seven arrive at the receiver and are acknowledged.</p>
+<p>79<br>00:08:43,000 –&gt; 00:08:48,000<br>The sender cannot advance the window past five until five is acknowledged.</p>
+<p>80<br>00:08:48,000 –&gt; 00:08:58,000<br>And so the window is what’s called stonk, the window can stall, where although most of the data in the window has been delivered, it can’t move past the first unacknowledged piece of data.</p>
+<p>81<br>00:08:58,000 –&gt; 00:09:01,000<br>So you can’t advance the window past five.</p>
+<p>82<br>00:09:01,000 –&gt; 00:09:05,000<br>The receiver also maintains three variables.</p>
+<p>83<br>00:09:05,000 –&gt; 00:09:07,000<br>It has received window size.</p>
+<p>84<br>00:09:07,000 –&gt; 00:09:13,000<br>The last acceptable segments is the last segment that it will receive when we drop on the floor.</p>
+<p>85<br>00:09:13,000 –&gt; 00:09:19,000<br>If it receives a segment past this value, it’ll assume something is wrong or it’s not going to buffer it and it’ll just discard it.</p>
+<p>86<br>00:09:19,000 –&gt; 00:09:22,000<br>Then there’s a last segment it’s actually received.</p>
+<p>87<br>00:09:22,000 –&gt; 00:09:33,000<br>And so the receiver is then maintaining this invariant that the last acceptable segment minus the last segment received must be less than or equal to the receipt window size.</p>
+<p>88<br>00:09:33,000 –&gt; 00:09:48,000<br>And so if you have received window size equal to five and a last segment received equal to three, then it’s not going to excite anything past four, five, six, seven, eight.</p>
+<p>89<br>00:09:48,000 –&gt; 00:09:54,000<br>So if it receives suddenly segment 10, it won’t accept it and it will drop it.</p>
+<p>90<br>00:09:54,000 –&gt; 00:10:00,000<br>Now, if the received packet is less than this acceptable segment, then it will send an acknowledgement.</p>
+<p>91<br>00:10:00,000 –&gt; 00:10:07,000<br>And so if it receives any of these packets, it will send an acknowledgement.</p>
+<p>92<br>00:10:07,000 –&gt; 00:10:17,000<br>Now, in the basic case, the way most sliding window particles work, these acknowledgments are what are called cumulative acknowledgments, such that you send an acknowledge.</p>
+<p>93<br>00:10:17,000 –&gt; 00:10:36,000<br>You send an acknowledgement for not the data you received, but rather what is the end of the contiguous data that you receive this cumulative, if I acknowledge three, that means that I’ve received three and everything before it, not just three.</p>
+<p>94<br>00:10:36,000 –&gt; 00:10:41,000<br>And so it represents a cumulative state of reception across the entire communication.</p>
+<p>95<br>00:10:41,000 –&gt; 00:10:51,000<br>So in this example, if a receiver is received one, two, three, and five, and then suddenly receives five, it doesn’t acknowledge five, it acknowledges three.</p>
+<p>96<br>00:10:51,000 –&gt; 00:11:05,000<br>Now, there are some protocols that can do things like actually selective acknowledgments, but the basic case is that you use cumulative acknowledgments, which is cumulatively what is the contiguous chunk of data that you’ve received.</p>
+<p>97<br>00:11:05,000 –&gt; 00:11:15,000<br>So one little detail here, TCP doesn’t acknowledge the data it’s received, but rather n plus one.</p>
+<p>98<br>00:11:15,000 –&gt; 00:11:18,000<br>So TCP acknowledgments are in terms of bytes.</p>
+<p>99<br>00:11:18,000 –&gt; 00:11:24,000<br>And so if TCP is received up to byte n, its acknowledgement packets will say n plus one.</p>
+<p>100<br>00:11:24,000 –&gt; 00:11:27,000<br>So it’s the first byte of data that’s expected.</p>
+<p>101<br>00:11:27,000 –&gt; 00:11:32,000<br>So if you ever looking at TCP trace or trying to see how the TCP protocol works, just keep this in mind.</p>
+<p>102<br>00:11:32,000 –&gt; 00:11:41,000<br>The acknowledgement value in the TCP header isn’t the last byte received the cumulative acknowledgment rather than the next byte, the first missing byte.</p>
+<p>103<br>00:11:41,000 –&gt; 00:11:52,000<br>So one of the things we talked about in the stop and wave protocol was that a counter of one bit counter was sufficient, assuming the packets weren’t delayed more than around trip time.</p>
+<p>104<br>00:11:53,000 –&gt; 00:12:00,000<br>So what about in sliding window protocol? Suddenly if we receive window wave, the send window, how big is sequence number space do we need?</p>
+<p>105<br>00:12:00,000 –&gt; 00:12:06,000<br>So as the receive window is always greater than one, send window is always greater than one, rather than equal to one.</p>
+<p>106<br>00:12:06,000 –&gt; 00:12:11,000<br>And the receive window is greater than, is less than or equal to the send window.</p>
+<p>107<br>00:12:11,000 –&gt; 00:12:16,000<br>This is because if the receive window is ever greater than the send window, it’s a waste.</p>
+<p>108<br>00:12:16,000 –&gt; 00:12:22,000<br>So when the sender would never have those packets in flight, and so there’s this extra buffer space which will never be used.</p>
+<p>109<br>00:12:22,000 –&gt; 00:12:27,000<br>However, there are cases where the receive window can be smaller than the send window and the protocol still works.</p>
+<p>110<br>00:12:27,000 –&gt; 00:12:31,000<br>So here’s one interesting basic case of that called go back in.</p>
+<p>111<br>00:12:31,000 –&gt; 00:12:38,000<br>Let’s say we receive window of size one and a sending window that’s larger than one.</p>
+<p>112<br>00:12:38,000 –&gt; 00:12:42,000<br>Well in this case we need sending window size plus one sequence numbers.</p>
+<p>113<br>00:12:42,000 –&gt; 00:12:49,000<br>So what does this protocol look like? Well the sender says, let’s say it has a send window size is equal to three.</p>
+<p>114<br>00:12:49,000 –&gt; 00:12:52,000<br>So the sender sends zero, one, and two.</p>
+<p>115<br>00:12:52,000 –&gt; 00:13:00,000<br>And let’s say those are acknowledged. And so the receiver acknowledges zero and acknowledges one and acknowledges two.</p>
+<p>116<br>00:13:00,000 –&gt; 00:13:05,000<br>Well when the acknowledge is zero, the sender is going to send three, slide the window forward when the acknowledge is one.</p>
+<p>117<br>00:13:05,000 –&gt; 00:13:11,000<br>It’s going to send four. And when the acknowledge is two, it’s going to send five.</p>
+<p>118<br>00:13:11,000 –&gt; 00:13:16,000<br>So now let’s say that three is dropped.</p>
+<p>119<br>00:13:16,000 –&gt; 00:13:22,000<br>Now the sender, the receiver, it’s going to still receive four and five. And so I can act two.</p>
+<p>120<br>00:13:22,000 –&gt; 00:13:26,000<br>It’s going to send act two, act two.</p>
+<p>121<br>00:13:26,000 –&gt; 00:13:30,000<br>The sender is going to time out and we send three.</p>
+<p>122<br>00:13:30,000 –&gt; 00:13:39,000<br>So this called a go back end protocol because the receive window with size one, the receiver could not buffer four or five.</p>
+<p>123<br>00:13:39,000 –&gt; 00:13:47,000<br>And so when a single packet is lost in this case three, the sender has to go back in. It has to retransmit the entire send window with the packets.</p>
+<p>124<br>00:13:47,000 –&gt; 00:13:51,000<br>It has to retransmit three. It’ll have to retransmit four and it’ll have to retransmit five.</p>
+<p>125<br>00:13:51,000 –&gt; 00:13:57,000<br>In contrast, if the receive window size had been three, then the receiver could have buffered four and five.</p>
+<p>126<br>00:13:57,000 –&gt; 00:14:07,000<br>The sender would only have had to retransmit three. Then you get an act five and it could go on and send six, seven, nine, eight.</p>
+<p>127<br>00:14:07,000 –&gt; 00:14:14,000<br>And so here in the case of a go back end protocol, you need the send window size plus one sequence numbers.</p>
+<p>128<br>00:14:14,000 –&gt; 00:14:21,000<br>Because you imagine if you have only the send window size, there’s zero, one, two.</p>
+<p>129<br>00:14:21,000 –&gt; 00:14:25,000<br>And then remember what happened in the stop and wait when there’s a packet delayed.</p>
+<p>130<br>00:14:25,000 –&gt; 00:14:31,000<br>Or hey, let’s say that the act four zero is delayed.</p>
+<p>131<br>00:14:31,000 –&gt; 00:14:43,000<br>There’s a timeout, you retransmit zero. Now you can’t distinguish whether or not the delayed acknowledgement was for the retransmission or for the old data.</p>
+<p>132<br>00:14:43,000 –&gt; 00:14:52,000<br>So in speaking, if the two windows are the same size, you need twice basically their sum. And so that’s the generalization that you need RWS plus SWS sequence numbers.</p>
+<p>133<br>00:14:52,000 –&gt; 00:14:56,000<br>You need sequence number spaces, least as big as the sum of the window sizes.</p>
+<p>134<br>00:14:56,000 –&gt; 00:15:06,000<br>So that’s the basic sliding window algorithm. And the algorithm is that the sender and the receiver use and how the sender manages the window.</p>
+<p>135<br>00:15:06,000 –&gt; 00:15:12,000<br>What does this look like in TCP? So TCP is a sliding window protocol and uses that for flow control.</p>
+<p>136<br>00:15:12,000 –&gt; 00:15:25,000<br>And so here’s the TCP header. And so the way TCP works is the receiver specifies a flow control window using the window field in the symptoms of bytes.</p>
+<p>137<br>00:15:25,000 –&gt; 00:15:33,000<br>And so it basically says this is the buffer size that I have on the receiver. And so the set of packets that I will accept.</p>
+<p>138<br>00:15:33,000 –&gt; 00:15:48,000<br>And the basic rule is that here the data sequence number and the acknowledgement sequence number. And so a TCP receiver will only handle data equal to the acknowledged sequence number plus the window.</p>
+<p>139<br>00:15:48,000 –&gt; 00:15:56,000<br>And so the sender isn’t allowed to send data past AC plus window.</p>
+<p>140<br>00:15:56,000 –&gt; 00:16:07,000<br>That’s to make sure it doesn’t send data which the receiver is not going to buffer. And so this is a way for the receiver to essentially set what the send window size is.</p>
+<p>141<br>00:16:07,000 –&gt; 00:16:09,000<br>So let’s walk through an example.</p>
+<p>142<br>00:16:09,000 –&gt; 00:16:21,000<br>So here again, I’m going to talk in terms of packets rather than in bytes like in TCP. And here’s the sequence number space for the packets from zero up to 29.</p>
+<p>143<br>00:16:21,000 –&gt; 00:16:34,000<br>So let’s say that we have a received window size equal to two and a send window size equal to three.</p>
+<p>144<br>00:16:34,000 –&gt; 00:16:44,000<br>So communication begins and the sender is going to send zero one and two.</p>
+<p>145<br>00:16:44,000 –&gt; 00:16:51,000<br>Let’s say all three of those packets arrive. And so the receiver received zero is going to acknowledge zero.</p>
+<p>146<br>00:16:51,000 –&gt; 00:16:57,000<br>It’s then going to receive one acknowledge one receive two and acknowledge two.</p>
+<p>147<br>00:16:57,000 –&gt; 00:17:05,000<br>When the sender hears AC zero, it’ll advance the window, the send window, and it’ll send three.</p>
+<p>148<br>00:17:05,000 –&gt; 00:17:17,000<br>When it hears the acknowledgement for one, it’ll advance the window and send four. When it hears the acknowledgement for two, it’ll advance the window and send five.</p>
+<p>149<br>00:17:17,000 –&gt; 00:17:28,000<br>Now let’s say that packet three arrives successfully and is acknowledged, but packet four is lost in the network.</p>
+<p>150<br>00:17:28,000 –&gt; 00:17:32,000<br>So now we have this case where,</p>
+<p>151<br>00:17:32,000 –&gt; 00:17:40,000<br>packet three has been sent, packet four is lost, then packet five arrives at the receiver.</p>
+<p>152<br>00:17:40,000 –&gt; 00:17:49,000<br>Now the receiver is going to send another acknowledgement three again because of cumulative acknowledgments.</p>
+<p>153<br>00:17:49,000 –&gt; 00:17:56,000<br>And so now the sender heard AC three, then another AC three.</p>
+<p>154<br>00:17:56,000 –&gt; 00:18:04,000<br>Wades times out and resends four.</p>
+<p>155<br>00:18:04,000 –&gt; 00:18:06,000<br>So it’ll resend four.</p>
+<p>156<br>00:18:06,000 –&gt; 00:18:09,000<br>Let’s say four arrives.</p>
+<p>157<br>00:18:09,000 –&gt; 00:18:16,000<br>Now this receiver can acknowledge four so it can act four, but because it’s received window is of size two,</p>
+<p>158<br>00:18:16,000 –&gt; 00:18:21,000<br>it actually had five buffered and so it can also acknowledge five.</p>
+<p>159<br>00:18:21,000 –&gt; 00:18:26,000<br>And so it’ll send AC five.</p>
+<p>160<br>00:18:26,000 –&gt; 00:18:35,000<br>So a sliding window flow control algorithm allows an unacknowledged, so a whole window of unacknowledged packets to be in flight.</p>
+<p>161<br>00:18:35,000 –&gt; 00:18:46,000<br>And so this allows is if you can set that window size appropriately, it allows a sender to be able to actually fully utilize the capacity that the receiver has,</p>
+<p>162<br>00:18:46,000 –&gt; 00:18:50,000<br>unlike a stop and wave protocol where you can have a most one packet in flight.</p>
+<p>163<br>00:18:50,000 –&gt; 00:18:58,000<br>When acknowledgments arrive for new data, the sender advances the window, generally sliding window protocols use cumulative acknowledgments.</p>
+<p>164<br>00:18:58,000 –&gt; 00:19:03,000<br>And the exact sequence number space you use depends on the window sizes.</p>
+<p>165<br>00:19:03,000 –&gt; 00:19:09,000<br>So it turns out TCP uses a large sequence number space just for free.</p>
+<p>166<br>00:19:09,000 –&gt; 00:19:14,000<br>So if you listen to really the robust against heavily delayed packets, they’re for influencing your own protocol,</p>
+<p>167<br>00:19:14,000 –&gt; 00:19:17,000<br>maybe you’ll be able to get away with something a little bit smaller.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP332-8Slidingwindow/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP342-9Reliablecomm/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP322-7Stopandwait/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

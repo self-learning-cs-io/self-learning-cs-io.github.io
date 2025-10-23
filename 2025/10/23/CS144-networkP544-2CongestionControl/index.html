@@ -1,0 +1,898 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="title: CS144-networkP544-2CongestionControl.md100:00:00,000 –&gt; 00:00:05,960In the last video, I told you about different types of congestion, the different time scales 200:00:05,960 –&gt; 00:00:09">
+<meta property="og:type" content="article">
+<meta property="og:title" content="Hexo">
+<meta property="og:url" content="http://example.com/2025/10/23/CS144-networkP544-2CongestionControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="title: CS144-networkP544-2CongestionControl.md100:00:00,000 –&gt; 00:00:05,960In the last video, I told you about different types of congestion, the different time scales 200:00:05,960 –&gt; 00:00:09">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-23T00:14:54.624Z">
+<meta property="article:modified_time" content="2025-10-23T00:16:17.056Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text=""></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-23 08:14" pubdate>
+          2025年10月23日 早上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          23 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header"></h1>
+            
+            
+              <div class="markdown-body">
+                
+                <hr>
+<h2 id="title-CS144-networkP544-2CongestionControl-md"><a href="#title-CS144-networkP544-2CongestionControl-md" class="headerlink" title="title: CS144-networkP544-2CongestionControl.md"></a>title: CS144-networkP544-2CongestionControl.md</h2><p>1<br>00:00:00,000 –&gt; 00:00:05,960<br>In the last video, I told you about different types of congestion, the different time scales</p>
+<p>2<br>00:00:05,960 –&gt; 00:00:09,519<br>that it can occur at, and what some of the consequences might be.</p>
+<p>3<br>00:00:09,519 –&gt; 00:00:16,240<br>We then looked a little bit about the characteristics of congestion control algorithms that we might</p>
+<p>4<br>00:00:16,240 –&gt; 00:00:18,039<br>like to try and design.</p>
+<p>5<br>00:00:18,039 –&gt; 00:00:21,879<br>So we said that we wanted high throughput, we wanted them to be fair amongst the flows</p>
+<p>6<br>00:00:21,879 –&gt; 00:00:26,280<br>competing for the bottleneck links, we wanted the control of congestion to be distributed</p>
+<p>7<br>00:00:26,280 –&gt; 00:00:28,760<br>so that it can scale.</p>
+<p>8<br>00:00:28,760 –&gt; 00:00:34,200<br>In this video, we’re going to start looking at basic approaches to controlling congestion.</p>
+<p>9<br>00:00:34,200 –&gt; 00:00:38,160<br>We’re going to consider whether the congestion control should take place in the network,</p>
+<p>10<br>00:00:38,160 –&gt; 00:00:42,679<br>with specific support at the routers, or whether it should be done at the end hosts.</p>
+<p>11<br>00:00:42,679 –&gt; 00:00:45,240<br>Then I’m going to tell you a little bit about how TCP does it.</p>
+<p>12<br>00:00:45,240 –&gt; 00:00:50,240<br>We’re going to start with the basic mechanism called AIMD or additive increase, multiplicative</p>
+<p>13<br>00:00:50,240 –&gt; 00:00:51,240<br>decrease.</p>
+<p>14<br>00:00:51,240 –&gt; 00:00:55,359<br>We’re going to study how that works over the next couple of videos, before we look in more</p>
+<p>15<br>00:00:55,359 –&gt; 00:01:00,159<br>detail at how TCP congestion control really works in practice.</p>
+<p>16<br>00:01:00,159 –&gt; 00:01:04,000<br>So I’m going to start with a consideration of where to put congestion control.</p>
+<p>17<br>00:01:04,000 –&gt; 00:01:09,439<br>In fact, you may have already been wondering what it is that we can’t simply use fair</p>
+<p>18<br>00:01:09,439 –&gt; 00:01:10,959<br>queuing.</p>
+<p>19<br>00:01:10,959 –&gt; 00:01:15,120<br>Notice that we’ve already seen a way to give everyone a fair share of the outgoing link,</p>
+<p>20<br>00:01:15,120 –&gt; 00:01:22,120<br>by simply decomposing the output buffer into per flow cues, as I’ve shown here, so that</p>
+<p>21<br>00:01:22,120 –&gt; 00:01:26,800<br>if I’ve got multiple flows going through the network, then each flow would be placed</p>
+<p>22<br>00:01:26,800 –&gt; 00:01:32,920<br>into its own cue, and then we use a fair queuing scheduler to divide up that egress rate,</p>
+<p>23<br>00:01:32,920 –&gt; 00:01:37,160<br>let’s say, R, amongst all of the flows that are contending for it.</p>
+<p>24<br>00:01:37,160 –&gt; 00:01:41,200<br>And so if they’re all wanting to send that rate greater than R over 2, then they would</p>
+<p>25<br>00:01:41,200 –&gt; 00:01:45,680<br>each receive R over 2, because that’s what a fair queuing scheduler would do.</p>
+<p>26<br>00:01:45,680 –&gt; 00:01:51,159<br>And in fact, this will give us, say, not only a fair behavior, it will actually give us</p>
+<p>27<br>00:01:51,159 –&gt; 00:01:54,359<br>the maximum in fare at every link across the flows.</p>
+<p>28<br>00:01:54,359 –&gt; 00:01:56,000<br>It’ll give us good throughput.</p>
+<p>29<br>00:01:56,000 –&gt; 00:02:00,239<br>Whenever there is work to be done, it will always keep the outgoing line busy.</p>
+<p>30<br>00:02:00,239 –&gt; 00:02:05,280<br>We say it’s work and serving, so it’ll give good throughput on each of the links.</p>
+<p>31<br>00:02:05,280 –&gt; 00:02:07,959<br>So what’s wrong with this basic mechanism?</p>
+<p>32<br>00:02:07,959 –&gt; 00:02:11,840<br>Well, the first thing is that it isn’t responsive.</p>
+<p>33<br>00:02:11,840 –&gt; 00:02:17,319<br>It’s simply going to divide up the links, but there’s nothing here that will tell the</p>
+<p>34<br>00:02:17,319 –&gt; 00:02:21,439<br>sources the rate at which they should send, or give them any indication of how many packets</p>
+<p>35<br>00:02:21,439 –&gt; 00:02:22,959<br>they should send.</p>
+<p>36<br>00:02:22,959 –&gt; 00:02:27,479<br>In fact, if they do send, so if these are each trying to send at the full blast rate,</p>
+<p>37<br>00:02:27,479 –&gt; 00:02:34,359<br>so if there are packets coming in from all directions trying to use these links, then packets</p>
+<p>38<br>00:02:34,359 –&gt; 00:02:37,840<br>will simply be dropped under the floor as the buffers overflow.</p>
+<p>39<br>00:02:37,840 –&gt; 00:02:42,879<br>And we’ll end up wasting a lot of the upstream bandwidth delivering packets over links that</p>
+<p>40<br>00:02:42,879 –&gt; 00:02:45,240<br>eventually get dropped down the stream.</p>
+<p>41<br>00:02:45,240 –&gt; 00:02:52,080<br>So we need a way of signaling back to the sources to say, give them some indication of the</p>
+<p>42<br>00:02:52,080 –&gt; 00:02:56,600<br>rate at which they should send, or the number of outstanding packets that they can have in</p>
+<p>43<br>00:02:56,600 –&gt; 00:02:59,560<br>the network.</p>
+<p>44<br>00:02:59,560 –&gt; 00:03:04,200<br>So in network-based congestion control, there is explicit feedback that comes from the</p>
+<p>45<br>00:03:04,200 –&gt; 00:03:07,560<br>routers to indicate congestion in the network.</p>
+<p>46<br>00:03:07,560 –&gt; 00:03:16,439<br>So for example, if I have a source, a, and a destination, b, and then some routers in between</p>
+<p>47<br>00:03:16,439 –&gt; 00:03:21,920<br>with some links like this, it’s imagine that there are some flows in the network that are</p>
+<p>48<br>00:03:21,920 –&gt; 00:03:26,879<br>coming in from different directions going through this router, causing some congestion to</p>
+<p>49<br>00:03:26,879 –&gt; 00:03:30,240<br>take place right here.</p>
+<p>50<br>00:03:30,240 –&gt; 00:03:37,039<br>One thing that we can do is if there is congestion, is to try and signal back to a, some signal,</p>
+<p>51<br>00:03:37,879 –&gt; 00:03:42,199<br>to say there is congestion in the network, you need to reduce the number of packets that</p>
+<p>52<br>00:03:42,199 –&gt; 00:03:45,759<br>you have outstanding or reduce the rate at which you send them.</p>
+<p>53<br>00:03:45,759 –&gt; 00:03:52,479<br>And so the question is, what would we send, and how would we get it back to a, we could</p>
+<p>54<br>00:03:52,479 –&gt; 00:03:59,120<br>for example say, I’m dropping a packet, or it could be an indication of the occupancy of</p>
+<p>55<br>00:03:59,120 –&gt; 00:04:05,239<br>the buffer, or it could mark that we’ve just crushed some threshold, and so we’re getting</p>
+<p>56<br>00:04:05,239 –&gt; 00:04:06,239<br>more congested.</p>
+<p>57<br>00:04:06,480 –&gt; 00:04:10,080<br>Any of these would be examples of congestion.</p>
+<p>58<br>00:04:10,080 –&gt; 00:04:14,960<br>Another one might be that the outgoing link has a certain amount of capacity left over,</p>
+<p>59<br>00:04:14,960 –&gt; 00:04:20,240<br>and as, as the capacity gets used up, we send a signal back to say how much of that capacity</p>
+<p>60<br>00:04:20,240 –&gt; 00:04:24,280<br>is available, or it could be a function of all of the signals that I’ve, that I’ve just</p>
+<p>61<br>00:04:24,280 –&gt; 00:04:25,600<br>mentioned.</p>
+<p>62<br>00:04:25,600 –&gt; 00:04:29,879<br>So the next question is, how do we get that signal back, and how many bits do we use to</p>
+<p>63<br>00:04:29,879 –&gt; 00:04:31,480<br>represent it?</p>
+<p>64<br>00:04:31,480 –&gt; 00:04:35,360<br>So if we’re sending back the whole queue occupancy, we’d really like to be able to send</p>
+<p>65<br>00:04:35,360 –&gt; 00:04:39,319<br>a sizable integer value to indicate what the current occupancy is.</p>
+<p>66<br>00:04:39,319 –&gt; 00:04:41,520<br>That would take a lot of bits, and it might be complicated.</p>
+<p>67<br>00:04:41,520 –&gt; 00:04:47,759<br>So in practice, generally people look for schemes that use one or a couple of bits to signal</p>
+<p>68<br>00:04:47,759 –&gt; 00:04:49,439<br>back to the source.</p>
+<p>69<br>00:04:49,439 –&gt; 00:04:52,439<br>And then next question is, how do you get them back to the source?</p>
+<p>70<br>00:04:52,439 –&gt; 00:04:56,319<br>There’s no point in creating a whole packet just to send it back to the source, if we can</p>
+<p>71<br>00:04:56,319 –&gt; 00:04:59,400<br>piggyback on packets that are already going by.</p>
+<p>72<br>00:04:59,399 –&gt; 00:05:05,799<br>So it’s fairly common to use packets, for example, if there’s a TCP packet that’s coming</p>
+<p>73<br>00:05:05,799 –&gt; 00:05:12,239<br>through, or some kind of two-way communication, to piggyback onto packets going in one direction</p>
+<p>74<br>00:05:12,239 –&gt; 00:05:17,879<br>such that they get sent back in the acknowledgments and eventually get back to the source.</p>
+<p>75<br>00:05:17,879 –&gt; 00:05:22,639<br>There’s one particular technique that’s called ECN, or explicit congestion notification,</p>
+<p>76<br>00:05:22,639 –&gt; 00:05:28,079<br>in which the routers indicate whether they have some degree of congestion, for example,</p>
+<p>77<br>00:05:28,079 –&gt; 00:05:29,560<br>crossing a threshold.</p>
+<p>78<br>00:05:29,560 –&gt; 00:05:34,639<br>They then mark bits in packets going towards the destination, which then copies those bits</p>
+<p>79<br>00:05:34,639 –&gt; 00:05:38,519<br>back into the acknowledgments going in the other direction.</p>
+<p>80<br>00:05:38,519 –&gt; 00:05:44,000<br>The original scheme that was designed to work somewhat like this was called deck-bit.</p>
+<p>81<br>00:05:44,000 –&gt; 00:05:52,039<br>That was proposed more than 20 years ago as a single bit mechanism to signal to the source</p>
+<p>82<br>00:05:52,039 –&gt; 00:05:55,560<br>to slow down.</p>
+<p>83<br>00:05:55,560 –&gt; 00:05:58,920<br>So nice advantage of a scheme like this is it’s simple to understand.</p>
+<p>84<br>00:05:58,920 –&gt; 00:06:04,000<br>We can see that the signal will directly control the behavior of the source.</p>
+<p>85<br>00:06:04,000 –&gt; 00:06:08,680<br>It should be pretty responsive to change because we can detect the onset of congestion</p>
+<p>86<br>00:06:08,680 –&gt; 00:06:12,560<br>in the network and be able to tell the source.</p>
+<p>87<br>00:06:12,560 –&gt; 00:06:16,240<br>It’s distributed in the sense that the signal is coming back from all of the routers in</p>
+<p>88<br>00:06:16,240 –&gt; 00:06:21,000<br>the network, and it only affects the source and so the source can make up its decision,</p>
+<p>89<br>00:06:21,000 –&gt; 00:06:24,959<br>that make up its mind on how it will process that signal.</p>
+<p>90<br>00:06:24,959 –&gt; 00:06:29,000<br>And it can be made to be maximum fair, so it can be made to be fair.</p>
+<p>91<br>00:06:29,000 –&gt; 00:06:33,000<br>For example, measure the rate of each flow through the router and pass back the maximum</p>
+<p>92<br>00:06:33,000 –&gt; 00:06:34,759<br>fair allocation for each flow.</p>
+<p>93<br>00:06:34,759 –&gt; 00:06:39,319<br>There are other ways that are simpler, for example, using fair queuing as I described before.</p>
+<p>94<br>00:06:39,319 –&gt; 00:06:44,199<br>So network-based could certainly work.</p>
+<p>95<br>00:06:44,199 –&gt; 00:06:50,560<br>On the other hand, it’s worth asking the question of whether we actually need the network</p>
+<p>96<br>00:06:50,560 –&gt; 00:06:52,439<br>to provide any congestion notification.</p>
+<p>97<br>00:06:52,839 –&gt; 00:06:59,040<br>In other words, can we support congestion control without any support from the network at all,</p>
+<p>98<br>00:06:59,040 –&gt; 00:07:03,519<br>merely by implementing a mechanism at the end hosts, where it’s just going to simply</p>
+<p>99<br>00:07:03,519 –&gt; 00:07:06,920<br>observe the network behavior?</p>
+<p>100<br>00:07:06,920 –&gt; 00:07:14,560<br>So going to the example that I had before, if I have end hosts A and B, and then routers</p>
+<p>101<br>00:07:14,560 –&gt; 00:07:22,360<br>in between, if I’m able to observe behavior of the network,</p>
+<p>102<br>00:07:23,160 –&gt; 00:07:28,280<br>such that it’s enough to be able to decide what rate I send or how many outstanding packets</p>
+<p>103<br>00:07:28,280 –&gt; 00:07:34,680<br>I have in the network, then perhaps we can implement a congestion control mechanism this way.</p>
+<p>104<br>00:07:34,680 –&gt; 00:07:39,600<br>This is nice because if it doesn’t depend on the behavior of the routers, where it doesn’t</p>
+<p>105<br>00:07:39,600 –&gt; 00:07:44,560<br>behave on them sending specific information back, we can evolve and adapt it over time</p>
+<p>106<br>00:07:44,560 –&gt; 00:07:48,240<br>without having to change the network in between.</p>
+<p>107<br>00:07:48,240 –&gt; 00:07:50,360<br>We’re going to see that TCP does this.</p>
+<p>108<br>00:07:50,360 –&gt; 00:07:56,759<br>TCP actually does congestion control purely at the end host by observing the network behavior.</p>
+<p>109<br>00:07:56,759 –&gt; 00:08:03,439<br>What it’s going to do is if packets are dropped along the way, it’s going to observe this</p>
+<p>110<br>00:08:03,439 –&gt; 00:08:10,199<br>through either a timeout, or it will see a sequence of acknowledgements that are all the</p>
+<p>111<br>00:08:10,199 –&gt; 00:08:16,160<br>same coming back because the data was missing and so B is going to keep acknowledging an</p>
+<p>112<br>00:08:16,160 –&gt; 00:08:21,439<br>earlier piece of data, which we can interpret as data missing and therefore needing to</p>
+<p>113<br>00:08:21,439 –&gt; 00:08:23,040<br>retransmet it.</p>
+<p>114<br>00:08:23,040 –&gt; 00:08:27,880<br>If there’s been data that’s dropped, A could interpret this as congestion and then slow</p>
+<p>115<br>00:08:27,880 –&gt; 00:08:33,840<br>down the rate or have a fewer number of outstanding packets so that it will reduce the congestion</p>
+<p>116<br>00:08:33,840 –&gt; 00:08:37,040<br>in the network.</p>
+<p>117<br>00:08:37,040 –&gt; 00:08:43,639<br>Basically A is going to observe, it’s going to a little bit like it’s observing the behavior</p>
+<p>118<br>00:08:43,639 –&gt; 00:08:48,840<br>in the network and seeing what happens in terms of timeouts and duplicate acknowledgements</p>
+<p>119<br>00:08:48,840 –&gt; 00:08:54,639<br>and anything that indicates a drop, it could also see an increase in delay or variance,</p>
+<p>120<br>00:08:54,639 –&gt; 00:08:58,120<br>any of the things that would indicate to it that congestion is occurring so that it can</p>
+<p>121<br>00:08:58,120 –&gt; 00:09:01,480<br>change its behavior accordingly.</p>
+<p>122<br>00:09:01,480 –&gt; 00:09:06,960<br>In TCP’s case, it actually has to do this because IP offers no support by default.</p>
+<p>123<br>00:09:06,960 –&gt; 00:09:10,600<br>IP offers no indication of congestion in the network.</p>
+<p>124<br>00:09:10,600 –&gt; 00:09:16,000<br>So when TCP was first conceived, it was actually by necessity that it would control congestion</p>
+<p>125<br>00:09:16,000 –&gt; 00:09:17,000<br>this way.</p>
+<p>126<br>00:09:17,000 –&gt; 00:09:21,040<br>So let me give you a quick introduction to TCP congestion control.</p>
+<p>127<br>00:09:21,040 –&gt; 00:09:26,600<br>TCP implements congestion control at the end host because the network provides no support.</p>
+<p>128<br>00:09:26,600 –&gt; 00:09:29,840<br>It reacts to events observable at the end host.</p>
+<p>129<br>00:09:29,840 –&gt; 00:09:34,240<br>In particular, it’s going to use packet loss or if it believes that there were packets that</p>
+<p>130<br>00:09:34,240 –&gt; 00:09:36,040<br>were dropped.</p>
+<p>131<br>00:09:36,039 –&gt; 00:09:41,879<br>It’s going to exploit TCP’s sliding window that we use for flow control and retransmissions.</p>
+<p>132<br>00:09:41,879 –&gt; 00:09:46,559<br>It’s going to exploit the fact that that’s there and it’s going to overload it with a means</p>
+<p>133<br>00:09:46,559 –&gt; 00:09:50,639<br>to control congestion and I’m going to be explaining that shortly.</p>
+<p>134<br>00:09:50,639 –&gt; 00:09:55,199<br>And the way it’s going to do this is it’s going to try and figure out how many packets</p>
+<p>135<br>00:09:55,199 –&gt; 00:09:59,679<br>it can safely have outstanding in the network at any time.</p>
+<p>136<br>00:09:59,679 –&gt; 00:10:01,480<br>And this is an important concept.</p>
+<p>137<br>00:10:01,480 –&gt; 00:10:02,480<br>Let me repeat it.</p>
+<p>138<br>00:10:02,480 –&gt; 00:10:08,240<br>Try and figure out how many packets it can safely have outstanding in the network at any</p>
+<p>139<br>00:10:08,240 –&gt; 00:10:09,240<br>time.</p>
+<p>140<br>00:10:09,240 –&gt; 00:10:14,039<br>Now we’re familiar with this already with a sliding window used in TCP and this is just</p>
+<p>141<br>00:10:14,039 –&gt; 00:10:17,879<br>a reminder of how the sliding window works.</p>
+<p>142<br>00:10:17,879 –&gt; 00:10:22,600<br>Recall that the window is sliding over a stream of bytes.</p>
+<p>143<br>00:10:22,600 –&gt; 00:10:28,320<br>So this is the underlying stream of bytes that we’re sending and that is increasing to</p>
+<p>144<br>00:10:28,320 –&gt; 00:10:29,320<br>the right.</p>
+<p>145<br>00:10:29,320 –&gt; 00:10:32,720<br>So byte zero was somewhere over here.</p>
+<p>146<br>00:10:32,720 –&gt; 00:10:38,640<br>And the window is telling us data that has been acknowledged.</p>
+<p>147<br>00:10:38,640 –&gt; 00:10:43,120<br>So this is earlier data which has been fully acknowledged.</p>
+<p>148<br>00:10:43,120 –&gt; 00:10:47,840<br>This is outstanding data that has been sent but not yet acknowledged.</p>
+<p>149<br>00:10:47,840 –&gt; 00:10:49,240<br>This is data that’s okay to send.</p>
+<p>150<br>00:10:49,240 –&gt; 00:10:53,160<br>In other words, it’s data that we perhaps haven’t sent yet but because it’s inside the</p>
+<p>151<br>00:10:53,160 –&gt; 00:10:56,280<br>window we’re allowed to send it if we want.</p>
+<p>152<br>00:10:56,279 –&gt; 00:10:59,879<br>And then there is data that is not okay to send yet because it’s ahead of the window.</p>
+<p>153<br>00:10:59,879 –&gt; 00:11:04,480<br>The window hasn’t slid over the top of this yet because we’re still waiting for outstanding</p>
+<p>154<br>00:11:04,480 –&gt; 00:11:07,279<br>acknowledgments over here.</p>
+<p>155<br>00:11:07,279 –&gt; 00:11:13,839<br>Okay, so the sliding window tells us not only which bytes can be outstanding but also how</p>
+<p>156<br>00:11:13,839 –&gt; 00:11:16,279<br>many bytes that’s the window size.</p>
+<p>157<br>00:11:16,279 –&gt; 00:11:21,679<br>And you will recall that the receiver is going to send back information about what’s called</p>
+<p>158<br>00:11:21,759 –&gt; 00:11:26,639<br>the receive window to tell us how many bytes we can have outstanding such that we don’t</p>
+<p>159<br>00:11:26,639 –&gt; 00:11:28,639<br>overrun the receiver.</p>
+<p>160<br>00:11:28,639 –&gt; 00:11:32,159<br>And we’re going to see in a minute that we’re going to reuse that mechanism in a different</p>
+<p>161<br>00:11:32,159 –&gt; 00:11:35,359<br>way at the sender.</p>
+<p>162<br>00:11:35,359 –&gt; 00:11:40,759<br>But just to give a rough idea of what’s going on with the TCP sliding window, here is a</p>
+<p>163<br>00:11:40,759 –&gt; 00:11:45,679<br>view on a timeline of what’s taking place when packets are sent and are received and</p>
+<p>164<br>00:11:45,679 –&gt; 00:11:49,359<br>it’s going to give us a feeling for how this is going to work.</p>
+<p>165<br>00:11:49,360 –&gt; 00:11:55,279<br>So A is allowed to send up to a Windows worth of data and have it outstanding before it</p>
+<p>166<br>00:11:55,279 –&gt; 00:11:57,279<br>receives any acknowledgments.</p>
+<p>167<br>00:11:57,279 –&gt; 00:12:01,440<br>So here is that window of data.</p>
+<p>168<br>00:12:01,440 –&gt; 00:12:07,440<br>And when those packets are sent, of course each one of them is going to lead to an acknowledgement.</p>
+<p>169<br>00:12:07,440 –&gt; 00:12:12,320<br>So sometime later we are going to get the acknowledgments and then we’re going to send the next</p>
+<p>170<br>00:12:12,320 –&gt; 00:12:14,440<br>Windows worth of data.</p>
+<p>171<br>00:12:14,440 –&gt; 00:12:20,800<br>So if the round trip time is much bigger than the window size, in other words the time is</p>
+<p>172<br>00:12:20,800 –&gt; 00:12:24,360<br>much bigger than the amount of data that it takes to fill that pipe, then there will be</p>
+<p>173<br>00:12:24,360 –&gt; 00:12:30,080<br>this big delay in between and TCP will basically move forward by sending a window in a burst,</p>
+<p>174<br>00:12:30,080 –&gt; 00:12:34,600<br>pausing and waiting for acknowledgments, sending a window in a burst, having a pause,</p>
+<p>175<br>00:12:34,600 –&gt; 00:12:36,280<br>and then just repeating like that.</p>
+<p>176<br>00:12:36,280 –&gt; 00:12:39,000<br>So that’s in this particular case.</p>
+<p>177<br>00:12:39,000 –&gt; 00:12:45,080<br>So let’s consider a different case and that is when the round trip time equals the window</p>
+<p>178<br>00:12:45,080 –&gt; 00:12:46,080<br>size.</p>
+<p>179<br>00:12:46,080 –&gt; 00:12:49,399<br>In other words the window is exactly able to fill up the pipe.</p>
+<p>180<br>00:12:49,399 –&gt; 00:12:53,399<br>The number of outstanding packets that were allowed to have in the network precisely fills</p>
+<p>181<br>00:12:53,399 –&gt; 00:12:54,879<br>the pipe.</p>
+<p>182<br>00:12:54,879 –&gt; 00:13:00,000<br>In this particular case the first acknowledgment will come back just after the last packet</p>
+<p>183<br>00:13:00,000 –&gt; 00:13:04,080<br>has been sent and so we’re able to send in a continuous stream.</p>
+<p>184<br>00:13:04,080 –&gt; 00:13:08,840<br>And so there are no pauses, therefore we’re using the network more fully than in this case</p>
+<p>185<br>00:13:08,920 –&gt; 00:13:11,920<br>when we’ve got this idle time.</p>
+<p>186<br>00:13:11,920 –&gt; 00:13:16,280<br>So this gives us a hint as to our ability to keep the network full.</p>
+<p>187<br>00:13:16,280 –&gt; 00:13:21,000<br>Some people would interpret this as a rate because it’s the window size divided by the</p>
+<p>188<br>00:13:21,000 –&gt; 00:13:22,000<br>round trip time.</p>
+<p>189<br>00:13:22,000 –&gt; 00:13:25,320<br>And we’re going to consider that a little bit later.</p>
+<p>190<br>00:13:25,320 –&gt; 00:13:29,639<br>So that’s the basic idea of how this is going to work.</p>
+<p>191<br>00:13:29,639 –&gt; 00:13:35,440<br>More specifically with TCP congestion control, TCP is going to vary the number of outstanding</p>
+<p>192<br>00:13:35,440 –&gt; 00:13:39,400<br>packets in the network by varying the window size.</p>
+<p>193<br>00:13:39,400 –&gt; 00:13:44,520<br>And it’s going to set the window size instead of just being the advertised window, which</p>
+<p>194<br>00:13:44,520 –&gt; 00:13:50,160<br>is what it used before, which came from the receiver to stop overwhelming the receiver.</p>
+<p>195<br>00:13:50,160 –&gt; 00:13:54,400<br>It’s also going to take into consideration something called the congestion window.</p>
+<p>196<br>00:13:54,400 –&gt; 00:13:57,440<br>This is something which is calculated at the source.</p>
+<p>197<br>00:13:57,440 –&gt; 00:14:01,280<br>So the advertised window comes from the receiver and at the source or the transmitter it’s</p>
+<p>198<br>00:14:01,279 –&gt; 00:14:06,759<br>going to calculate the congestion window that’s often abbreviated to C-wind, CWND stands</p>
+<p>199<br>00:14:06,759 –&gt; 00:14:09,360<br>for congestion window.</p>
+<p>200<br>00:14:09,360 –&gt; 00:14:11,439<br>And then it will take whichever is the smaller value.</p>
+<p>201<br>00:14:11,439 –&gt; 00:14:15,120<br>In other words, if the network is congested, then it’s going to use C-wind.</p>
+<p>202<br>00:14:15,120 –&gt; 00:14:20,159<br>And if the network is not congested, then it will be dominated by the received window,</p>
+<p>203<br>00:14:20,159 –&gt; 00:14:22,639<br>the one advertised by the receiver.</p>
+<p>204<br>00:14:22,639 –&gt; 00:14:26,519<br>So the next question to ask is, OK, how do we decide the value for C-wind?</p>
+<p>205<br>00:14:26,519 –&gt; 00:14:31,960<br>How are we going to use C-wind in order to change the window size to control congestion in</p>
+<p>206<br>00:14:31,960 –&gt; 00:14:33,639<br>the network?</p>
+<p>207<br>00:14:33,639 –&gt; 00:14:37,600<br>And the scheme that we’re going to use is called AIMD.</p>
+<p>208<br>00:14:37,600 –&gt; 00:14:43,799<br>And this is a sort of a classic technique in networking that’s used for controlling congestion</p>
+<p>209<br>00:14:43,799 –&gt; 00:14:46,360<br>in a TCP network.</p>
+<p>210<br>00:14:46,360 –&gt; 00:14:50,439<br>Or it could be used in any network that uses sliding windows.</p>
+<p>211<br>00:14:50,439 –&gt; 00:14:55,879<br>AIMD stands for additive increase and multiplicative decrease.</p>
+<p>212<br>00:14:55,879 –&gt; 00:14:57,960<br>Let’s start with the additive increase.</p>
+<p>213<br>00:14:57,960 –&gt; 00:15:04,200<br>The way that the window size is going to evolve is as follows, or rather C-wind.</p>
+<p>214<br>00:15:04,200 –&gt; 00:15:09,439<br>If every time a packet is received correctly by the sender, it’s going to increase the</p>
+<p>215<br>00:15:09,439 –&gt; 00:15:14,799<br>window size, in fact, C-wind by 1 over W.</p>
+<p>216<br>00:15:14,799 –&gt; 00:15:19,759<br>What this means is that every time a complete window’s worth of data has been accepted,</p>
+<p>217<br>00:15:19,759 –&gt; 00:15:24,960<br>has been correctly received and acknowledged, then the sender is going to increase its</p>
+<p>218<br>00:15:24,960 –&gt; 00:15:26,280<br>window size by 1.</p>
+<p>219<br>00:15:26,280 –&gt; 00:15:31,759<br>It’ll increase it by 1 over W for every packet, because there are W packets, then by the</p>
+<p>220<br>00:15:31,759 –&gt; 00:15:34,960<br>end of the window, it will have increased it by 1.</p>
+<p>221<br>00:15:34,960 –&gt; 00:15:36,360<br>So this is the additive increase.</p>
+<p>222<br>00:15:36,360 –&gt; 00:15:39,720<br>It’s going to slowly increase when things are going well.</p>
+<p>223<br>00:15:39,720 –&gt; 00:15:43,879<br>If things are going badly and packets are dropped, then it’s going to use this as a signal</p>
+<p>224<br>00:15:43,879 –&gt; 00:15:47,040<br>of congestion.</p>
+<p>225<br>00:15:47,040 –&gt; 00:15:51,720<br>And if that happens, it’s going to reduce the C-wind by a factor of 2.</p>
+<p>226<br>00:15:51,720 –&gt; 00:15:55,360<br>It’s going to halve it.</p>
+<p>227<br>00:15:55,360 –&gt; 00:16:01,279<br>What this will look like is if we draw the window as a function of time, so this will be</p>
+<p>228<br>00:16:01,279 –&gt; 00:16:09,240<br>the C-wind as a function of time, it’s going to start by increasing every time we have a</p>
+<p>229<br>00:16:09,240 –&gt; 00:16:10,440<br>success.</p>
+<p>230<br>00:16:10,440 –&gt; 00:16:15,360<br>And then when we have a drop, so here is the drop taking place here, it’s going to drop</p>
+<p>231<br>00:16:15,360 –&gt; 00:16:19,560<br>down to half of its value.</p>
+<p>232<br>00:16:19,559 –&gt; 00:16:27,159<br>So if this is the peak value, then this value down here would be W peak over 2.</p>
+<p>233<br>00:16:27,159 –&gt; 00:16:32,079<br>And then it’s going to start increasing again and increasing until it has another drop.</p>
+<p>234<br>00:16:32,079 –&gt; 00:16:34,079<br>And then it’s going to increase again and increase again.</p>
+<p>235<br>00:16:34,079 –&gt; 00:16:37,759<br>And it could go up to a higher value, because now the network may be allowed more outstanding</p>
+<p>236<br>00:16:37,759 –&gt; 00:16:41,559<br>packets, come down to a different value, and then go up and then there might be another</p>
+<p>237<br>00:16:41,559 –&gt; 00:16:42,559<br>drop.</p>
+<p>238<br>00:16:42,559 –&gt; 00:16:46,719<br>So it doesn’t always going to go in this nice neat symmetrical sawtooth.</p>
+<p>239<br>00:16:46,719 –&gt; 00:16:48,639<br>This is where the drops are taking place.</p>
+<p>240<br>00:16:48,639 –&gt; 00:16:50,519<br>And it’s halving at each case.</p>
+<p>241<br>00:16:50,519 –&gt; 00:16:54,480<br>So here is the additive increase, here is the multiplicative decrease.</p>
+<p>242<br>00:16:54,480 –&gt; 00:16:57,600<br>The additive increase, the multiplicative decrease.</p>
+<p>243<br>00:16:57,600 –&gt; 00:17:04,440<br>This is often referred to as the TCP sawtooth or the AIMD sawtooth, just because of its shape.</p>
+<p>244<br>00:17:04,440 –&gt; 00:17:08,359<br>If we zoom in, let’s take a closer look at what’s going on at each step.</p>
+<p>245<br>00:17:08,359 –&gt; 00:17:10,720<br>So let’s take a closer look at what’s going on here.</p>
+<p>246<br>00:17:10,720 –&gt; 00:17:16,359<br>This is actually proceeding by going in steps.</p>
+<p>247<br>00:17:16,359 –&gt; 00:17:21,799<br>Where it’s going in steps such that every packet time, it’s going to increase by 1 over</p>
+<p>248<br>00:17:21,799 –&gt; 00:17:22,799<br>W.</p>
+<p>249<br>00:17:22,799 –&gt; 00:17:29,279<br>And I’m going to simplify that by saying every RTT, this horizontal dimension is time, it’s</p>
+<p>250<br>00:17:29,279 –&gt; 00:17:31,079<br>going to increase by 1.</p>
+<p>251<br>00:17:31,079 –&gt; 00:17:33,319<br>The window size is going to increase by 1.</p>
+<p>252<br>00:17:33,319 –&gt; 00:17:38,399<br>Because every time we’ve acknowledged a complete packet, Windows worth of data, it’s going</p>
+<p>253<br>00:17:38,399 –&gt; 00:17:40,599<br>to increase the window size by 1.</p>
+<p>254<br>00:17:40,599 –&gt; 00:17:46,000<br>So it’s going to go forward in these steps of RTT along the horizontal part of the stair,</p>
+<p>255<br>00:17:46,000 –&gt; 00:17:50,319<br>and then it’s going to go up by 1 and then RTT and so on.</p>
+<p>256<br>00:17:50,319 –&gt; 00:17:54,920<br>So this leads to what’s often called the AIMD sawtooth or the TCP sawtooth that can</p>
+<p>257<br>00:17:54,920 –&gt; 00:17:55,920<br>look like this.</p>
+<p>258<br>00:17:55,920 –&gt; 00:17:57,920<br>This is an evolution of C-wind.</p>
+<p>259<br>00:17:57,920 –&gt; 00:18:02,759<br>Remember, that’s the congestion window as a function of time.</p>
+<p>260<br>00:18:02,759 –&gt; 00:18:06,559<br>So here was the additive increase, we had a drop, we dropped down to half the value, we</p>
+<p>261<br>00:18:06,559 –&gt; 00:18:10,480<br>had an additive increase, we dropped down because of a drop that took place, packet drop</p>
+<p>262<br>00:18:10,480 –&gt; 00:18:12,160<br>that took place here.</p>
+<p>263<br>00:18:12,160 –&gt; 00:18:13,880<br>Then we go up again through the additive increase.</p>
+<p>264<br>00:18:13,880 –&gt; 00:18:17,520<br>And you can see here that the available window size, in other words, the amount of data</p>
+<p>265<br>00:18:17,520 –&gt; 00:18:22,080<br>that the source can have outstanding in the network, is varying, presumably because the</p>
+<p>266<br>00:18:22,080 –&gt; 00:18:23,720<br>network conditions are changing.</p>
+<p>267<br>00:18:23,720 –&gt; 00:18:27,520<br>There are other flows in the network, or maybe even the capacity of the links is changing,</p>
+<p>268<br>00:18:27,520 –&gt; 00:18:30,400<br>maybe their wireless links, for example.</p>
+<p>269<br>00:18:30,400 –&gt; 00:18:34,360<br>So in summary, we have choice when we’re implementing a congestion control algorithm.</p>
+<p>270<br>00:18:34,360 –&gt; 00:18:38,760<br>We can implement it in the network, or we can implement it at the end host.</p>
+<p>271<br>00:18:38,759 –&gt; 00:18:44,079<br>TCP controls congestion from the end host because IP offers it no support by default, so it</p>
+<p>272<br>00:18:44,079 –&gt; 00:18:48,799<br>gives it no signals or indication of congestion other than dropping packets.</p>
+<p>273<br>00:18:48,799 –&gt; 00:18:54,559<br>So it merely reacts to events that are observable at the end host, in particular packet loss.</p>
+<p>274<br>00:18:54,559 –&gt; 00:19:00,680<br>It exploits TCP’s sliding window, and it’s that’s used for flow control, and it’s going</p>
+<p>275<br>00:19:00,680 –&gt; 00:19:06,400<br>to overload that sliding window by changing the window size to try and control congestion.</p>
+<p>276<br>00:19:06,400 –&gt; 00:19:10,000<br>It tries to figure out how many packets it can safely have outstanding in the network at</p>
+<p>277<br>00:19:10,000 –&gt; 00:19:14,759<br>a time, and it’s going to vary that window size according to the additive increase,</p>
+<p>278<br>00:19:14,759 –&gt; 00:19:16,480<br>multiplicative decrease algorithm.</p>
+<p>279<br>00:19:16,480 –&gt; 00:19:20,000<br>And we’re going to be studying that more in the next two videos.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div></div>
+      <div>http://example.com/2025/10/23/CS144-networkP544-2CongestionControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月23日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP554-3CongestionControl/" title="">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/23/CS144-networkP534-1CongestionControl/" title="">
+                        <span class="hidden-mobile"></span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
