@@ -1,0 +1,1057 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:24,960The type of optimizers we’ve talked about so far have been the classic query optimizers 200:00:24,960 –&gt; 00:00:29,600where the query shows up, we parse the SQL, then">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15721 P16S202415 QueryOptimizerImplementation3CMUAdvancedDatabaseSystems">
+<meta property="og:url" content="http://example.com/2025/10/24/CMU15721%20P16S202415-QueryOptimizerImplementation3CMUAdvancedDatabaseSystems/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:24,960The type of optimizers we’ve talked about so far have been the classic query optimizers 200:00:24,960 –&gt; 00:00:29,600where the query shows up, we parse the SQL, then">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-24T11:57:41.746Z">
+<meta property="article:modified_time" content="2025-10-24T12:06:28.544Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15721 P16S202415 QueryOptimizerImplementation3CMUAdvancedDatabaseSystems - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15721 P16S202415 QueryOptimizerImplementation3CMUAdvancedDatabaseSystems"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-24 19:57" pubdate>
+          2025年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          32 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15721 P16S202415 QueryOptimizerImplementation3CMUAdvancedDatabaseSystems</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:24,960<br>The type of optimizers we’ve talked about so far have been the classic query optimizers</p>
+<p>2<br>00:00:24,960 –&gt; 00:00:29,600<br>where the query shows up, we parse the SQL, then we run it through the optimizer and we</p>
+<p>3<br>00:00:29,600 –&gt; 00:00:33,760<br>generate a plan before we even begin executing the query.</p>
+<p>4<br>00:00:33,760 –&gt; 00:00:36,399<br>This is how most query optimizers work.</p>
+<p>5<br>00:00:36,399 –&gt; 00:00:40,560<br>Obviously you can’t run the query unless you have a query plan so you have to put it through</p>
+<p>6<br>00:00:40,560 –&gt; 00:00:42,079<br>the optimizer.</p>
+<p>7<br>00:00:42,079 –&gt; 00:00:50,200<br>But the challenge is going to be that what we think is the best plan during this optimization</p>
+<p>8<br>00:00:50,200 –&gt; 00:00:57,320<br>phase before we even start running it may actually be incorrect because since we can’t</p>
+<p>9<br>00:00:57,320 –&gt; 00:01:02,200<br>actually run the query without a plan there’s some assumptions we have to make about what</p>
+<p>10<br>00:01:02,200 –&gt; 00:01:05,680<br>the database and what our environment looks like.</p>
+<p>11<br>00:01:05,680 –&gt; 00:01:09,120<br>But these things can change over time for various reasons.</p>
+<p>12<br>00:01:09,120 –&gt; 00:01:14,760<br>So the physical design, the database can change because the administrator, the application,</p>
+<p>13<br>00:01:14,760 –&gt; 00:01:19,400<br>could add and drop indexes or change the partition scheme.</p>
+<p>14<br>00:01:19,400 –&gt; 00:01:23,079<br>The database itself could get modified, people could insert two pulls or delete two pulls</p>
+<p>15<br>00:01:23,079 –&gt; 00:01:27,280<br>and they could change the distribution of values for our columns.</p>
+<p>16<br>00:01:27,280 –&gt; 00:01:34,000<br>If we’re invoking our queries as prepared statements then the behavior of the query for</p>
+<p>17<br>00:01:34,000 –&gt; 00:01:37,599<br>one set of parameters might be different for another set of parameters.</p>
+<p>18<br>00:01:37,599 –&gt; 00:01:42,560<br>And then of course every time you run analyze or whatever the command is in our database</p>
+<p>19<br>00:01:42,560 –&gt; 00:01:48,120<br>system to recollect the statistics that we use in our cost models, every time we update</p>
+<p>20<br>00:01:48,120 –&gt; 00:01:54,280<br>them then the decisions we’ll make in our optimizer could be entirely different.</p>
+<p>21<br>00:01:54,280 –&gt; 00:02:03,079<br>So the sort of focus today is to understand how can we potentially improve our optimizers,</p>
+<p>22<br>00:02:03,079 –&gt; 00:02:07,840<br>the efficacy of the quality of the plans that we’re generating by maybe relaxing this</p>
+<p>23<br>00:02:07,840 –&gt; 00:02:13,879<br>requirement that we only generate a plan or only revisit our assumptions or we never</p>
+<p>24<br>00:02:13,879 –&gt; 00:02:17,920<br>visit our assumptions once we generate the plan at the beginning.</p>
+<p>25<br>00:02:17,920 –&gt; 00:02:22,800<br>So to do this we want to understand a little bit what a bad query panel looks like, a</p>
+<p>26<br>00:02:22,800 –&gt; 00:02:30,000<br>wide query plans can be considered bad and then end up with less than optimal formats.</p>
+<p>27<br>00:02:30,000 –&gt; 00:02:34,840<br>So we’ll cover this more on Wednesday when we discuss cost models.</p>
+<p>28<br>00:02:34,840 –&gt; 00:02:39,720<br>But in general I say the high level the biggest problem we’re always going to have is the</p>
+<p>29<br>00:02:39,720 –&gt; 00:02:41,800<br>we’re going to get the join order is incorrect.</p>
+<p>30<br>00:02:41,800 –&gt; 00:02:47,000<br>Joins are almost always the most expensive thing we’re going to execute in a analytical workload.</p>
+<p>31<br>00:02:47,000 –&gt; 00:02:52,919<br>And so if we get the ordering incorrect that can get lead to poor performance.</p>
+<p>32<br>00:02:52,919 –&gt; 00:02:58,240<br>The reason why we’re going to make select incorrect ordering is because we’re going to have</p>
+<p>33<br>00:02:58,240 –&gt; 00:03:00,639<br>inaccurate cardinality estimations.</p>
+<p>34<br>00:03:00,639 –&gt; 00:03:04,879<br>Meaning we think that our join is going to produce X number of tuples but it’s really going</p>
+<p>35<br>00:03:04,879 –&gt; 00:03:12,000<br>to be X times Y or some larger multiple of them what we thought is going to happen.</p>
+<p>36<br>00:03:12,000 –&gt; 00:03:18,560<br>Again we’ll discuss why this occurs more in the next lecture but this issue is going</p>
+<p>37<br>00:03:18,560 –&gt; 00:03:22,879<br>to be reoccurring theme that we’re going to have to overcome and today’s discussion is</p>
+<p>38<br>00:03:22,879 –&gt; 00:03:26,960<br>sort of see techniques to do this.</p>
+<p>39<br>00:03:26,960 –&gt; 00:03:31,680<br>So but since we know things are going to go bad like we just know we can just assume that</p>
+<p>40<br>00:03:31,680 –&gt; 00:03:36,560<br>our cost model is going to be an accurate our optimizer is going to make bad decisions.</p>
+<p>41<br>00:03:36,560 –&gt; 00:03:43,680<br>And ideally if we can detect how bad our query plan is once we start running it then</p>
+<p>42<br>00:03:43,680 –&gt; 00:03:51,520<br>we can make a decision to adapt the plan to modify potentially to account for these differences</p>
+<p>43<br>00:03:51,520 –&gt; 00:03:55,199<br>and what we’re seeing in the real data versus what we assume we’re going to see.</p>
+<p>44<br>00:03:55,199 –&gt; 00:04:01,280<br>And then we can then try to convert our plan into something that’s closer to the optimal</p>
+<p>45<br>00:04:01,280 –&gt; 00:04:02,280<br>plan.</p>
+<p>46<br>00:04:03,080 –&gt; 00:04:07,560<br>So what I mean like that is say we have a simple query like this it’s a four way join between</p>
+<p>47<br>00:04:07,560 –&gt; 00:04:14,199<br>eight tables ABC and D and then we just have a simple wear clause for the B and D tables.</p>
+<p>48<br>00:04:14,199 –&gt; 00:04:19,240<br>So let’s say that we run this query through our query optimizer and we generate this plan.</p>
+<p>49<br>00:04:19,240 –&gt; 00:04:23,319<br>Right it’s a bunch of hash joins and nothing but sequential scans.</p>
+<p>50<br>00:04:23,319 –&gt; 00:04:29,000<br>But let’s say that when we when we generate this plan for this particular join we estimated</p>
+<p>51<br>00:04:29,000 –&gt; 00:04:35,800<br>the cardinality of that operator to be 1000 right this is an arbitrary number that I’m using</p>
+<p>52<br>00:04:35,800 –&gt; 00:04:40,680<br>for this illustration. The cardinality is the number of two pulls that this operator will admit.</p>
+<p>53<br>00:04:41,639 –&gt; 00:04:46,920<br>But let’s say when we actually start to run it we see that we’re actually generating 100,000</p>
+<p>54<br>00:04:46,920 –&gt; 00:04:53,000<br>two pulls. So our actual cardinality is two orders of magnitude greater than the estimate one.</p>
+<p>55<br>00:04:53,959 –&gt; 00:04:59,079<br>So the question we’re trying to deal with today is if we knew what the just true cardinality was</p>
+<p>56<br>00:05:00,120 –&gt; 00:05:07,879<br>before we started executing it. I’m sorry while we’re executing it then could we change some</p>
+<p>57<br>00:05:07,879 –&gt; 00:05:14,040<br>aspect of this query plan to get us closer to a more optimal plan. Right could we change the</p>
+<p>58<br>00:05:14,040 –&gt; 00:05:18,279<br>join ordering where we wanted to use a different algorithm to do our join where we want to change</p>
+<p>59<br>00:05:18,279 –&gt; 00:05:23,799<br>maybe the access methods that come below the join to use it maybe index or a different different</p>
+<p>60<br>00:05:23,799 –&gt; 00:05:30,039<br>type of scam. So this is sort of what we’re focusing on today is how to then maybe adapt this</p>
+<p>61<br>00:05:30,039 –&gt; 00:05:35,079<br>this kind of plan when we know something about the what the data looks like once we start running it.</p>
+<p>62<br>00:05:36,759 –&gt; 00:05:45,319<br>So the the high level idea again is that we want to be able to execute estimate the behavior of a plan</p>
+<p>63<br>00:05:45,319 –&gt; 00:05:53,159<br>to in order to determine the behavior of a plan to determine its quality relative to other plans</p>
+<p>64<br>00:05:53,159 –&gt; 00:05:58,199<br>that is what the cost model is doing. But the tricky thing is going to be back here before I started</p>
+<p>65<br>00:05:58,199 –&gt; 00:06:06,519<br>executing this I had to derive this cardinality from my statistics that I had maintaining my catalog</p>
+<p>66<br>00:06:06,519 –&gt; 00:06:11,800<br>about what my table looks like or what the what these two tables look like when you join them together.</p>
+<p>67<br>00:06:12,280 –&gt; 00:06:19,240<br>So the stats are based on histograms and possibly samples that we’re collecting from the data.</p>
+<p>68<br>00:06:19,240 –&gt; 00:06:25,000<br>We can also make decisions about what the hardware looks like what kind of cash sizes we have</p>
+<p>69<br>00:06:25,000 –&gt; 00:06:28,920<br>what kind of maybe algorithm we want to use what other queries are running at the same time.</p>
+<p>70<br>00:06:28,920 –&gt; 00:06:33,879<br>Like the cost model stuff we’ll cover next class but the main idea to think about is what we’re</p>
+<p>71<br>00:06:33,879 –&gt; 00:06:39,800<br>talking about today is before we run the query we we only have an estimation of what the data looks</p>
+<p>72<br>00:06:39,800 –&gt; 00:06:45,560<br>like and how our query will will perform and if we get that wrong we want to then try to be able to</p>
+<p>73<br>00:06:45,560 –&gt; 00:06:52,280<br>correct ourselves. So the technique we’re talking about today is called adaptive query optimization</p>
+<p>74<br>00:06:52,280 –&gt; 00:06:57,400<br>and sometimes called in the research literature adapter query processing right there’s essentially</p>
+<p>75<br>00:06:57,400 –&gt; 00:07:03,000<br>synonymous and it’s everything I said so far the idea is that this technique is going to allow the</p>
+<p>76<br>00:07:03,000 –&gt; 00:07:10,920<br>database system to modify the query plan for a query to better fit what the actual underlying data</p>
+<p>77<br>00:07:10,920 –&gt; 00:07:16,519<br>looks like and we believe modifying that for the query plan by just generating an entire new query</p>
+<p>78<br>00:07:16,519 –&gt; 00:07:23,959<br>plan like throwing away the old one and starting over or we could try to modify a subset of the query</p>
+<p>79<br>00:07:23,959 –&gt; 00:07:30,600<br>plan or a query plan by introducing new sort of sub plans or it was like a pipeline at different</p>
+<p>80<br>00:07:30,600 –&gt; 00:07:35,560<br>points where we had to materialize people where we could potentially switch from you know one</p>
+<p>81<br>00:07:35,560 –&gt; 00:07:41,720<br>plan strategy to another and this one here you basically go back to the optimizer and start over</p>
+<p>82<br>00:07:41,720 –&gt; 00:07:48,200<br>this one here is that you can try to have the optimizer only do only replay an apportion of it or</p>
+<p>83<br>00:07:48,200 –&gt; 00:07:56,680<br>provide these alternative strategies at the beginning. So the main sort of takeaway approach what we’re</p>
+<p>84<br>00:07:56,680 –&gt; 00:08:01,720<br>doing here is that rather than just relying on our statistical models that are estimations or</p>
+<p>85<br>00:08:01,720 –&gt; 00:08:06,920<br>approximations of what the data looks like we’re trying to use the data we’ve collected while we</p>
+<p>86<br>00:08:06,920 –&gt; 00:08:12,680<br>actually execute the query to then help us make a decision about what the right plan should be for</p>
+<p>87<br>00:08:12,680 –&gt; 00:08:19,240<br>our particular query right and this data we’re going to collect is could be used for helping our</p>
+<p>88<br>00:08:19,240 –&gt; 00:08:25,960<br>current query or merge it we can merge it back into the system because we’ve collected through our</p>
+<p>89<br>00:08:25,959 –&gt; 00:08:33,240<br>analyze operation and have it be used for other queries. So again we’ll cover the various ways you</p>
+<p>90<br>00:08:33,240 –&gt; 00:08:38,279<br>have to do this but when you think about what a query actually is doing you know or what analyze</p>
+<p>91<br>00:08:38,279 –&gt; 00:08:45,559<br>does analyzes during a sequential scan to compute some statistical models about what the data looks like</p>
+<p>92<br>00:08:46,360 –&gt; 00:08:51,879<br>and so the if we’re doing the sequential scan on a table that’s essentially the same thing as</p>
+<p>93<br>00:08:51,879 –&gt; 00:08:57,399<br>analyzed and so rather than just evaluating predicates or using the the tuples as we scan them to</p>
+<p>94<br>00:08:58,279 –&gt; 00:09:02,519<br>generate the result we need for that particular query we can piggyback piggyback off of those</p>
+<p>95<br>00:09:03,480 –&gt; 00:09:11,480<br>off of that scan operator and sort of maintain or update our and update our sort of statistical models</p>
+<p>96<br>00:09:11,480 –&gt; 00:09:16,360<br>with new information and the question here is whether we just update that models for ourselves to</p>
+<p>97<br>00:09:16,360 –&gt; 00:09:22,519<br>make our query go better or we can share this with other queries in the global catalog and now</p>
+<p>98<br>00:09:22,519 –&gt; 00:09:29,800<br>other queries can benefit from the data we collected from this. All right so there’s sort of three</p>
+<p>99<br>00:09:29,800 –&gt; 00:09:38,279<br>broad categories that I want to cover using a aqo or adaptive query optimization. One is that we</p>
+<p>100<br>00:09:38,279 –&gt; 00:09:44,920<br>can use aqo to benefit future invocations of our query. The second approach is to try to make our</p>
+<p>101<br>00:09:44,919 –&gt; 00:09:50,759<br>current invocation of our query better and then the last one would be well this is like helping</p>
+<p>102<br>00:09:50,759 –&gt; 00:09:54,360<br>your current query this is also helping your current query but this one would be sort of starting</p>
+<p>103<br>00:09:54,360 –&gt; 00:10:02,120<br>over from scratch and running through the optimization all over again this would be adding locations</p>
+<p>104<br>00:10:02,120 –&gt; 00:10:06,919<br>in the query plan that allow you to change one strategy versus you know switch and one strategy</p>
+<p>105<br>00:10:06,919 –&gt; 00:10:12,039<br>the next with again out having to go back to to the optimization. So we’ll go through each of these</p>
+<p>106<br>00:10:12,039 –&gt; 00:10:22,120<br>one by one. So the sort of the most simplest form of adaptive query optimization is as I said where</p>
+<p>107<br>00:10:22,759 –&gt; 00:10:30,199<br>as we execute our query we also collect some information about what the data looks like and then</p>
+<p>108<br>00:10:30,199 –&gt; 00:10:37,000<br>we can use that information to decide whether our query is wrong and when we plan it or we can then</p>
+<p>109<br>00:10:37,000 –&gt; 00:10:42,440<br>merge that back into the sort of global catalog. Again when you think about this right what</p>
+<p>110<br>00:10:42,440 –&gt; 00:10:46,679<br>are the optimizers are actually doing you have much histograms or statistical models about what your</p>
+<p>111<br>00:10:46,679 –&gt; 00:10:51,799<br>your your attributes look like. So for a given predicate in your where clause you want to estimate</p>
+<p>112<br>00:10:51,799 –&gt; 00:10:57,000<br>the selectivity of that predicate because that’ll determine how many tuples your scan will emit and</p>
+<p>113<br>00:10:57,000 –&gt; 00:11:01,639<br>you can use that to make decisions about you know join orderings and other things above in the query plan.</p>
+<p>114<br>00:11:01,799 –&gt; 00:11:10,039<br>So the as you execute the scan if you you know you actually know the true selectivity because you’re</p>
+<p>115<br>00:11:10,039 –&gt; 00:11:14,600<br>applying the predicate on the tuples and you know the number the number of two percent of the tuples</p>
+<p>116<br>00:11:14,600 –&gt; 00:11:21,559<br>are going to match. So if you then determine that the cost model estimated my selectivity was 1%</p>
+<p>117<br>00:11:21,960 –&gt; 00:11:27,080<br>but when I run the real query and I run the query and actually do the evaluation of the predicate</p>
+<p>118<br>00:11:27,160 –&gt; 00:11:32,840<br>my selectivity is 99% then I wanted to use that information to help me decide whether to</p>
+<p>119<br>00:11:33,320 –&gt; 00:11:39,639<br>replay my query or that future queries come along they can you know exploit the knowledge that I’ve gained.</p>
+<p>120<br>00:11:41,000 –&gt; 00:11:46,440<br>Again the the one approaches to try to fix my current query or the other one is just</p>
+<p>121<br>00:11:46,440 –&gt; 00:11:55,560<br>merging it back into the into the overall statistical catalog of models and the catalog so that</p>
+<p>122<br>00:11:56,279 –&gt; 00:12:02,679<br>I can then help queries in the future. So the most basic approach to do this is call a</p>
+<p>123<br>00:12:02,679 –&gt; 00:12:08,359<br>reversion based plan correction and the idea here is as I said is just every single time I invoke a</p>
+<p>124<br>00:12:08,359 –&gt; 00:12:14,359<br>query I keep track of what query plan I generated for I keep track of the cost estimations I had for</p>
+<p>125<br>00:12:14,359 –&gt; 00:12:19,879<br>and then the I’ll have all my metrics of what what happened when actually when I ran it right how</p>
+<p>126<br>00:12:19,879 –&gt; 00:12:24,599<br>many how many tuples I selected how much CPU I remember that I used and I’m going to maintain this</p>
+<p>127<br>00:12:24,680 –&gt; 00:12:29,240<br>history inside the database itself so you’ll see this in like the commercial systems like</p>
+<p>128<br>00:12:29,960 –&gt; 00:12:37,879<br>and DB2 Oracle and and SQL Server they have this built-in repository of the history of every single</p>
+<p>129<br>00:12:37,879 –&gt; 00:12:42,680<br>query that ever got invoked and they can use that information to help decide how to do query</p>
+<p>130<br>00:12:42,680 –&gt; 00:12:47,720<br>planning in the future. So let’s say that we have a premier statement or we have a query that</p>
+<p>131<br>00:12:47,720 –&gt; 00:12:52,680<br>that’s invoked all the time and we have a cash query plan so rather than maybe running through the</p>
+<p>132<br>00:12:52,679 –&gt; 00:12:57,719<br>optimizer every single time we can use the the cash query plan that we’ve already generated from</p>
+<p>133<br>00:12:57,719 –&gt; 00:13:07,479<br>previous invocations. So if now there’s a change in our in the you know the statistics or something</p>
+<p>134<br>00:13:07,479 –&gt; 00:13:12,759<br>about the database that physical design that changes and we recognize that we maybe want to for</p>
+<p>135<br>00:13:12,759 –&gt; 00:13:17,319<br>this particular query we keep invoking we want to run it back through the optimizer and see we</p>
+<p>136<br>00:13:17,960 –&gt; 00:13:23,240<br>regenerate a new plan but then when we run that new plan for this query if we see that the</p>
+<p>137<br>00:13:23,240 –&gt; 00:13:29,800<br>performance of the query is worse than the old plan that we had before then we just want to</p>
+<p>138<br>00:13:29,800 –&gt; 00:13:35,800<br>work back to it right there’s a regression in the performance we switch back to the plan that</p>
+<p>139<br>00:13:35,800 –&gt; 00:13:41,320<br>we know actually performed better for us despite the change in the other in the physical design or</p>
+<p>140<br>00:13:41,320 –&gt; 00:13:46,600<br>the statistical models. So we use that simple query example that I have a for right the foray</p>
+<p>141<br>00:13:47,560 –&gt; 00:13:52,360<br>say again this is my original plan and I’m doing nothing but sequential scans and a hash</p>
+<p>142<br>00:13:52,360 –&gt; 00:13:58,279<br>drawing and say that my estimated cost is a thousand and my cost estimation is pretty good so my</p>
+<p>143<br>00:13:58,279 –&gt; 00:14:04,279<br>actual cost actually matches up. I these are just synthetic numbers here. So I’m going to store in my</p>
+<p>144<br>00:14:04,279 –&gt; 00:14:10,040<br>execution history for my database system that I generate for this query I generated this plan and</p>
+<p>145<br>00:14:10,120 –&gt; 00:14:16,839<br>when I ran it I had this cost and this is just another database or another table in my database system</p>
+<p>146<br>00:14:16,839 –&gt; 00:14:22,279<br>right you’re sort of eating your own dog food rather than having an auxiliary store this is just</p>
+<p>147<br>00:14:22,279 –&gt; 00:14:28,439<br>another table that you record this information. All right so now let’s say there’s a change in our</p>
+<p>148<br>00:14:28,439 –&gt; 00:14:35,399<br>database design say the dba comes along and adds two indexes on the b table on the d table which</p>
+<p>149<br>00:14:35,399 –&gt; 00:14:41,159<br>we’re using in our where clause. So now when we invoke the same query again we would recognize that</p>
+<p>150<br>00:14:41,159 –&gt; 00:14:48,600<br>the design the database has changed in such a way where we may now want to reconsider the query plan</p>
+<p>151<br>00:14:48,600 –&gt; 00:14:53,959<br>for this particular query. So this query touches b dot val and d dot val while I just have to create</p>
+<p>152<br>00:14:53,959 –&gt; 00:14:58,919<br>indexes on those columns. So I want to run this through my optimizer again and see what plan I get.</p>
+<p>153<br>00:14:59,639 –&gt; 00:15:04,120<br>Let’s say now for the new plan it’s completely different so now we’re instead of running hash</p>
+<p>154<br>00:15:04,120 –&gt; 00:15:08,600<br>joins we’re running index nested loop joins and we’re doing an index scan on b on d which we can</p>
+<p>155<br>00:15:08,600 –&gt; 00:15:13,879<br>now do because we have index on that which we didn’t have before. And so now we’re going to pick this</p>
+<p>156<br>00:15:13,879 –&gt; 00:15:19,560<br>plan for our query because the estimated cost is 800 which is less than the estimated cost so</p>
+<p>157<br>00:15:19,560 –&gt; 00:15:25,080<br>that we had over here but when we actually run it for whatever reason that we that we don’t care</p>
+<p>158<br>00:15:25,080 –&gt; 00:15:32,680<br>about at this point the actual cost is is 1200 right this could be that the you know we incorrectly</p>
+<p>159<br>00:15:32,759 –&gt; 00:15:37,319<br>estimated that the cost of these nestled joins would be cheaper than the hash joins so we picked in</p>
+<p>160<br>00:15:37,319 –&gt; 00:15:46,519<br>that nestled joins. So just as before it’s when we actually put this excuse me that’s not</p>
+<p>161<br>00:15:46,519 –&gt; 00:15:52,839<br>criminal. If we actually now put this in our in our extra history we would recognize that</p>
+<p>162<br>00:15:54,439 –&gt; 00:16:00,439<br>the for this plan here again it performed worse than this other one here so the next time we</p>
+<p>163<br>00:16:00,440 –&gt; 00:16:04,680<br>invoke it we want to make sure that we we use this plan. We want to alert back to the one that we</p>
+<p>164<br>00:16:04,680 –&gt; 00:16:12,280<br>know performed better. So for this approach here this is something that Microsoft has had in</p>
+<p>165<br>00:16:12,280 –&gt; 00:16:19,400<br>SQL Server and I think Oracle has something similar in since maybe 2012 2013 but this is pretty</p>
+<p>166<br>00:16:19,400 –&gt; 00:16:24,600<br>coarse grain right this is pretty brain dead heuristic it’s basically saying oh this query plan is</p>
+<p>167<br>00:16:24,600 –&gt; 00:16:30,519<br>bad let me just switch back to this one right so it’s okay all of our nothing thing. So the</p>
+<p>168<br>00:16:30,519 –&gt; 00:16:34,519<br>paper you guys were signed reading from Microsoft is called plan stitching and the I the</p>
+<p>169<br>00:16:34,519 –&gt; 00:16:40,360<br>high-level idea is exactly the same where if we recognize that our query is running slower then</p>
+<p>170<br>00:16:40,360 –&gt; 00:16:47,879<br>query plans we saw in the past rather than potentially this thrown away the entire query plan</p>
+<p>171<br>00:16:47,879 –&gt; 00:16:53,399<br>that the new query plan and we’re burning back to the old one maybe there are elements or aspects</p>
+<p>172<br>00:16:53,399 –&gt; 00:17:01,879<br>or sub plans within the newer plan we actually want to retain because and then that’ll that’ll</p>
+<p>173<br>00:17:01,879 –&gt; 00:17:07,400<br>that’ll help us lead us towards a better plan a more optimal plan right and the other isn’t you</p>
+<p>174<br>00:17:07,400 –&gt; 00:17:14,599<br>think about well plan stitch as well is that the sub plans you’re going to borrow from other queries</p>
+<p>175<br>00:17:14,599 –&gt; 00:17:19,639<br>don’t need to be actually from the same query like in this case here I can only reuse the plan</p>
+<p>176<br>00:17:20,440 –&gt; 00:17:24,759<br>in the simplest form I can only swap a team plans if they’re running on the exact same query</p>
+<p>177<br>00:17:25,240 –&gt; 00:17:30,600<br>but with plan stitch because I can excise out sub plans or portions of the query plan as long</p>
+<p>178<br>00:17:30,600 –&gt; 00:17:35,640<br>as I know that they’re logically equivalent I can take bits and pieces from from other queries</p>
+<p>179<br>00:17:36,360 –&gt; 00:17:42,680<br>all right the other interesting too is that if there is a change in the physical design where a new</p>
+<p>180<br>00:17:42,680 –&gt; 00:17:48,040<br>plan query plan becomes invalid meaning like it defined that it wanted to index scan but then</p>
+<p>181<br>00:17:48,119 –&gt; 00:17:54,119<br>I drop that index rather than just throw away the entire query the query plan and its entirety I can</p>
+<p>182<br>00:17:54,119 –&gt; 00:17:59,559<br>maybe get and pull out pieces of it right so the basic approach they’re going to use is or the</p>
+<p>183<br>00:17:59,559 –&gt; 00:18:05,960<br>the way they’re going to generate these these stitch plans is a dynamic programming search method</p>
+<p>184<br>00:18:05,960 –&gt; 00:18:11,319<br>using a bottom-up approach where you just you check the C from going from one level to the next</p>
+<p>185<br>00:18:11,319 –&gt; 00:18:16,839<br>and the same way we do a system R going one node to the next you pick which which which which</p>
+<p>186<br>00:18:17,399 –&gt; 00:18:22,759<br>sub plan is the best and then once you reach the end goal you you do find that the cheapest path</p>
+<p>187<br>00:18:23,319 –&gt; 00:18:30,119<br>so this means that it’s not guaranteed to find a better plan than the best plan you have so far</p>
+<p>188<br>00:18:30,119 –&gt; 00:18:37,159<br>and it is not guaranteed to always produce a valid plan and but there’s some basic</p>
+<p>189<br>00:18:37,159 –&gt; 00:18:41,879<br>characteristics to use and make sure that happens right so going back to our example here right say that</p>
+<p>190<br>00:18:42,840 –&gt; 00:18:48,680<br>this is our new plan and say it was working just fine right like it was actually faster so we always</p>
+<p>191<br>00:18:48,680 –&gt; 00:18:54,600<br>want to use this but now if I come along and I drop one of the indexes that I’m using this plan</p>
+<p>192<br>00:18:54,600 –&gt; 00:19:01,560<br>now becomes invalid and under sort of coarse green reversion I can’t reuse it but with plan</p>
+<p>193<br>00:19:01,560 –&gt; 00:19:07,160<br>stitching I actually want to figure out what components of this sub plan or the query plan here</p>
+<p>194<br>00:19:07,160 –&gt; 00:19:11,560<br>that I may want to use in the new plan even though overall it’s invalid there’s still portions</p>
+<p>195<br>00:19:11,960 –&gt; 00:19:17,639<br>that are still usable so on this case there say this portion of the sub plan the sub plan of this</p>
+<p>196<br>00:19:18,039 –&gt; 00:19:23,399<br>part of the query the execution cost is 600 and we would know this because we can keep track of</p>
+<p>197<br>00:19:23,399 –&gt; 00:19:30,839<br>every although the the the ratchewontime cost of all the operators in our in our query and for this</p>
+<p>198<br>00:19:30,839 –&gt; 00:19:37,000<br>one here this sub plan over here has a cost of 150 so now if I combine these together into a stitch plan</p>
+<p>199<br>00:19:37,000 –&gt; 00:19:43,880<br>the total cost of this case would be 750 whereas before if I did run this it was a thousand so again</p>
+<p>200<br>00:19:43,880 –&gt; 00:19:48,920<br>the idea is that we want to be able to borrow bits and pieces of different query plans to end and</p>
+<p>201<br>00:19:48,920 –&gt; 00:19:55,640<br>help us produce the a more optimal plan and this is being done separately from the regular optimizer</p>
+<p>202<br>00:19:55,640 –&gt; 00:20:00,599<br>in the case of microsoft’s SQL server they’re running cascades so they’re actually doing a top-down</p>
+<p>203<br>00:20:01,159 –&gt; 00:20:07,480<br>but this is sort of this auxiliary search that’s running on the side that in the background it tries</p>
+<p>204<br>00:20:07,480 –&gt; 00:20:14,119<br>to find a plan so it can stitch together so let’s talk about how they actually do this the the</p>
+<p>205<br>00:20:14,119 –&gt; 00:20:20,679<br>first step is you need to identify which portions or which sub plans in our queries are logically</p>
+<p>206<br>00:20:20,679 –&gt; 00:20:25,879<br>equipment right we talked about before under with cascades when we had when we had multi-group</p>
+<p>207<br>00:20:25,880 –&gt; 00:20:32,920<br>marketing special groups right we want to know that the the the output of a given sub plan</p>
+<p>208<br>00:20:33,560 –&gt; 00:20:41,720<br>is is the same or equivalent to another sub plan right and again we we have to rely on our the rules</p>
+<p>209<br>00:20:41,720 –&gt; 00:20:48,280<br>of relation algebra to recognize which operations can be commutative or or associative so in this case</p>
+<p>210<br>00:20:48,279 –&gt; 00:20:56,200<br>here this portion of the sub plan just the output is the a join b join c this portion of another</p>
+<p>211<br>00:20:56,200 –&gt; 00:21:02,519<br>sub plan is the output is c join b’s join a but since joins these inner joins here are commutative</p>
+<p>212<br>00:21:02,519 –&gt; 00:21:10,119<br>we know that these are are logical equipment now as I said the well one one challenge with this is that</p>
+<p>213<br>00:21:10,839 –&gt; 00:21:19,559<br>determining whether any arbitrary logical expressions or logical sub plans are are equivalent</p>
+<p>214<br>00:21:20,199 –&gt; 00:21:26,039<br>has been shown to be undecidable meaning like the questions like are these two sub plans</p>
+<p>215<br>00:21:26,039 –&gt; 00:21:32,839<br>logically equipment it’s a yes or no answer but there’s no algorithm that exists as an improvement</p>
+<p>216<br>00:21:32,839 –&gt; 00:21:39,399<br>that can can can guarantee to always give the correct answer so in the plan stitch phase they’re</p>
+<p>217<br>00:21:39,400 –&gt; 00:21:44,840<br>going to rely on some additional heuristics to identify things like oh I know that these two</p>
+<p>218<br>00:21:44,840 –&gt; 00:21:48,759<br>sub plans are accessing different tables so therefore they can’t be logically equipment right you</p>
+<p>219<br>00:21:48,759 –&gt; 00:21:54,759<br>obviously can do more complicated things um the optimizer itself in sequels over also has those</p>
+<p>220<br>00:21:54,759 –&gt; 00:21:59,960<br>kind of checks in place um and so they they rely on that as well so they have their own heuristics</p>
+<p>221<br>00:21:59,960 –&gt; 00:22:05,560<br>to prune things that can never be logical equivalent and they rely on the sequels over optimizer to</p>
+<p>222<br>00:22:05,559 –&gt; 00:22:12,519<br>identify that uh the logical sub plan you’re trying to match together or the the sub plan trying</p>
+<p>223<br>00:22:12,519 –&gt; 00:22:20,119<br>to match together in the stitch plan is is invalid so the heuristics are providing them with this</p>
+<p>224<br>00:22:20,119 –&gt; 00:22:25,240<br>sort of sweet swap balance between the difficulty in the implementation right so much a much</p>
+<p>225<br>00:22:25,240 –&gt; 00:22:31,799<br>enforcer rules um the accuracy of the of the of the determination whether they’re equivalent</p>
+<p>226<br>00:22:31,879 –&gt; 00:22:36,119<br>and in the performance right it’s not an exhaustive search and exhaust evaluation of all possible</p>
+<p>227<br>00:22:36,119 –&gt; 00:22:41,480<br>inputs to different sub plans it’s just rules based on the relational algebra</p>
+<p>228<br>00:22:43,159 –&gt; 00:22:50,039<br>all right so now once we identify that we have a bunch of equivalent sub plans we want to figure out</p>
+<p>229<br>00:22:50,039 –&gt; 00:22:55,639<br>we want to sort of combine them together into one giant query plan that we’re going to add to</p>
+<p>230<br>00:22:55,639 –&gt; 00:23:01,480<br>additional uh operators to determine that you can have branches to go down different you know</p>
+<p>231<br>00:23:01,480 –&gt; 00:23:07,079<br>different paths in the sub plan so this is how they’re going to code the the all the different</p>
+<p>232<br>00:23:07,079 –&gt; 00:23:11,480<br>combinations of the sub plans for then you can stitch together so the way this is going to work is</p>
+<p>233<br>00:23:11,480 –&gt; 00:23:16,519<br>they’re going to introduce this new or operator which is not actually used for execution this is</p>
+<p>234<br>00:23:16,519 –&gt; 00:23:22,599<br>just something for for the search and the the or basically indicates that the sub plans below it</p>
+<p>235<br>00:23:22,599 –&gt; 00:23:30,440<br>are logically equivalent so we we could choose either path so starting from the from the top we</p>
+<p>236<br>00:23:30,440 –&gt; 00:23:35,720<br>have an or clause at the very beginning um and then we have the two for this particular query we have</p>
+<p>237<br>00:23:35,720 –&gt; 00:23:41,080<br>the either doing the hash join or the the nested loop join and again these are logically equivalent</p>
+<p>238<br>00:23:41,080 –&gt; 00:23:47,160<br>because this is a join b joined c join d and this is c join b join a join d and those are in</p>
+<p>239<br>00:23:47,160 –&gt; 00:23:52,279<br>joins are commutative so the therefore these are logically equivalent so then now say go down</p>
+<p>240<br>00:23:53,000 –&gt; 00:23:58,920<br>we’re going to go like a depth research going down on this side uh for this one here same thing</p>
+<p>241<br>00:23:58,920 –&gt; 00:24:04,200<br>we do the hash join on a and b followed by c this is the nested loop join on c followed by c join</p>
+<p>242<br>00:24:04,200 –&gt; 00:24:09,080<br>b join a again these are logically equivalent so that’s why we can have or clause we can choose either</p>
+<p>243<br>00:24:09,080 –&gt; 00:24:13,880<br>one and then we’re just going to keep going down until we get to our leaf node uh in the central</p>
+<p>244<br>00:24:13,880 –&gt; 00:24:19,800<br>scan and then here we don’t see we don’t there’s another option for us uh in in this portion of</p>
+<p>245<br>00:24:19,800 –&gt; 00:24:24,279<br>the query plan because the one we stitched from just you know only had only had a hash join</p>
+<p>246<br>00:24:25,000 –&gt; 00:24:29,799<br>so now in this case here for the hash join a we can do a sequential scan as we saw on the first</p>
+<p>247<br>00:24:29,799 –&gt; 00:24:33,960<br>plan or we can do the index scan on b uh because that came from the second plan and so we have an</p>
+<p>248<br>00:24:33,960 –&gt; 00:24:39,720<br>or operator to express that going back up here we can only do a sequential scan on c so that’s a</p>
+<p>249<br>00:24:39,720 –&gt; 00:24:44,759<br>straight path going back up here for the nested loop join uh it can you know only thing we can do</p>
+<p>250<br>00:24:44,759 –&gt; 00:24:49,559<br>below it is another nested loop join and then for this we can either do a sequential scan on a or</p>
+<p>251<br>00:24:49,720 –&gt; 00:24:54,440<br>again for for b we now they do the sequential scan or the index scan going back up here for the</p>
+<p>252<br>00:24:54,440 –&gt; 00:25:00,519<br>hash join again that’s feeding uh a sequential scan on d feeding in and then we just complete the</p>
+<p>253<br>00:25:01,079 –&gt; 00:25:05,639<br>the rest of the tree like this so this is a a bit more simplified version of what they showed in the</p>
+<p>254<br>00:25:05,639 –&gt; 00:25:13,720<br>paper but uh these are actually the possible options you can have um and so what i think remember in</p>
+<p>255<br>00:25:13,720 –&gt; 00:25:18,039<br>the paper what they talked about is that this approach and doing the search within this to find</p>
+<p>256<br>00:25:18,039 –&gt; 00:25:23,159<br>a stitch plan they’re able to stitch about 75 to almost and a hundred percent of all of the</p>
+<p>257<br>00:25:23,159 –&gt; 00:25:28,279<br>plans together for the for the workloads that they looked at all right so now that we’ve encoded</p>
+<p>258<br>00:25:28,279 –&gt; 00:25:32,920<br>our search space we actually want to do our search and these are just starting from the bottom</p>
+<p>259<br>00:25:32,920 –&gt; 00:25:38,200<br>and going up and the same way we did with the system our dynamic uh programming search where we</p>
+<p>260<br>00:25:38,200 –&gt; 00:25:44,920<br>just for every single leaf node we start off with uh figuring out what the cost is for going to uh</p>
+<p>261<br>00:25:44,920 –&gt; 00:25:49,960<br>the next operator we pick which one is the best and then once we complete all the we do this search</p>
+<p>262<br>00:25:49,960 –&gt; 00:25:53,640<br>for all the nodes at our current level we then go up to the next level and complete this process</p>
+<p>263<br>00:25:54,279 –&gt; 00:25:58,440<br>all right so let’s say we start with the sequential scan on a it only has one option first which is</p>
+<p>264<br>00:25:58,440 –&gt; 00:26:07,800<br>just the um oh it has either the hash join on a b or uh or then the the next that’s a loop over here</p>
+<p>265<br>00:26:07,800 –&gt; 00:26:14,039<br>say the hash join is cheaper so we pick that now we do a sequential scan on b this has an or operator</p>
+<p>266<br>00:26:14,039 –&gt; 00:26:18,839<br>all right so this is either doing a hash join or the nest loop join and say the hash join is cheaper</p>
+<p>267<br>00:26:18,839 –&gt; 00:26:25,559<br>so we pick that now we do this for uh the index scan on b again there’s a or or operator you need</p>
+<p>268<br>00:26:25,559 –&gt; 00:26:31,559<br>the hash join the nest loop join and so because we have an index the nest loop join actually it</p>
+<p>269<br>00:26:31,559 –&gt; 00:26:36,279<br>would be cheaper here so we pick that and we just keep going down the line and do this for all our</p>
+<p>270<br>00:26:36,279 –&gt; 00:26:40,440<br>leaf nodes and then we’re done we go up to the next level and then again now we have a cost for all</p>
+<p>271<br>00:26:40,440 –&gt; 00:26:47,160<br>these paths uh leading up and we just pick which one is is the cheapest rust and then we reconstruct the</p>
+<p>272<br>00:26:49,720 –&gt; 00:26:55,880<br>we can construct the stitch plan that way right so again I think this is an interesting uh approach</p>
+<p>273<br>00:26:55,880 –&gt; 00:27:00,120<br>I don’t think Microsoft is actually running this in production like this was a research paper that</p>
+<p>274<br>00:27:00,120 –&gt; 00:27:05,240<br>was published in sigmod um I don’t know of any other system that’s doing some similar like this</p>
+<p>275<br>00:27:05,799 –&gt; 00:27:11,240<br>I from an engineering standpoint the fact that you have to run this separately from the</p>
+<p>276<br>00:27:12,680 –&gt; 00:27:16,920<br>from the query optimizer um and sort of have separate infrastructure for that</p>
+<p>277<br>00:27:17,480 –&gt; 00:27:20,839<br>Terry what are you doing um</p>
+<p>278<br>00:27:23,079 –&gt; 00:27:27,559<br>right so rather than having separate you know separate so search infrastructure</p>
+<p>279<br>00:27:27,559 –&gt; 00:27:32,279<br>if this is integrated into the query optimizer like uh component itself I think this would be</p>
+<p>280<br>00:27:32,279 –&gt; 00:27:38,359<br>really an interesting approach so there’s another system that does something similar to this plan</p>
+<p>281<br>00:27:38,359 –&gt; 00:27:45,879<br>stitching uh but they’re actually working on a sort of uh uh uh uh sort of a cougain level rather than</p>
+<p>282<br>00:27:45,879 –&gt; 00:27:53,000<br>like a physical query plan level so amazon has their redshift uh data warehouse uh service um and</p>
+<p>283<br>00:27:53,000 –&gt; 00:27:59,720<br>it’s based on park cell and they use actually a uh they do it it’s a transpilation engine so the</p>
+<p>284<br>00:27:59,799 –&gt; 00:28:06,279<br>database system for a given physical plan generates c++ code or ccode which they then compile</p>
+<p>285<br>00:28:06,839 –&gt; 00:28:11,400<br>and then they run you know they they invoke the the shared object that comes out of the compiler</p>
+<p>286<br>00:28:11,400 –&gt; 00:28:16,680<br>and then that’s how they do uh query compilation so the obviously the most expensive part of</p>
+<p>287<br>00:28:17,400 –&gt; 00:28:21,079<br>uh uh you know cogent engine is is the compilation right in their case they’re actually</p>
+<p>288<br>00:28:21,079 –&gt; 00:28:26,200<br>forking gcc or whatever compiler they’re using to actually generate the machine code um so they</p>
+<p>289<br>00:28:26,279 –&gt; 00:28:33,000<br>want to try to avoid that for every single query so what they can do is uh they say you’re doing uh</p>
+<p>290<br>00:28:33,000 –&gt; 00:28:38,440<br>you want you want to compile the scan on b where you want to see where b.val equals some input</p>
+<p>291<br>00:28:38,440 –&gt; 00:28:44,920<br>parameter so the code gen that piece run it through the compiler that generates x86 code um and</p>
+<p>292<br>00:28:44,920 –&gt; 00:28:50,920<br>then they’ll go ahead and cache it and then now anytime you re invoke this this query uh you know</p>
+<p>293<br>00:28:50,920 –&gt; 00:28:56,920<br>you can just reuse the compiler version of the scan on b but similar to plan stitching what they</p>
+<p>294<br>00:28:56,920 –&gt; 00:29:02,519<br>can also do is they can recognize that if you have another query with the same kind of predicate b.val</p>
+<p>295<br>00:29:02,519 –&gt; 00:29:09,560<br>equals uh you know equals some parameter it’ll cogent the exact same thing so rather than recompiling</p>
+<p>296<br>00:29:09,560 –&gt; 00:29:15,320<br>it which is again the expensive part they can identify that they have a cache uh plan fragment</p>
+<p>297<br>00:29:15,799 –&gt; 00:29:23,000<br>uh of for this this this scan here and they can reuse that and so they actually can do this uh</p>
+<p>298<br>00:29:23,000 –&gt; 00:29:30,279<br>across all possible or press all their customers so like this you know the scan on a table to do one</p>
+<p>299<br>00:29:30,279 –&gt; 00:29:35,000<br>you know something equals something on a you know varchar field that’s going to be the same from</p>
+<p>300<br>00:29:35,000 –&gt; 00:29:39,559<br>one table to the next because it’s a column sure you’re just ripping through the column so they can</p>
+<p>301<br>00:29:39,559 –&gt; 00:29:44,839<br>actually share these little fragments uh and stitch these query physical query plans of the compile</p>
+<p>302<br>00:29:44,839 –&gt; 00:29:50,039<br>query plans together from all possible you know customers so now for a given query that they</p>
+<p>303<br>00:29:50,039 –&gt; 00:29:55,240<br>never seen before if it has the same pattern of access methods and joins and other things as</p>
+<p>304<br>00:29:55,240 –&gt; 00:30:00,279<br>queries from another customer they just pull from the cogent cache and stitch together so that’s</p>
+<p>305<br>00:30:00,279 –&gt; 00:30:08,519<br>kind of cool all right so there another interesting system to talk about is uh IBM’s Leo the learning</p>
+<p>306<br>00:30:08,519 –&gt; 00:30:15,240<br>optimizer and so this is an example of where you have a feedback loop being used to uh improve the</p>
+<p>307<br>00:30:15,240 –&gt; 00:30:23,319<br>the the the accuracy of the cost models in the system i say the idea is that uh again if i i keep track</p>
+<p>308<br>00:30:23,319 –&gt; 00:30:28,359<br>of what the my cost model estimates were when i when i generated the query plan and then when i run it</p>
+<p>309<br>00:30:28,359 –&gt; 00:30:33,240<br>if i if i recognize that those estimates are way off i start recording information about what i’m</p>
+<p>310<br>00:30:33,240 –&gt; 00:30:39,799<br>seeing in the real data and then when my query completes i return the result back to the the user</p>
+<p>311<br>00:30:39,799 –&gt; 00:30:44,039<br>or the application of a question that could request the query but i also go update my cost model</p>
+<p>312<br>00:30:45,079 –&gt; 00:30:51,079<br>statistics uh with the new information that i’ve collected um so i bm’s Leo was it’s actually</p>
+<p>313<br>00:30:51,079 –&gt; 00:30:55,960<br>shipped in production in dbt2 today um but this is one of the the the other examples of a commercial</p>
+<p>314<br>00:30:56,039 –&gt; 00:31:04,279<br>system do applying one of these uh a depth query uh processing techniques all right so the</p>
+<p>315<br>00:31:05,960 –&gt; 00:31:12,759<br>the plan stitching stuff that we talked about or the virgin stuff is about fixing future invocations</p>
+<p>316<br>00:31:12,759 –&gt; 00:31:17,720<br>of a query uh to improve them based on the the results that i’m seeing when i when i actually</p>
+<p>317<br>00:31:17,720 –&gt; 00:31:23,319<br>execute my query but now we want to talk about how do we fix my query like if i invoke my SQL query</p>
+<p>318<br>00:31:23,399 –&gt; 00:31:28,359<br>and i determined that i have a bay of plan what do i do right how how can i fix that because i</p>
+<p>319<br>00:31:28,359 –&gt; 00:31:33,319<br>want to wait for the the next invocation i want to fix the one i have right now so i’m calling this</p>
+<p>320<br>00:31:33,319 –&gt; 00:31:38,359<br>the replaying the current invocation again the idea is that if i’ve determined that the observed</p>
+<p>321<br>00:31:38,359 –&gt; 00:31:44,759<br>behavior of the query plan as i’m executing it is way off or or divergent from what the estimated</p>
+<p>322<br>00:31:44,759 –&gt; 00:31:51,559<br>behavior was that the cost models uh produced then i can decide to potentially either stop the query</p>
+<p>323<br>00:31:52,279 –&gt; 00:31:57,399<br>and go back and generate a new plan or i can decide to maybe how much smile um</p>
+<p>324<br>00:31:58,919 –&gt; 00:32:06,200<br>uh recognize that i’ve already produced some work for me uh and keep that portion of the data</p>
+<p>325<br>00:32:06,200 –&gt; 00:32:10,519<br>that i’ve already processed and then return back to the optimizer and ask it to just just generate</p>
+<p>326<br>00:32:10,519 –&gt; 00:32:15,960<br>a sub plan so again the other just start off a scratch and you know you decide that continue with</p>
+<p>327<br>00:32:15,960 –&gt; 00:32:22,440<br>the same query plan that i have now is going to be worse than just starting over um obviously if</p>
+<p>328<br>00:32:22,440 –&gt; 00:32:26,600<br>you’re at the last two with it the last operator then it’s the bad idea just let it finish so</p>
+<p>329<br>00:32:26,600 –&gt; 00:32:31,480<br>striking right balance of this is difficult and then the other approach is determining that well</p>
+<p>330<br>00:32:31,480 –&gt; 00:32:37,319<br>i’m doing a hundred joins and i’ve already done one of them many keep that one that i have uh because</p>
+<p>331<br>00:32:37,319 –&gt; 00:32:42,680<br>that was expensive and then i’ll replan the ordering for the other 99 again the whole idea here is</p>
+<p>332<br>00:32:42,680 –&gt; 00:32:47,480<br>that you’re going back to the optimizer and saying hey generate generate me a new plan</p>
+<p>333<br>00:32:49,320 –&gt; 00:32:54,840<br>so let me give an example that something does something sort of similar to like this um so this</p>
+<p>334<br>00:32:54,840 –&gt; 00:33:02,440<br>is from a patchy quickstep quickstep was it or is a embedded analytical engines sort of similar to</p>
+<p>335<br>00:33:02,440 –&gt; 00:33:08,519<br>ductyb uh but i don’t think it’s supported sequel it came out of university with constant and then it’s</p>
+<p>336<br>00:33:08,519 –&gt; 00:33:15,559<br>been um it’s been turned over to the patchy foundation i think it’s been kicked out of the incubator</p>
+<p>337<br>00:33:15,559 –&gt; 00:33:18,759<br>program because i don’t think they’ve updated it recently i don’t know what’s going on with</p>
+<p>338<br>00:33:18,759 –&gt; 00:33:23,240<br>jignation as team um but i haven’t really seen any updates in a while but they had this really</p>
+<p>339<br>00:33:23,240 –&gt; 00:33:29,960<br>interesting approach called look ahead information passing where i can do some work at the beginning</p>
+<p>340<br>00:33:29,960 –&gt; 00:33:35,960<br>of my query and pass that along to other operators or other portions of my query plan and help</p>
+<p>341<br>00:33:35,960 –&gt; 00:33:43,079<br>you make a decision about uh what the right ordering is for for things up ahead so for this example</p>
+<p>342<br>00:33:43,079 –&gt; 00:33:49,319<br>say we have uh uh a simple data says three tables and so this would be a star schema so this</p>
+<p>343<br>00:33:49,319 –&gt; 00:33:53,880<br>this this approach only works for star schema we have a uh a fact table in the middle and then you</p>
+<p>344<br>00:33:53,880 –&gt; 00:34:00,200<br>have dimension tables coming out of it right so it’s not for arbitrary uh star schemas or arbitrary</p>
+<p>345<br>00:34:00,279 –&gt; 00:34:05,880<br>like tree tree based schemas so the way it is going to work is uh say this is my sequel query like</p>
+<p>346<br>00:34:05,880 –&gt; 00:34:10,599<br>this i’m doing a three-way join between the fact table and the two dimension tables so what i’m</p>
+<p>347<br>00:34:10,599 –&gt; 00:34:17,639<br>going to do is before i begin the uh before i start scanning the the fact table and start computing</p>
+<p>348<br>00:34:17,639 –&gt; 00:34:24,199<br>the hash tables hash tables for my join i’m going to scan through the dimension tables and generate</p>
+<p>349<br>00:34:24,199 –&gt; 00:34:29,159<br>a bloom filter we saw this similar technique being used when we talked about joins right this idea</p>
+<p>350<br>00:34:29,159 –&gt; 00:34:35,239<br>came from vector wise that you can generate a bloom filter and then pass it along to uh to the other</p>
+<p>351<br>00:34:35,239 –&gt; 00:34:41,879<br>side of the query plan so so that um maybe avoid a hash table probe and we receive this so the joins</p>
+<p>352<br>00:34:41,879 –&gt; 00:34:45,079<br>are going to be on the dimension tables the these are going to generate the hash tables and the fact</p>
+<p>353<br>00:34:45,079 –&gt; 00:34:48,920<br>table which is going to do a probe so i want to generate the bloom filter and then check the bloom</p>
+<p>354<br>00:34:48,920 –&gt; 00:34:53,559<br>filter to see whether the key i’m looking for can even exist in the hash table which is cheaper than</p>
+<p>355<br>00:34:53,559 –&gt; 00:34:57,719<br>doing than the hash table probe but what we’re going to do differently here is that we’re actually</p>
+<p>356<br>00:34:57,719 –&gt; 00:35:02,119<br>going to pass these bloom filters and when we pass it over here to the fact table we’re going to</p>
+<p>357<br>00:35:02,839 –&gt; 00:35:11,559<br>start uh do some sampling to determine the selectivity of the of the of the different of bloom filters</p>
+<p>358<br>00:35:11,559 –&gt; 00:35:18,199<br>for these different tables and then if we determine that well the second second second table here</p>
+<p>359<br>00:35:18,199 –&gt; 00:35:23,399<br>to meant the second dimension table is actually more selective than the first one then i want to</p>
+<p>360<br>00:35:23,400 –&gt; 00:35:31,559<br>reshuffle the um reshuffle my joins so that i do the the probe on this hash table first because i’m</p>
+<p>361<br>00:35:31,559 –&gt; 00:35:35,800<br>going to end up throwing away more tuples and we can do this before we actually you start running</p>
+<p>362<br>00:35:35,800 –&gt; 00:35:40,840<br>anything because we’ve already built the hash tables we generate the bloom filter and we can</p>
+<p>363<br>00:35:40,840 –&gt; 00:35:45,079<br>make the decision before we start scanning and doing the probe so i think this is a really</p>
+<p>364<br>00:35:45,079 –&gt; 00:35:49,320<br>interesting idea as far as you know quick step is the only one that does this and i i don’t know</p>
+<p>365<br>00:35:49,400 –&gt; 00:35:56,760<br>whether it actually made it into the own source version. The last uh adaptive query optimization</p>
+<p>366<br>00:35:56,760 –&gt; 00:36:03,080<br>techniques uh sort of or category you want to talk about is uh what i call sort of plan pivot points</p>
+<p>367<br>00:36:03,080 –&gt; 00:36:11,480<br>and the idea here is that um we want to introduce additional subplans in our query and then have a</p>
+<p>368<br>00:36:12,039 –&gt; 00:36:19,800<br>uh have a sort of special synthetic operator that we put into our query plan that allows us to pivot</p>
+<p>369<br>00:36:19,800 –&gt; 00:36:25,240<br>or switch which query you know which path in that query plan we want to do and the idea here is</p>
+<p>370<br>00:36:25,240 –&gt; 00:36:33,800<br>that we can put conditions in our in the switch operator or the the change plan operator that</p>
+<p>371<br>00:36:35,240 –&gt; 00:36:39,800<br>if we determine that our data looks one way we’ll go down one path if it looks another way we’ll</p>
+<p>372<br>00:36:39,800 –&gt; 00:36:43,960<br>will go down another uh the other path um it doesn’t have to be too it can be multiple ones</p>
+<p>373<br>00:36:44,680 –&gt; 00:36:48,600<br>so the sort of two most famous techniques for doing this are parametric optimization and</p>
+<p>374<br>00:36:48,600 –&gt; 00:36:52,200<br>proactive re-opposition again at a high level they’re going to work exactly the same way</p>
+<p>375<br>00:36:52,200 –&gt; 00:36:55,560<br>it’s just the sophistication of their technique is slightly different</p>
+<p>376<br>00:36:57,000 –&gt; 00:37:03,320<br>so parametric optimization was actually developed in the late 1980s uh in 1989 this actually came out</p>
+<p>377<br>00:37:03,320 –&gt; 00:37:08,200<br>of the volcano project again the same one that does the volcano uh query optimizer the volcano</p>
+<p>378<br>00:37:08,199 –&gt; 00:37:12,839<br>or iterator model they also did early work on adaptive query optimization which is again</p>
+<p>379<br>00:37:12,839 –&gt; 00:37:18,759<br>some same network is very influential so yeah as I said the idea is that for each pipeline and a</p>
+<p>380<br>00:37:18,759 –&gt; 00:37:23,879<br>query that we think uh that there’s different alternatives we’d have that would make a big performance</p>
+<p>381<br>00:37:23,879 –&gt; 00:37:29,399<br>difference will generate different subplans for them and then now in our query we’ll have this</p>
+<p>382<br>00:37:29,399 –&gt; 00:37:36,039<br>choose plan operator that basically has kind of a nif clause that says if the cardinality of the</p>
+<p>383<br>00:37:36,039 –&gt; 00:37:41,639<br>operator below me looks one way or it’s of a certain size then I want to choose the first plan</p>
+<p>384<br>00:37:41,639 –&gt; 00:37:47,639<br>if it looks another way then I’ll choose this other plan right and in this case here if I know that</p>
+<p>385<br>00:37:47,639 –&gt; 00:37:51,719<br>my data is really small then maybe I want to do a nestle loop join because that’s going to be</p>
+<p>386<br>00:37:51,719 –&gt; 00:37:58,440<br>cheaper than having to build a hash table and probe it um but if my data is really big then I maybe</p>
+<p>387<br>00:37:58,440 –&gt; 00:38:05,400<br>want to build a hash run right or do do the hash run so again I think this is actually a very</p>
+<p>388<br>00:38:05,400 –&gt; 00:38:10,920<br>interesting idea of course obviously the tricky thing is determining what this conditional uh</p>
+<p>389<br>00:38:10,920 –&gt; 00:38:18,039<br>this condition should be um and you know there’s it’s sort of through trial and error and as you</p>
+<p>390<br>00:38:18,039 –&gt; 00:38:22,920<br>develop it and it’s actually very dependent also on the on the hardware but the nice thing about</p>
+<p>391<br>00:38:22,920 –&gt; 00:38:27,880<br>this is like there’s nothing we end up like not having to go back to the optimizer and sort of</p>
+<p>392<br>00:38:27,880 –&gt; 00:38:33,960<br>replant everything um the and we don’t throw away any of the data that we’ve collected right so</p>
+<p>393<br>00:38:34,679 –&gt; 00:38:38,440<br>that we do this hash join and then we just determine whether we want to go down one path versus</p>
+<p>394<br>00:38:38,440 –&gt; 00:38:45,240<br>another a more recent sophisticated approach of this is called proactive re optimization and this</p>
+<p>395<br>00:38:45,240 –&gt; 00:38:51,559<br>is actually combining the ability to to go back to the optimizer and generate new plan as well as</p>
+<p>396<br>00:38:51,559 –&gt; 00:38:56,519<br>to tweak it in the same way we saw in in the previous example so they actually can do both</p>
+<p>397<br>00:38:57,079 –&gt; 00:39:02,280<br>and so at a high level it works like this so query shows up we generate through the optimizer</p>
+<p>398<br>00:39:02,280 –&gt; 00:39:07,560<br>and so we’ll generate different uh different switchable plans just like before but we’re also</p>
+<p>399<br>00:39:07,560 –&gt; 00:39:14,200<br>going to now we’re going to generate bounding boxes that allow us to to to determine whether the</p>
+<p>400<br>00:39:14,200 –&gt; 00:39:17,960<br>assumptions we’re making and our decisions about whether go down one path versus another</p>
+<p>401<br>00:39:17,960 –&gt; 00:39:23,640<br>we’re actually going to match up with reality right basically trying to uh put a balance on the</p>
+<p>402<br>00:39:23,640 –&gt; 00:39:29,800<br>uncertainty we’re seeing in the data as we run so now we start executing the query and just like</p>
+<p>403<br>00:39:29,800 –&gt; 00:39:34,120<br>before in in Leo and other techniques we execute query collects statistics about the data that</p>
+<p>404<br>00:39:34,120 –&gt; 00:39:39,560<br>we’re seeing for particular query and then we can switch the query plan just as we saw before</p>
+<p>405<br>00:39:39,560 –&gt; 00:39:44,280<br>if we determine that you know one plan path might be better than another but then if we also</p>
+<p>406<br>00:39:44,280 –&gt; 00:39:50,039<br>determine based on our if we’re sort of exceeding our estimations in our in our bounding box</p>
+<p>407<br>00:39:50,039 –&gt; 00:39:56,280<br>thresholds if we see that we’re way out of you know way out of um whack and our estimations are way</p>
+<p>408<br>00:39:56,280 –&gt; 00:40:01,800<br>off then we just go back and it can re optimize and then you can determine whether to to pin the</p>
+<p>409<br>00:40:01,800 –&gt; 00:40:05,560<br>portions of the query plan that you’ve already executed because you know they’re expensive or you</p>
+<p>410<br>00:40:05,560 –&gt; 00:40:12,280<br>can just throw everything away and start over so uh this is sort of getting a crash course on a</p>
+<p>411<br>00:40:12,280 –&gt; 00:40:19,960<br>data query optimization um the I actually really like this these techniques um and there’s for obvious</p>
+<p>412<br>00:40:19,960 –&gt; 00:40:25,080<br>reasons right like it doesn’t rely on getting it right at the very beginning like you can you can</p>
+<p>413<br>00:40:25,079 –&gt; 00:40:32,039<br>sort of correct yourself as as you actually run in query um so well again we’ll see a next class</p>
+<p>414<br>00:40:32,039 –&gt; 00:40:36,759<br>when we talk about cost models of how bad things can actually get um but the way you actually need</p>
+<p>415<br>00:40:36,759 –&gt; 00:40:41,159<br>to implement this is super important that it’s just not you know you you don’t want to implement your</p>
+<p>416<br>00:40:41,159 –&gt; 00:40:46,599<br>optimizer and your execution engine completely separately from each other it’s sort of a symbiotic</p>
+<p>417<br>00:40:46,599 –&gt; 00:40:52,199<br>relationship where you have to know what kind of strategies could be employed by the execution</p>
+<p>418<br>00:40:52,359 –&gt; 00:40:56,759<br>and the optimizer in terms of like switching pass or throwing weight intermediaries laws or not</p>
+<p>419<br>00:40:56,759 –&gt; 00:41:01,000<br>and then you build your optimizer or you build the optimizer around what your execution engine can</p>
+<p>420<br>00:41:01,000 –&gt; 00:41:08,839<br>can can actually do um so for this reason I think like the uh I think applying this technique for</p>
+<p>421<br>00:41:08,839 –&gt; 00:41:13,719<br>or using this technique with sort of this uh optimizer as a service like orca or calcite</p>
+<p>422<br>00:41:14,599 –&gt; 00:41:18,759<br>could actually be tricky because there’s different approaches for how you can actually support</p>
+<p>423<br>00:41:18,760 –&gt; 00:41:26,840<br>adaptive query execution in in the system itself so the in addition to having sort of more robust</p>
+<p>424<br>00:41:26,840 –&gt; 00:41:33,400<br>or more uh more sophisticated query optimizers all you know versus the open source one open source</p>
+<p>425<br>00:41:33,400 –&gt; 00:41:39,160<br>systems all the major database vendors now support this uh within the last actually mostly in the</p>
+<p>426<br>00:41:39,160 –&gt; 00:41:45,640<br>last three or four years like db2 had this Leo thing in early 2000s um but really in the last three</p>
+<p>427<br>00:41:45,639 –&gt; 00:41:51,719<br>years of both Oracle and SQL server and now Teradata also included the ability to do adaptive query</p>
+<p>428<br>00:41:51,719 –&gt; 00:41:56,759<br>optimization but the best my knowledge and postgres and my SQL uh simply can’t do this and none of</p>
+<p>429<br>00:41:56,759 –&gt; 00:42:01,159<br>the sort of the newer uh open source systems that have come around in the last decade support anything</p>
+<p>430<br>00:42:01,159 –&gt; 00:42:06,839<br>like this so all right so again this was just sort of the show you that you don’t have to build the</p>
+<p>431<br>00:42:06,839 –&gt; 00:42:11,239<br>optimizer the way we described it where you sort of plan once and run it there are techniques to</p>
+<p>432<br>00:42:11,239 –&gt; 00:42:16,359<br>actually modify the query was running and they get feedback from execution put it into the system</p>
+<p>433<br>00:42:16,359 –&gt; 00:42:23,879<br>tear what’s doing all right sorry um so next class we’ll then start discussing how uh</p>
+<p>434<br>00:42:23,879 –&gt; 00:42:28,039<br>how cost models work uh and we’ll see why they’re so bad okay</p>
+<p>435<br>00:42:41,559 –&gt; 00:42:46,679<br>and i’m able to see say now so i’m available no short with the trust you know what i’m i take off the cat</p>
+<p>436<br>00:42:46,679 –&gt; 00:42:51,639<br>my first contact on the bottle no but three in the freezer so i can kill it careful with the bottle baby</p>
+<p>437<br>00:42:51,639 –&gt; 00:42:56,039<br>we’ll slow fill it cause ain’t now if you say the pain i’ll sweat you drink it down with the</p>
+<p>438<br>00:42:56,039 –&gt; 00:43:01,239<br>guys little box head take back the pack of drugs you gon get your two same knives and drink it to the</p>
+<p>439<br>00:43:01,239 –&gt; 00:43:05,959<br>billy dance until it takes you down with the weird guys be a man to get a can of faith</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15721 P16S202415 QueryOptimizerImplementation3CMUAdvancedDatabaseSystems</div>
+      <div>http://example.com/2025/10/24/CMU15721 P16S202415-QueryOptimizerImplementation3CMUAdvancedDatabaseSystems/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15721%20P20S202420-DuckDBEmbeddedDatabaseSystemCMUAdvancedDatabaseSystems/" title="CMU15721 P20S202420 DuckDBEmbeddedDatabaseSystemCMUAdvancedDatabaseSystems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15721 P20S202420 DuckDBEmbeddedDatabaseSystemCMUAdvancedDatabaseSystems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15721%20P17S202417-GoogleBigQuery%E2%A7%B8DremelCMUAdvancedDatabaseSystems/" title="CMU15721 P17S202417 GoogleBigQuery⧸DremelCMUAdvancedDatabaseSystems">
+                        <span class="hidden-mobile">CMU15721 P17S202417 GoogleBigQuery⧸DremelCMUAdvancedDatabaseSystems</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

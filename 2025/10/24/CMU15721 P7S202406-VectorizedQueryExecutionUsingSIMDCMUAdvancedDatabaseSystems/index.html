@@ -1,0 +1,1292 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,000Carnegie Mellon University’s Advanced Database Systems courses 200:00:06,000 –&gt; 00:00:09,000filming front of the live studio audience. 300:00:09,000 –&gt; 00:00:11,0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15721 P7S202406 VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems">
+<meta property="og:url" content="http://example.com/2025/10/24/CMU15721%20P7S202406-VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,000Carnegie Mellon University’s Advanced Database Systems courses 200:00:06,000 –&gt; 00:00:09,000filming front of the live studio audience. 300:00:09,000 –&gt; 00:00:11,0">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-24T11:57:41.750Z">
+<meta property="article:modified_time" content="2025-10-24T12:06:28.549Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15721 P7S202406 VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15721 P7S202406 VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-24 19:57" pubdate>
+          2025年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          69 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15721 P7S202406 VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,000<br>Carnegie Mellon University’s Advanced Database Systems courses</p>
+<p>2<br>00:00:06,000 –&gt; 00:00:09,000<br>filming front of the live studio audience.</p>
+<p>3<br>00:00:09,000 –&gt; 00:00:11,000<br>I don’t want to know what kind of club.</p>
+<p>4<br>00:00:11,000 –&gt; 00:00:13,000<br>I just want to know.</p>
+<p>5<br>00:00:13,000 –&gt; 00:00:18,000<br>So today we’re going to talk about vectorized career execution.</p>
+<p>6<br>00:00:18,000 –&gt; 00:00:21,000<br>Again, this has been the thing we’ve been leading up to the entire semester.</p>
+<p>7<br>00:00:21,000 –&gt; 00:00:25,000<br>Like, we’ve been saying this is the one of the ways that a modern</p>
+<p>8<br>00:00:25,000 –&gt; 00:00:27,000<br>OLAP system is going to get good career performance.</p>
+<p>9<br>00:00:27,000 –&gt; 00:00:31,000<br>We’ll see why and why and why it doesn’t always do this.</p>
+<p>10<br>00:00:31,000 –&gt; 00:00:35,000<br>So last class we talked about how to take a query plan,</p>
+<p>11<br>00:00:35,000 –&gt; 00:00:38,000<br>divide it up into pipelines and run them in parallel.</p>
+<p>12<br>00:00:38,000 –&gt; 00:00:42,000<br>So this is a method of task parallelization.</p>
+<p>13<br>00:00:42,000 –&gt; 00:00:47,000<br>So how to take a query plan, bring up the task, and run those in parallel.</p>
+<p>14<br>00:00:47,000 –&gt; 00:00:50,000<br>We haven’t said how to schedule them and where to schedule them.</p>
+<p>15<br>00:00:50,000 –&gt; 00:00:54,000<br>That’ll be in next week.</p>
+<p>16<br>00:00:55,000 –&gt; 00:00:57,000<br>But at a high level we understand we could run things in parallel.</p>
+<p>17<br>00:00:57,000 –&gt; 00:01:00,000<br>We’d be called less things with exchange operators.</p>
+<p>18<br>00:01:00,000 –&gt; 00:01:03,000<br>And then we also discussed how the davis system would actually evaluate</p>
+<p>19<br>00:01:03,000 –&gt; 00:01:08,000<br>any kind of expressions and wear clause or a join clause.</p>
+<p>20<br>00:01:08,000 –&gt; 00:01:13,000<br>And we saw this as being a sort of preview to query compilation stuff</p>
+<p>21<br>00:01:13,000 –&gt; 00:01:17,000<br>that we’ll talk about on or just a non-compliance in the code generation stuff</p>
+<p>22<br>00:01:17,000 –&gt; 00:01:20,000<br>we’ll talk about on Wednesday this week.</p>
+<p>23<br>00:01:20,000 –&gt; 00:01:23,000<br>And then we also introduced the idea of query at adaptivity.</p>
+<p>24<br>00:01:23,000 –&gt; 00:01:26,000<br>We’re not going to push in this too much just yet.</p>
+<p>25<br>00:01:26,000 –&gt; 00:01:29,000<br>But it’s the idea that the optimizer spits out a query plan</p>
+<p>26<br>00:01:29,000 –&gt; 00:01:32,000<br>and that it run time while the davis system is executing that query,</p>
+<p>27<br>00:01:32,000 –&gt; 00:01:35,000<br>it can decide whether that query plan was a good idea or not</p>
+<p>28<br>00:01:35,000 –&gt; 00:01:41,000<br>and can make some changes either to change the ordering that it checks predicates,</p>
+<p>29<br>00:01:41,000 –&gt; 00:01:44,000<br>what code path it would use to do certain things.</p>
+<p>30<br>00:01:44,000 –&gt; 00:01:47,000<br>But then we’ll see later in the semester how to do bigger things</p>
+<p>31<br>00:01:47,000 –&gt; 00:01:51,000<br>like change the actual query plan on the fly while we’re running.</p>
+<p>32<br>00:01:52,000 –&gt; 00:01:59,000<br>So today’s task or today’s class is going to be about vectorization.</p>
+<p>33<br>00:01:59,000 –&gt; 00:02:03,000<br>And the idea here is that we want to take the scalar algorithms that we discussed</p>
+<p>34<br>00:02:03,000 –&gt; 00:02:09,000<br>in the introduction class where we’re going to operate on a single tuple at a time</p>
+<p>35<br>00:02:09,000 –&gt; 00:02:12,000<br>and in some cases even a single operand at a time.</p>
+<p>36<br>00:02:12,000 –&gt; 00:02:18,000<br>And we’re going to convert them into a vectorized form and rely on</p>
+<p>37<br>00:02:18,000 –&gt; 00:02:24,000<br>simd instructions that the CPUs provide for us to be able to run multiple operations</p>
+<p>38<br>00:02:24,000 –&gt; 00:02:30,000<br>within an operator or expression, whatever we’re trying to do, at the same time.</p>
+<p>39<br>00:02:30,000 –&gt; 00:02:34,000<br>And so this is to be notion as data parallelization that we’re going to have</p>
+<p>40<br>00:02:34,000 –&gt; 00:02:39,000<br>multiple computations occurring at the same time for multiple pieces of data.</p>
+<p>41<br>00:02:39,000 –&gt; 00:02:44,000<br>And then simd is going to achieve this.</p>
+<p>42<br>00:02:45,000 –&gt; 00:02:50,000<br>So why does this matter? Well, again, the same way that scaling out across multiple threads,</p>
+<p>43<br>00:02:50,000 –&gt; 00:02:54,000<br>processes or nodes, it’s going to give us additional improvement performance</p>
+<p>44<br>00:02:54,000 –&gt; 00:02:58,000<br>because we’re not restricted to what a single thread on a single query can do.</p>
+<p>45<br>00:02:58,000 –&gt; 00:03:03,000<br>In some cases, we can get even bigger speed up because of simd because that also can run parallel</p>
+<p>46<br>00:03:03,000 –&gt; 00:03:09,000<br>across multiple cores. And then the speed up we’ll get will be multiplicative.</p>
+<p>47<br>00:03:09,000 –&gt; 00:03:13,000<br>So every core we can run have a data parallel algorithm and across all those cores</p>
+<p>48<br>00:03:14,000 –&gt; 00:03:18,000<br>they’re all running at the same time. So let’s say that I’m on a machine that has 32 cores,</p>
+<p>49<br>00:03:18,000 –&gt; 00:03:25,000<br>assuming I can scale out perfectly linearly, then I can divide my task up into 32 discrete tasks.</p>
+<p>50<br>00:03:25,000 –&gt; 00:03:31,000<br>So that’s a 32x speed up. And then if I can have a portion of that computation,</p>
+<p>51<br>00:03:31,000 –&gt; 00:03:37,000<br>knowing how we get 2ples in and out for now, that can run on using simd and it can do</p>
+<p>52<br>00:03:38,000 –&gt; 00:03:44,000<br>process 4 2ples at a time. So then it’s 32x times 4x. So in theory, for the scenario here,</p>
+<p>53<br>00:03:44,000 –&gt; 00:03:49,000<br>we could get up to 128x improvement in performance. And that’s just on a single node.</p>
+<p>54<br>00:03:49,000 –&gt; 00:03:54,000<br>And that’s pretty significant. Anything that’s at least an order magnitude is a huge win.</p>
+<p>55<br>00:03:54,000 –&gt; 00:04:01,000<br>2 orders magnitude is the unheard of. Now, we’re never going to come close to this because as I was saying,</p>
+<p>56<br>00:04:01,000 –&gt; 00:04:04,000<br>there’s a bunch of stuff we have to do to get things in and out of the registers,</p>
+<p>57<br>00:04:05,000 –&gt; 00:04:08,000<br>in and out, through operators, copying things from disks, anything over the network.</p>
+<p>58<br>00:04:08,000 –&gt; 00:04:12,000<br>Like this, we’re never even going to come close. And in some best cases scenario,</p>
+<p>59<br>00:04:12,000 –&gt; 00:04:18,000<br>when we look at some vectorized algorithms, we might get 1.4x speed up if we’re lucky.</p>
+<p>60<br>00:04:22,000 –&gt; 00:04:26,000<br>But that doesn’t mean we shouldn’t be doing this. So we covered this, I think early in the semester,</p>
+<p>61<br>00:04:26,000 –&gt; 00:04:30,000<br>we did a quick preview of what simd actually is. So I don’t want to spend too much time in it.</p>
+<p>62<br>00:04:31,000 –&gt; 00:04:36,000<br>Again, the idea goes back to this notion of this classification of what these instructions are actually going to be,</p>
+<p>63<br>00:04:36,000 –&gt; 00:04:42,000<br>goes back to the 1960s. There was this thing called Flynn’s taxonomy where he described what system instructions are,</p>
+<p>64<br>00:04:42,000 –&gt; 00:04:47,000<br>simd, and I think memd as well. And I think at the time they’re all theoretical,</p>
+<p>65<br>00:04:47,000 –&gt; 00:04:51,000<br>like you could have these things in the 60s, but obviously now in the 2020s,</p>
+<p>66<br>00:04:51,000 –&gt; 00:04:58,000<br>these things have been around for quite a while. So we can exploit them and use them inside of our database systems.</p>
+<p>67<br>00:04:59,000 –&gt; 00:05:07,000<br>So simd is going to be a class of CPU instructions that can allow our processor to do the same operation</p>
+<p>68<br>00:05:07,000 –&gt; 00:05:13,000<br>on multiple pieces of data at the same time. And the way this is going to work is that we’re going to rely on these special simd registers</p>
+<p>69<br>00:05:13,000 –&gt; 00:05:17,000<br>as a way to get things into these instructions and out of these instructions.</p>
+<p>70<br>00:05:17,000 –&gt; 00:05:22,000<br>And the overall goal as we go through is that we want to keep things out in the simd registers</p>
+<p>71<br>00:05:22,000 –&gt; 00:05:25,000<br>for as long as possible, do as much processing as we can.</p>
+<p>72<br>00:05:26,000 –&gt; 00:05:31,000<br>And then Papy you guys read talked about because AVX512, we can achieve this now better than we used to.</p>
+<p>73<br>00:05:31,000 –&gt; 00:05:37,000<br>You want to keep things out in the simd registers as long as possible and only bring it out to the CPU cache or memory</p>
+<p>74<br>00:05:37,000 –&gt; 00:05:41,000<br>when we’re done with whatever it is we’re going to do.</p>
+<p>75<br>00:05:41,000 –&gt; 00:05:49,000<br>So we’re going to focus most of this lecture on AVX512, but this is showing here that every other ISA has their own variants of them.</p>
+<p>76<br>00:05:50,000 –&gt; 00:05:55,000<br>And in the case of Intel, it goes back to the 1990s when they first put up these in the next stuff.</p>
+<p>77<br>00:05:59,000 –&gt; 00:06:01,000<br>Question is PowerPC still a thing?</p>
+<p>78<br>00:06:03,000 –&gt; 00:06:05,000<br>I mean, what do you mean still a thing?</p>
+<p>79<br>00:06:05,000 –&gt; 00:06:07,000<br>Like does it exist? Yes, or people paying a lot of money?</p>
+<p>80<br>00:06:07,000 –&gt; 00:06:12,000<br>Oh, what’s the market share of PowerPC for databases? I mean pretty small.</p>
+<p>81<br>00:06:13,000 –&gt; 00:06:21,000<br>But there’s enough legacy software that’s running on some really old systems that we need to run the PowerPC.</p>
+<p>82<br>00:06:21,000 –&gt; 00:06:27,000<br>I mean, I am asked to still like the number one, I think about NLN this too.</p>
+<p>83<br>00:06:27,000 –&gt; 00:06:32,000<br>I saw some reports saying IBM makes most of its money on from IMS more than any other piece of software.</p>
+<p>84<br>00:06:32,000 –&gt; 00:06:34,000<br>And they invented that for the Apollo Moon mission in the 60s.</p>
+<p>85<br>00:06:34,000 –&gt; 00:06:37,000<br>Because there’s all these banks that are still running on this stuff.</p>
+<p>86<br>00:06:38,000 –&gt; 00:06:40,000<br>Again, if it’s mission critical, you don’t want to mess around.</p>
+<p>87<br>00:06:40,000 –&gt; 00:06:43,000<br>Like, let me just switch to something else.</p>
+<p>88<br>00:06:43,000 –&gt; 00:06:46,000<br>Because there’s the major engineering effort.</p>
+<p>89<br>00:06:46,000 –&gt; 00:06:48,000<br>And if it fails, then your business is screwed.</p>
+<p>90<br>00:06:48,000 –&gt; 00:06:55,000<br>PowerPC has some other advantages over X86 for a variety of things.</p>
+<p>91<br>00:06:55,000 –&gt; 00:06:58,000<br>Yeah, if you were to go back and do start with today, would you use PowerPC?</p>
+<p>92<br>00:06:58,000 –&gt; 00:06:59,000<br>No.</p>
+<p>93<br>00:06:59,000 –&gt; 00:07:02,000<br>I mean, you can’t get it from any of the cloud vendors.</p>
+<p>94<br>00:07:08,000 –&gt; 00:07:10,000<br>Right? Yes.</p>
+<p>95<br>00:07:10,000 –&gt; 00:07:18,000<br>I mean, so again, this is just saying that these, there’s other categories, I mean, not remember the categories,</p>
+<p>96<br>00:07:18,000 –&gt; 00:07:24,000<br>or releases of SIMD instructions for different platforms, the ISAs, not just the AVX stuff.</p>
+<p>97<br>00:07:24,000 –&gt; 00:07:30,000<br>But again, we’re going to focus on this because this is, when they re-intil put this out,</p>
+<p>98<br>00:07:30,000 –&gt; 00:07:34,000<br>they added some additional things that make it better for database systems in a way that we didn’t have before.</p>
+<p>99<br>00:07:34,000 –&gt; 00:07:37,000<br>Or we didn’t sort of emulate stuff ourselves.</p>
+<p>100<br>00:07:37,000 –&gt; 00:07:39,000<br>So this is the example that I showed before.</p>
+<p>101<br>00:07:39,000 –&gt; 00:07:41,000<br>We wanted to do a simple operation.</p>
+<p>102<br>00:07:41,000 –&gt; 00:07:46,000<br>Take two matrices, X plus Y, add them together, and produce the new matrix, Z.</p>
+<p>103<br>00:07:46,000 –&gt; 00:07:51,000<br>So again, if you’re going to write this with scalar code or using system instructions,</p>
+<p>104<br>00:07:51,000 –&gt; 00:07:57,000<br>you just have a for loop that iterates over every element of X and I, and then write out the Z.</p>
+<p>105<br>00:07:57,000 –&gt; 00:08:03,000<br>So your linearity is going through the each element of the two arrays, one by one,</p>
+<p>106<br>00:08:03,000 –&gt; 00:08:10,000<br>running one instruction, adding together, and then one store instruction to put it out into the output buffer Z.</p>
+<p>107<br>00:08:10,000 –&gt; 00:08:16,000<br>And, you know, it’s like a pilot going to be smart about this, so it can unroll it, right, to speed things up.</p>
+<p>108<br>00:08:16,000 –&gt; 00:08:21,000<br>But for now, at the end of the day, it’s still going to execute a single instruction to add two numbers together,</p>
+<p>109<br>00:08:21,000 –&gt; 00:08:25,000<br>to write it out to another register, or another read out memory.</p>
+<p>110<br>00:08:25,000 –&gt; 00:08:31,000<br>So SIMD, what we can do is we can take a vector of values,</p>
+<p>111<br>00:08:31,000 –&gt; 00:08:37,000<br>and assuming here we’re doing 32 bit numbers for elements, so 120 bit bit register,</p>
+<p>112<br>00:08:37,000 –&gt; 00:08:41,000<br>can A, V, X, 5, 12, it’s going to be 512 bit registers, so we can put more things in there.</p>
+<p>113<br>00:08:41,000 –&gt; 00:08:48,000<br>So now it’s going to be one SIMD instruction to add up the offsets, the matching offsets across the two registers,</p>
+<p>114<br>00:08:48,000 –&gt; 00:08:50,000<br>and produce a single output.</p>
+<p>115<br>00:08:50,000 –&gt; 00:08:52,000<br>And then do the same thing for the other one, add it together and produce the output.</p>
+<p>116<br>00:08:52,000 –&gt; 00:08:59,000<br>So what took before eight instructions to do eight addition instructions, now we can do it down to two.</p>
+<p>117<br>00:08:59,000 –&gt; 00:09:03,000<br>Right? This is why this is going to be important, obviously for databases,</p>
+<p>118<br>00:09:03,000 –&gt; 00:09:11,000<br>if we’re trying to rip through columns and columns of billions of tuples, we want to be able to take advantage of this.</p>
+<p>119<br>00:09:11,000 –&gt; 00:09:17,000<br>So there’s two type of vectorization we can have in our system, in our data system.</p>
+<p>120<br>00:09:17,000 –&gt; 00:09:23,000<br>The first is what I just showed, or the first would be what is called horizontal vectorization,</p>
+<p>121<br>00:09:23,000 –&gt; 00:09:28,000<br>where the idea is that you’re going to have some instruction that’s going to take all the elements within a SIMD register,</p>
+<p>122<br>00:09:28,000 –&gt; 00:09:30,000<br>and then produce a single scalar output.</p>
+<p>123<br>00:09:30,000 –&gt; 00:09:36,000<br>Like if I want to get the summation of all the elements within this four-lane register here,</p>
+<p>124<br>00:09:36,000 –&gt; 00:09:42,000<br>there’s some instruction that can do that, and that produces some scalar output there.</p>
+<p>125<br>00:09:42,000 –&gt; 00:09:48,000<br>Early CPUs don’t support this, it’s mostly found in the newer CPUs that can do, or at least on the X86,</p>
+<p>126<br>00:09:48,000 –&gt; 00:09:53,000<br>like a new AVX2, which is the precursor to AVX512.</p>
+<p>127<br>00:09:53,000 –&gt; 00:09:56,000<br>But this is not going to be entirely useful for the stuff we want to do in databases.</p>
+<p>128<br>00:09:56,000 –&gt; 00:10:02,000<br>The one we care about is vertical vectorization, where the idea, again, is that we have two registers,</p>
+<p>129<br>00:10:02,000 –&gt; 00:10:06,000<br>and they’re lined up across lanes, so assuming the values are all fixed length at the same size,</p>
+<p>130<br>00:10:06,000 –&gt; 00:10:12,000<br>and we just need one instruction to do some operation on the combination of the two,</p>
+<p>131<br>00:10:12,000 –&gt; 00:10:16,000<br>and then produce a new output.</p>
+<p>132<br>00:10:16,000 –&gt; 00:10:24,000<br>So this is way more common. This is the technique we’re mostly going to be using in our database of going forward,</p>
+<p>133<br>00:10:24,000 –&gt; 00:10:28,000<br>but again, you could do this as well.</p>
+<p>134<br>00:10:30,000 –&gt; 00:10:34,000<br>Actually, yeah, so I think the stop one here, I think this shows, like, think of like a summation,</p>
+<p>135<br>00:10:34,000 –&gt; 00:10:41,000<br>if I want to add up all the values in the column, you could use horizontal vectorization for that.</p>
+<p>136<br>00:10:41,000 –&gt; 00:10:43,000<br>So this is a table just showing that, yes.</p>
+<p>137<br>00:10:43,000 –&gt; 00:10:51,000<br>I know for a population, for a number of vectors, it’s like using any field.</p>
+<p>138<br>00:10:51,000 –&gt; 00:10:53,000<br>Is it using assessment? I think so, yes.</p>
+<p>139<br>00:10:53,000 –&gt; 00:11:00,000<br>I think we have an example of clickouts, clickouts is doing this for summation.</p>
+<p>140<br>00:11:00,000 –&gt; 00:11:06,000<br>So this is the table showing the history of the different simile extensions that Intel has put out over the years.</p>
+<p>141<br>00:11:06,000 –&gt; 00:11:10,000<br>And again, the one we care about here is the bottom that came out in 2017, AVX512.</p>
+<p>142<br>00:11:11,000 –&gt; 00:11:19,000<br>So the registers are going to be 5 on 12 bits. It’s going to support integers, single precision and double precision floating numbers.</p>
+<p>143<br>00:11:19,000 –&gt; 00:11:32,000<br>And then the big one is going to be that you read in the papers that they’re going to support these permutations or predicate masks that allow us to keep track of or specify which lane should an operation actually apply on.</p>
+<p>144<br>00:11:32,000 –&gt; 00:11:39,000<br>And prior to that, this coming out in AVX512, this is something that the database is going to have to do themselves by basically using a set of data.</p>
+<p>145<br>00:11:39,000 –&gt; 00:11:49,000<br>And then using a separate register to store like bitmask like that, where it’s now in the case of the XF12, there’s explicit registers to do those things.</p>
+<p>146<br>00:11:49,000 –&gt; 00:11:57,000<br>So this link here will take you to a great presentation by James Nandiris. He was an Intel fellow from any 2017 or so.</p>
+<p>147<br>00:11:57,000 –&gt; 00:12:02,000<br>But he gives a good history of all these things and why this matter and what some of the cool things in AVX512.</p>
+<p>148<br>00:12:02,000 –&gt; 00:12:07,000<br>So if you’re interested in this kind of stuff, you can go check it out.</p>
+<p>149<br>00:12:07,000 –&gt; 00:12:14,000<br>So as I said, AVX512 is the one that we care about. It’s not to say that people weren’t doing vectorization and data this is before this.</p>
+<p>150<br>00:12:14,000 –&gt; 00:12:18,000<br>It just makes everything a lot easier.</p>
+<p>151<br>00:12:18,000 –&gt; 00:12:29,000<br>And so in addition to having the new instructions and new data conversions and scatter operations, which is what we’ll cover in a second, the permutations is the big one.</p>
+<p>152<br>00:12:29,000 –&gt; 00:12:38,000<br>So I’ll be able to say here’s some bitmask that says I want certain operations, the operation I’m going to apply to only occur at these different lanes.</p>
+<p>153<br>00:12:38,000 –&gt; 00:12:51,000<br>And so the downside though is that unlike in AVX2 and SSE234, like in these earlier extensions to X86 or SIMD, they were all all or nothing.</p>
+<p>154<br>00:12:51,000 –&gt; 00:12:58,000<br>Meaning like if I said my CPU is supported AVX2, I got all the capabilities and instructions that I would expect to have in AVX2.</p>
+<p>155<br>00:12:58,000 –&gt; 00:13:04,000<br>For whatever reason, it’s an Intel thing that when AVX512 came out, they broke it up into groups.</p>
+<p>156<br>00:13:04,000 –&gt; 00:13:11,000<br>So now when you buy a processor, you have to go check the CPU flags to see what instructions you actually support.</p>
+<p>157<br>00:13:11,000 –&gt; 00:13:20,000<br>And we’ll see an example again from Clickhouse. Well, they’ll have if blocks in their code that says, am I compiling to AVX512 with this group or that group versus that group?</p>
+<p>158<br>00:13:20,000 –&gt; 00:13:30,000<br>Because they’ll have different instructions and different capabilities. So to give you an idea of how confusing it is, like this is from Wikipedia, they’re just showing all the different groups you could have for AVX512.</p>
+<p>159<br>00:13:30,000 –&gt; 00:13:39,000<br>And then which iterations of the ISA going back to the Xeon 5 actually supports these. And as you can see, not everyone has everything.</p>
+<p>160<br>00:13:39,000 –&gt; 00:13:46,000<br>There’s another chart here from I think one of the papers that again, they’re showing you how these things have been sort of added over time.</p>
+<p>161<br>00:13:46,000 –&gt; 00:13:54,000<br>But then now within, well, here’s a little something that AVX512, but like there’s newer versions that don’t have things that are really versatile.</p>
+<p>162<br>00:13:54,000 –&gt; 00:14:00,000<br>So even though you say you support 8X512, the system has to go check what actually it has.</p>
+<p>163<br>00:14:00,000 –&gt; 00:14:09,000<br>Again, we’ll look at a Clickhouse and see them in a second. They have if clauses in their source code that figures out what CPU capabilities are available.</p>
+<p>164<br>00:14:09,000 –&gt; 00:14:17,000<br>So again, there’ll be other issues with AVX512 in a second where I won’t spoil it just yet.</p>
+<p>165<br>00:14:17,000 –&gt; 00:14:24,000<br>So even though I’m going to spend a little time with the hey, great, you can do this. If you do this, the back of your mind realize like, you may not always be able to do this.</p>
+<p>166<br>00:14:24,000 –&gt; 00:14:30,000<br>In some cases, do you actually run slower if you use the X512 when I’ll explain why in a second?</p>
+<p>167<br>00:14:30,000 –&gt; 00:14:35,000<br>All right, so how do we actually want to get, how do you want to actually use this?</p>
+<p>168<br>00:14:35,000 –&gt; 00:14:42,000<br>There’s basic three approaches. Do I want the compiler to figure out what can vectorize? Do I want to get hints to the compiler to say how to vectorize things?</p>
+<p>169<br>00:14:42,000 –&gt; 00:14:46,000<br>Or do I want to do the vectorization myself?</p>
+<p>170<br>00:14:46,000 –&gt; 00:14:53,000<br>And so the way to think about these three approaches is that the top one is the easiest to use because you don’t want to think about it in some ways.</p>
+<p>171<br>00:14:53,000 –&gt; 00:15:00,000<br>Sometimes you do, sometimes you don’t. And just hope the compiler can figure out how to compile things and vectorize your algorithm.</p>
+<p>172<br>00:15:00,000 –&gt; 00:15:12,000<br>And if you design your database system in such a way that you break things up into small and up chunks that are looping over arrays, then the compiler could potentially be able to figure it out. But not always.</p>
+<p>173<br>00:15:12,000 –&gt; 00:15:18,000<br>The compiler hints at this giving a little nudge to the compiler say hey look, you really can vectorize this, I think you should, and hope it tries to figure it out.</p>
+<p>174<br>00:15:18,000 –&gt; 00:15:29,000<br>And then the last one is like you write the actual instructions in your code to actually invoke the exact simm-y instructions you want.</p>
+<p>175<br>00:15:29,000 –&gt; 00:15:32,000<br>So let’s go through these one by one.</p>
+<p>176<br>00:15:32,000 –&gt; 00:15:42,000<br>So they said on actualization the idea is that the compiler can potentially identify when certain instructions inside of a tight loop could be rewritten as vectorized instructions.</p>
+<p>177<br>00:15:42,000 –&gt; 00:15:54,000<br>And so my example that I shouldn’t very beginning that iterating over in array to arrays and adding them together, that’s something obviously that the compiler should be able to figure out.</p>
+<p>178<br>00:15:54,000 –&gt; 00:16:05,000<br>So this is only going to work for simple loops. And in some cases in database systems it doesn’t always pan out. This has gotten better than the GCC and Clang.</p>
+<p>179<br>00:16:05,000 –&gt; 00:16:09,000<br>And certainly ICC have gotten a lot better where it can start figuring these things out without hints.</p>
+<p>180<br>00:16:09,000 –&gt; 00:16:18,000<br>But maybe five years ago this was an issue. And obviously if you don’t have simm-y instructions in your CPU that you’re compiling on, the compiler is not going to try to use it.</p>
+<p>181<br>00:16:18,000 –&gt; 00:16:25,000<br>So if you say you compile on your laptop that doesn’t have 8x512 you take that binary, plop it up on your enterprise grade, Xeon server.</p>
+<p>182<br>00:16:25,000 –&gt; 00:16:30,000<br>Even though the Xeon server is going to have 512 it was compiled without it at the time because it’s a pile on your laptop.</p>
+<p>183<br>00:16:30,000 –&gt; 00:16:35,000<br>So you’ve got to be mindful of where you’re actually compiling and running things.</p>
+<p>184<br>00:16:35,000 –&gt; 00:16:38,000<br>So this is our example that we have before.</p>
+<p>185<br>00:16:38,000 –&gt; 00:16:47,000<br>So that’s where we’re now going to pass in pointers to erase x, y, and z. And we’re going to loop over them by some max value and add them together.</p>
+<p>186<br>00:16:47,000 –&gt; 00:16:59,000<br>Right? Can we auto-vectorize this? She’s taking her head yes. Raise your hand if you think yes. Raise your hand if you say no. Why no?</p>
+<p>187<br>00:16:59,000 –&gt; 00:17:05,000<br>Well he says need to restrict. What does that mean? Why? Why?</p>
+<p>188<br>00:17:05,000 –&gt; 00:17:09,000<br>Because it’s a pointer that is overclassed.</p>
+<p>189<br>00:17:09,000 –&gt; 00:17:18,000<br>Yes. So if the pointer is overlapped then there’s dependency. So again, think of compile time. Do I know what the pointers of x, y, and z are pointing to?</p>
+<p>190<br>00:17:18,000 –&gt; 00:17:26,000<br>No. Right? That’s a runtime thing. So in this case here the compiler will say hey, x, y, and z could actually be pointing to the same thing.</p>
+<p>191<br>00:17:26,000 –&gt; 00:17:48,000<br>So I can’t vectorize this because let’s say that z is just one byte more than the memory address of x. So now if I’m ripping through my code at runtime in the scalar version for one iteration of x, run the iteration of the loop, I’ll overwrite what the next value should be.</p>
+<p>192<br>00:17:48,000 –&gt; 00:18:01,000<br>Right? And so now in the next iteration I’ll get a different computation. But if I vectorize that with simd, then when I do the computation of the second iteration, it won’t see the effects of the first iteration. So it actually produce a different result.</p>
+<p>193<br>00:18:01,000 –&gt; 00:18:15,000<br>So the compiler is me very, very careful to make sure that if it vectorizes your code, it doesn’t produce something that generates a different value for a different computation than it would have a scalar code.</p>
+<p>194<br>00:18:15,000 –&gt; 00:18:36,000<br>Yes. So can the compiler do loop-on-roading? Can’t the compiler do loop-on-rolling then auto vectorize that? But again, you don’t know what z is actually pointing to potentially. Right?</p>
+<p>195<br>00:18:36,000 –&gt; 00:18:49,000<br>So it’s going to be very conservative. It doesn’t want to avoid any kind of problems. So in this case here, it’s going to say, I don’t know what x, y, and z are actually pointing to. So I can’t vectorize this. So his, sorry, question.</p>
+<p>196<br>00:18:49,000 –&gt; 00:18:58,000<br>For us, we actually can say that. Well, he said the same thing as for us. You can’t do that. Yes. We’ll get that in a second.</p>
+<p>197<br>00:18:58,000 –&gt; 00:19:18,000<br>We’re in c++ cLan. All right. So the, he said, Patrick said, oh, you could use the shikki word. And that’s an example of a compiler hint. So that’s, it’s we as the programmer can tell the compiler something about our code to make it more like a compiler.</p>
+<p>198<br>00:19:18,000 –&gt; 00:19:31,000<br>To make it more likely to try to auto vectorize something. And so the, the shikki word to see in a second, that’s an example of giving explicit information about memory locations to say these things can’t overlap. They’re not going to change.</p>
+<p>199<br>00:19:31,000 –&gt; 00:19:46,000<br>While this loop is running, therefore you can auto vectorize it. They more, a more brute force approach. You just tell the compiler, hey, turn off any checks for dependencies, really, this thing here. Right? And just vectorize it. Trust me. Like, you know, driving without the seat belt. All right.</p>
+<p>200<br>00:19:46,000 –&gt; 00:19:57,000<br>So going back to function before, as he said, if you add the shikki word, which is in c99, but it’s not in the seat of the full standard, but it pretty much every c++ compiler supports it.</p>
+<p>201<br>00:19:57,000 –&gt; 00:20:08,000<br>Right. You add the shikki word, and that’s telling you that these arrays are going to be distinct locations. That were the, the, the, it’s, for the lifetime of the pointer, they’re not going to change.</p>
+<p>202<br>00:20:08,000 –&gt; 00:20:15,000<br>So, at least within this function. So therefore, it’s, it knows that it’s safe to actually vectorize this. So this approach is, is widely used.</p>
+<p>203<br>00:20:15,000 –&gt; 00:20:22,000<br>Like, so if you go looking like it in duck DB, you just search for restrict, and then in c++, the, it’s underscore underscore restrict.</p>
+<p>204<br>00:20:22,000 –&gt; 00:20:27,000<br>So you see all these functions are set up to do this kind of stuff. Right.</p>
+<p>205<br>00:20:27,000 –&gt; 00:20:36,000<br>And the goal here is that the, you know, duck DB wants the compiler to figure out how to auto vectorize this. So it’s passing that hint to, hint to it.</p>
+<p>206<br>00:20:36,000 –&gt; 00:20:42,000<br>The point also to here, you can see sort of two versions of the, of doing this check here, right.</p>
+<p>207<br>00:20:42,000 –&gt; 00:20:51,000<br>There’s the, is, is all the bit mask I’m getting, is everything, is that, if everything is not valid, then I have to check my bit mask to see whether it’s valid.</p>
+<p>208<br>00:20:51,000 –&gt; 00:21:00,000<br>If I know everything is valid, then I can skip that extra check. Right. So that’s, we saw that sort of technique with, um, checking for nulls with, with Velocs. Right.</p>
+<p>209<br>00:21:00,000 –&gt; 00:21:07,000<br>So you know there’s a conditional here. It’s worth it not to do that additional check on rows.</p>
+<p>210<br>00:21:07,000 –&gt; 00:21:17,000<br>This is a click house. Click house does the same thing up above. So this is to do a, an aggregate, some computation, which I think would be horizontal vectorization.</p>
+<p>211<br>00:21:17,000 –&gt; 00:21:33,000<br>Again, you see this underscore underscore restrict on the pointer. But then they had this other beast in here, which is, uh, they’re actually checking again what AVX 512 group the CPU actually has, then it has different implementations to, to do that computation. Yes.</p>
+<p>212<br>00:21:33,000 –&gt; 00:21:36,000<br>You should be able to get that right.</p>
+<p>213<br>00:21:36,000 –&gt; 00:21:41,000<br>This question should be to if death this, these are all like macros too. Yeah.</p>
+<p>214<br>00:21:41,000 –&gt; 00:21:48,000<br>Yeah, when these are all like crazy macros, we get, uh, you know, the code. I don’t, I don’t know about.</p>
+<p>215<br>00:21:48,000 –&gt; 00:21:55,000<br>Yeah. I think that’s probably, that’s probably also pounded F. As well. If death.</p>
+<p>216<br>00:21:55,000 –&gt; 00:22:05,000<br>And it’s probably, I think it’s a nip death. Manning above you have like, uh, use multi target CPU code.</p>
+<p>217<br>00:22:05,000 –&gt; 00:22:22,000<br>Yeah, it would be dead code. Yes. Yeah. But the punge, this is a good example like, hey, here’s, you know, there’s two versions of AVX 512. There’s AVX 2. There’s SSE 4 was to pre-curse AVX 2. Right.</p>
+<p>218<br>00:22:22,000 –&gt; 00:22:31,000<br>So the main thing I came out of here is like, it’s AVX 512. Oh, no, no, not really yet. You have to check what group you actually have. Right.</p>
+<p>219<br>00:22:31,000 –&gt; 00:22:41,000<br>So restricted, probably most common one on alternative is use these pragmas, uh, IV depth, uh, which is basically ignore, uh, vector dependencies, vectorization dependencies.</p>
+<p>220<br>00:22:41,000 –&gt; 00:22:48,000<br>Open MP, the big parallelization framework library, they have like, uh, pragmas, send, send, there’s different versions of this.</p>
+<p>221<br>00:22:48,000 –&gt; 00:22:55,000<br>This basically says ignore any of your aliasing checks when you do an auto vectorize this. Right. And you would end up the same thing.</p>
+<p>222<br>00:22:55,000 –&gt; 00:23:05,000<br>And again, this is up to the data programmer to make sure that this is done correctly because the compiler would do whatever you, will likely do whatever you wanted to do.</p>
+<p>223<br>00:23:05,000 –&gt; 00:23:13,000<br>The last alternative is to explicit vectorization. And for this one, we’re going to have to rely on what’s in trinx or CPU in trinx.</p>
+<p>224<br>00:23:13,000 –&gt; 00:23:22,000<br>And you think of it in trinx as like a, uh, like a virtual function, but it’s like a fake function in the, in your C++ code.</p>
+<p>225<br>00:23:22,000 –&gt; 00:23:33,000<br>It looks like a function, but it has an underscore or double underscore in front of it. And it really is translating into these ac, Cindy instruction that you want the compiler to, to emit for that, that line of code.</p>
+<p>226<br>00:23:33,000 –&gt; 00:23:44,000<br>Right. And that’s how you call it explicitly the, the Cindy operation that you want, or you know, put things into registers and what registers you want to touch and so forth.</p>
+<p>227<br>00:23:44,000 –&gt; 00:23:51,000<br>Now, the problem with this is that, you know, you want exact control of your database system. This is what, you know, you need to use this.</p>
+<p>228<br>00:23:51,000 –&gt; 00:23:59,000<br>And talking to friends in industry, this is what BigQuery does. This is what, uh, this is what Redshift does in some other systems.</p>
+<p>229<br>00:23:59,000 –&gt; 00:24:05,000<br>And in that environment, because they’re hosted database systems, they control the hardware, they know what VMs they’re running on in the cloud.</p>
+<p>230<br>00:24:05,000 –&gt; 00:24:10,000<br>So they can, they can make that choice. Then, you know, they’re not trying to run a power PC, for example.</p>
+<p>231<br>00:24:10,000 –&gt; 00:24:16,000<br>But obviously, if you use like an x86 in trinx, you can’t run on arm or some other CPU.</p>
+<p>232<br>00:24:16,000 –&gt; 00:24:26,000<br>Now, there are some libraries that can hide some of these Cindy’s in trinx and have ways to step down to, uh, to, you know, the smaller register size as needed,</p>
+<p>233<br>00:24:26,000 –&gt; 00:24:33,000<br>or, they don’t want grouping or extensions to support. Google HiWay is probably the most common one. I don’t know of any data system that actually uses this.</p>
+<p>234<br>00:24:33,000 –&gt; 00:24:37,000<br>I guess we could just, you know, grab the source code of the source ones to figure it out.</p>
+<p>235<br>00:24:37,000 –&gt; 00:24:42,000<br>Um, let Cindy is another one that’s, that’s why he’s, again, I’m not sure outside of the data system.</p>
+<p>236<br>00:24:42,000 –&gt; 00:24:48,000<br>Ross has his own, uh, Cindy library, but I think it’s only turned on for experimental nightly.</p>
+<p>237<br>00:24:48,000 –&gt; 00:24:51,000<br>Um, I’ve never used it.</p>
+<p>238<br>00:24:51,000 –&gt; 00:24:57,000<br>Uh, the one student that was here before, she, he says he just uses, you just, let’s alter vectorization handle everything.</p>
+<p>239<br>00:24:57,000 –&gt; 00:25:07,000<br>And as you said, because the compiler is in better shape to understand where our things will collide, because there’s more explicit control over, uh, memory locations.</p>
+<p>240<br>00:25:07,000 –&gt; 00:25:11,000<br>All right. So if you were going to use in trinx, so that one of these libraries, it would essentially look like this.</p>
+<p>241<br>00:25:11,000 –&gt; 00:25:20,000<br>Right? They had these, on the score underscore, underscore, and then the, the prefix of what sort of group of Cindy extensions you’re using, then you say, what size the register you want?</p>
+<p>242<br>00:25:20,000 –&gt; 00:25:28,000<br>You know, in, in I means you’re showing integer. So all we’re doing here is casting the, the integer vectors we were given, putting them into the Cindy registers.</p>
+<p>243<br>00:25:28,000 –&gt; 00:25:35,000<br>And then now we can do our, our, do our loop and do Cindy addition and then store it in the, uh, in the output vector we want.</p>
+<p>244<br>00:25:35,000 –&gt; 00:25:40,000<br>And now you can see here our loop, we’re going, we’re doing four additions at the same time.</p>
+<p>245<br>00:25:40,000 –&gt; 00:25:45,000<br>So we don’t, we need, you know, divide the number of iterations we would have divided by four.</p>
+<p>246<br>00:25:45,000 –&gt; 00:25:47,000<br>Right?</p>
+<p>247<br>00:25:47,000 –&gt; 00:25:50,000<br>So this is roughly what, what it looks like.</p>
+<p>248<br>00:25:50,000 –&gt; 00:25:56,000<br>All right. So which one do you think is the best explicit?</p>
+<p>249<br>00:25:56,000 –&gt; 00:25:59,000<br>There’s control.</p>
+<p>250<br>00:25:59,000 –&gt; 00:26:02,000<br>Why can’t we raise that?</p>
+<p>251<br>00:26:02,000 –&gt; 00:26:05,000<br>What is the best performance?</p>
+<p>252<br>00:26:05,000 –&gt; 00:26:08,000<br>Explosive.</p>
+<p>253<br>00:26:08,000 –&gt; 00:26:10,000<br>What’s the easiest to write?</p>
+<p>254<br>00:26:10,000 –&gt; 00:26:19,000<br>Yeah, so, so let’s see, uh, let’s see how, what, so let’s see what the performance difference you get from like explicitly writing, uh, vectorized code.</p>
+<p>255<br>00:26:19,000 –&gt; 00:26:33,000<br>So this is the paper we did with the Germans a few years ago, um, where we compared against, uh, the vectorized, the vectorized approach for, for doing, for processing and then the, the hyper approach, which will cover next class.</p>
+<p>256<br>00:26:33,000 –&gt; 00:26:40,000<br>Um, and the, the student in Germany wrote sort of one system that supported both, both these techniques and did a bakeoff between the two of them.</p>
+<p>257<br>00:26:40,000 –&gt; 00:26:52,000<br>The idea is to strip out all the extra stuff that, that, that differentiates between, you know, vectorized or hyperother system, get it down to a, a common substrate to the extent that you can, um, for these two approaches.</p>
+<p>258<br>00:26:52,000 –&gt; 00:26:56,000<br>And then that way you have a pure, you know, apples, apples comparison between the different approaches.</p>
+<p>259<br>00:26:56,000 –&gt; 00:26:57,000<br>Right?</p>
+<p>260<br>00:26:57,000 –&gt; 00:27:06,000<br>Because there’s, there’s other things that would come up like the way hyper does numerics would be different than vector wise and some queries and TPCH, you know, that would make actually a big difference.</p>
+<p>261<br>00:27:06,000 –&gt; 00:27:12,000<br>So it was a single test bed system that did both vector wise and, and hyper which will cover next class.</p>
+<p>262<br>00:27:12,000 –&gt; 00:27:20,000<br>And we just wanted to measure how well a compiler can, uh, can auto vectorize a bunch of the vector wise primitives.</p>
+<p>263<br>00:27:20,000 –&gt; 00:27:31,000<br>Um, so again, thing of like a perimeter being a single function that takes in array or a vector of, of, of two balls of a certain type and runs like, you know, there’s something less than something is something greater than something.</p>
+<p>264<br>00:27:31,000 –&gt; 00:27:35,000<br>Like how well could it vectorize those sort of small loops of code, similar to what I showed before.</p>
+<p>265<br>00:27:35,000 –&gt; 00:27:40,000<br>And so we compared against, we used clang, GCC and ICC, which is Intel’s compiler.</p>
+<p>266<br>00:27:40,000 –&gt; 00:27:53,000<br>We, ICC, it’s not free, it’s not open source, but this is obviously way better at auto vectorizing, at least a few years ago than, than GCC and clang, but again, GCC and clang, I’ve gotten better, but at the time ICC was, was much, much better.</p>
+<p>267<br>00:27:53,000 –&gt; 00:27:59,000<br>And again, you pay for that because Intel, you know, Intel, chose the hardware, they obviously can write really good compilers for it too, as well.</p>
+<p>268<br>00:27:59,000 –&gt; 00:28:09,000<br>So we’re going to basically do a comparison between hashing, selection, and projection, and some other operations that you have to run for the full query we didn’t, we didn’t vectorize because you can’t.</p>
+<p>269<br>00:28:10,000 –&gt; 00:28:21,000<br>All right, so this is running across some select number queries of TPCH. And the first bar here is complete auto vectorization, let the compiler do everything.</p>
+<p>270<br>00:28:21,000 –&gt; 00:28:36,000<br>The black bar would be just, if you, if you do it by hand, and then the red bar would be the combination of let the, let the compiler auto vectorize everything, then we would go check and see whether, which function didn’t get auto vectorize and we go back and do that and mainly here.</p>
+<p>271<br>00:28:36,000 –&gt; 00:28:48,000<br>And what we’re measuring here is the reduction of the number instructions versus like a scalar approach when you don’t do any vectorization, you don’t, you don’t want the compiler to do any vectorization.</p>
+<p>272<br>00:28:48,000 –&gt; 00:29:05,000<br>Right. So, you know, the main takeaway here is that the, in this case, higher is better, but there are some cases where the, you know, the manual one, for whatever reason, like because it was just so complicated to actually write, we always didn’t get adhesion for it.</p>
+<p>273<br>00:29:05,000 –&gt; 00:29:15,000<br>And then we had a good adhesion for it in the reduction of number instructions, but the combination of letting what the compiler does and then going back as a human and cleaning things up.</p>
+<p>274<br>00:29:15,000 –&gt; 00:29:26,000<br>You know, was actually the best approach for all these. Right.</p>
+<p>275<br>00:29:27,000 –&gt; 00:29:36,000<br>It’s a bit is like, can you, with this not working a real system because you don’t want to query ahead of time. Again, we’re, we’re trying to vectorize the primitives, right.</p>
+<p>276<br>00:29:36,000 –&gt; 00:29:45,000<br>And they’re not specific to any one query. Like, take a column of integers, check to see whether the, the numbers less than a single value, that’s what we were auto vectorizing.</p>
+<p>277<br>00:29:45,000 –&gt; 00:29:52,000<br>It wasn’t hard coded exactly for, you know, Q1, Q6 and so forth. Right. So technically it was still a general purpose system.</p>
+<p>278<br>00:29:52,000 –&gt; 00:29:57,000<br>We’re just trying to auto vectorize like the actual low, low operations are permitted within them. Yes.</p>
+<p>279<br>00:29:57,000 –&gt; 00:30:01,000<br>Yeah, I forget what I forget why that was the case.</p>
+<p>280<br>00:30:04,000 –&gt; 00:30:13,000<br>Again, it’s the, I think it’ll be the paper. I forget why that was the case. Yes.</p>
+<p>281<br>00:30:13,000 –&gt; 00:30:24,000<br>Why is what, why is Q6? Why is Q6 for 4, Q3?</p>
+<p>282<br>00:30:24,000 –&gt; 00:30:31,000<br>I forgot. I have to go look at this. The paper, I don’t, I think I’ve checked. It doesn’t matter.</p>
+<p>283<br>00:30:31,000 –&gt; 00:30:36,000<br>Yeah. It might be a type of maybe this is really Q3 in this Q6, but it doesn’t matter.</p>
+<p>284<br>00:30:36,000 –&gt; 00:30:42,000<br>So the key thing is that you should do one, like, and then, yeah, the main thing, main to this is that you should do both. Yes.</p>
+<p>285<br>00:30:42,000 –&gt; 00:30:52,000<br>So, certainly audio, auto and manual, was it more of a, you took away some of the manual, instruction, or you either, like, you may change how it was.</p>
+<p>286<br>00:30:52,000 –&gt; 00:31:05,000<br>It’s question is, what is auto plus manual? So you auto vectorize everything. Then you actually look what was actually generated in the assembly, figure out what functions or primitives were not auto generated, auto vectorize. Then you go back and rewrite them, the actual C++ code, they put it, put it in the intrinsics.</p>
+<p>287<br>00:31:05,000 –&gt; 00:31:11,000<br>Are you saying manual was not done right?</p>
+<p>288<br>00:31:11,000 –&gt; 00:31:29,000<br>I mean, Germans, so like, I’m too many to do, right? And maybe, again, I have to go look at what exactly this query was. I think the idea was that the, yeah, of course, like, in theory, you could have also looked to see what this thing vectorized to, right?</p>
+<p>289<br>00:31:29,000 –&gt; 00:31:43,000<br>And then, right, the quid intrinsics for that. But I don’t think you did that. I think the idea was like, okay, if you bring in a German who knows what they’re doing, how well can they do implementing themselves?</p>
+<p>290<br>00:31:43,000 –&gt; 00:31:51,000<br>It might even be the overhead of moving in a vector register that actually is C-based.</p>
+<p>291<br>00:31:51,000 –&gt; 00:31:54,000<br>So we’re going to do something.</p>
+<p>292<br>00:31:54,000 –&gt; 00:32:06,000<br>Again, I don’t know what that results again. We can go into more detail in this class. The reason why I have you guys read this paper is because it’s compilation plus vectorization at the same time.</p>
+<p>293<br>00:32:06,000 –&gt; 00:32:15,000<br>And one single valuation. So I, I shared picked this result out just because there’s focus on vectorization. So I wanted to cover compilation first, and then we can talk a little bit as well.</p>
+<p>294<br>00:32:15,000 –&gt; 00:32:23,000<br>So I can follow up with, forget what’s actually going on here. Everything’s open source online as well. So we could check it out. What happened?</p>
+<p>295<br>00:32:23,000 –&gt; 00:32:38,000<br>So we’re now beginning to check to see what the performance difference actually is. And so in this case, here we’re measuring in what’s the reduction of time of the system running these queries between the different implementations.</p>
+<p>296<br>00:32:38,000 –&gt; 00:32:50,000<br>So it’s all relative to again the scalar function, scalar implementation. So if you’re above zero, it’s faster. If it blows, it’s worse. And so you can see in some cases here, especially for Q6,</p>
+<p>297<br>00:32:50,000 –&gt; 00:32:59,000<br>even though that one code he wrote by hand had more instructions, it was actually faster than the one that was the combination of auto vectorization and manual.</p>
+<p>298<br>00:32:59,000 –&gt; 00:33:08,000<br>Or in the case of here, in case of Q3 going back, right, they produced a number of instructions, but it was done in such a way that it was actually slower.</p>
+<p>299<br>00:33:08,000 –&gt; 00:33:20,000<br>The main is always about CS. But the point I’m trying to make is to write that is hard.</p>
+<p>300<br>00:33:20,000 –&gt; 00:33:29,000<br>So if you have if you have the key to do it, if you have a German in house, or you can just spend the time doing it, the Reborn’s probably what you want. I forget what percentage of he actually had to go touch up.</p>
+<p>301<br>00:33:29,000 –&gt; 00:33:38,000<br>But if you spend the time and effort, you can get, because it’s almost equivalent writing assembly. And that’ll be any compiler.</p>
+<p>302<br>00:33:38,000 –&gt; 00:33:48,000<br>So, manual or compiler, compiler, and in critical or just like level one, that’s the first part.</p>
+<p>303<br>00:33:48,000 –&gt; 00:34:02,000<br>Manual is literally, it’s manual is the last one, explosive vectorization calling transics. This is compiler hints. And this is compiler hints. And then what doesn’t get vectorized, you go and put in transics.</p>
+<p>304<br>00:34:02,000 –&gt; 00:34:08,000<br>Yes.</p>
+<p>305<br>00:34:08,000 –&gt; 00:34:14,000<br>Yes. What cover was this one in a second? Yes.</p>
+<p>306<br>00:34:14,000 –&gt; 00:34:19,000<br>It gets a hint. Anyone know why?</p>
+<p>307<br>00:34:19,000 –&gt; 00:34:34,000<br>No. We’ll get to the end. There’s a footnote in the paper you guys read that explains it. We’ll get to the end.</p>
+<p>308<br>00:34:35,000 –&gt; 00:34:43,000<br>I mean, make sure I didn’t send anything on this.</p>
+<p>309<br>00:34:43,000 –&gt; 00:34:53,000<br>Same reason why most compilers do dash row three instead of two.</p>
+<p>310<br>00:34:53,000 –&gt; 00:35:03,000<br>So, the new version is down clock and down cycle the CPU. When you call AVX512, they turn down the clock speed.</p>
+<p>311<br>00:35:03,000 –&gt; 00:35:13,000<br>And some compilers were actually not auto vectorized AVX512, but always used AVX2 because of this exact reason. Because of hating issues.</p>
+<p>312<br>00:35:13,000 –&gt; 00:35:34,000<br>Yes. It’s hating issues. In the early versions of SIMD, in the 90s, the M&amp;X stuff, you would call scale instructions, but when you call SIMD instructions, it would stop all the SIMD instructions, switch over to SIMD mode, run that, then switch back.</p>
+<p>313<br>00:35:34,000 –&gt; 00:35:46,000<br>Now, with super scalars architecture, we can run these things in parallel. But as I said, I don’t know what is all AVX512 instructions, but at least enough of them, it’ll get down clocked.</p>
+<p>314<br>00:35:46,000 –&gt; 00:35:56,000<br>I don’t know whether these are, I think X86 or the current crop is Intel CPUs all have this issue.</p>
+<p>315<br>00:35:56,000 –&gt; 00:36:09,000<br>So, Intel, we’ll cover this in the end. Intel actually turns off AVX5. They fuse it off on consumer grade CPUs. Because they don’t want people to get down cycle and think that the CPU is running slower than it should. Yes.</p>
+<p>316<br>00:36:09,000 –&gt; 00:36:16,000<br>Does one other CPU vendor X86 that you’re all in? In this case, also not far.</p>
+<p>317<br>00:36:16,000 –&gt; 00:36:30,000<br>Questions? This AMD also do this. I don’t think AMD has the AVX512. They do. They do ones. Okay. I don’t know what they, they down clocked.</p>
+<p>318<br>00:36:30,000 –&gt; 00:36:33,000<br>Do you know the reason they had to stop the…</p>
+<p>319<br>00:36:33,000 –&gt; 00:36:35,000<br>He. Yeah.</p>
+<p>320<br>00:36:35,000 –&gt; 00:36:41,000<br>Because they’re doing SIMDs, like doing a lot of stuff, you have to stop the…</p>
+<p>321<br>00:36:41,000 –&gt; 00:36:48,000<br>He uses the scientific term. Is it because they’re doing a lot of stuff. Yes. Yes.</p>
+<p>322<br>00:36:48,000 –&gt; 00:36:57,000<br>This is not a class about like Intel’s design decisions. I don’t know the answer. I’m only telling you what you can read. Sorry, yes.</p>
+<p>323<br>00:36:57,000 –&gt; 00:37:06,000<br>I had to double check. They might be using AVX2. I don’t know. We can cover this in a flash.</p>
+<p>324<br>00:37:06,000 –&gt; 00:37:13,000<br>Okay. Again, this is not like let’s bash on Intel. But again, this is what I said in the beginning.</p>
+<p>325<br>00:37:13,000 –&gt; 00:37:19,000<br>Because it’s there, it doesn’t mean it’s always going to work. And in some cases, AVX2 is going to be better.</p>
+<p>326<br>00:37:19,000 –&gt; 00:37:23,000<br>Because they won’t have that down clocking, down cycle issue.</p>
+<p>327<br>00:37:23,000 –&gt; 00:37:28,000<br>All right. So now, let’s go through the primitives that we’re going to use as building blocks that allow us to do…</p>
+<p>328<br>00:37:28,000 –&gt; 00:37:35,000<br>You can construct and put together. So we’re doing more complex functionality to actually start running when we’re running queries.</p>
+<p>329<br>00:37:35,000 –&gt; 00:37:41,000<br>And this would be a combination of what was in the paper you guys read. And then some earlier paper that I’ll cover a little bit as well.</p>
+<p>330<br>00:37:41,000 –&gt; 00:37:50,000<br>And these are the basic primitives that Cindy’s going to provide for us. They would then put together to start doing the larger database operations or algorithms that we need.</p>
+<p>331<br>00:37:50,000 –&gt; 00:37:58,000<br>So the big one I said is that AVX512 added, ignoring the down clocking issue, is that they have now…</p>
+<p>332<br>00:37:58,000 –&gt; 00:38:06,000<br>All the instructions have these predication variants where you can pass in a bit mask that says which lane you want to be applied…</p>
+<p>333<br>00:38:06,000 –&gt; 00:38:13,000<br>You want the operation to be applied at. Right. Again, prior to AVX512, you could do this, but you would have to use a separate…</p>
+<p>334<br>00:38:13,000 –&gt; 00:38:17,000<br>You know, use one of the Cindy registers that are available to you to actually then apply.</p>
+<p>335<br>00:38:17,000 –&gt; 00:38:20,000<br>So now, there’s specialized ones that are just for the bit masks.</p>
+<p>336<br>00:38:20,000 –&gt; 00:38:26,000<br>The number of registers I think in the latest version is like 32. Right. So we’re not talking thousands and thousands of registers.</p>
+<p>337<br>00:38:26,000 –&gt; 00:38:35,000<br>AVX512 going to 32 is a lot. I think it used to be low 20s. Right. So there’s more available to us, but it’s still not infinite.</p>
+<p>338<br>00:38:35,000 –&gt; 00:38:43,000<br>So the idea is that say I have two vectors here. I want to do some operation on. And you think of these again.</p>
+<p>339<br>00:38:43,000 –&gt; 00:38:51,000<br>The offsets have sort of line up across the lanes. And so say… I have this bit mask here. It’s set to one. So that’s going to say…</p>
+<p>340<br>00:38:51,000 –&gt; 00:39:00,000<br>What I want my output to be… For better my instructions, it would be only apply it for the lanes where this thing is set to one.</p>
+<p>341<br>00:39:00,000 –&gt; 00:39:08,000<br>So say I’m just doing addition, then the output would just be 3 plus 2 and 3 plus 2 to produce the output 5 here.</p>
+<p>342<br>00:39:08,000 –&gt; 00:39:19,000<br>And then for the ones where it’s 0, you pass this merge source register, and then that’s just being used to fill in where the zeros are to put value there.</p>
+<p>343<br>00:39:19,000 –&gt; 00:39:29,000<br>So you can put any value in. There’s also the variant of zero masking where you don’t have to pass this explicit register. It just puts zeros where everything is.</p>
+<p>344<br>00:39:29,000 –&gt; 00:39:43,000<br>So that’s the basic idea. So with this bit mask, which again we say we can generate because in some cases in our algorithms when we apply filters, the ones in zeros corresponding to what tuples and what all set actually satisfy the predicate.</p>
+<p>345<br>00:39:43,000 –&gt; 00:39:53,000<br>So that’s sort of the basic concept we can carry along in our operations to determine whether a tuple zing valid or not.</p>
+<p>346<br>00:39:53,000 –&gt; 00:40:03,000<br>So the first thing we want to do is permute. And the idea here is that we want to copy values from an input vector, especially some offset to some other destination vector.</p>
+<p>347<br>00:40:03,000 –&gt; 00:40:13,000<br>And again, in the prior to 8x512, the way you had to do this is take things out of the vectors, put into memory, and then put it back in the vectors into the right order.</p>
+<p>348<br>00:40:13,000 –&gt; 00:40:22,000<br>But now again with 8x512, we can do all of this within register directly into register. And that’s way faster. And we don’t pollute the CPU caches or slow things down.</p>
+<p>349<br>00:40:22,000 –&gt; 00:40:35,000<br>So the idea here is that here’s our input vector. Here’s the index vector that’s going to correspond to where we’re going to write things to. So in this case here for this first value, sorry, first index value is going to this position here.</p>
+<p>350<br>00:40:35,000 –&gt; 00:40:45,000<br>We want the value within the input vector offset three, which is d. So that gets written here. And so it’s done this all down the line. I don’t know why the air is in line up.</p>
+<p>351<br>00:40:45,000 –&gt; 00:40:57,000<br>But it does all the down the line and then it populates that. And that’s again, that’s all done is a single instruction, even though I’m showing it in different, you know, different steps on power.</p>
+<p>352<br>00:40:57,000 –&gt; 00:41:06,000<br>The next one we have is a selective load. The idea here is we want to take some contents that we have in memory and we want to be able to write them out to some input vector.</p>
+<p>353<br>00:41:06,000 –&gt; 00:41:10,000<br>Yeah, well, I don’t know why these aren’t lining up. That’s weird.</p>
+<p>354<br>00:41:10,000 –&gt; 00:41:20,000<br>Whatever. So again, we have a mask. And so what’s going to happen is in this first position here, it’s just going to skip. So it doesn’t overwrite whatever’s in the vector right now.</p>
+<p>355<br>00:41:20,000 –&gt; 00:41:30,000<br>So then it’s all where the ones are and it’s going to grab one of the first location that it has because you give it this offset the starting location of the input memory, the input memory buffer or address.</p>
+<p>356<br>00:41:30,000 –&gt; 00:41:37,000<br>And so every time it sees it one, it’s going to increment over by one and then write that value up. So in this case here, we’re going to write you to the second slot.</p>
+<p>357<br>00:41:37,000 –&gt; 00:41:43,000<br>We’re going to skip this one here, leave that alone and then go to the next one, we’ll write the to that slot.</p>
+<p>358<br>00:41:43,000 –&gt; 00:41:52,000<br>Right, again, all happens within a single instruction. Select the storage, go in the opposite direction and reverse. The top is our target, so we want to write out into memory.</p>
+<p>359<br>00:41:52,000 –&gt; 00:42:02,000<br>So the same thing going across, we skip the zero, the one gets written to the first position and then the skip that zero and that one’s written to the second position. And then we’re done.</p>
+<p>360<br>00:42:02,000 –&gt; 00:42:10,000<br>So this is how we’re going to get things in the registers and then out of the registers. But again, more than just like blind copies, we can be clever about how we write things.</p>
+<p>361<br>00:42:13,000 –&gt; 00:42:24,000<br>So then we can use compressed to move things across the different vectors in different ways. So in this case here, we have our target vector is the value vector at the top, we have an input vector and then this index vector.</p>
+<p>362<br>00:42:24,000 –&gt; 00:42:37,000<br>So the idea here is that for the first, wherever there’s a one, we’re going to write out something up there. Right, so same thing here, we write the deal to that first position and then everything else is just left as zeros.</p>
+<p>363<br>00:42:37,000 –&gt; 00:42:49,000<br>So basically compressing down whatever was in our input vector to fill in the things in sort of beginning to the end to we run out of space or we have no more items put into it.</p>
+<p>364<br>00:42:49,000 –&gt; 00:42:58,000<br>Expand is the reverse, right? So we have the one here. So the first one will get, so the first value within our input vector will get written to that position.</p>
+<p>365<br>00:42:58,000 –&gt; 00:43:10,000<br>So that position, same thing with the next one over there and then the rest of it all to zeros. So that’s taking what was compressed on this side potentially by this operation and then expanding it out back to what to a traditional form.</p>
+<p>366<br>00:43:10,000 –&gt; 00:43:15,000<br>So again, they’re just reverses of each other.</p>
+<p>367<br>00:43:15,000 –&gt; 00:43:26,000<br>So then we can do a selective scatter and gather and the idea here is like how do we actually get things we specific things we want out of the out of our memory into the registers or registers back into memory.</p>
+<p>368<br>00:43:26,000 –&gt; 00:43:35,000<br>So in this case here, I want to take the whatever is in this offset, the suspect index vector, jump to my offset memory and then write that out to the first position.</p>
+<p>369<br>00:43:35,000 –&gt; 00:43:42,000<br>So two would be this position here and that’s written the first position and then so forth for all the other ones there.</p>
+<p>370<br>00:43:42,000 –&gt; 00:43:51,000<br>So now we can basically you’re changing the order of how things are written out to memory and but lining them up the way you want them inside the vector.</p>
+<p>371<br>00:43:52,000 –&gt; 00:44:09,000<br>And the second of the gather is a reverse. I’m taking a value vector and then specifying what memory location we want to write things into. So again, so this case here, the index vector wants to write to two. We take the first position at this lane as a and it writes to memory position two.</p>
+<p>372<br>00:44:10,000 –&gt; 00:44:24,000<br>So I don’t know whether they require the memory location you’re writing to to fit within a single cache line. There’s alignment issues. I think the harbor takes care of all that for you.</p>
+<p>373<br>00:44:24,000 –&gt; 00:44:34,000<br>Because this index vector, this can’t be a million elements. You’re not going to be writing out to all different locations of memory. This thing roughly has to fit into a single cache line.</p>
+<p>374<br>00:44:34,000 –&gt; 00:44:43,000<br>Because L1 you can do I think one or two loads and stores per cycle. So you obviously don’t want to spend a lot of cycles just filling out taking things out of the vector and putting them in.</p>
+<p>375<br>00:44:43,000 –&gt; 00:44:57,000<br>So again, these are the basic constructs. I’m going through them quickly just to say like, okay, there’s ways to pass in these bitmasses or these index vectors to specify where you want things to go to or where you want things to come from when you move things in and out of the vectors into memory.</p>
+<p>376<br>00:44:58,000 –&gt; 00:45:09,000<br>So that’s how we actually want to put this in the Saturday system. So I’m going to go through some basic operations that we can use. You don’t use a symbi-in vectorization.</p>
+<p>377<br>00:45:09,000 –&gt; 00:45:22,000<br>And in most cases we’re almost always going to want a favor of vertical vectorization. We’re going to have different tuples within the different lanes of our symbi-register so that we can process in the parallel.</p>
+<p>378<br>00:45:22,000 –&gt; 00:45:35,000<br>So again, horizontal vectorization would be either trying to sum up all the values within the vector or same time to string comparison over a long string and that’s breaking up into across different lanes. We’re going to ignore all of that.</p>
+<p>379<br>00:45:35,000 –&gt; 00:45:48,000<br>And our goal here is that we want to maximize lane utilization meaning we don’t want to have our computations that we’re doing in our symbi-symmony instructions to operate on things we know have been a vector or know have been removed before.</p>
+<p>380<br>00:45:48,000 –&gt; 00:45:57,000<br>Like if something does not evaluate the true, it doesn’t make sense to do a bunch more expensive computations for it. We want to ideally be able to fill it in with something else that is useful.</p>
+<p>381<br>00:45:57,000 –&gt; 00:46:03,000<br>And the paper you read talked about that and we’ll see other ways to do it as well.</p>
+<p>382<br>00:46:03,000 –&gt; 00:46:11,000<br>So first talk about the basic selection scan, then we’ll talk about a vector refill, and then I’ll talk about two variants of doing hash tables or joins.</p>
+<p>383<br>00:46:11,000 –&gt; 00:46:17,000<br>And then this is not the paper you guys read, but for partitioning histograms this one is like really simple idea that thing is pretty clever.</p>
+<p>384<br>00:46:17,000 –&gt; 00:46:20,000<br>And again it comes to this paper in Colombia.</p>
+<p>385<br>00:46:20,000 –&gt; 00:46:25,000<br>So this paper here, this is from 2015, this is from some features that Colombia.</p>
+<p>386<br>00:46:25,000 –&gt; 00:46:35,000<br>I used to have the students you guys read this, but I don’t have it read it. You don’t read it anymore. I read the German one because in this one they make a bunch of assumptions that aren’t real.</p>
+<p>387<br>00:46:35,000 –&gt; 00:46:42,000<br>Because it was 2015, it was 480x512, so they assumed all your values were 32 bits and that your pointers are always 32 bits.</p>
+<p>388<br>00:46:42,000 –&gt; 00:46:47,000<br>But obviously in the real workloads, real data says that’s not always true.</p>
+<p>389<br>00:46:47,000 –&gt; 00:46:56,000<br>And then they also assume that everything’s going to fit in L3 cache, which obviously does not always pay not to be true.</p>
+<p>390<br>00:46:56,000 –&gt; 00:47:00,000<br>So let’s go back to how to do basic selection scan operation.</p>
+<p>391<br>00:47:00,000 –&gt; 00:47:10,000<br>So this is the code that I showed before how to do a branchless scan where we’re always going to copy our output into any two places we’re given to the output buffer.</p>
+<p>392<br>00:47:10,000 –&gt; 00:47:15,000<br>But then we run this check here and this evaluates to 0, 1.</p>
+<p>393<br>00:47:15,000 –&gt; 00:47:21,000<br>After we enter it together, that determines whether we move our offset up by 1.</p>
+<p>394<br>00:47:21,000 –&gt; 00:47:29,000<br>So there’s no if clauses in SIMD. So we can’t run the if and else version of this code.</p>
+<p>395<br>00:47:29,000 –&gt; 00:47:32,000<br>We basically always have to run this one.</p>
+<p>396<br>00:47:32,000 –&gt; 00:47:35,000<br>So the way to vectorize it is pretty easy.</p>
+<p>397<br>00:47:35,000 –&gt; 00:47:46,000<br>Because now, instead of giving a single tuple, now I’m getting a vector tuples, I load the key I want to evaluate on into some SIMD vector, or SIMD register, not specifying what size doesn’t matter.</p>
+<p>398<br>00:47:46,000 –&gt; 00:48:00,000<br>Then I can run bitwise operations to do the comparison operations on the key that would then produce bitmasks that I can then end together and that’s going to determine whether a tuple has been satisfied this predicate or not.</p>
+<p>399<br>00:48:00,000 –&gt; 00:48:07,000<br>Now, I’m not showing you the code that makes sure we remove things when we come back around the second iteration, we can ignore that for now.</p>
+<p>400<br>00:48:07,000 –&gt; 00:48:12,000<br>So, this is going to be walking through what I just said, skip all this.</p>
+<p>401<br>00:48:12,000 –&gt; 00:48:19,000<br>So instead of using, again, placeholders like low and high, let’s actually use real values and some real data here.</p>
+<p>402<br>00:48:19,000 –&gt; 00:48:26,000<br>So, again, think of this as that there’s eight tuples here and then the key is some single character.</p>
+<p>403<br>00:48:26,000 –&gt; 00:48:28,000<br>It could be dictionary code, it doesn’t matter.</p>
+<p>404<br>00:48:28,000 –&gt; 00:48:36,000<br>So, it’s not a string going across, each element, each tuple has a single character string value.</p>
+<p>405<br>00:48:36,000 –&gt; 00:48:43,000<br>So, to do this in SIMD is that you would first do that SIMD compare, and that’s the first step here.</p>
+<p>406<br>00:48:43,000 –&gt; 00:48:48,000<br>Is the value within a given key greater than or equal to a low value?</p>
+<p>407<br>00:48:48,000 –&gt; 00:48:52,000<br>And that’s a single SIMD compare instruction that then can produce a bitmask.</p>
+<p>408<br>00:48:53,000 –&gt; 00:49:03,000<br>Then I got to run the second half of the comparison, produce another bitmask where the key is less than or equal to the high value, the letter U.</p>
+<p>409<br>00:49:03,000 –&gt; 00:49:05,000<br>And that produces another bitmask.</p>
+<p>410<br>00:49:05,000 –&gt; 00:49:15,000<br>So, I have two now bitmasks sitting in CPU registers and I can then run a SIMD in operation and instruction to just compare those two bitmasks.</p>
+<p>411<br>00:49:15,000 –&gt; 00:49:20,000<br>It produces a new bitmask and that tells me here’s all the tuples to actually qualify or satisfy the predicate.</p>
+<p>412<br>00:49:20,000 –&gt; 00:49:30,000<br>And then if I want to get, return it back to which offsets in my input vector or actually were set to true, I can then pass in a sequence 0 to 7.</p>
+<p>413<br>00:49:30,000 –&gt; 00:49:42,000<br>And for any bitmask that the one, I just do a SIMD compress operation to then produce a single SIMD register that has these values here.</p>
+<p>414<br>00:49:42,000 –&gt; 00:49:46,000<br>Right?</p>
+<p>415<br>00:49:46,000 –&gt; 00:49:57,000<br>So, there’s other tricks you can do. Obviously, there’s like, if I can run a rank instruction to determine how many ones I actually have an end of these bitmasks, if they’re all set to 0, then I can bail out and not do the other steps.</p>
+<p>416<br>00:49:57,000 –&gt; 00:50:00,000<br>This is all offset. That’s not a bitmask, right?</p>
+<p>417<br>00:50:00,000 –&gt; 00:50:01,000<br>Or is it just like an instruction?</p>
+<p>418<br>00:50:01,000 –&gt; 00:50:03,000<br>Yes? No, no, all offset.</p>
+<p>419<br>00:50:03,000 –&gt; 00:50:06,000<br>Yeah, it’s a question. It’s just a register.</p>
+<p>420<br>00:50:06,000 –&gt; 00:50:07,000<br>Yeah.</p>
+<p>421<br>00:50:07,000 –&gt; 00:50:13,000<br>And there might be any SIMD instructions that can convert this automatically now. But I’m just visually showing it.</p>
+<p>422<br>00:50:17,000 –&gt; 00:50:19,000<br>Right?</p>
+<p>423<br>00:50:19,000 –&gt; 00:50:31,000<br>So again, like, how jacked you implement this in a real system? Well, again, if you take the vectorized approach, which we’ll cover more in the next class, you would have an explicit function that says,</p>
+<p>424<br>00:50:32,000 –&gt; 00:50:45,000<br>string, input column of eight elements, or some number elements of a certain type, run the greater than or equal to comparison operator for a given constant.</p>
+<p>425<br>00:50:45,000 –&gt; 00:50:55,000<br>So you invoke that function with the pointer to the column and the constant value, and then it just loops through that and does the comparison one by one.</p>
+<p>426<br>00:50:55,000 –&gt; 00:51:06,000<br>So then the compiler can then alter vectorize that to do the SIMD instruction to put the data that you’re trying to compare against into a SIMD register, run the SIMD compare and take the output.</p>
+<p>427<br>00:51:06,000 –&gt; 00:51:07,000<br>Yes?</p>
+<p>428<br>00:51:07,000 –&gt; 00:51:15,000<br>Does the SIMD register store take a bitmask and then the store is missing the memory? Why do you have to do some press?</p>
+<p>429<br>00:51:15,000 –&gt; 00:51:23,000<br>This question doesn’t the select the store take a bitmask and store it in the memory where you want it?</p>
+<p>430<br>00:51:24,000 –&gt; 00:51:34,000<br>I’m just showing you how to take this correct as a true position list.</p>
+<p>431<br>00:51:34,000 –&gt; 00:51:41,000<br>Actually, he brought up a question earlier.</p>
+<p>432<br>00:51:41,000 –&gt; 00:51:46,000<br>How can I generate all the primitives for all possible variations of ware clauses?</p>
+<p>433<br>00:51:47,000 –&gt; 00:52:09,000<br>This is a good example where maybe auto vectorization isn’t going to be exactly what you want because, again, the primitive that’s going to deduce the valuation, if it produces this match offset, what I really want is the bitmask so that I can then take the two outputs and run the SIMD in myself.</p>
+<p>434<br>00:52:10,000 –&gt; 00:52:17,000<br>There are going to be variations of the primitives where sometimes you want to just produce this match offset list immediately.</p>
+<p>435<br>00:52:17,000 –&gt; 00:52:25,000<br>And other times you actually want to the bitmask out because then feed that into some other operation that take two bitmasks and can run them together.</p>
+<p>436<br>00:52:25,000 –&gt; 00:52:30,000<br>So how to auto vectorize all of this is actually not trivial.</p>
+<p>437<br>00:52:31,000 –&gt; 00:52:38,000<br>Again, it has to take a few minutes to come and figure out how to compose these operations together based on what you know the additional things you need to do in the query.</p>
+<p>438<br>00:52:38,000 –&gt; 00:52:44,000<br>Again, we’ll cover more of that next class.</p>
+<p>439<br>00:52:44,000 –&gt; 00:52:50,000<br>So we can now go back to that paper we said before from the Germans plus me.</p>
+<p>440<br>00:52:50,000 –&gt; 00:52:53,000<br>And Peter von Slese Dutch, the vectorized guy.</p>
+<p>441<br>00:52:53,000 –&gt; 00:53:05,000<br>But now we can actually run his version of the vector wise and he’s going to use the AVX512 for everything because it’s easier to use the bitmap registers to do vertical vectorization.</p>
+<p>442<br>00:53:06,000 –&gt; 00:53:13,000<br>So I’m going to show results for three different operations within a scan.</p>
+<p>443<br>00:53:13,000 –&gt; 00:53:17,000<br>So the hashing to hash something put into a hash table without putting it in the hash table.</p>
+<p>444<br>00:53:17,000 –&gt; 00:53:21,000<br>A gather operation and then join probing it.</p>
+<p>445<br>00:53:21,000 –&gt; 00:53:26,000<br>And then we can see how much the SIMD stuff helps for over a scalar instructions.</p>
+<p>446<br>00:53:26,000 –&gt; 00:53:34,000<br>So again, to strip out the rest of the system to say, actually the core algorithm are doing the scan operations and other things in the query plan, how much does SIMD help?</p>
+<p>447<br>00:53:35,000 –&gt; 00:53:44,000<br>And so what you see is that across the hashing gather join, if you vectorize it, you get a bigger win for hashing and a bigger win than join over the scalar value.</p>
+<p>448<br>00:53:44,000 –&gt; 00:53:47,000<br>So up to 2.3X improvement performance.</p>
+<p>449<br>00:53:47,000 –&gt; 00:53:51,000<br>But that, again, that’s just doing the bare minimum you need within that scan operation.</p>
+<p>450<br>00:53:51,000 –&gt; 00:53:55,000<br>Just doing the hashing or doing the join prob.</p>
+<p>451<br>00:53:55,000 –&gt; 00:54:03,000<br>When you bring it to the rest of the system, now we’ll start worrying about getting data in and out of the registers, materializing results going from one operative to the next.</p>
+<p>452<br>00:54:03,000 –&gt; 00:54:06,000<br>Then you see the performance difference is not that significant anymore.</p>
+<p>453<br>00:54:06,000 –&gt; 00:54:14,000<br>So you put in a full query the difference between the scalar operations is in the vectorized one is actually not that much.</p>
+<p>454<br>00:54:14,000 –&gt; 00:54:19,000<br>And this is the best case scenario of like tanwritten code.</p>
+<p>455<br>00:54:19,000 –&gt; 00:54:21,000<br>It’s everything’s in memory.</p>
+<p>456<br>00:54:21,000 –&gt; 00:54:26,000<br>I forget whether it’s what scale factor one, yeah, it’s going to fit in CPU cache is not that big.</p>
+<p>457<br>00:54:26,000 –&gt; 00:54:29,000<br>Or most of it is going to fit CPU cache.</p>
+<p>458<br>00:54:29,000 –&gt; 00:54:32,000<br>So what gets, right?</p>
+<p>459<br>00:54:32,000 –&gt; 00:54:39,000<br>But again, what’s going on is that it’s not just a matter of like, okay, we can, you know, it’s on does law.</p>
+<p>460<br>00:54:39,000 –&gt; 00:54:44,000<br>What portion of the query is actually going to be the part that could be vectorizing and get the biggest win?</p>
+<p>461<br>00:54:44,000 –&gt; 00:54:48,000<br>It’s not all of it. It’s not a size well chunk.</p>
+<p>462<br>00:54:48,000 –&gt; 00:54:56,000<br>So you’re only going to get maybe, you know, 10%, 10% bump for vectorizing the state that one small piece of the code.</p>
+<p>463<br>00:54:56,000 –&gt; 00:55:02,000<br>So all the materialization overhead that’s going to slow us down and that you can’t vectorize.</p>
+<p>464<br>00:55:02,000 –&gt; 00:55:11,000<br>So this is somewhat deflating like again, if I just said, you know, it’s spending entire lecture about how great vectorization is and how great, you know, and how much can help.</p>
+<p>465<br>00:55:11,000 –&gt; 00:55:14,000<br>But you know, it doesn’t actually make a big difference when you run a full query.</p>
+<p>466<br>00:55:14,000 –&gt; 00:55:18,000<br>That’s true for a lot of things in databases.</p>
+<p>467<br>00:55:18,000 –&gt; 00:55:20,000<br>But these things are cumulative.</p>
+<p>468<br>00:55:20,000 –&gt; 00:55:23,000<br>You obviously don’t want to, you can build the greatest query optimizer.</p>
+<p>469<br>00:55:23,000 –&gt; 00:55:26,000<br>But if your query engine sucks, it’s going to run slow.</p>
+<p>470<br>00:55:26,000 –&gt; 00:55:30,000<br>But if you have an amazingly fast query engine, but you have a bad query plan, it’s going to run slow.</p>
+<p>471<br>00:55:30,000 –&gt; 00:55:35,000<br>So all the lectures put together is what you need to put, you know, get things to run fast.</p>
+<p>472<br>00:55:35,000 –&gt; 00:55:40,000<br>You know, get that order magnitude before it’s difference.</p>
+<p>473<br>00:55:40,000 –&gt; 00:55:43,000<br>Okay.</p>
+<p>474<br>00:55:43,000 –&gt; 00:55:59,000<br>So one of the problems that in the paper you guys read was that they spent, I think two chapters on or two sections on, was the problem of honor utilization where you have some lanes being containing tuples that have been invalidated or should be discarded.</p>
+<p>475<br>00:55:59,000 –&gt; 00:56:08,000<br>But because we don’t want to always move things in that of the registers, you may have to keep processing dead tuples, so to speak.</p>
+<p>476<br>00:56:08,000 –&gt; 00:56:13,000<br>And essentially wasting, wasting resources.</p>
+<p>477<br>00:56:13,000 –&gt; 00:56:15,000<br>So the situation would sort of be like this.</p>
+<p>478<br>00:56:15,000 –&gt; 00:56:19,000<br>So if I say I have a query select count start from table, where age is greater than 20.</p>
+<p>479<br>00:56:19,000 –&gt; 00:56:25,000<br>And so in my sort of pseudo code of this, again, I realize this is a branching version.</p>
+<p>480<br>00:56:25,000 –&gt; 00:56:28,000<br>So there’s a branchless, but for now it’s fine.</p>
+<p>481<br>00:56:28,000 –&gt; 00:56:32,000<br>As I’m scanning along the table, I may have a bunch of tuples here that would get invalidated.</p>
+<p>482<br>00:56:32,000 –&gt; 00:56:35,000<br>And I don’t want to include them in my aggregation.</p>
+<p>483<br>00:56:35,000 –&gt; 00:56:40,000<br>So if it’s scalar code, no big deal, right?</p>
+<p>484<br>00:56:40,000 –&gt; 00:56:44,000<br>Because I just loop back around and go get the next batch.</p>
+<p>485<br>00:56:44,000 –&gt; 00:56:45,000<br>But it’s vectorized code.</p>
+<p>486<br>00:56:45,000 –&gt; 00:56:49,000<br>I may have, you know, eight, four to eight 12 tuples in my vector.</p>
+<p>487<br>00:56:49,000 –&gt; 00:56:59,000<br>And some of them might not satisfy this predicate, but now they’re going to be strong along in my, in my, in my, in my, my vectors.</p>
+<p>488<br>00:56:59,000 –&gt; 00:57:03,000<br>So you sort of think of like this piece right here is the sort of the first pipeline.</p>
+<p>489<br>00:57:03,000 –&gt; 00:57:06,000<br>And then the second pipeline is this piece here.</p>
+<p>490<br>00:57:06,000 –&gt; 00:57:11,000<br>So we’re going to avoid having to pass along dead tuples in this, right?</p>
+<p>491<br>00:57:11,000 –&gt; 00:57:20,000<br>And so the, the idea that I’m about to show you is basically, instead of having the materialization, you know, point B at the, at the,</p>
+<p>492<br>00:57:20,000 –&gt; 00:57:25,000<br>you know, a pipeline breaker, we actually could introduce artificial pipeline breakers,</p>
+<p>493<br>00:57:25,000 –&gt; 00:57:31,000<br>or synthetic pipeline breakers, that we, where we can materialize from results, go back in our loop, get more data,</p>
+<p>494<br>00:57:31,000 –&gt; 00:57:35,000<br>and keep filling up this, this mini buffer, if you will.</p>
+<p>495<br>00:57:35,000 –&gt; 00:57:39,000<br>And then once that’s, uh, filled up, we know all the tuples there aren’t dead.</p>
+<p>496<br>00:57:39,000 –&gt; 00:57:40,000<br>They’re all useful.</p>
+<p>497<br>00:57:40,000 –&gt; 00:57:46,000<br>They haven’t been perceived up to the rest of the, the computation in the, in the pipeline.</p>
+<p>498<br>00:57:46,000 –&gt; 00:57:47,000<br>So this is a paper.</p>
+<p>499<br>00:57:47,000 –&gt; 00:57:49,000<br>I think it’s citation 16 in the paper, in the paper you guys read.</p>
+<p>500<br>00:57:49,000 –&gt; 00:57:52,000<br>It’s a paper that I, we worked on here with my PhD student, Prashant,</p>
+<p>501<br>00:57:52,000 –&gt; 00:57:57,000<br>um, is now building, you know, working on the, the photon vectorized engine at, at vector wise.</p>
+<p>502<br>00:57:57,000 –&gt; 00:58:04,000<br>Um, so this is the idea is that we’re going to decompose pipelines into sub stages that can operate on vectorize tuples,</p>
+<p>503<br>00:58:04,000 –&gt; 00:58:07,000<br>just as, you know, just with vectorized processing, using SIMD when possible.</p>
+<p>504<br>00:58:07,000 –&gt; 00:58:15,000<br>But then the idea is that we can, you know, start storing things in buffers, fill up a, a semi register,</p>
+<p>505<br>00:58:15,000 –&gt; 00:58:17,000<br>and then move on to the next stage.</p>
+<p>506<br>00:58:18,000 –&gt; 00:58:22,000<br>This, again, so we don’t have wasted, waste of computation, waste of resources.</p>
+<p>507<br>00:58:23,000 –&gt; 00:58:30,000<br>So the idea, uh, so it’s called the lact operative fusion, because the idea is like you’re taking the fuse, the operator fusion approach from the hyper guys,</p>
+<p>508<br>00:58:30,000 –&gt; 00:58:35,000<br>and actually relaxing a little bit and introducing these, these breakpoints.</p>
+<p>509<br>00:58:35,000 –&gt; 00:58:38,000<br>So they think, first thing is that you, you figure out these are the vectorization candidates.</p>
+<p>510<br>00:58:38,000 –&gt; 00:58:45,000<br>Clearly I want to filter, I want to vectorize the filter operation, and that, but before I maybe do the aggregation step,</p>
+<p>511<br>00:58:45,000 –&gt; 00:58:53,000<br>I want to materialize some results, make sure that all gets filled up, and then I can do the aggregation computation using SIMD and vectorize that,</p>
+<p>512<br>00:58:53,000 –&gt; 00:58:57,000<br>without worrying about throwing out, way, throwing way on needed results.</p>
+<p>513<br>00:58:59,000 –&gt; 00:59:01,000<br>Right? So the code basically looks like this.</p>
+<p>514<br>00:59:01,000 –&gt; 00:59:05,000<br>So I’m scanning through the, the, as a vector tuple, I do my comparison.</p>
+<p>515<br>00:59:05,000 –&gt; 00:59:14,000<br>If my buffer is, is full, then I can go, uh, go fill up, you know, if this thing gets full, then I can go to the next stage within my pipeline.</p>
+<p>516<br>00:59:14,000 –&gt; 00:59:19,000<br>And do the aggregation, otherwise I loop back around and, you know, get the next batch.</p>
+<p>517<br>00:59:19,000 –&gt; 00:59:27,000<br>So this buffer is sort of incrementally getting, getting full of values, so then I can then fire this off, again, in vectorized manner.</p>
+<p>518<br>00:59:27,000 –&gt; 00:59:33,000<br>So, yeah, this, this is the first part here, and then this is the second part here, right?</p>
+<p>519<br>00:59:33,000 –&gt; 00:59:35,000<br>And obviously they made up the end.</p>
+<p>520<br>00:59:35,000 –&gt; 00:59:40,000<br>So one of the tricks that we figured out with this though is that, because you have this like staging point,</p>
+<p>521<br>00:59:40,000 –&gt; 00:59:44,000<br>and it’s really tight loop, you actually can start doing software prefetching.</p>
+<p>522<br>00:59:44,000 –&gt; 00:59:49,000<br>So there’s hardware prefetching where the CPU’s going to try to figure out what, what pieces of memory you’re going to need next,</p>
+<p>523<br>00:59:49,000 –&gt; 00:59:51,000<br>and start bringing it back into your CPU cache.</p>
+<p>524<br>00:59:51,000 –&gt; 00:59:57,000<br>Like if you’re scanning along some, long stride of memory, it starts bringing in cache lines ahead of it, what, ahead of what you actually need.</p>
+<p>525<br>00:59:57,000 –&gt; 01:00:03,000<br>But in, in x86, you actually can pass hints to the CPU and say, hey, I’m going to need this memory region pretty soon.</p>
+<p>526<br>01:00:03,000 –&gt; 01:00:08,000<br>Um, it’s not required to actually obey your, your, your request. It’s like, it’s like a hint.</p>
+<p>527<br>01:00:08,000 –&gt; 01:00:13,000<br>Uh, but in some cases, it actually can make a big, big difference, right?</p>
+<p>528<br>01:00:13,000 –&gt; 01:00:17,000<br>And this staging stuff, because it’s, it’s, you know, it’s, you know, it’s, instead of it, it’s really one pipeline.</p>
+<p>529<br>01:00:17,000 –&gt; 01:00:25,000<br>So you’re breaking up to these sub stages, it’s sort of a nice natural boundary for prefetching operations.</p>
+<p>530<br>01:00:25,000 –&gt; 01:00:29,000<br>So again, this is sort of jumping ahead to do query compilation stuff that we, we talked about before.</p>
+<p>531<br>01:00:29,000 –&gt; 01:00:37,000<br>But this is showing that if you do holistic query compilation, the same way that, um, that, uh, hyper does, which will read about x class.</p>
+<p>532<br>01:00:37,000 –&gt; 01:00:42,000<br>But then you also introduce these, these, these, these relaxed operating fusion stages.</p>
+<p>533<br>01:00:42,000 –&gt; 01:00:44,000<br>Uh, you can get a pretty, pretty good form.</p>
+<p>534<br>01:00:44,000 –&gt; 01:00:48,000<br>In this case here, software prefetching doesn’t help because there’s no join.</p>
+<p>535<br>01:00:48,000 –&gt; 01:00:51,000<br>There, there wasn’t really a good place to say, okay, let me go on prefetch.</p>
+<p>536<br>01:00:51,000 –&gt; 01:00:57,000<br>But in, in over here, this does make a big difference because this query, query 19 can be broken up into these, these sub stages.</p>
+<p>537<br>01:00:57,000 –&gt; 01:01:02,000<br>So I think you want to have the highest electricity, so it’s a lot of time to log in.</p>
+<p>538<br>01:01:02,000 –&gt; 01:01:03,000<br>It’s probably, it’s probably incorrect.</p>
+<p>539<br>01:01:03,000 –&gt; 01:01:05,000<br>Q1 is a high selectivity, so like you’re not discarding.</p>
+<p>540<br>01:01:05,000 –&gt; 01:01:07,000<br>It’s basically taking everything.</p>
+<p>541<br>01:01:10,000 –&gt; 01:01:11,000<br>Okay.</p>
+<p>542<br>01:01:11,000 –&gt; 01:01:14,000<br>No, let me just, let me skip this, like I want to get the hashings.</p>
+<p>543<br>01:01:14,000 –&gt; 01:01:17,000<br>But basically, this is the old palaton system.</p>
+<p>544<br>01:01:17,000 –&gt; 01:01:20,000<br>So the interpreted, our interpret engine was told crap. It was, like, it was garbage.</p>
+<p>545<br>01:01:20,000 –&gt; 01:01:22,000<br>Uh, we converted it to compilation.</p>
+<p>546<br>01:01:22,000 –&gt; 01:01:24,000<br>So you got this, this amount of improvement.</p>
+<p>547<br>01:01:24,000 –&gt; 01:01:28,000<br>And then we’re putting racked up a diffusion with Cindy plus racked, upper diffusion of Cindy plus pre-veching.</p>
+<p>548<br>01:01:28,000 –&gt; 01:01:30,000<br>Right, you get a pretty difficult one.</p>
+<p>549<br>01:01:30,000 –&gt; 01:01:37,000<br>So again, this will be next week, but going from a, this is not really like, I don’t want to get any pressure.</p>
+<p>550<br>01:01:37,000 –&gt; 01:01:39,000<br>I’m like, oh, research compilation, you’re going to get 97 improvement.</p>
+<p>551<br>01:01:39,000 –&gt; 01:01:44,000<br>This is like crappy student code to like, high end per shunt code, right, who’s now a Databricks.</p>
+<p>552<br>01:01:44,000 –&gt; 01:01:47,000<br>Like that, that I’ll get you 97% ended, ended day to the week.</p>
+<p>553<br>01:01:47,000 –&gt; 01:01:50,000<br>Uh, the thing I really care about is, is going down here.</p>
+<p>554<br>01:01:50,000 –&gt; 01:01:54,000<br>Again, that you can still get a pretty significant bump by introducing these, these stages,</p>
+<p>555<br>01:01:54,000 –&gt; 01:01:57,000<br>and vectorizing as much as possible.</p>
+<p>556<br>01:01:57,000 –&gt; 01:02:02,000<br>The newer version of hyper and umbra before this paper come out can actually use Cindy and vectorization.</p>
+<p>557<br>01:02:02,000 –&gt; 01:02:07,000<br>Uh, but at the time in 2017 or 2016, they didn’t support that, because they were doing,</p>
+<p>558<br>01:02:07,000 –&gt; 01:02:15,000<br>you know, doing nothing with the push-based execution with complete compilation of the queries.</p>
+<p>559<br>01:02:16,000 –&gt; 01:02:21,000<br>Alright, so this is one way to go, sort of making sure that we were always utilizing all our buffers.</p>
+<p>560<br>01:02:21,000 –&gt; 01:02:28,000<br>But again, we did this before 18X512, um, and in the paper you guys read, they called this material, they called this a materialization approach.</p>
+<p>561<br>01:02:28,000 –&gt; 01:02:38,000<br>They also generally, uh, discussed two different algorithms you could use that try to be clever about deciding when to go back and get more tubeless from the, from the operator below you.</p>
+<p>562<br>01:02:38,000 –&gt; 01:02:42,000<br>I think somebody asked a question about this, and I said most systems don’t do this, but this is one way to do it.</p>
+<p>563<br>01:02:43,000 –&gt; 01:02:51,000<br>Um, and the challenge course is going to be the bookkeeping to keep track of like, where, you know, where do I leave off from the operator below me, and where can I write results into?</p>
+<p>564<br>01:02:51,000 –&gt; 01:02:55,000<br>And they can do this in the X512 because there’s a lot more registers now.</p>
+<p>565<br>01:02:55,000 –&gt; 01:03:04,000<br>So the idea is that while my operator is running, if I realize that I have unutilized lanes, I can just leave that, leave all that data in that register,</p>
+<p>566<br>01:03:04,000 –&gt; 01:03:13,000<br>go then execute another part of, of, of the query, and have that right to other registers, and then once that thing gets full, then I, and combine the two of them together.</p>
+<p>567<br>01:03:13,000 –&gt; 01:03:16,000<br>At a high level, that, that’s what they’re doing for these real four algorithms.</p>
+<p>568<br>01:03:16,000 –&gt; 01:03:29,000<br>The question is whether you do, you go get more tubeless within your own operator by iterating over the loop again, or you jump out of that operator, go below you in the query plan, and let the operator below you now start producing tubeless off the query plan.</p>
+<p>569<br>01:03:30,000 –&gt; 01:03:44,000<br>So the buffered one is the one where you stay in, in the same operator, and the idea is that you use addition registers to sort of stage results, and so the next iteration doesn’t overwrite them, which is right into another register, and then once that gets full, you can then use some instructions to compile them.</p>
+<p>570<br>01:03:44,000 –&gt; 01:04:01,000<br>The partial one is where they basically spill out all the results within the current operator to a bunch of registers, go down below to another operator, have it produce more results up to the query plan, pushing it up, and then you, and then once you, once that’s full, then you can combine the two of them together.</p>
+<p>571<br>01:04:02,000 –&gt; 01:04:21,000<br>So you think of the top one is more simple, because it’s like, okay, let me just call it, you know, me calling next on my loop within my same operator, but I just make sure that I don’t write the same register that I wrote before, and I don’t need to keep track of where I’m actually writing to, other than like, I don’t write right before.</p>
+<p>572<br>01:04:21,000 –&gt; 01:04:32,000<br>And this one, you’re trying to be clever, and like, okay, I know that there’s things up above that I could write into, but I can’t right now, because these leads, we’re being occupied, so try to, like, fill things in at a more fine-grained level.</p>
+<p>573<br>01:04:33,000 –&gt; 01:04:50,000<br>So again, other than, other than, umbra, I don’t think anybody actually does this. I think everyone just naively carries along the unused buffers, carries along the dead tuples, and then just, because it’s just easier at the end.</p>
+<p>574<br>01:04:52,000 –&gt; 01:05:01,000<br>Okay, so so far we covered selection scans, vector refills, I want to quickly go through two variations of hash tables, and then finish up with partition his grips.</p>
+<p>575<br>01:05:02,000 –&gt; 01:05:19,000<br>So in hash tables, the challenge here is that we have this data structure, this hash table, that Khan is not really Cindy friendly, right, because it’s this long stride of memory, but then we need to be able to do comparisons within,</p>
+<p>576<br>01:05:19,000 –&gt; 01:05:28,000<br>in continuous regions of memory, and not within, you know, different lanes at the same time, and contain different elements, right.</p>
+<p>577<br>01:05:29,000 –&gt; 01:05:44,000<br>So the scalar approach would be, you have some input key, you hash it, with some hash function, finishes a hash offset, you jump to that offset, and then now you just do, again, a linear scan, looking at all the keys within the hash table, so you find your match and then you’re done, right.</p>
+<p>578<br>01:05:45,000 –&gt; 01:05:59,000<br>So, the way to use horizontal vectorization to make this run faster is that, within each offset within the hash table, we’re actually going to store four keys with four corresponding values.</p>
+<p>579<br>01:06:00,000 –&gt; 01:06:11,000<br>So now when I do a look up on a single key, I hash it, I, you know, and then mod it by the numbers buckets or slots, and then now I land on some memory address, now I get four keys.</p>
+<p>580<br>01:06:12,000 –&gt; 01:06:25,000<br>And now if I want to compare, see what I have in match, I just duplicate this key in a single register, make, you know, four copies of it, and then do the same to comparison, and that’s going to produce a bit mask that says whether I have a match or not.</p>
+<p>581<br>01:06:26,000 –&gt; 01:06:34,000<br>And then whether or not, you know, you do the rank, see whether these are all zeros or all one, then you just do the same thing going down to leap around, right.</p>
+<p>582<br>01:06:35,000 –&gt; 01:06:37,000<br>So that’s kind of cute, that’s kind of clever.</p>
+<p>583<br>01:06:37,000 –&gt; 01:06:56,000<br>The problem with this one though is like, how does this, like, what if it’s not, these keys, these slots might be empty.</p>
+<p>584<br>01:06:56,000 –&gt; 01:07:08,000<br>And so I may be going fetching some location, and there’s like two out of the four keys there. So I can’t guarantee that I’m always doing all my lanes to fully utilize when I do the comparison.</p>
+<p>585<br>01:07:09,000 –&gt; 01:07:16,000<br>So the alternative is to do vertical vectorization, and the idea is now I want to compare four keys at the same time.</p>
+<p>586<br>01:07:16,000 –&gt; 01:07:25,000<br>My hash table is just like before, before I do the, the, the multiple elements which are each slot, now it’s just going to single slot, single, single key per slot.</p>
+<p>587<br>01:07:26,000 –&gt; 01:07:35,000<br>So I take my four keys, there’s Cindy operations or Cindy instructions or Cindy hash functions, you can use murmur two, I think there’s a Cindy version of that that vector wise use.</p>
+<p>588<br>01:07:35,000 –&gt; 01:07:45,000<br>And then now I’m going to do some hash vector, then I use my Cindy gather to go grab these different memory regions, put it into now Cindy vector, then do my Cindy.</p>
+<p>589<br>01:07:46,000 –&gt; 01:07:56,000<br>And then I can be compared to see whether I have any matches, right? Of course, now the challenge is going to be some of these two points are going to match, some of these two points aren’t going to match.</p>
+<p>590<br>01:07:57,000 –&gt; 01:08:04,000<br>So then now in the next iteration, I need to, for the ones that don’t match, they need to all go down by one in my hash table to figure out whether there’s a match.</p>
+<p>591<br>01:08:05,000 –&gt; 01:08:10,000<br>But again, I don’t want to keep, be doing the same computation over and over again for two points that didn’t match.</p>
+<p>592<br>01:08:10,000 –&gt; 01:08:24,000<br>So I want to go back and get two new keys to fill in the spots that they did match before, and then now another round and I just need to keep track of which lane as I’m going along, what iteration are they at?</p>
+<p>593<br>01:08:25,000 –&gt; 01:08:28,000<br>What location in my hash table do they need to go look at?</p>
+<p>594<br>01:08:29,000 –&gt; 01:08:34,000<br>So maybe this thing is sort of waste of computation for the middle guys, but that might be okay, that would be enough.</p>
+<p>595<br>01:08:35,000 –&gt; 01:08:46,000<br>So then do the same thing, do the gather to go bring them into Cindy registers and do the comparison, until I satisfy all my checks.</p>
+<p>596<br>01:08:47,000 –&gt; 01:08:49,000<br>What is the fairly better thing?</p>
+<p>597<br>01:08:50,000 –&gt; 01:08:54,000<br>So it’s questions, is vertical clearly better? Most times yes.</p>
+<p>598<br>01:08:56,000 –&gt; 01:08:57,000<br>That’s it.</p>
+<p>599<br>01:08:57,000 –&gt; 01:08:59,000<br>What is the benefit of the four?</p>
+<p>600<br>01:08:59,000 –&gt; 01:09:01,000<br>Do you think you’re just doing it?</p>
+<p>601<br>01:09:02,000 –&gt; 01:09:04,000<br>This question is what is the benefit of the horizontal one?</p>
+<p>602<br>01:09:04,000 –&gt; 01:09:06,000<br>What is the benefit of the horizontal one?</p>
+<p>603<br>01:09:08,000 –&gt; 01:09:17,000<br>Again, the paper basically trying to try for every single core operator in a Davis system, they had a vertical and horizontal variant of them to show that you could do it.</p>
+<p>604<br>01:09:18,000 –&gt; 01:09:23,000<br>And then the measurements of the term, oh yeah, the vertical one is always better.</p>
+<p>605<br>01:09:23,000 –&gt; 01:09:31,000<br>There’s something else that’s tricky about this that may not be obvious.</p>
+<p>606<br>01:09:33,000 –&gt; 01:09:42,000<br>And that is the, there’s not always going to be a guarantee that the output tuples are always going to be in the same order.</p>
+<p>607<br>01:09:42,000 –&gt; 01:09:45,000<br>Every single time you run this algorithm, right?</p>
+<p>608<br>01:09:46,000 –&gt; 01:09:52,000<br>Because the, you’re sort of reading the keys in a different way,</p>
+<p>609<br>01:09:53,000 –&gt; 01:09:59,000<br>the different order, sorry, the output is going to be in a different order than the keys as they come into the operator.</p>
+<p>610<br>01:10:00,000 –&gt; 01:10:03,000<br>And on a relational algorithm, that’s okay, right? There is no ordering.</p>
+<p>611<br>01:10:03,000 –&gt; 01:10:12,000<br>But if you’re trying to debug this, then sometimes you run the same query on the same data and you’ll produce output in a different order.</p>
+<p>612<br>01:10:12,000 –&gt; 01:10:16,000<br>And it’s hard to kind of debug things, try to, if there’s probably trying to figure out.</p>
+<p>613<br>01:10:17,000 –&gt; 01:10:24,000<br>So it’s not really a, you know, I would not say that’s enough to discourage people not to do this.</p>
+<p>614<br>01:10:25,000 –&gt; 01:10:30,000<br>It’s just to say that it’s something to be aware of that like the, I mean, hashing always sort of randomize this thing,</p>
+<p>615<br>01:10:30,000 –&gt; 01:10:34,000<br>but this takes it to a higher degree, it makes things even more challenging to work through.</p>
+<p>616<br>01:10:34,000 –&gt; 01:10:38,000<br>Because again, the way this Cindy stuff is trying to do multiple pairs at the same time.</p>
+<p>617<br>01:10:39,000 –&gt; 01:10:45,000<br>All right, so I’m going to skip the, this is the result from the paper.</p>
+<p>618<br>01:10:45,000 –&gt; 01:10:47,000<br>I don’t want to spend too much time on it.</p>
+<p>619<br>01:10:47,000 –&gt; 01:10:55,000<br>But basically, everything goes once you run out of CPU cache for these different limitations.</p>
+<p>620<br>01:10:55,000 –&gt; 01:10:59,000<br>And this is running on the Zon 5, which is an order Intel accelerator.</p>
+<p>621<br>01:10:59,000 –&gt; 01:11:03,000<br>I think it’s an Intel version of a GPU in the 2010s.</p>
+<p>622<br>01:11:03,000 –&gt; 01:11:04,000<br>They don’t exist anymore.</p>
+<p>623<br>01:11:05,000 –&gt; 01:11:07,000<br>Again, see me over here on running on Zons.</p>
+<p>624<br>01:11:07,000 –&gt; 01:11:10,000<br>Once you run out of cache, there is no difference.</p>
+<p>625<br>01:11:13,000 –&gt; 01:11:21,000<br>But the, you know, if your hash table size is actually small enough, and this is why you always put the small table on the build side, then you might be okay.</p>
+<p>626<br>01:11:23,000 –&gt; 01:11:25,000<br>And CPU cache has gotten way way better.</p>
+<p>627<br>01:11:25,000 –&gt; 01:11:30,000<br>I think there’s the one AMD chip, it’s like 800 megs for L3, it’s insane.</p>
+<p>628<br>01:11:31,000 –&gt; 01:11:35,000<br>It’s almost a gigabyte L3 cache on a single socket, that’s insane.</p>
+<p>629<br>01:11:37,000 –&gt; 01:11:41,000<br>So, let me show one other cool thing I like.</p>
+<p>630<br>01:11:41,000 –&gt; 01:11:49,000<br>And this is a really simple way to see like, okay, how can I parallelize things with Cindy to do another basic operation in my database system?</p>
+<p>631<br>01:11:49,000 –&gt; 01:11:50,000<br>So how do we build it?</p>
+<p>632<br>01:11:50,000 –&gt; 01:11:51,000<br>We want to build a histogram.</p>
+<p>633<br>01:11:51,000 –&gt; 01:11:59,000<br>And so, the problem is going to be that if we just do the naive thing, say these are input keys, and we use Cindy radax,</p>
+<p>634<br>01:11:59,000 –&gt; 01:12:03,000<br>which we’ll cover in a few weeks, we’re basically like, think of poor man’s hash function.</p>
+<p>635<br>01:12:03,000 –&gt; 01:12:07,000<br>You just basically grab the first bit, and tell you where something goes.</p>
+<p>636<br>01:12:07,000 –&gt; 01:12:14,000<br>And so, we want to do, get the rate of some of this, download hash keys, and then we’re going to fill out some histogram.</p>
+<p>637<br>01:12:14,000 –&gt; 01:12:26,000<br>But the problem is going to be, we’re going to have two keys, mapped to the same location in our histogram, and they’re going to clobbering them, they’re going to clobbering each other when I try to put things, you know, some of it together.</p>
+<p>638<br>01:12:26,000 –&gt; 01:12:30,000<br>Right? Because we’re going to try to overwrite to the same position.</p>
+<p>639<br>01:12:30,000 –&gt; 01:12:40,000<br>So, to get around this problem, I can just replicate my hash table, where for every single lane in my Cindy register, I’m just going to have another array.</p>
+<p>640<br>01:12:40,000 –&gt; 01:12:47,000<br>And so now, I know that the, you know, lane zero is going to write to this column here, lane one is going to write to this column here.</p>
+<p>641<br>01:12:48,000 –&gt; 01:12:54,000<br>So, for each column, there’s going to be one entry for the key in my, my hash, my histogram.</p>
+<p>642<br>01:12:54,000 –&gt; 01:13:01,000<br>And then, I should just use a Cindy add to put it together across the lanes, and then produce the final counts.</p>
+<p>643<br>01:13:01,000 –&gt; 01:13:13,000<br>Right? Again, there’s a bunch of different clever ways you can combine, in the Cindy operations and structures together, to produce results, again, keeping everything in a single register.</p>
+<p>644<br>01:13:13,000 –&gt; 01:13:18,000<br>So, this one I like, and this is clearly when.</p>
+<p>645<br>01:13:18,000 –&gt; 01:13:24,000<br>Okay, so, we’ve covered this a lot already, we just put it out now on the slide.</p>
+<p>646<br>01:13:24,000 –&gt; 01:13:27,000<br>So, ADX 512 is not always going to be faster than the ADX 2.</p>
+<p>647<br>01:13:27,000 –&gt; 01:13:40,000<br>And as I said, the paper you guys read, there’s this little footnote down here, where they mentioned that in their experiments, they didn’t see any downclocking issues with either the Skylake Z on CPU or the Nights landing Z on 5.</p>
+<p>648<br>01:13:41,000 –&gt; 01:13:46,000<br>And that, it was always running at a stable four gigahertz clock speed.</p>
+<p>649<br>01:13:46,000 –&gt; 01:13:56,000<br>But there’s a lot of, there’s a lot of blog articles out there, and a lot of stack overflow posts about, hey, my, my program’s running slow, why?</p>
+<p>650<br>01:13:56,000 –&gt; 01:14:03,000<br>And I trace it down to my CPU clock getting, you know, getting downcycled. Why is this the case? Right?</p>
+<p>651<br>01:14:03,000 –&gt; 01:14:16,000<br>And the issue has to do with, in the case of Intel, they identify whether some instructions are either light or heavy, and if you run too many heavy instructions, then they dial down the clock speed, and your thing actually runs slower.</p>
+<p>652<br>01:14:16,000 –&gt; 01:14:24,000<br>Think of like, if the CPU recognizes that it’s getting too hot, because the fan’s not running or something, it’ll downclock itself, so it doesn’t burn, you know, damage itself.</p>
+<p>653<br>01:14:24,000 –&gt; 01:14:32,000<br>He says it needs to be bigger heatsink. I don’t think it’s even that. I think it’s like a hard wire that it just always downcycles it.</p>
+<p>654<br>01:14:32,000 –&gt; 01:14:35,000<br>No, I don’t think it’s like, try to sense the, sense the temperature. Yes.</p>
+<p>655<br>01:14:35,000 –&gt; 01:14:41,000<br>So I did for the research. Apparently, I’m newer in most things, I’ll secute this isn’t as bad but it’s a bit of this.</p>
+<p>656<br>01:14:41,000 –&gt; 01:14:48,000<br>AMD, they do this totally different, they have five registered, six registered, and they use two of them to make the five, 12 registered and trucking work.</p>
+<p>657<br>01:14:48,000 –&gt; 01:14:51,000<br>So it’s always faster and never downclots, but it’s not as big of an advantage of this.</p>
+<p>658<br>01:14:51,000 –&gt; 01:14:59,000<br>Yeah. So his statement is, new versions of Intel, they’ve gotten a little bit better at this, but they still, I know for the consumer ones, they always turn it off, right?</p>
+<p>659<br>01:14:59,000 –&gt; 01:15:04,000<br>Yes, by default. No, it’s actually fused off. I don’t think you can even turn it back on.</p>
+<p>660<br>01:15:04,000 –&gt; 01:15:11,000<br>Yeah. And that AMD doesn’t really do true five, 12, they do two 256 registers and they put it together.</p>
+<p>661<br>01:15:11,000 –&gt; 01:15:18,000<br>Yeah. And they say that’s always faster. It’s always faster. It should be kind of the same digits to a lot of cases, but for encoding, decoding, it’s a little bit faster.</p>
+<p>662<br>01:15:18,000 –&gt; 01:15:23,000<br>But does it have the bitmashings of the key difference in terms of databases? Does it have, I don’t know whether it has those capabilities.</p>
+<p>663<br>01:15:23,000 –&gt; 01:15:37,000<br>Anyway, and there’s, I can post some pats, there’s some blog articles from like the clang people or the GCC people were like, you know, they will always try to use ADX 2 instead of ADX 512 to avoid these issues.</p>
+<p>664<br>01:15:37,000 –&gt; 01:15:50,000<br>Now you may be careful, say, okay, I’m going to make sure, if I’m using intrinsic, that I make sure I only use ADX 2 to avoid this downclocking issue, but you may link in some library that then gets auto vectorized with ADX 512,</p>
+<p>665<br>01:15:50,000 –&gt; 01:16:03,000<br>then your databases are running slower because of some third party thing that you didn’t expect. So I don’t know when this all gets fixed, who knows.</p>
+<p>666<br>01:16:03,000 –&gt; 01:16:16,000<br>But like the safe bet is probably going to always be ADX 2, but I do know some of the commercial systems do run ADX 512 and maybe they’re trying to be more careful when, if and when they use it.</p>
+<p>667<br>01:16:16,000 –&gt; 01:16:41,000<br>Okay, so to finish up, so vectorization is going to obviously super important, doesn’t always going to be the biggest win. And ideally, you know, we want to rely on the compiler to auto vector as much as possible, but in some cases we do have to come in and either using intrinsic, which is more common, or one of those libraries that can mask the actual details of what, you know, what sending extension package we’re using.</p>
+<p>668<br>01:16:42,000 –&gt; 01:16:55,000<br>And again, all the things we talked about so far about doing inter query parallelism, this is all in conjunction to this symbi stuff. So I recall is going to have its own set of symbi registers, and so we want to use data parallelism within each core as much as possible.</p>
+<p>669<br>01:16:56,000 –&gt; 01:17:10,000<br>And again, we’ll cover query compilation next class, but that’s another tool we can use to control the movement of data within our query plan, so that we have precise control where things, when things going registers,</p>
+<p>670<br>01:17:10,000 –&gt; 01:17:15,000<br>when they come out of registers, and how things are moved through memory or CPU cashes. Okay.</p>
+<p>671<br>01:17:17,000 –&gt; 01:17:36,000<br>Again, so next class will be compilation, so it’s going to be a German paper. It’s very dense. It’s a lot of LL and IR. Don’t don’t sweat the details of that. The main thing I want to get away from it is, or out of it, is the notion what he calls sort of data center computation. It just really means the push model in this query processing approach.</p>
+<p>672<br>01:17:36,000 –&gt; 01:17:43,000<br>And that, again, how he’s going to have fine-grained control of what goes into the CPU registers, as things move at the query plan.</p>
+<p>673<br>01:17:44,000 –&gt; 01:17:54,000<br>And then we talk a little bit about the project status in preparation of the status update later this month at the end of next class as well. Okay. Any final questions?</p>
+<p>674<br>01:17:55,000 –&gt; 01:17:56,000<br>All right guys, see ya.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15721 P7S202406 VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems</div>
+      <div>http://example.com/2025/10/24/CMU15721 P7S202406-VectorizedQueryExecutionUsingSIMDCMUAdvancedDatabaseSystems/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15721%20P6S202405-QueryExecutionProcessingPart2CMUAdvancedDatabaseSystems/" title="CMU15721 P6S202405 QueryExecutionProcessingPart2CMUAdvancedDatabaseSystems">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15721 P6S202405 QueryExecutionProcessingPart2CMUAdvancedDatabaseSystems</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15721%20P8S202407-JITQueryCompilationCodeGenerationCMUAdvancedDatabaseSyste/" title="CMU15721 P8S202407 JITQueryCompilationCodeGenerationCMUAdvancedDatabaseSyste">
+                        <span class="hidden-mobile">CMU15721 P8S202407 JITQueryCompilationCodeGenerationCMUAdvancedDatabaseSyste</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

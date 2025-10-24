@@ -1,0 +1,1134 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:28,000All right, let’s give TGHPL a round of applause. 200:00:28,000 –&gt; 00:00:35,000How are you doing? How’s your girlfriend? 300:00:35,000 –&gt; 00:00:38,000That was a PS">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15445 P9F202308 B+TreeIndexes">
+<meta property="og:url" content="http://example.com/2025/10/24/CMU15445%20P9F202308-B+TreeIndexes/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:28,000All right, let’s give TGHPL a round of applause. 200:00:28,000 –&gt; 00:00:35,000How are you doing? How’s your girlfriend? 300:00:35,000 –&gt; 00:00:38,000That was a PS">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-24T12:00:44.481Z">
+<meta property="article:modified_time" content="2025-10-24T12:06:28.544Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15445 P9F202308 B+TreeIndexes - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15445 P9F202308 B+TreeIndexes"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-24 20:00" pubdate>
+          2025年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          50 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15445 P9F202308 B+TreeIndexes</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:28,000<br>All right, let’s give TGHPL a round of applause.</p>
+<p>2<br>00:00:28,000 –&gt; 00:00:35,000<br>How are you doing? How’s your girlfriend?</p>
+<p>3<br>00:00:35,000 –&gt; 00:00:38,000<br>That was a PS for the season.</p>
+<p>4<br>00:00:38,000 –&gt; 00:00:42,000<br>GMAB? I mean, yeah, it’s on board next week and so yeah, she’s…</p>
+<p>5<br>00:00:42,000 –&gt; 00:00:44,000<br>You gotta fix that.</p>
+<p>6<br>00:00:44,000 –&gt; 00:00:47,000<br>Okay, all right, let’s let’s go today.</p>
+<p>7<br>00:00:47,000 –&gt; 00:00:49,000<br>So I’m gonna plow right through everything.</p>
+<p>8<br>00:00:49,000 –&gt; 00:00:53,000<br>So again, quick reminder of coming events to now correct dates.</p>
+<p>9<br>00:00:53,000 –&gt; 00:00:59,000<br>So today at 430 over Zoom, we’re gonna have the curfonder of Postgres ML.</p>
+<p>10<br>00:00:59,000 –&gt; 00:01:04,000<br>Basically a modified version of Postgres or it’s not modified.</p>
+<p>11<br>00:01:04,000 –&gt; 00:01:05,000<br>Postgres is modified there.</p>
+<p>12<br>00:01:05,000 –&gt; 00:01:14,000<br>Building off the extension system and API in Postgres to support machine learning frameworks and large language models directly inside of Postgres.</p>
+<p>13<br>00:01:14,000 –&gt; 00:01:16,000<br>She’s gonna talk about the stuff that they’ve been building.</p>
+<p>14<br>00:01:16,000 –&gt; 00:01:21,000<br>Next week, we have probably the one of the bigger vector database companies come together to talk, weeveate.</p>
+<p>15<br>00:01:21,000 –&gt; 00:01:24,000<br>And then after that, it’s gonna be feature form.</p>
+<p>16<br>00:01:24,000 –&gt; 00:01:28,000<br>And after feature form is feature base, right? Same name, different systems.</p>
+<p>17<br>00:01:28,000 –&gt; 00:01:32,000<br>Okay, and again, this is optional by all means attend if you want.</p>
+<p>18<br>00:01:32,000 –&gt; 00:01:40,000<br>And then as I post on Piazza, we’ll sending out an email to the Davis friends, companies like these with everyone’s CVs if you upload it yesterday.</p>
+<p>19<br>00:01:40,000 –&gt; 00:01:42,000<br>Okay? All right.</p>
+<p>20<br>00:01:42,000 –&gt; 00:01:45,000<br>So last class, we talked about hash tables.</p>
+<p>21<br>00:01:45,000 –&gt; 00:01:56,000<br>And we talked about how this important data structure that’s gonna give us this nice 01 average time complexity to do lookups matching keys to values.</p>
+<p>22<br>00:01:56,000 –&gt; 00:02:02,000<br>And we spent time talking about how there was this different teaching between static and dynamic hashing schemes.</p>
+<p>23<br>00:02:02,000 –&gt; 00:02:05,000<br>Like static ones, you sort of fix size number slots.</p>
+<p>24<br>00:02:05,000 –&gt; 00:02:14,000<br>Whereas the extendable hashing, chain hashing, and linear hashing all had the ability to grow incrementally over time to accommodate more keys than you originally envisioned.</p>
+<p>25<br>00:02:15,000 –&gt; 00:02:20,000<br>So the main takeaway from last class should be we spent most of our time talking about how to deal with the complex.</p>
+<p>26<br>00:02:20,000 –&gt; 00:02:25,000<br>If two keys hash, two different keys hash to the same location, what do you do?</p>
+<p>27<br>00:02:25,000 –&gt; 00:02:35,000<br>And then we mostly talk about how these hash tables are primarily gonna be used in most systems for internal data structures, like your page table and project one.</p>
+<p>28<br>00:02:35,000 –&gt; 00:02:41,000<br>Or the page directory, or the other things keeping track of like what’s the state of the database system itself while we’re running?</p>
+<p>29<br>00:02:41,000 –&gt; 00:02:45,000<br>We’ll see hash tables again when we talk about how to join sufficiently.</p>
+<p>30<br>00:02:45,000 –&gt; 00:02:49,000<br>But again, for the most part, these are primarily used for internal data structures.</p>
+<p>31<br>00:02:49,000 –&gt; 00:02:52,000<br>So today’s class, and I’ll talk about B plus trees.</p>
+<p>32<br>00:02:52,000 –&gt; 00:03:00,000<br>And these are gonna be primarily the default choice when you wanna have an index in a relational database system.</p>
+<p>33<br>00:03:00,000 –&gt; 00:03:07,000<br>So if you call create index, you know, 99% of the time in most systems, you’ll be getting something that looks like a B plus stream.</p>
+<p>34<br>00:03:08,000 –&gt; 00:03:17,000<br>Then we’ll talk about, so we’ll first go over a high level overview of what a B plus tree looks like, what makes it, what’s the plus and B plus tree versus regular B tree.</p>
+<p>35<br>00:03:17,000 –&gt; 00:03:21,000<br>And then we’ll talk about some basic design choices, when we actually wanna build one.</p>
+<p>36<br>00:03:21,000 –&gt; 00:03:26,000<br>And then we’ll finish up to the time we have, to the extent that we have time at the end,</p>
+<p>37<br>00:03:26,000 –&gt; 00:03:31,000<br>talk about all the different ways you can actually optimize and improve performance of these different systems.</p>
+<p>38<br>00:03:31,000 –&gt; 00:03:34,000<br>And the examples of real systems are actually doing today.</p>
+<p>39<br>00:03:34,000 –&gt; 00:03:36,000<br>Okay?</p>
+<p>40<br>00:03:36,000 –&gt; 00:03:40,000<br>So the first thing I’ve got to discuss is like, what is a B plus tree?</p>
+<p>41<br>00:03:40,000 –&gt; 00:03:45,000<br>And so the B plus tree is in a sort of category of data structures called B trees.</p>
+<p>42<br>00:03:45,000 –&gt; 00:03:53,000<br>And we’re sort of confusing about this in the database literature, or different database systems, is that there’s the class of the data structure called B trees.</p>
+<p>43<br>00:03:53,000 –&gt; 00:03:56,000<br>And then there’s a specific data structure called a B tree.</p>
+<p>44<br>00:03:56,000 –&gt; 00:04:03,000<br>And then some database systems are actually using B plus trees, but they’re gonna call themselves a B tree.</p>
+<p>45<br>00:04:03,000 –&gt; 00:04:07,000<br>So if you go look at the Postgres code, they’re gonna refer to their data structure as a B tree.</p>
+<p>46<br>00:04:07,000 –&gt; 00:04:14,000<br>But as far as I can tell, it’s a B plus tree with some modern techniques like from the B-link tree.</p>
+<p>47<br>00:04:14,000 –&gt; 00:04:20,000<br>So it’s sort of this, when you say B plus tree, the tip of you’re gonna mean a bunch of these other different things.</p>
+<p>48<br>00:04:20,000 –&gt; 00:04:30,000<br>So there is no original paper on the B plus tree, actually, well, the one that everyone cites is this one from 1979.</p>
+<p>49<br>00:04:31,000 –&gt; 00:04:36,000<br>By the guys at IBM talking about the, what they call the ubiquitous B tree.</p>
+<p>50<br>00:04:36,000 –&gt; 00:04:40,000<br>And in this, it is scribe, hey, there’s this, the different variants.</p>
+<p>51<br>00:04:40,000 –&gt; 00:04:44,000<br>But the most common one that’s gonna be used for our database systems is gonna be a B plus tree.</p>
+<p>52<br>00:04:44,000 –&gt; 00:04:49,000<br>And then they cite some kind of IBM tech report that I have not been able to find.</p>
+<p>53<br>00:04:49,000 –&gt; 00:04:53,000<br>I didn’t look that hard, but it doesn’t show up right away in Google.</p>
+<p>54<br>00:04:53,000 –&gt; 00:04:59,000<br>That’s the one where they talk about the original B plus tree.</p>
+<p>55<br>00:04:59,000 –&gt; 00:05:12,000<br>The original authors of what the B plus tree work, this guy of Bayer and the Crayette, they never actually define what the B means in B plus tree.</p>
+<p>56<br>00:05:12,000 –&gt; 00:05:19,000<br>Typically, people say it’s for balanced, broad, bushy, the guy’s name is Bayer or B-A-E-Y-E-R.</p>
+<p>57<br>00:05:19,000 –&gt; 00:05:22,000<br>So it couldn’t even have to have himself.</p>
+<p>58<br>00:05:23,000 –&gt; 00:05:29,000<br>This data structure actually developed at Boeing, like the airplane company, could have been Boeing tree.</p>
+<p>59<br>00:05:29,000 –&gt; 00:05:35,000<br>Nobody really knows, but typically people, when you say B tree, people typically mean balanced.</p>
+<p>60<br>00:05:35,000 –&gt; 00:05:38,000<br>There’s another variant called B-Link tree.</p>
+<p>61<br>00:05:38,000 –&gt; 00:05:44,000<br>And as I said, there’ll be the sort of classic B plus tree, but nobody implements exactly as it’s defined there.</p>
+<p>62<br>00:05:44,000 –&gt; 00:05:46,000<br>People are gonna bar bits and pieces of it.</p>
+<p>63<br>00:05:47,000 –&gt; 00:05:54,000<br>So, in particular, what they’re gonna borrow is some ideas from this B-Link tree paper that actually came from here at CMU in 1981, a certain guy by Phil Lehman,</p>
+<p>64<br>00:05:54,000 –&gt; 00:05:59,000<br>that dude still works in the Dean’s office at CMU on the fifth floor.</p>
+<p>65<br>00:05:59,000 –&gt; 00:06:06,000<br>And if you go look at the Postgres source code in the directory where they talk about their B tree, notice they say B tree instead of B plus tree,</p>
+<p>66<br>00:06:06,000 –&gt; 00:06:12,000<br>and they say is it NB tree because it’s a non-balanced B plus tree, but we’ll get to that later.</p>
+<p>67<br>00:06:12,000 –&gt; 00:06:21,000<br>But yeah, right here in the circle, they say, oh yeah, this is a correct implementation, correct is always important, of leaving a Yow’s paper from the B-Link tree from 1973.</p>
+<p>68<br>00:06:21,000 –&gt; 00:06:24,000<br>So that’s kind of cool.</p>
+<p>69<br>00:06:24,000 –&gt; 00:06:26,000<br>But again, we’re gonna focus primarily on this one.</p>
+<p>70<br>00:06:26,000 –&gt; 00:06:34,000<br>We’ll see, if you have time, I’ll talk about the B epsilon tree at the end, and then the B W tree is a thing that a Microsoft is a lock free version of a B plus tree.</p>
+<p>71<br>00:06:34,000 –&gt; 00:06:38,000<br>We actually implemented that here at CMU and was not easy.</p>
+<p>72<br>00:06:38,000 –&gt; 00:06:41,000<br>And we have an open source implementation of that.</p>
+<p>73<br>00:06:41,000 –&gt; 00:06:54,000<br>Okay. So the B plus tree is going to be a self-balanced order tree that’s going to allow us to do searches and scrunch will access and insertions and solutions all in log n time, right?</p>
+<p>74<br>00:06:54,000 –&gt; 00:06:57,000<br>Because the log n is going to be the height of the tree.</p>
+<p>75<br>00:06:58,000 –&gt; 00:07:12,000<br>And so the difference between what we’ll describe here to be plus tree versus a generic binary search tree is that the nodes in our data structure can have obviously more than two keys.</p>
+<p>76<br>00:07:12,000 –&gt; 00:07:18,000<br>And the reason why we’re gonna want this is because, again, we want to convert, we want to minimize amount of random Iow we’re doing.</p>
+<p>77<br>00:07:18,000 –&gt; 00:07:23,000<br>So we want to maximize amount of scrunch will Iow and the B plus tree is going to be perfect for us to do this.</p>
+<p>78<br>00:07:23,000 –&gt; 00:07:29,000<br>Because when we land and I know that’s essentially fetching in a page, we’re going to have as many keys as we can inside that.</p>
+<p>79<br>00:07:29,000 –&gt; 00:07:34,000<br>Before we have to move on to grab the next page from disk.</p>
+<p>80<br>00:07:34,000 –&gt; 00:07:45,000<br>Right? So, thinking back way back in the 1970s when harder was terrible, like you had a middle amount of RAM, but your disk was also super slow.</p>
+<p>81<br>00:07:45,000 –&gt; 00:07:53,000<br>So a B plus tree is going to allow you to convert when you do these lookups and from random Iow into sequential access.</p>
+<p>82<br>00:07:53,000 –&gt; 00:08:01,000<br>Right? Because we’re still following the leaf nodes or sorry, follow the tree down to the leaf nodes and once you’re down there, you never go back up.</p>
+<p>83<br>00:08:01,000 –&gt; 00:08:04,000<br>Not entirely true, but for up purposes now, we’ll assume that’s the case.</p>
+<p>84<br>00:08:04,000 –&gt; 00:08:09,000<br>And then I can scan along the leaf nodes to find the data I’m looking for.</p>
+<p>85<br>00:08:09,000 –&gt; 00:08:11,000<br>Right?</p>
+<p>86<br>00:08:12,000 –&gt; 00:08:18,000<br>So more formally, we can say that a B plus tree is going to be M way search tree with the following properties.</p>
+<p>87<br>00:08:18,000 –&gt; 00:08:26,000<br>First is that it’s going to be perfectly balanced, meaning that the every leaf node in our tree structure is going to have the same depth.</p>
+<p>88<br>00:08:26,000 –&gt; 00:08:31,000<br>It means the same number of levels down from the root to that leaf node.</p>
+<p>89<br>00:08:31,000 –&gt; 00:08:38,000<br>And again, post-gust is going to violate this little bit, some people do, but for the very beginning, assume that’s the case.</p>
+<p>90<br>00:08:39,000 –&gt; 00:08:44,000<br>We also have a rule that every node other than the root has to be at least half full.</p>
+<p>91<br>00:08:44,000 –&gt; 00:08:56,000<br>So if I can have M keys in my inner node, I need to have at least half a number of nodes, half a number of keys as possible, up to the maximum number.</p>
+<p>92<br>00:08:57,000 –&gt; 00:09:03,000<br>If I go below that threshold, if I have the go below, being less than half full, then I have to do some merging.</p>
+<p>93<br>00:09:03,000 –&gt; 00:09:08,000<br>Again, we can tweak that requirement later on.</p>
+<p>94<br>00:09:08,000 –&gt; 00:09:12,000<br>And so then the root to be special case, we can ignore it for now.</p>
+<p>95<br>00:09:12,000 –&gt; 00:09:18,000<br>And then every inner node with at least keys, they can have at least K plus one non-nulled children.</p>
+<p>96<br>00:09:18,000 –&gt; 00:09:32,000<br>Meaning I could have some locations where I could or possible pointers to leaf nodes are nodes below me when I’m an inner node, but I don’t have to have the max number.</p>
+<p>97<br>00:09:32,000 –&gt; 00:09:34,000<br>So this is all math. Let’s look at example.</p>
+<p>98<br>00:09:34,000 –&gt; 00:09:41,000<br>So here’s a really simple, like two way B plus three.</p>
+<p>99<br>00:09:42,000 –&gt; 00:09:52,000<br>And we can define the root node at the top, and then their inner nodes are just because we only have three levels, the inner nodes are just the ones in the middle, and then the leaf nodes are the things at the bottom.</p>
+<p>100<br>00:09:52,000 –&gt; 00:10:01,000<br>So within a node itself, we’re going to have this sort of alternating pattern between a pointer to another node and then a key.</p>
+<p>101<br>00:10:01,000 –&gt; 00:10:09,000<br>And then in the leaf nodes, they’ll be the value that we’re trying to store for this for a given key.</p>
+<p>102<br>00:10:09,000 –&gt; 00:10:17,000<br>And for now, we’re not going to find the value is, but you can think of it like potentially the record ID to point to the actual two pull is some page number, page number and offset.</p>
+<p>103<br>00:10:17,000 –&gt; 00:10:24,000<br>Or if it’s a case of like my SQL or SQL light, it could actually be the two pull itself. But for now, we can ignore that.</p>
+<p>104<br>00:10:24,000 –&gt; 00:10:32,000<br>And so the way to think about these numbers here in the inner nodes and the root nodes, that these are essentially guide posts that tell you which path you want to go down.</p>
+<p>105<br>00:10:32,000 –&gt; 00:10:43,000<br>So at the root node here, we only have one key. It’s 20. So if you’re going to go left to it, it’s any value that’s going to any key value that’s going to be less than 20. And then we’re going to write for a greater than or equal to.</p>
+<p>106<br>00:10:43,000 –&gt; 00:10:53,000<br>Same thing. The next one, I have 10 here, less than 10 goes here, greater than equal to 10 goes on the other side.</p>
+<p>107<br>00:10:53,000 –&gt; 00:11:10,000<br>So what makes, so this is sort of what I’m describing so far, this is a basic B plus tree. But what I was saying before that they have this, or barring ideas from other papers like the B link tree is that the nodes are also have sibling pointers at every level.</p>
+<p>108<br>00:11:10,000 –&gt; 00:11:20,000<br>So I think the textbook, my only show them at the leaf nodes, Postgres puts them in the middle node, the internals as well. And I think the regional B link paper had the internals as well.</p>
+<p>109<br>00:11:20,000 –&gt; 00:11:36,000<br>And so the reason why this matters is again, if I’m doing research, like give me all the keys greater than equal to six, I could reverse down the, you know, this side of the tree, get to the bottom. And now I can rip through along the leaf nodes and never have to go go back up.</p>
+<p>110<br>00:11:36,000 –&gt; 00:11:45,000<br>We won’t talk about multi threading just yet, but like the having to get parent lock or latches on your parents doing on the skin along, that’s going to be expensive.</p>
+<p>111<br>00:11:45,000 –&gt; 00:11:50,000<br>So if I can just keep down the lowest level I need to go, then I can move more quickly.</p>
+<p>112<br>00:11:50,000 –&gt; 00:12:02,000<br>And again, if it’s random IO, the sucks, but if I get down here, assuming all these pages are sequentially or contiguous on each other on disk, then that’s all squintio the scan across. Yes.</p>
+<p>113<br>00:12:02,000 –&gt; 00:12:04,000<br>What’s the point of having these in the internals?</p>
+<p>114<br>00:12:04,000 –&gt; 00:12:24,000<br>Yeah, it’s what’s the point of having these in the internals? It helps you when you do split the merges, right? If I know I have to, like if I want to steal something to say, like I, if I delete 10 say 10 that’s deleted instead of having to reorganize the entire tree, I could follow the sibling pointer, maybe take a key from this guy and bring it over.</p>
+<p>115<br>00:12:24,000 –&gt; 00:12:25,000<br>Yes.</p>
+<p>116<br>00:12:25,000 –&gt; 00:12:38,000<br>What is the question? What is actually a node pointer? Yeah, like what like these red lines? No, not the sibling pointer, so the node pointer, like so.</p>
+<p>117<br>00:12:38,000 –&gt; 00:12:49,000<br>I’ll show the next slide. You’re not going to lay this out exactly. You wouldn’t lay this out in the disk exactly. I’m describing, but the thing of it is, like I have the key here 20 is that’s this part.</p>
+<p>118<br>00:12:49,000 –&gt; 00:12:57,000<br>And then the node pointer is saying, if you’re looking for a key that’s less than 20, follow this pointer and you go down here and find it.</p>
+<p>119<br>00:12:57,000 –&gt; 00:13:01,000<br>And in our world, in a database system that’s on disk, it’s just a page ID.</p>
+<p>120<br>00:13:01,000 –&gt; 00:13:04,000<br>We also have to store the pointer to the other side, right?</p>
+<p>121<br>00:13:04,000 –&gt; 00:13:05,000<br>Correct, yes.</p>
+<p>122<br>00:13:05,000 –&gt; 00:13:12,000<br>Yeah, so just trying, yeah, this is the visualization people usually show.</p>
+<p>123<br>00:13:12,000 –&gt; 00:13:18,000<br>Right, so the nodes themselves are going to be basically a raise of key value pairs.</p>
+<p>124<br>00:13:18,000 –&gt; 00:13:25,000<br>And again, the keys are going to be derived from whatever the attribute that the index is based on from the table.</p>
+<p>125<br>00:13:25,000 –&gt; 00:13:33,000<br>So I say I build an index on table food columns, ABC, the key itself will be copies of the values for every single table in ABC.</p>
+<p>126<br>00:13:34,000 –&gt; 00:13:39,000<br>So you can sort of think the index is like a replica of the table that you’re trying to index.</p>
+<p>127<br>00:13:39,000 –&gt; 00:13:47,000<br>And it’s organized in such a way in an ordered manner that allow you to do these efficient, efficient log-and-look ups.</p>
+<p>128<br>00:13:47,000 –&gt; 00:13:50,000<br>Right, in the relational model, the tables are could potentially be unsorted.</p>
+<p>129<br>00:13:50,000 –&gt; 00:13:54,000<br>We’ll violate that in a few more slides, but like the table could be unsorted.</p>
+<p>130<br>00:13:54,000 –&gt; 00:13:58,000<br>And so this index is way to have the fast sort of access.</p>
+<p>131<br>00:13:59,000 –&gt; 00:14:05,000<br>And of course, now only the covers a database system and we’ll see this later in the semester has to make sure that your index is in sync with the table.</p>
+<p>132<br>00:14:05,000 –&gt; 00:14:15,000<br>Right, meaning if I update or I insert a tuple into my table, I want to automatically update my indexes and the database system will do this for you and make sure everything is consistent in sync.</p>
+<p>133<br>00:14:15,000 –&gt; 00:14:19,000<br>Again, we won’t focus on that in this class.</p>
+<p>134<br>00:14:20,000 –&gt; 00:14:29,000<br>The values can differ depending on where the internote or leaf node.</p>
+<p>135<br>00:14:29,000 –&gt; 00:14:33,000<br>If it’s internote, the value is a pointer to some page below us.</p>
+<p>136<br>00:14:33,000 –&gt; 00:14:38,000<br>If it’s the leaf node, then it’s going to be either again the pointer to the tuple.</p>
+<p>137<br>00:14:38,000 –&gt; 00:14:46,000<br>I’m using the pointer not in the memory address term, I’m meaning like in page ID, all summer, the record ID, or it could be the actual tuple itself.</p>
+<p>138<br>00:14:47,000 –&gt; 00:14:52,000<br>The arrays within the nodes themselves are typically kept in sorted order, but they don’t have to be.</p>
+<p>139<br>00:14:52,000 –&gt; 00:14:55,000<br>And then there’s this issue of how do you deal with null keys.</p>
+<p>140<br>00:14:55,000 –&gt; 00:15:02,000<br>Right, because again, assume that if the index are trying to build the index are trying to build using B plus tree.</p>
+<p>141<br>00:15:02,000 –&gt; 00:15:06,000<br>If it’s non-unique, there could be null values. We have to put the null somewhere.</p>
+<p>142<br>00:15:06,000 –&gt; 00:15:09,000<br>So typically you either put them all at the end or all at the beginning.</p>
+<p>143<br>00:15:09,000 –&gt; 00:15:14,000<br>And actually when you create indexes in some systems, you actually define where you want them to be first or after.</p>
+<p>144<br>00:15:14,000 –&gt; 00:15:19,000<br>Because depending on what your query is, you may want to not see the nulls first, to me when I see them at the end.</p>
+<p>145<br>00:15:19,000 –&gt; 00:15:21,000<br>And it depends on applications.</p>
+<p>146<br>00:15:21,000 –&gt; 00:15:28,000<br>Another important thing also too is that the going back here, there’s only sibling pointers and pointers going down.</p>
+<p>147<br>00:15:28,000 –&gt; 00:15:31,000<br>There’s no pointers going back up.</p>
+<p>148<br>00:15:31,000 –&gt; 00:15:42,000<br>And the reason is why we’ll see this more in the next class is when we start taking latches on these nodes, we don’t want to have one thread going this way from the top down, another thread going from the bottom top.</p>
+<p>149<br>00:15:43,000 –&gt; 00:15:46,000<br>Because that’s going to have deadlocks. Now the sibling pointers are going to have this issue too.</p>
+<p>150<br>00:15:46,000 –&gt; 00:15:53,000<br>And we’ll see how to handle that. But by avoiding having the pointers going in two directions between different levels, it’s one less thing we have to worry about.</p>
+<p>151<br>00:15:53,000 –&gt; 00:16:00,000<br>Because we don’t need the way we’re going to do splits and merges. It’s not like an AVL tree where you have to do rotations and all that.</p>
+<p>152<br>00:16:00,000 –&gt; 00:16:02,000<br>We’re not going to do any of that.</p>
+<p>153<br>00:16:02,000 –&gt; 00:16:06,000<br>So I may say it’s easier. Not really.</p>
+<p>154<br>00:16:06,000 –&gt; 00:16:08,000<br>But they both suck. Both hard.</p>
+<p>155<br>00:16:09,000 –&gt; 00:16:18,000<br>So here’s what our node looks like. And somewhere in the, assuming this is a page, we’re going to have this array of key value pointers, our keys and values.</p>
+<p>156<br>00:16:18,000 –&gt; 00:16:28,000<br>And then we’ll have these pointers here that will be just a page ID to the previous one and to the next one along the R level.</p>
+<p>157<br>00:16:29,000 –&gt; 00:16:40,000<br>The key value pairs could either be sorted one after another. If it’s a, if it’s an inner node, then the values would just be pointers and record IDs.</p>
+<p>158<br>00:16:40,000 –&gt; 00:16:50,000<br>We could also sort them separately. And this is probably this common approach. You would have the key sort of in one array and then the value sort is separately in another array.</p>
+<p>159<br>00:16:50,000 –&gt; 00:16:57,000<br>And then the whatever offset you are in the, in the, you know, in a key array that corresponds to some offset in the, in the value, right?</p>
+<p>160<br>00:16:57,000 –&gt; 00:17:02,000<br>It’s almost like the column store stuff we said before. You can do simple arithmetic to decide how to jump around.</p>
+<p>161<br>00:17:02,000 –&gt; 00:17:07,000<br>VAR charts messed that up, but you also, you just maintain an offset table to keep track of these things.</p>
+<p>162<br>00:17:07,000 –&gt; 00:17:09,000<br>Right?</p>
+<p>163<br>00:17:10,000 –&gt; 00:17:18,000<br>And then there’s additional meditating and keep track of like, here’s a lot of slots I have left in my, in my page, by what level, you know, what level am I looking at?</p>
+<p>164<br>00:17:18,000 –&gt; 00:17:24,000<br>And that way, at your traversing down, you can just look in the page, say, okay, where am I in the tree?</p>
+<p>165<br>00:17:24,000 –&gt; 00:17:29,000<br>It’s also useful for recovery as well.</p>
+<p>166<br>00:17:29,000 –&gt; 00:17:37,000<br>So I’ve already said this. I’m just repeating myself, but the, the, the, the leaf node values themselves could either be record IDs, which is page number and offset to some location.</p>
+<p>167<br>00:17:37,000 –&gt; 00:17:46,000<br>And then the org could be a tuple data as in the case of index organized storage when we talked about before, like SQLite and my SQL do this by default.</p>
+<p>168<br>00:17:46,000 –&gt; 00:17:51,000<br>But in like, SQL server and Oracle, you can say, create table and I wanted to be index organized.</p>
+<p>169<br>00:17:51,000 –&gt; 00:17:58,000<br>Right? And it’ll, it’ll make the, it’ll make a B plus tree. And then the leaf nodes will be the actual just tuples themselves.</p>
+<p>170<br>00:17:58,000 –&gt; 00:18:05,000<br>Right? You get, for the number two, you only do this for the, the primary key index. Otherwise, you’re duplicating data. You don’t want to do that. Yes.</p>
+<p>171<br>00:18:05,000 –&gt; 00:18:07,000<br>I just want to declare a button terminal. Yes.</p>
+<p>172<br>00:18:07,000 –&gt; 00:18:10,000<br>If it’s for record IDs, that’s what they’ll leave no more.</p>
+<p>173<br>00:18:10,000 –&gt; 00:18:15,000<br>It’s a question. If it’s storing record IDs, is it a leaf node or an internet? It’s a leaf node.</p>
+<p>174<br>00:18:15,000 –&gt; 00:18:21,000<br>Because again, like, we’ll bring up an example in a second, but like,</p>
+<p>175<br>00:18:22,000 –&gt; 00:18:31,000<br>come back here. The, the only really keys that exist that like, they’re actually corresponded with it’s actually in your table are found in the leaf nodes.</p>
+<p>176<br>00:18:31,000 –&gt; 00:18:35,000<br>So we’ll see this in our demo when we like delete and insert keys.</p>
+<p>177<br>00:18:35,000 –&gt; 00:18:41,000<br>They, the, a key that was deleted may actually still exist in, in an inter node. Right?</p>
+<p>178<br>00:18:41,000 –&gt; 00:18:47,000<br>So you can’t have it like, you couldn’t have it be a record ID to point to something because there’s that that record may not exist. Right?</p>
+<p>179<br>00:18:47,000 –&gt; 00:18:57,000<br>In this case here, I have in this inter node here, I have 35, but there’s no 35 in the leaf node, meaning at some point this key got 35 inserted into it and then got deleted.</p>
+<p>180<br>00:18:57,000 –&gt; 00:19:03,000<br>But because the way it got organized and the algorithm to maintain the balance of the tree, I didn’t end up removing 35.</p>
+<p>181<br>00:19:03,000 –&gt; 00:19:14,000<br>So it’s still there. So the thing of like all the internoters, GuyPosts, you know, traffic signs or street signs to tell you how to get down to where you need to go in the leaves.</p>
+<p>182<br>00:19:15,000 –&gt; 00:19:16,000<br>Yes.</p>
+<p>183<br>00:19:16,000 –&gt; 00:19:23,000<br>I would say that every in the node only has one key, but every node has to have multiple key.</p>
+<p>184<br>00:19:23,000 –&gt; 00:19:29,000<br>His statement is, is it true to say that every inter node has one key, but every leaf node can have multiple keys.</p>
+<p>185<br>00:19:29,000 –&gt; 00:19:36,000<br>So this example here, I’m showing two keys per node because I got to make it fit on PowerPoint. Right?</p>
+<p>186<br>00:19:36,000 –&gt; 00:19:41,000<br>There’s nothing about the B plus tree that says you can only have two keys. You can have multiple keys.</p>
+<p>187<br>00:19:49,000 –&gt; 00:19:58,000<br>In this example, in this example, yeah, that you only need one, but in a real B plus tree, you wouldn’t have one key per index per node.</p>
+<p>188<br>00:19:59,000 –&gt; 00:20:00,000<br>Right?</p>
+<p>189<br>00:20:00,000 –&gt; 00:20:04,000<br>You can have a limited, right?</p>
+<p>190<br>00:20:04,000 –&gt; 00:20:11,000<br>And this action, and we’ll get this in a second. The slower the disk, the bigger the node you want, because that’s more squential I.O.</p>
+<p>191<br>00:20:11,000 –&gt; 00:20:13,000<br>So you get a hundreds of keys.</p>
+<p>192<br>00:20:16,000 –&gt; 00:20:21,000<br>There’s a limitation on what I can show in PowerPoint, but we’ll bring up the demo in a second.</p>
+<p>193<br>00:20:22,000 –&gt; 00:20:24,000<br>Other questions?</p>
+<p>194<br>00:20:25,000 –&gt; 00:20:30,000<br>Okay, so I made a big deal of like, okay, we’re talking about B plus trees, not B trees.</p>
+<p>195<br>00:20:31,000 –&gt; 00:20:33,000<br>You may not know what a B tree is.</p>
+<p>196<br>00:20:33,000 –&gt; 00:20:42,000<br>So the original B tree from 1972 had all the keys and values stored all throughout the tree, sort of like a VL tree, for example.</p>
+<p>197<br>00:20:43,000 –&gt; 00:20:50,000<br>And it’s more space efficient because you never have keys that are that don’t correspond to actually think something in your data set.</p>
+<p>198<br>00:20:51,000 –&gt; 00:20:59,000<br>Like I said before, I could delete record 35, key 35, and I get it’ll get removed from the leaf nodes, but it may end up in one of the guide posts.</p>
+<p>199<br>00:21:00,000 –&gt; 00:21:09,000<br>Or I could have multiple copies of the key going down my internodes to the leaf node, and that’s potentially wasting data or wasting space.</p>
+<p>200<br>00:21:10,000 –&gt; 00:21:15,000<br>So in a B tree, a key only appears once anywhere in the entire tree.</p>
+<p>201<br>00:21:16,000 –&gt; 00:21:23,000<br>But the problem with that one is that the values, I mean, the record of these pointing to actual two bulls, they can be anywhere in the tree.</p>
+<p>202<br>00:21:24,000 –&gt; 00:21:32,000<br>And so now if I want to scan along sequentially to get all the keys I need in sort of order, I may have to traverse up and down because I’m basically going to have to do breath for search.</p>
+<p>203<br>00:21:34,000 –&gt; 00:21:39,000<br>And again, we’re not going to talk about latching just yet, but think of like, I basically have to latch the entire tree as I’m going up and down.</p>
+<p>204<br>00:21:40,000 –&gt; 00:21:48,000<br>Whereas in a B plus tree, because the leaf nodes are only places where values actually are, right, considered like that’s the exact copy of what’s in the table.</p>
+<p>205<br>00:21:49,000 –&gt; 00:22:00,000<br>Once I get to the leaf nodes, I don’t have to maintain any of the latches from up our parts in the tree, and I can just scan along the leaf leaves and let other threads do whatever they want at the top of a buck, long as it doesn’t need for what I’m doing.</p>
+<p>206<br>00:22:01,000 –&gt; 00:22:15,000<br>Right? So the advantage for a B plus tree over a B tree is that we’re going to have better concurrent access, and we’re going to maximize or improve our amount of sequential IO we’re doing over random IO.</p>
+<p>207<br>00:22:17,000 –&gt; 00:22:18,000<br>Yes.</p>
+<p>208<br>00:22:18,000 –&gt; 00:22:33,000<br>So the question is, if the, if the, if the, inner nodes only are only guideposts, why do we have, why do we have sibling pointers?</p>
+<p>209<br>00:22:35,000 –&gt; 00:22:42,000<br>Because when you’re doing split merges, you may need to, do borrow things or merge with your neighbor.</p>
+<p>210<br>00:22:43,000 –&gt; 00:22:47,000<br>And they may, and they may be, you know, you have the same parent instead of going to a parent, you can go across and get them.</p>
+<p>211<br>00:22:50,000 –&gt; 00:22:52,000<br>You don’t need it. It’s just an optimization.</p>
+<p>212<br>00:22:55,000 –&gt; 00:22:57,000<br>Postgres does it. I actually don’t know, I don’t know whether my signal does.</p>
+<p>213<br>00:22:58,000 –&gt; 00:23:09,000<br>Okay. So let’s see how we want to do our basic operations. So do an insert. We want to basically, the goal is to find the correct leaf node.</p>
+<p>214<br>00:23:10,000 –&gt; 00:23:17,000<br>So we’re going to basically traverse down, falling of the guideposts get to some leaf node where our, where our keys should be.</p>
+<p>215<br>00:23:18,000 –&gt; 00:23:26,000<br>And if it has enough space, great. We insert it in sorted order in that leaf node and we’re done. If there’s not enough space, meaning the keys are going to be in the right place.</p>
+<p>216<br>00:23:27,000 –&gt; 00:23:39,000<br>And then I’m going to use the keys we have in its full and then node. Then we’re going to have to split whatever the leaf node we’re trying to insert into, into two nodes divided in half, but half the keys go on one side, half the keys go on the other side.</p>
+<p>217<br>00:23:40,000 –&gt; 00:23:45,000<br>And then you’re going to copy up whatever the middle key is between in the, in the list of keys up to your parent.</p>
+<p>218<br>00:23:46,000 –&gt; 00:23:53,000<br>And then now you have a new new new guidepost and a new pointer down to the new, the new node you just created, a new leaf node.</p>
+<p>219<br>00:23:53,000 –&gt; 00:24:02,000<br>And of course this happens recursively, right? If I, if I promote up the middle key that I split on to the parent and that parent is full, well now I got to split the parent.</p>
+<p>220<br>00:24:03,000 –&gt; 00:24:05,000<br>And that can, that can cascade all the way to the top.</p>
+<p>221<br>00:24:08,000 –&gt; 00:24:20,000<br>So making, you know, making these slides show this in, in PowerPoint, it’s kind of a pain. So I’m going to do, I’m going to bring up this visualization.</p>
+<p>222<br>00:24:20,000 –&gt; 00:24:24,000<br>So this is a, I think up here.</p>
+<p>223<br>00:24:25,000 –&gt; 00:24:31,000<br>Let’s show you the size. Here we go. Right, so this is a website, the, the, again, the link on the, the link on the slides takes you to the wrong one.</p>
+<p>224<br>00:24:32,000 –&gt; 00:24:38,000<br>I’ll, I’ll update it, but look, it’s, if you, if you search B plus tree visualization, you’ll get this.</p>
+<p>225<br>00:24:39,000 –&gt; 00:24:47,000<br>So I’m going to do a, a demo of a B plus tree with degree two. So the maximum of the keys per node is two and maximum of our pointers is going to be three.</p>
+<p>226<br>00:24:47,000 –&gt; 00:24:59,000<br>So the first thing we’ll do, we’re going to insert two. That lands in our root node. Can I make that bigger? Let’s try this height.</p>
+<p>227<br>00:25:02,000 –&gt; 00:25:15,000<br>200 and then now I can do this. Is that better? Okay. Right. So then we’re going to insert six. Right. So again, our, our, this, we only have a root node.</p>
+<p>228<br>00:25:15,000 –&gt; 00:25:20,000<br>This, we only have a root node. It can hold two keys. So nothing changes here. So now we’re going to insert four.</p>
+<p>229<br>00:25:22,000 –&gt; 00:25:30,000<br>So in this case here, we try to put three keys in our root. We can’t do that. So it decides to split on four, makes two new, two new leaf nodes.</p>
+<p>230<br>00:25:31,000 –&gt; 00:25:42,000<br>And then the middle key is four. So anything less than four goes on this side. Greater than you get a four goes on the other side. So twos on this node over here, this leaf node, and then the four and eight go on the other side.</p>
+<p>231<br>00:25:42,000 –&gt; 00:25:49,000<br>And in this implementation, they only have a sibling pointer going one direction. Some systems do that. Postgres does both directions.</p>
+<p>232<br>00:25:50,000 –&gt; 00:26:02,000<br>And it’s not wrong. It’s done differently. So now I insert five. Right. So I follow four. Four is less than five is greater than greater than you can four. So it would go down to the previous node.</p>
+<p>233<br>00:26:02,000 –&gt; 00:26:13,000<br>But then I have, I had two keys already in there. So I had to split that key and split that leaf node and made two nodes. And then I put five up there. Okay.</p>
+<p>234<br>00:26:16,000 –&gt; 00:26:19,000<br>So first, they’re good. Okay.</p>
+<p>235<br>00:26:22,000 –&gt; 00:26:25,000<br>So delete is essentially the reverse of this.</p>
+<p>236<br>00:26:25,000 –&gt; 00:26:36,000<br>Where we started the route, go down to refine the leaf node where entry, the entry one or move. If it’s not there, then we don’t do anything. Right. Because you can’t delete a key that doesn’t exist.</p>
+<p>237<br>00:26:37,000 –&gt; 00:26:47,000<br>If it is there, then we go ahead and delete it. So if the leaf node we just modified is at least half full, then we’re done. Right. We pop out and we don’t do anything.</p>
+<p>238<br>00:26:47,000 –&gt; 00:27:08,000<br>But now if, but if the leaf node after deleting that key goes below our threshold, right. And I’m divided by two minus one, with M’s number of keys per node, then we have to redistribute or sorry, the first thing we just tried to redistribute, meaning follow the sibling pointers, find a, another node at the same levels us and steal one of their keys.</p>
+<p>239<br>00:27:08,000 –&gt; 00:27:18,000<br>Like long as they don’t become unbalanced, that’s okay. We may have to tweak up above the parent node. Sorry, in the parent node, the, the, the guy post the split point.</p>
+<p>240<br>00:27:19,000 –&gt; 00:27:23,000<br>But again, that’s not that expensive because we would already have the latch for it.</p>
+<p>241<br>00:27:24,000 –&gt; 00:27:34,000<br>So coming next time. If we can’t redistribute, then we had to merge L with one of its siblings, combine those two keys, put it together and then update the parent accordingly. Right.</p>
+<p>242<br>00:27:35,000 –&gt; 00:27:48,000<br>And again, this is recursive. So if like, if I merge to two nodes together and then I delete a guy post key and my parent and now the parent is less than half full, then I, the, the merge will cascade up. Yes.</p>
+<p>243<br>00:27:49,000 –&gt; 00:27:59,000<br>What does it feel like if I, if I have two keys, you have one key and you’re my sibling, I delete a key and I’m less than half full.</p>
+<p>244<br>00:27:59,000 –&gt; 00:28:13,000<br>Right. That’s a bad example because there’s say three keys, right. If you have two keys and I have two keys, I delete a key. I’m like, oh, I’m less than half full and I go try to steal one of your keys. But if you, if I do that to you, then you’re less than half full. So I can’t.</p>
+<p>245<br>00:28:15,000 –&gt; 00:28:27,000<br>All right. So let’s go back to our demo. Right. So we can go ahead and delete. So let’s go ahead and delete eight. Right. Eight at the far end here.</p>
+<p>246<br>00:28:27,000 –&gt; 00:28:56,000<br>Oh, it was six. Oh, yeah. Sorry. Six. Right. Those are here. Delete six. That’s fine. We’re still balanced. And it’s two keys per two keys per node. And we delete half full. In this case is one. We can go to, we can go to degree four. That looked better. But now say I delete key four in the middle. Right. It basically propagates up and removes it from above.</p>
+<p>247<br>00:28:57,000 –&gt; 00:29:04,000<br>So let’s go to degree four because then you can start seeing the stealing better. Let’s do the same thing. So let’s do insert one.</p>
+<p>248<br>00:29:04,000 –&gt; 00:29:25,000<br>So two. Four. Five. Throw split. Now we got there. Six. Eight. Right. And then we’ll do nine.</p>
+<p>249<br>00:29:25,000 –&gt; 00:29:43,000<br>All right. So we’re going to go ahead and delete five five in the middle here. And again, at this point here that this node is leap, it will become less than half full. So the first thing it’s going to try to do is try to steal from from from one of siblings.</p>
+<p>250<br>00:29:43,000 –&gt; 00:30:12,000<br>So let’s go ahead and delete five. Didn’t do that. Why not? Yeah, this. What’s that? Yeah, I think it’s the four. So I delete four. See what it does. Yeah, guys, look at their steals. Yeah, so this animation doesn’t follow the textbook exactly.</p>
+<p>251<br>00:30:12,000 –&gt; 00:30:24,000<br>But like it’s not wrong. It’s just like different ways to do things like, you know, how aggressive you want to be on certain optimizations. But as long as you get the highlight of idea that you could steal.</p>
+<p>252<br>00:30:24,000 –&gt; 00:30:29,000<br>But you still have to update the parent when you steal because that’s going to change the boundary points. Yes.</p>
+<p>253<br>00:30:29,000 –&gt; 00:30:47,000<br>I’m seeing in this. In this. The relation that looks like there’s only. Yes, as I said, like in this example here, they have sibling points going in one direction. Postgres and other systems go in both directions, doubly linked list. Yeah. Yes.</p>
+<p>254<br>00:30:47,000 –&gt; 00:31:10,000<br>So that’s a question. I actually know that I don’t have an example of that. I know I do. Like in the middle here.</p>
+<p>255<br>00:31:10,000 –&gt; 00:31:20,000<br>These guys. Yeah, so I think the leaf notes you definitely want pointers to your siblings along this because you want to be able to you need to go along the leaf notes.</p>
+<p>256<br>00:31:20,000 –&gt; 00:31:30,000<br>If this guy had like, you know, this thing got even bigger. Could you have two parents to two to two notes at the same level have pointers to each other. You know, you know, I’m the same parent.</p>
+<p>257<br>00:31:30,000 –&gt; 00:31:37,000<br>You could. I don’t know actually don’t I don’t know what postgres does or other systems do.</p>
+<p>258<br>00:31:37,000 –&gt; 00:31:52,000<br>Yes. Really would have needed because you’re like, I’m sorry. If you had the same parent or. If you have the same parents, sorry, you have different parents than you don’t need to have a single point because you’re always going to emerge.</p>
+<p>259<br>00:31:52,000 –&gt; 00:32:09,000<br>And everyone, everyone comes up to the root. Like, it may be a case you have to like reorganize everything. Right. See, that may help. But at that point, you’re you’re latching the whole trees who cares. Yes.</p>
+<p>260<br>00:32:09,000 –&gt; 00:32:14,000<br>So you don’t show the parents. How do you send the data back to the.</p>
+<p>261<br>00:32:14,000 –&gt; 00:32:29,000<br>So question is if you don’t sit sent. If you don’t store a pointer to the parent, how do you send data to the parent? Well, we would discuss this next class because basically as you’re going down, you keep track of the stack of the nodes you visit as you go down and you keep track of which ones you have the latch for.</p>
+<p>262<br>00:32:29,000 –&gt; 00:32:48,000<br>So I can go down like if I’m traversing down down here and say and this guy here, I have to I got a split. When I when I come down and get here, I would recognize, hey, I don’t have to split. Don’t release the latch my parent. So I still have a pointer. I still have it on my stack and get back to.</p>
+<p>263<br>00:32:48,000 –&gt; 00:32:54,000<br>So it’s the internal bookkeeping with the worker as it goes down the threads or goes down the tree.</p>
+<p>264<br>00:32:54,000 –&gt; 00:33:15,000<br>Yes, again. And they so there will again, what’s all that means to be safer is unsafe traversals like you know, like as you go down if you would know like I’m trying to delete something. So as I go down, if I know that no matter whether or not the key I need to need below me, whether it’s there or not, I know that.</p>
+<p>265<br>00:33:15,000 –&gt; 00:33:30,000<br>So I won’t have to do a merge or split on this node I’m at right now. So once I go past it, I don’t I can release the latch on it because it’s considered safe. It won’t, no matter what happens below you, it’ll never get reorganized. So you don’t need to make any of the latch work. That will cover next class.</p>
+<p>266<br>00:33:33,000 –&gt; 00:33:35,000<br>Okay.</p>
+<p>267<br>00:33:36,000 –&gt; 00:33:52,000<br>So that’s the basic operations for splits and merges. So the B plus three has to treat general B plus three from D plus in databases is going to have a bunch of do a bunch of other stuff we can we couldn’t be able to we couldn’t do with the hash table.</p>
+<p>268<br>00:33:53,000 –&gt; 00:34:03,000<br>So if we have in a hash table, the only operation we could do is something equals this key right is the hash key equal to my key I’m looking up on.</p>
+<p>269<br>00:34:03,000 –&gt; 00:34:12,000<br>You can’t do less than we can do greater than we can’t do any partial key look up so you have to have the entire key right so if I say I build it next on columns ABC.</p>
+<p>270<br>00:34:12,000 –&gt; 00:34:22,000<br>I if I only have columns a and b for my key I can’t hash that and jump to anything meaningful right because the hash is completely completely random.</p>
+<p>271<br>00:34:22,000 –&gt; 00:34:38,000<br>But in B plus tree we can do a bunch of tricks where we can potentially only have or I’m not potentially can you can only have parts of the key or certain number of the attributes that your keys based on and still use it for queries.</p>
+<p>272<br>00:34:38,000 –&gt; 00:34:51,000<br>So again say the index on ABC so obviously I can do a equals one or B equals to and C equals three that’s the same thing is the hash thing I have the quality matching for all of the keys that are in my that that index is based on.</p>
+<p>273<br>00:34:51,000 –&gt; 00:34:57,000<br>I also can do what’s called a prefix search where I only have a and B and not see.</p>
+<p>274<br>00:34:57,000 –&gt; 00:35:03,000<br>Right and we can do the look up define all the matches were for based on the a and B without C.</p>
+<p>275<br>00:35:03,000 –&gt; 00:35:21,000<br>But we also not all systems do this because it’s tricky to do we also can do a suffix look up where we don’t have the prefix we have but we have the the suffix of the keys so I don’t have a but I have B and C and I can potentially still use my index and do that look up.</p>
+<p>276<br>00:35:21,000 –&gt; 00:35:34,000<br>Very few systems do this this is hard postgres doesn’t do this or cool and I think maybe SQL server can do this right and again for the hash index we have to have the entire key and we always have to be in a quality predicate.</p>
+<p>277<br>00:35:34,000 –&gt; 00:35:45,000<br>Yes it’s hard to handle that yes yeah because you basically need to have like potentially multiple threads at the same time going down and everyone everyone coordinating.</p>
+<p>278<br>00:35:45,000 –&gt; 00:35:57,000<br>There might be a patent oracle and that person people doing this wouldn’t surprise me I don’t know they’re called skip scans and oracle and that that might be why nobody does nobody else does this.</p>
+<p>279<br>00:35:57,000 –&gt; 00:36:23,000<br>So again say I have my index on a and B if I want to find key one and two again I use my guide post and bench essentially just looking at the keys the parts of the key in sort of sequential order so first I check is one lesson lesson equal to one and then I check the second part is two lesson equal to three and that tells me that I want to follow down this to this this note here and then I can find the entry I’m looking for.</p>
+<p>280<br>00:36:23,000 –&gt; 00:36:33,000<br>If I’m doing a prefix search meaning I have the first part of the key but not the remaining part so I have the key on a but not not B.</p>
+<p>281<br>00:36:33,000 –&gt; 00:36:52,000<br>The way that would work is you basically look at the part that you do have and say is one lesson equal to one yes follow down here and then now I scan along and keep keep evaluating my predicate against all the keys that are in the leaf notes until I have something that violates where I know that one is now is is less than two.</p>
+<p>282<br>00:36:52,000 –&gt; 00:37:09,000<br>I can’t reverse here because it’s so in order I know that we never never anything where you know with a key the first part a equals one and then something else for B at this point because they’re sort of first on on the first part of the key.</p>
+<p>283<br>00:37:10,000 –&gt; 00:37:27,000<br>Again the last one for the skip scans basically what happens is you at every single node you evaluate okay what part of the key do I have and then determine what portion of the trees below you have to look at and this example here since I don’t have the first part of the key I sent you have to look at everything.</p>
+<p>284<br>00:37:27,000 –&gt; 00:37:35,000<br>And again in I think in Oracle they can have multiple threads in parallel go down different parts of the tree and then they combine the result together at the end.</p>
+<p>285<br>00:37:36,000 –&gt; 00:38:02,000<br>It’s almost like doing a wildcard search and so we’ll see this a little bit in the demo at the end there’s this trade off between in the Davis is going to make that like it could say all right well I know something about the statistics of the keys that my index is based on so it probably still is worth me to go look look in the key look in the index but it may decide okay well I don’t know anything about what you’re trying to ask me to do so I’m not the index is not going to help me I’m just going to do a squandered scan across the entire table.</p>
+<p>286<br>00:38:02,000 –&gt; 00:38:08,000<br>And that actually may be faster than trying to do multiple probes down the index and combine results together.</p>
+<p>287<br>00:38:08,000 –&gt; 00:38:15,000<br>Again it’s not something the programmer has to deal with this is something we take the SQL query and try to figure this out on our own.</p>
+<p>288<br>00:38:15,000 –&gt; 00:38:20,000<br>Again we’ll cover this after the term.</p>
+<p>289<br>00:38:22,000 –&gt; 00:38:23,000<br>Yes.</p>
+<p>290<br>00:38:23,000 –&gt; 00:38:42,000<br>So this question is what is it up to the program inside what index is the make most systems yes so this is a this is an old problem in databases right we I talk about how great the extraction is relational model that like you don’t have to worry about how things are actually</p>
+<p>291<br>00:38:42,000 –&gt; 00:38:56,000<br>stored and all that but the end of the day someone’s got to decide what index is you actually need and so there’s a long line of research myself here at CMU but like going back to the 1970s and people trying to figure out automatically what index is you need.</p>
+<p>292<br>00:38:56,000 –&gt; 00:39:03,000<br>And so the commercial systems have built in tools that can help you figure this out my SQL and process do not have that.</p>
+<p>293<br>00:39:03,000 –&gt; 00:39:08,000<br>Pro scouts will build whatever index you tell you want it will do it for you.</p>
+<p>294<br>00:39:08,000 –&gt; 00:39:12,000<br>So you want to if you tell one thousand indexes it’ll do it.</p>
+<p>295<br>00:39:12,000 –&gt; 00:39:29,000<br>In SQL server on Azure what they will actually do is they’ll spin up a separate instance for your database system try out basically some kind of machine learn to figure out what indexes you actually need and then suggest them to you.</p>
+<p>296<br>00:39:29,000 –&gt; 00:39:47,000<br>Right. SQL server does all the other interesting things too although in the query optimizer which we’ll talk about after midterm your query shows up it starts planning it based on whatever indexes you have but at some point you can also say man I’d be really great if I had to find the index on this tree on this table right now.</p>
+<p>297<br>00:39:47,000 –&gt; 00:39:58,000<br>It doesn’t can build it for you if you potentially but instead of saying it can potentially build it for you just for that query but it also come back and tell you hey by the way if you gave me this index I’d run a lot faster.</p>
+<p>298<br>00:39:58,000 –&gt; 00:40:10,000<br>So the reason why you may necessarily you know you could build it just for the query and then throw it away because that will only affect that query you may not want to build it and then keep it around because as I said you got to maintain it and you got to keep it in sync with the table.</p>
+<p>299<br>00:40:10,000 –&gt; 00:40:16,000<br>So you don’t want your data is starting like a ton of indexes and now it’s going to all my insert updates and leads go slower.</p>
+<p>300<br>00:40:16,000 –&gt; 00:40:22,000<br>Also to like you know they take storage space take memory space of like there’s a cost physical hardware as well.</p>
+<p>301<br>00:40:22,000 –&gt; 00:40:29,000<br>That’s a whole another horn it’s nuts we can get into.</p>
+<p>302<br>00:40:29,000 –&gt; 00:40:32,000<br>Okay.</p>
+<p>303<br>00:40:32,000 –&gt; 00:40:45,000<br>So the next thing we got to deal with is so we know how to insert updates, deletes or sorry we know to insert and deletes we know how to do basic lookups to find the keys are working where with a prefix searches full key searches or the skip scans.</p>
+<p>304<br>00:40:45,000 –&gt; 00:40:50,000<br>The next challenge we got to deal with is how do we handle duplicate keys.</p>
+<p>305<br>00:40:50,000 –&gt; 00:40:54,000<br>So there’s two approaches to do this.</p>
+<p>306<br>00:40:54,000 –&gt; 00:41:05,000<br>Again the issue is going to be like since I want to be able to have everything always and log in right how do I actually want to handle the the applicability of inserting keys.</p>
+<p>307<br>00:41:05,000 –&gt; 00:41:10,000<br>The duplicates open over again and not violate that that requirement.</p>
+<p>308<br>00:41:10,000 –&gt; 00:41:21,000<br>So the most common approach is to to maintain sort of a hidden column or hidden attribute in the key with the record ID of the two bold that it’s pointing to.</p>
+<p>309<br>00:41:21,000 –&gt; 00:41:33,000<br>And then that guarantees that every key ends up being unique right if you have a key on four and I’ve key on four but you have a separate two point I’ve a separate two point we put our our basic record ID as part of the key.</p>
+<p>310<br>00:41:33,000 –&gt; 00:41:38,000<br>In addition to the common word based on their index then your form I for end up being unique.</p>
+<p>311<br>00:41:38,000 –&gt; 00:41:49,000<br>And because I can do that prefix search right don’t have to have all the elements of the key to do lookups then this this scheme still works.</p>
+<p>312<br>00:41:49,000 –&gt; 00:42:01,000<br>The other approach is do overload overflow leaf nodes and basic ideas that the leaf knows themselves if I if I get too full but I know I’m inserting the same key then I just potentially keep building a link list.</p>
+<p>313<br>00:42:01,000 –&gt; 00:42:08,000<br>And I sort of go down in the depth of the tree again but that violates our log and approach.</p>
+<p>314<br>00:42:08,000 –&gt; 00:42:11,000<br>Our log log and guarantee.</p>
+<p>315<br>00:42:11,000 –&gt; 00:42:22,000<br>So here’s how we do the the record right so the key now isn’t just number one it’s one and then followed by the record ID which is the page number and offset.</p>
+<p>316<br>00:42:22,000 –&gt; 00:42:36,000<br>So now if I want to insert six and six already exists well any time you know even though you might call in SQL insert six but the database says what’s going to do is convert that to insert six followed by the page number and slot number.</p>
+<p>317<br>00:42:36,000 –&gt; 00:42:47,000<br>So now when I get down here since this guy is full I’ll just do a split things slide over and then oops sorry.</p>
+<p>318<br>00:42:47,000 –&gt; 00:43:02,000<br>Yeah so I do things slide over and then now I can insert six right here right again superficially looks like it’s just like a keys but again the actual bits themselves are unique.</p>
+<p>319<br>00:43:02,000 –&gt; 00:43:16,000<br>So of course now if I want to do a delete on six again I would have been you know internally the data system is going to know okay well they don’t six followed by this record ID and offset or the page number and offset yes.</p>
+<p>320<br>00:43:16,000 –&gt; 00:43:26,000<br>What happens when the key is not like the number questions what happens the key is not a number what do you mean because you’re inserting six the actual record or.</p>
+<p>321<br>00:43:26,000 –&gt; 00:43:36,000<br>So yeah so six is the key.</p>
+<p>322<br>00:43:36,000 –&gt; 00:43:55,000<br>Because I insert into a table right and the table has a has an index on column through column A and the two on the certain for that attribute says the value six right but instead of just putting six in is going to say all right I’ve already inserted to the table now I have a record ID so when I</p>
+<p>323<br>00:43:55,000 –&gt; 00:44:16,000<br>insert into the index it’s the six and pen it by the bits for the record ID and that guarantees that no many times I insert six it’s unique right now if if it’s a unique index I like a primary key index or I can declare that it’s unique index then I don’t want to do this but the still the mechanism still works.</p>
+<p>324<br>00:44:16,000 –&gt; 00:44:25,000<br>Yes.</p>
+<p>325<br>00:44:25,000 –&gt; 00:44:38,000<br>The statement is correct this is just essentially a hidden attribute the guarantees that that duplicate keys are are physically unique right because it’s the record ID yes that’s the trick.</p>
+<p>326<br>00:44:38,000 –&gt; 00:44:59,000<br>So the overflow notes overflow note leaf notes look like this I insert six I recognize it’s full in my leaf node but I also recognize that the thing you’re trying to insert already exists in here and therefore it’s a duplicate so I just make this overflow page and insert it down here.</p>
+<p>327<br>00:44:59,000 –&gt; 00:45:06,000<br>Right and I can keep at inserting new things and I keep at pending it along like this.</p>
+<p>328<br>00:45:06,000 –&gt; 00:45:28,000<br>So this looks sort of similar to the chain hash table before right that like instead of having a hash function tell me what where I landed the start of my linked list I have a tree structure in front of it essentially doing the same thing because now again the you know this violates the log N we have the deal with like okay what if we actually want to split and merge what do we move things.</p>
+<p>329<br>00:45:28,000 –&gt; 00:45:37,000<br>This makes things way more complicated than the record ID approach and very I don’t think any real system actually does this yes.</p>
+<p>330<br>00:45:37,000 –&gt; 00:45:48,000<br>The question why what’s the benefit of this approach now I don’t need to store the record ID right do forget you know with the store to part in every single key.</p>
+<p>331<br>00:45:48,000 –&gt; 00:46:02,000<br>It’s potentially easier engineering actually not really makes it harder this is this is bad idea don’t do this you could and so you have things back.</p>
+<p>332<br>00:46:02,000 –&gt; 00:46:08,000<br>Right I think I’m going to talk about cluster indexes these aren’t.</p>
+<p>333<br>00:46:08,000 –&gt; 00:46:31,000<br>I mean it’s good for you guys to know this and this exists but I don’t spend too much time on it the basic idea is that there’s some database systems like let you define what are called cluster indexes on tables where you can allow a the actual table itself the actual tuples themselves even though the racial models on sorted you can say I want the physical tuples on this to be sorted based on the sort of defined by some index.</p>
+<p>334<br>00:46:31,000 –&gt; 00:46:47,000<br>And in this case here if I if I have a true cluster index that no matter where I insert a new record the the actual heap files themselves will be guaranteed to be in that sort of order.</p>
+<p>335<br>00:46:47,000 –&gt; 00:46:54,000<br>You sort of think of this again the my sequel sequel light approach where the leaf knows are actually store in the tuples that’s automatically cluster index.</p>
+<p>336<br>00:46:54,000 –&gt; 00:47:04,000<br>But in some database systems where it isn’t an in the organized table you can have the sort of being forced by by this kind of index.</p>
+<p>337<br>00:47:04,000 –&gt; 00:47:23,000<br>Right and so the the advantage of this is that when I start doing when I want to start doing scans assuming I’m not doing index organized storage when I scan along the leaf notes the final two was I’m looking for then I’m guaranteed to get the pages in sort of order basis the final.</p>
+<p>338<br>00:47:23,000 –&gt; 00:47:37,000<br>The key order right so again as I as I scan this going across I get I get all my entries and I get all my pages and I just read through that squenchly and things go fast.</p>
+<p>339<br>00:47:37,000 –&gt; 00:47:52,000<br>If you don’t have a cluster index then you end up sometimes with a bunch of random I owe the again the the leaf those that could be stores quenchly on disk but when I start doing look ups to get the actual data that the leaf notes are pointing to that could end up being.</p>
+<p>340<br>00:47:52,000 –&gt; 00:48:20,000<br>And so if I do something really stupid like say I have one free frame of my buffer pool and if I scan along in the order if I fetch the page in the order that they come out of the index I may end up doing a bunch of the redundant I owe were like I fetch a page in process on it because that’s the key i’m looking at right now or that I pointed to and then I throw it away get the next page but then a few few more keys later I go fetch the same page I did before.</p>
+<p>341<br>00:48:20,000 –&gt; 00:48:49,000<br>So I really some optimization to do this is that you don’t actually you don’t retrieve the tuples as you scan along the leaf nodes as you find them you first do the scan the leaf notes first get your list of all your pages then sort them in by pace based on page ID and then go retrieve them based on this now you should do the bookkeeping to make sure that you you’re following along the tuples in the order defined by the index.</p>
+<p>342<br>00:48:49,000 –&gt; 00:49:05,000<br>That’s what you care about but again this is a way to get more squatch IO and reduce the amount of random access yes.</p>
+<p>343<br>00:49:05,000 –&gt; 00:49:25,000<br>So his statement is why can’t just keep track of what I’ve already fetched in page I don’t fetch it again I was giving like a toy example where like I only have one frame so like I can only fetch one page I throw it out and get the next page in this in this toy example right but but thinking a real system you don’t think of like one page like I can have maybe.</p>
+<p>344<br>00:49:25,000 –&gt; 00:49:35,000<br>So I can only get 10 gigabytes of space but my database is one terabyte the table is one terabyte and then you’re running that space.</p>
+<p>345<br>00:49:36,000 –&gt; 00:49:51,000<br>You want to sort them you want to give them page you want to access them in the order that they exist physically on desk and then still do a bookkeeping to make sure that the order of the results are generating match the sort of of the of the index.</p>
+<p>346<br>00:49:51,000 –&gt; 00:49:58,000<br>Again to reduce amount of wasted IO.</p>
+<p>347<br>00:49:58,000 –&gt; 00:50:15,000<br>Okay so I want to quickly go through some design choices here how to handle certain things and so a lot of these ideas come from this book which is considered the Bible of bee plusries from this guy girth graphy he’s a bunch of the various techniques that we’ll discuss this semester.</p>
+<p>348<br>00:50:15,000 –&gt; 00:50:20,000<br>And again he’s called modern be tree techniques and again he’s a lot bee plusries but he calls it a be tree.</p>
+<p>349<br>00:50:20,000 –&gt; 00:50:30,000<br>And actually if you just Google this name of this book it’s came out in 2010 it’s a great book comes with a lot of these techniques and even more if you just Google you’ll find the PDF.</p>
+<p>350<br>00:50:30,000 –&gt; 00:50:37,000<br>If you like this kind of stuff it’s a good read again because it’s not like theory it’s like here’s actually how to implement it in a real system.</p>
+<p>351<br>00:50:38,000 –&gt; 00:50:50,000<br>Alright the first question is what’s going to be the node size. So you can assume in all our diagrams here one node corresponds to one page in our database files in our buffer pool.</p>
+<p>352<br>00:50:50,000 –&gt; 00:51:00,000<br>But in some systems like an IBM DB to you can actually modify you configure the size of a database page for different tables and different indexes.</p>
+<p>353<br>00:51:01,000 –&gt; 00:51:08,000<br>And so depending on what your hardware is you may want to set the size the page size of your bee plusries nodes differently.</p>
+<p>354<br>00:51:08,000 –&gt; 00:51:16,000<br>And so again the slow your disk typically the larger the page you want because again it’s going to be better for maximizing swancho IO.</p>
+<p>355<br>00:51:16,000 –&gt; 00:51:21,000<br>So if you’re an old spitting discharge drive you want to page size of like one megabyte.</p>
+<p>356<br>00:51:21,000 –&gt; 00:51:26,000<br>Now the number of keys that you can fit in a one megabyte page will be defined on size your keys are.</p>
+<p>357<br>00:51:26,000 –&gt; 00:51:30,000<br>If they’re all 8 bit integers then you can store a lot of them.</p>
+<p>358<br>00:51:30,000 –&gt; 00:51:33,000<br>But more than you actually can have.</p>
+<p>359<br>00:51:33,000 –&gt; 00:51:39,000<br>But for a net fastest D roughly 8 to 10 kilobytes is considered to be the right size.</p>
+<p>360<br>00:51:39,000 –&gt; 00:51:47,000<br>And then if you’re in memory 512 bytes is considered the right size is within a cache line you keep things very efficient.</p>
+<p>361<br>00:51:47,000 –&gt; 00:52:02,000<br>If we talked about that that that some systems can actually violate that requirement that every node has to be half full obviously you can’t go to more than you can have more keys than you actually store because you run out of space.</p>
+<p>362<br>00:52:02,000 –&gt; 00:52:09,000<br>But the you can recognize that like okay well most the maybe I don’t want to split or so.</p>
+<p>363<br>00:52:09,000 –&gt; 00:52:12,000<br>Yeah I may want to merge my new it’s all the time.</p>
+<p>364<br>00:52:12,000 –&gt; 00:52:26,000<br>And I can go below that threshold temporarily to see whether something’s going to get inserted to then put me above that threshold and avoid having to do this prematurely.</p>
+<p>365<br>00:52:26,000 –&gt; 00:52:34,000<br>Again this is why posters are going to call their balance they call their B plus tree as a non balanced B plus tree.</p>
+<p>366<br>00:52:34,000 –&gt; 00:52:39,000<br>And they can violate this requirement.</p>
+<p>367<br>00:52:39,000 –&gt; 00:52:45,000<br>Next question is how do you want to handle very length keys I think somebody brought this up so the.</p>
+<p>368<br>00:52:45,000 –&gt; 00:52:51,000<br>We could sort of try to approach it like a calm store we want everything to be fixed length.</p>
+<p>369<br>00:52:51,000 –&gt; 00:52:59,000<br>So one way to do that is actually don’t store the keys themselves in every node you just store pointer to the key like the record ID.</p>
+<p>370<br>00:52:59,000 –&gt; 00:53:03,000<br>Because that’s always going to be the 30 to bits are 64 bits.</p>
+<p>371<br>00:53:03,000 –&gt; 00:53:13,000<br>And actually this little say space to because you know my keys are all really big I’m not going to store them you know make because again the B plus tree is a copy of what’s in the table.</p>
+<p>372<br>00:53:13,000 –&gt; 00:53:19,000<br>I only have the store to just the pointer to the record ID in the in the notes.</p>
+<p>373<br>00:53:19,000 –&gt; 00:53:24,000<br>Is that a good idea or bad idea.</p>
+<p>374<br>00:53:24,000 –&gt; 00:53:33,000<br>This is a good idea because it’s caused a lot of non-spongebob.</p>
+<p>375<br>00:53:33,000 –&gt; 00:53:38,000<br>So I think I like as I’m traversing down my my notes and I got to figure out where I’m going left and right.</p>
+<p>376<br>00:53:38,000 –&gt; 00:53:46,000<br>I don’t have those guide posts in my node I got to go follow the pointer to go get that tuple in that page then do the look up to find what I’m need.</p>
+<p>377<br>00:53:46,000 –&gt; 00:53:51,000<br>And again while I’m doing this I’m holding latches in my data structure and that’s going to be really slow.</p>
+<p>378<br>00:53:51,000 –&gt; 00:53:58,000<br>Yeah so nobody does this in a dis based system the variant of this of a B plus tree is called T trees.</p>
+<p>379<br>00:53:58,000 –&gt; 00:54:03,000<br>I figured out the T stands for I think it stands for the dude’s name.</p>
+<p>380<br>00:54:03,000 –&gt; 00:54:10,000<br>In the in the diagrams the nose look like T’s but then I think the email he said oh yes the guy’s name but whatever.</p>
+<p>381<br>00:54:10,000 –&gt; 00:54:17,000<br>In memory databases did this in the 80s because they wanted to save space you want to have to duplicate keys in your B plus tree because they didn’t have a lot of memory.</p>
+<p>382<br>00:54:17,000 –&gt; 00:54:24,000<br>And nobody does this now in a real system because it’s so expensive to do that other look up it’s easier to just copy the key.</p>
+<p>383<br>00:54:24,000 –&gt; 00:54:37,000<br>You could support very very length nodes where the size of the node can vary within the index and you have to do this because you don’t know the size of the you want to have the same potential</p>
+<p>384<br>00:54:37,000 –&gt; 00:54:46,000<br>keys in every single node but nobody has you may not have enough space to store all those keys within that node.</p>
+<p>385<br>00:54:46,000 –&gt; 00:54:51,000<br>As far as you know only academic systems do this nobody does this in the real world.</p>
+<p>386<br>00:54:51,000 –&gt; 00:54:56,000<br>Padding’s another approach to handle this was we talked before in in column stores.</p>
+<p>387<br>00:54:56,000 –&gt; 00:54:58,000<br>Again I think this is rare.</p>
+<p>388<br>00:54:58,000 –&gt; 00:55:19,000<br>So what you do is that they have a essentially a lot of array a lot of page approach like we saw in table or table pages where you just had this array of pointers within either offsets within the page you’re looking at or to another overflow page.</p>
+<p>389<br>00:55:19,000 –&gt; 00:55:30,000<br>Again it’s just like the overflow values we saw before where you just you know that they think I’m looking for is not my page I got to go somewhere else and go get it.</p>
+<p>390<br>00:55:30,000 –&gt; 00:55:42,000<br>Now I’ve got to talk about how we actually want to go find the keys once once we land on the node we bring it into memory and we’re looking for a key to decide to go left or right or whether we have the match we’re looking for in our leaf node.</p>
+<p>391<br>00:55:42,000 –&gt; 00:55:45,000<br>And then I decide how we’re going to do that match.</p>
+<p>392<br>00:55:45,000 –&gt; 00:55:57,000<br>So the easiest approach is just do a linear scan right just think of like an array doesn’t matter if it’s sort of the not I just started beginning and I scan along to I find nothing I’m looking for this case here I’m looking for key eight.</p>
+<p>393<br>00:55:57,000 –&gt; 00:56:01,000<br>It’s simple it’s dumb it works right.</p>
+<p>394<br>00:56:01,000 –&gt; 00:56:07,000<br>We can do a little better though with SIMD actually I don’t here is taking 418 618.</p>
+<p>395<br>00:56:07,000 –&gt; 00:56:12,000<br>Nobody okay here doesn’t know what SIMD is.</p>
+<p>396<br>00:56:12,000 –&gt; 00:56:33,000<br>Okay SIMD stands for single instruction multiple data it’s a class of instructions you can have on modern CPUs that allow you to basically have like a vector register you put a bunch of values in it and then there’s a single instruction to do like do something on it like you can put a bunch of numbers in one vector a bunch of numbers another vector and do add them together and the apple goes into another vector.</p>
+<p>397<br>00:56:33,000 –&gt; 00:56:42,000<br>We’ll cover this when we talk about quick execution but there’s a very common technique used in modern systems this is what made snowflake special 10 years ago.</p>
+<p>398<br>00:56:42,000 –&gt; 00:57:02,000<br>So what I can do is instead of doing looking at every single key one after another to try to find eight I can instead use a SIMD in transit in this case here this is for x86 to do a value of 30 bit integers on and 120 bit registers.</p>
+<p>399<br>00:57:02,000 –&gt; 00:57:20,000<br>So I just started I’m looking for eight I store eight copies of eight and my SIMD register has four lanes and then now in the single instruction I can do an evaluation of those eight or four eights with the keys in my array and then I’ll get a bit mass that says zeros if there’s no match one if there’s a match.</p>
+<p>400<br>00:57:20,000 –&gt; 00:57:42,000<br>So in this case here now it’s a single instruction to do that evaluation and I can do that way more efficiently than going one after another in this case and then for this one I don’t have a match so I got a slide it over do do look at the next one I have to recognize that I only have three keys and not four so I got to play a little tricks and make sure like I don’t end up with a false positive but in this case here now I have eight equals eight in that first lane and I have a match.</p>
+<p>401<br>00:57:43,000 –&gt; 00:57:49,000<br>So I can do this more efficiently than doing this it is still linear but I’m doing batches and the harbor can support that.</p>
+<p>402<br>00:57:52,000 –&gt; 00:58:10,000<br>Next approach is obviously do binary search assuming it’s sorted this is easy you jump in the middle my value is greater than one of the key I land on it’s greater less than the one I’m looking for I jump to the next side so far than to I find my match then I’m done this is what most systems will do yes it depends on the heart.</p>
+<p>403<br>00:58:10,000 –&gt; 00:58:19,000<br>So in postgres there be a kill lights right but again the number of keys you can store in that note it’s going to depend on the key with the type of the key is.</p>
+<p>404<br>00:58:23,000 –&gt; 00:58:39,000<br>So binary search is the most common one the you could do this I don’t think any can outside of equity and nobody does this you can do interpolation search and this works if you know there’s no gaps in your keys and they’re always in monotonically increasing order like if you have a match.</p>
+<p>405<br>00:58:40,000 –&gt; 00:59:01,000<br>So I have a primary key that’s a like an auto increment value like plus one plus one plus one plus one and again I assume I don’t have any gaps then it’s just simple math to figure out exactly within my array I know the low point I know the main value the max value I know I know number of keys that I have and I can do a simple formula like this to jump exactly to the offset that I need.</p>
+<p>406<br>00:59:01,000 –&gt; 00:59:10,000<br>So this is the fastest approach faster than binary search faster than Cindy but again you have you can’t have gaps to do this so it’s rare.</p>
+<p>407<br>00:59:13,000 –&gt; 00:59:25,000<br>Alright we have 20 minutes left to get through all these optimizations let’s see how far we can go okay somebody’s pretty obvious the the the pointers ways and the book and the buffer updates those are those are probably most important.</p>
+<p>408<br>00:59:25,000 –&gt; 00:59:54,000<br>So just like in a column store we should recognize that the keys that are going to be in our in our B plus tree they’re going to be in the same value domain because they’re all coming from the same same attributes furthermore they’re sorted which is even better for compression right so there’s a bunch of things we can take advantage of recognizing that the values are going to be very similar to to produce the size of our of the keys we actually have this.</p>
+<p>409<br>00:59:55,000 –&gt; 01:00:19,000<br>So in this case here we can do what’s called prefix compression and we can identify that we’re going to have a bunch of keys that are very close to each other in electrical ordering and they’re going to have overlapping portions of data so instead of storing complete copies of the keys we just store the common prefix in this case here Rob and then we destroy the remaining suffix that’s unique right that’s pretty easy that’s nice.</p>
+<p>410<br>01:00:19,000 –&gt; 01:00:48,000<br>Next technique is to do de duplication and the idea here is that we’re going to have a bunch of keys that are end up with the same value open over again in the in the in the same notes again ignoring the prefix or putting the putting the record at the end because that one the system knows that it’s doing that it can pull that piece piece out but I’m going to do that.</p>
+<p>411<br>01:00:49,000 –&gt; 01:01:18,000<br>I have a bunch of non unique keys that are going to end up in the same node it’s just like prefix sorting or prefix compression I just store the duplicate key once then have a posting list of all the values that correspond to that key and now I’m only starting one copy that key right post this out of this in I think in in post this 15 I think you might less here and it’s pretty significant drop in size your your your.</p>
+<p>412<br>01:01:19,000 –&gt; 01:01:40,000<br>Yes. How do we know how do we know that we should interpret what this is like that these are values not keys this is just a mock up you would actually store it you wouldn’t start exactly the page like this you would have obviously length of the number elements your story.</p>
+<p>413<br>01:01:40,000 –&gt; 01:01:45,000<br>I’m not showing that you have additional metadata to know what the offsets are.</p>
+<p>414<br>01:01:45,000 –&gt; 01:02:06,000<br>We can also do suffix truncation and again because the in notes don’t have to be the exact copies of the keys because those keys might not exist in the leaf notes we maybe don’t have to store the entire key we just need enough of the of the key keys prefix to discriminate whether we need to go left or right.</p>
+<p>415<br>01:02:07,000 –&gt; 01:02:20,000<br>So in this case here I have keys ABC up to K and then element O up to up to V the only thing that that really matters is in this case here is say just the first three characters of both of these two strings.</p>
+<p>416<br>01:02:21,000 –&gt; 01:02:27,000<br>So my inner knows only needed store store the minimum prefix that we need to decide whether go left or right.</p>
+<p>417<br>01:02:27,000 –&gt; 01:02:41,000<br>Of course now the challenge is like if I insert a key that could it could be in between them maybe I got to go back and get the regional keys to decide what the predict should be.</p>
+<p>418<br>01:02:42,000 –&gt; 01:02:45,000<br>But in some environments this might be the right thing.</p>
+<p>419<br>01:02:45,000 –&gt; 01:02:58,000<br>So pointers whizzling is a comment technique that’s going to allow us to minimize the amount of lookups we have to do in our buffer pulls page two.</p>
+<p>420<br>01:02:59,000 –&gt; 01:03:08,000<br>Because again when we are traversing the nodes of trusting the tree structure the what I keep calling our point is pointers they’re really page IDs.</p>
+<p>421<br>01:03:08,000 –&gt; 01:03:15,000<br>So I got to go to the page table say okay well if this page exists give me the pointer to it right.</p>
+<p>422<br>01:03:15,000 –&gt; 01:03:26,000<br>So if I want to say find keys greater than three I started my root node here and I look at the keys and decide whether I want to go left or right in this case here I want to go left.</p>
+<p>423<br>01:03:26,000 –&gt; 01:03:32,000<br>But then the value in this node here is going to be the page numbers of page two.</p>
+<p>424<br>01:03:32,000 –&gt; 01:03:37,000<br>So now I got to go down my buffer pull and say okay give me the pointer to page two.</p>
+<p>425<br>01:03:37,000 –&gt; 01:03:44,000<br>And likewise when I’m on the bottom here I want to scan along the sibling nodes I go from page two to page three I got to go back to the buffer pull.</p>
+<p>426<br>01:03:45,000 –&gt; 01:03:54,000<br>So the idea of pointer swizzling is that if you pin the page in the buffer pull say this page cannot be evicted.</p>
+<p>427<br>01:03:55,000 –&gt; 01:04:05,000<br>Then any page that points to that page you pin you have to be pinned to you replace its contents with the actual pointer in memory.</p>
+<p>428<br>01:04:07,000 –&gt; 01:04:15,000<br>And so now when I’m scanning when I’m traversing my tree I’m not going to the buffer pull say go do look up for me for this page I had the thing exactly what I’m looking for.</p>
+<p>429<br>01:04:16,000 –&gt; 01:04:23,000<br>So thing like the root node everyone’s always going to that in your B plus tree and say and then they’re always going to go down to the next level.</p>
+<p>430<br>01:04:23,000 –&gt; 01:04:30,000<br>So instead of having to do page page look ups in the buffer pull would get down the next level I have the pointer do you know where where to go directly.</p>
+<p>431<br>01:04:32,000 –&gt; 01:04:40,000<br>And obviously you don’t want to store this pointer on disk you know if the page gets flush because now you load it back in you have this pointer that goes nowhere and that would be bad.</p>
+<p>432<br>01:04:40,000 –&gt; 01:04:47,000<br>So there’s bookkeeping you have to do to make sure okay like you’re going to disk. I mean undo this swizzle what got swizzled.</p>
+<p>433<br>01:04:48,000 –&gt; 01:04:51,000<br>To make sure that nobody points to it and then also to like.</p>
+<p>434<br>01:04:54,000 –&gt; 01:05:09,000<br>You don’t want you know you don’t want this page you get evicted this thing have a swizzle pointer and now it’s pointing to some other page that got swapped in that frame and does it and it’s not part of the plus tree and then you have a second ball because it starts interpreting bites that it should start interpreting bites in a way that it shouldn’t.</p>
+<p>435<br>01:05:10,000 –&gt; 01:05:33,000<br>So the reason why I talk about this for the B plus tree and not for the hash table stuff or not for the regular heap stuff is because we already have this hierarchy in our tree structure here we would know that if we swizzle anything below us we want to make sure that this thing doesn’t get unpinned sorry that this thing doesn’t get unpinned before it’s children get unpinned and that way the pointers are always valid.</p>
+<p>436<br>01:05:33,000 –&gt; 01:05:48,000<br>Right just thing again when you’re building project one this thing all the work you have to go do to go go look up the page you will find the thing you’re looking for the frames not there and then go fix something right you skip all of that.</p>
+<p>437<br>01:05:49,000 –&gt; 01:05:53,000<br>You know update the L.R.U.K. stuff right you skip all of that by just going directly through the pointers.</p>
+<p>438<br>01:05:53,000 –&gt; 01:06:04,000<br>But of course you lose the metadata of the access patterns for for how these page pages are being used but again if it’s important off to pin it and swizzle it then you probably should stay in memory.</p>
+<p>439<br>01:06:07,000 –&gt; 01:06:16,000<br>All right to do and search quickly the most common trick is just pre-sort everything which we’ll cover in the next week.</p>
+<p>440<br>01:06:16,000 –&gt; 01:06:39,000<br>You sort out your keys and just lay them out as leaf nodes right with your sibling pointers and then build the data structure from the bottom to the top right and this is different than if I just do if I just insert the keys one after another I would start from the top and go down and start how to do the splits and so forth I skip all of that by just pre-sort things and then build a scaffolding on top of that.</p>
+<p>441<br>01:06:40,000 –&gt; 01:06:44,000<br>Right and this technique is very common as well.</p>
+<p>442<br>01:06:47,000 –&gt; 01:07:09,000<br>All right so the last optimization I want to talk about is you know we make a big deal about how the nice thing about the B plus tree is that it’s balanced everything’s always log in and our lookups can be really fast because again it’s going to run everything’s log in to get the leaf node and then we can try to get as much to access as much as we can.</p>
+<p>443<br>01:07:09,000 –&gt; 01:07:26,000<br>But of course the challenge is that updates are going to be expensive for us because we have to maintain this balance this balance property anytime a thread comes along and inserts or deletes they may draw the short straw and be responsible for reorganizing the entire data structure.</p>
+<p>444<br>01:07:26,000 –&gt; 01:07:55,000<br>And so ideally what we want is a way to delay the updates to the data structure in such a way that we can accumulate them and then at some later point we have enough we say okay let me go ahead and apply all my changes in a batch and then yes I may have to reorganize things but I’m doing it all once I can amortize the cost of making those changes and now your rights can potentially be faster because you don’t you don’t have to worry about looking on the split and you don’t have to worry about looking on the split.</p>
+<p>445<br>01:07:56,000 –&gt; 01:08:06,000<br>So every time I insert something new. So there’s a line of work on what is called right optimized B trees or B plus trees.</p>
+<p>446<br>01:08:06,000 –&gt; 01:08:13,000<br>These have sometimes also called B epsilon trees you’ll see it with the little little epsilon symbol.</p>
+<p>447<br>01:08:13,000 –&gt; 01:08:21,000<br>There’s a commercial variant from the Toku Tech guys called fractal trees but it’s basically branding it’s the same idea.</p>
+<p>448<br>01:08:21,000 –&gt; 01:08:31,000<br>And the idea is basically now every single root node and inter node I’m going to have a mod log just like my Seagal had for their pages when they were doing compression.</p>
+<p>449<br>01:08:31,000 –&gt; 01:08:47,000<br>And any time a new update comes along instead of propagating those changes all the way down to the leaf nodes I’m going to violate the property we talked about in the B plus tree where the leaf nodes have to be where the actual values are and I can insert my entries into the mod log.</p>
+<p>450<br>01:08:47,000 –&gt; 01:08:54,000<br>So I want to insert seven again instead of having to verse down and figure out where seven should go I just put it in the root.</p>
+<p>451<br>01:08:54,000 –&gt; 01:09:07,000<br>Same thing I want to delete delete 10 instead of putting it into the going down and deleting it and then essentially doing a merge auto put it in the mod log.</p>
+<p>452<br>01:09:08,000 –&gt; 01:09:17,000<br>So now if a query comes up almost to find 10 well as I traverse down I look in the mod log is the thing I’m looking for here.</p>
+<p>453<br>01:09:17,000 –&gt; 01:09:32,000<br>So in this case here I deleted 10 it’s in my mod log so when I do my look up I would find the entry here and I’m done I don’t need to go to the bottom and to actually see the change.</p>
+<p>454<br>01:09:33,000 –&gt; 01:09:37,000<br>So what’s the obvious problem with this.</p>
+<p>455<br>01:09:37,000 –&gt; 01:09:39,000<br>The buffer is a full right.</p>
+<p>456<br>01:09:39,000 –&gt; 01:09:56,000<br>So when that happens then you got to pass cascade down the changes and put the ideas here you’re doing this incrementally and in batches and you basically you don’t have to apply any modifications until you get to the structure of the data structure until you get to the to the leaf notes.</p>
+<p>457<br>01:09:56,000 –&gt; 01:10:16,000<br>So if I insert 40 I just move my previous changes insert seven insert 10 here and I leave I put insert 40 there and at some point if I keep going this thing this thing cascades down and this thing is full then then I go ahead and apply my changes.</p>
+<p>458<br>01:10:16,000 –&gt; 01:10:17,000<br>Yes.</p>
+<p>459<br>01:10:17,000 –&gt; 01:10:30,000<br>So this potentially makes really slow because as I’m scanning along here I potentially have to do.</p>
+<p>460<br>01:10:30,000 –&gt; 01:10:50,000<br>So I do some of the things I’m looking for is in there yes but then like these different system these different locations of BF’s entries will have like bloom filters in front of these things to say is the key I’m looking for actually even in my mod log if yes then go look for.</p>
+<p>461<br>01:10:50,000 –&gt; 01:10:55,000<br>And bloom filters are cheap to maintain and they’re not very big.</p>
+<p>462<br>01:10:55,000 –&gt; 01:11:03,000<br>So this is an old idea that I would old 2003 old BF’s trees 1972 so maybe that’s not that old.</p>
+<p>463<br>01:11:03,000 –&gt; 01:11:18,000<br>So there’s an old idea this what does this look also look like before we talk about for log structure storage right same idea that we can append these log log entries and then bash them up and then apply them at some later point.</p>
+<p>464<br>01:11:18,000 –&gt; 01:11:32,000<br>So I said you guys we’ve seen this idea over and over again so to protect they rebranded their implementation of a BF’s long tree as fractal trees and then they had a storage end for my sequel that I got a gap.</p>
+<p>465<br>01:11:32,000 –&gt; 01:11:47,000<br>Got bought by percona and I think I got deprecated last year so they had probably the most robust implementation from a few years ago that’s dead splinter DB is a key value store and better key value store from VMware.</p>
+<p>466<br>01:11:47,000 –&gt; 01:12:16,000<br>Written actually somebody here that he’s a researcher at VMware but he was getting his his MBA here at Tepper at CMU and the other guy working in the C’s Napa Fresc at Cornell but like this is basically a sort of a super optimized version of this and then relational AI is a relational knowledge based sort of graph veneer on top of relational database system that is a key value store.</p>
+<p>467<br>01:12:16,000 –&gt; 01:12:29,000<br>So this is not that common but this is something I suspect we’ll see more and more of in the future.</p>
+<p>468<br>01:12:29,000 –&gt; 01:12:39,000<br>I mean rocks DB doesn’t need this because rock DB already is a log structure nursery and you’re you’re essentially getting this the same idea the same the same properties.</p>
+<p>469<br>01:12:39,000 –&gt; 01:12:52,000<br>Alright so we have six minutes left so let’s pop up and postgres and do a quick demo.</p>
+<p>470<br>01:12:52,000 –&gt; 01:12:59,000<br>So here I’m going to demonstrate the difference between my sequel.</p>
+<p>471<br>01:12:59,000 –&gt; 01:13:11,000<br>Nope, sorry, it’s not that I’ll have to be worse. There we go. Sorry, I had to write the first time.</p>
+<p>472<br>01:13:11,000 –&gt; 01:13:26,000<br>So I want to demonstrate the difference between a hash index and a B plus tree on data and then we can see what the data system is going to choose to use to run queries.</p>
+<p>473<br>01:13:26,000 –&gt; 01:13:45,000<br>So the data set I’m going to use is going to be I think it’s 21 million email addresses from a few years ago right because it’s all on.</p>
+<p>474<br>01:13:45,000 –&gt; 01:13:57,000<br>So 27 27 million email addresses right and so I’m not going to run this in real time but I’ve basically I’ve created two indexes.</p>
+<p>475<br>01:13:57,000 –&gt; 01:14:00,000<br>I created one here on a B plus tree on the emails.</p>
+<p>476<br>01:14:00,000 –&gt; 01:14:02,000<br>Sorry.</p>
+<p>477<br>01:14:02,000 –&gt; 01:14:12,000<br>And the way it works is like in postgres you say create index with the name of the index on this table and then using and then you specify what data structure you want.</p>
+<p>478<br>01:14:12,000 –&gt; 01:14:21,000<br>So by default if you don’t have the using clause in postgres you you you get a B plus tree but here I’m explicitly telling I want to be a plus tree and the index already exists.</p>
+<p>479<br>01:14:21,000 –&gt; 01:14:28,000<br>So I don’t need to do that and then I have the build the same thing on the same column.</p>
+<p>480<br>01:14:28,000 –&gt; 01:14:33,000<br>I’ll better on a using hash table and I just say using hash and again I already have that.</p>
+<p>481<br>01:14:33,000 –&gt; 01:14:42,000<br>So let me turn off a bunch of other optimizations in postgres that we don’t need to worry about just yet right so I can do queries like this right selects.</p>
+<p>482<br>01:14:42,000 –&gt; 01:14:48,000<br>I get some random thing like this but again if I put the explain keyword in front of it.</p>
+<p>483<br>01:14:48,000 –&gt; 01:15:00,000<br>Postgres will tell me what the query plan is right so here it’s going to tell me I’m going to index only scan using the B plus tree and it’s obviously what the conditional conditional is.</p>
+<p>484<br>01:15:00,000 –&gt; 01:15:11,000<br>So we didn’t talk about index only scan sometimes cover scans or covering indexes basically postgres recognizes that all the data or all the columns I need to answer this query can be found in the index.</p>
+<p>485<br>01:15:11,000 –&gt; 01:15:19,000<br>So even though they’re storing the record IDs in the leaf nodes I don’t need to actually follow those record IDs to get the data for the actual tuple.</p>
+<p>486<br>01:15:19,000 –&gt; 01:15:38,000<br>All everything I need for this query can be answered from the index right because again going back to my query it was just select the men email from from the email address and the index is on email so once I go all the way to the right side of the tree or yeah left side of the tree that has all the data looking for.</p>
+<p>487<br>01:15:38,000 –&gt; 01:15:46,000<br>So that’s why it can tell me you can do an index only scan so that’s fine so let’s see now if you want to do something like this we want to say.</p>
+<p>488<br>01:15:46,000 –&gt; 01:15:54,000<br>Give me give me all the emails where the first letter is a but I’m doing a limit one and you get somebody like this.</p>
+<p>489<br>01:15:54,000 –&gt; 01:16:07,000<br>And I do explain to see what it actually tells me what to do so in this case here postgres says even though I haven’t I have that B plus tree index that is sorted on emails postgres decides I want to do a</p>
+<p>490<br>01:16:07,000 –&gt; 01:16:23,000<br>squintral scan because it recognize that the thing I’m looking for you know I’m looking for all all emails that start with a that’s at some middle point in the tree and since it’s unbounded I’m not specifying like</p>
+<p>491<br>01:16:23,000 –&gt; 01:16:40,000<br>the end marker it would say okay you got a scan to the entire end now it’s not smart after recognize I have a limit one there right so what it really should have done is just probe down the index find the first thing and then popped out and done but in this case here postgres wasn’t smart enough to figure that out.</p>
+<p>492<br>01:16:40,000 –&gt; 01:16:49,000<br>Right and I can’t pick pick the hash index because again I’m doing like a wild card search I don’t have the actual full key.</p>
+<p>493<br>01:16:50,000 –&gt; 01:16:51,000<br>Right.</p>
+<p>494<br>01:16:52,000 –&gt; 01:17:06,000<br>So you can see this in other ways right so so in this case here I want to find all emails where it’s greater than Andy again relies to decide to do a squintral scan but now if I do something like this final emails where</p>
+<p>495<br>01:17:06,000 –&gt; 01:17:25,000<br>the first letter sorry the string starts with ZZZ now I’m on the right side of the tree and postgres recognizes based on the distribution okay well you’re far enough long the tree where I’m going to scan along so it’s okay for me to do the index scan because that’s still going to be less data than doing a complete scontrol scan.</p>
+<p>496<br>01:17:26,000 –&gt; 01:17:34,000<br>Right and at no point did postgres decide to use the hash index because again I’m doing like less than greater than a wild card matches.</p>
+<p>497<br>01:17:34,000 –&gt; 01:17:49,000<br>So we can do something like this where now we can say for you know find emails where there’s exact quality matches using the in clause and now you see postgres decides to use the hash index here right.</p>
+<p>498<br>01:17:50,000 –&gt; 01:17:55,000<br>The bitmap index scan I’ll explain that is it’s not what you’re not a real bitmap index.</p>
+<p>499<br>01:17:55,000 –&gt; 01:18:15,000<br>You actually you can see it better with instead of using in you can use a bunch of ores right and now what you see is that postgres has multiple entries where it’s for the index scan where for each of the each of the email addresses I had in that my where clause like you know something</p>
+<p>500<br>01:18:15,000 –&gt; 01:18:36,000<br>equals something or something equals something each of those are going to be separate probe into the hash index and then they maintain a bitmap of the I think it’s actual two-pole IDs the two offsets not the not the pages they maintain a bitmap of the matching values for each of those index probes and then they or them up together and then that produces the exact two pulls they actually you actually you actually would need.</p>
+<p>501<br>01:18:37,000 –&gt; 01:18:51,000<br>This is sort of similar to what I was saying before you you figure out what the pages you need from the from the index first then go actually go get them so they’re doing that here they’re doing much of probes and index don’t actually get the real data from the two the tables.</p>
+<p>502<br>01:18:52,000 –&gt; 01:18:57,000<br>Do the order on the bitmaps then you have the list of the indexes you are less of the records you actually need to go get.</p>
+<p>503<br>01:18:58,000 –&gt; 01:18:59,000<br>Right.</p>
+<p>504<br>01:19:00,000 –&gt; 01:19:19,000<br>Okay so the next thing I want to do is how about clustering tables so postgres doesn’t act to postgres supports the cluster command but it doesn’t actually and it will sort your table but it doesn’t actually maintain the sorting because it’s not going to be organized it’s not index organized so you with the cluster command</p>
+<p>505<br>01:19:19,000 –&gt; 01:19:48,000<br>and the first thing you do is you start modifying the table it can get out of sort of order so I’m not going to do this live because it would take too long and I realize we’re a little over time but like the command would be basically like this right you would say cluster the table you want to cluster and then what the index you want to have a be cluster don’t so I just take about a minute to run so I’ve already run it before class so I’m not going to do that but we can go look at like what’s in the first the first page.</p>
+<p>506<br>01:19:49,000 –&gt; 01:20:00,000<br>So again the CTID is the record of the offset and postgres so you do that that is not looks well that’s actually that’s the unsorted one so that looks all random but if I change the name of the table to clustered</p>
+<p>507<br>01:20:07,000 –&gt; 01:20:09,000<br>because of that sorry.</p>
+<p>508<br>01:20:09,000 –&gt; 01:20:35,000<br>Right now you see that in the first page or the first offsets the two blows are actually sorted in that order right based on the index so if I go ahead and delete one of these entries I delete the very first person and they’re fake email address and I go back and do the same scan on the table right</p>
+<p>509<br>01:20:35,000 –&gt; 01:21:04,000<br>Postgres didn’t fill in that that first slot right it’s empty but now if I insert this fake person back in and do the same scan right there’s still not in that first page right so to go find them we do select star select CTID from emails clustered where email equals</p>
+<p>510<br>01:21:06,000 –&gt; 01:21:19,000<br>this right now they’re in page 299 I don’t know where that is some random thing but it’s again it’s not sorted order because again postgres can’t maintain the sort of because it doesn’t have true clustered indexes.</p>
+<p>511<br>01:21:19,000 –&gt; 01:21:33,000<br>Okay so B plus trees are important probably the best choice for your database system tries are pretty good you have B plus trees of tries as I said before</p>
+<p>512<br>01:21:33,000 –&gt; 01:21:47,000<br>but B plus tree is a bunch of ways of opening faster so next class we talk about how do you actually make your B plus tree thread safe by traversing down and even when you’re doing splits and merges okay hit it</p>
+<p>513<br>01:22:03,000 –&gt; 01:22:20,000<br>yeah I’m the poppy with the mother fucking 28 a gram dependent on if it’s the pop you ain’t hit them all yet still got your sugar I smack you with the bottom of the clip to tell you look up show me what it’s a set for blow your face back I got a block on taps the feds can’t trace that</p>
+<p>514<br>01:22:20,000 –&gt; 01:22:27,720<br>style is like 10 for proof you can’t lace that the Dominican or you could call me Dominican black Skelly black leather black sweat</p>
+<p>515<br>01:22:27,720 –&gt; 01:22:36,760<br>Timberlands my old black 38 send you to the perigates you get a zombie trying to skate and that’s your first mistake I ain’t lying for that cake your family see your way my</p>
+<p>516<br>01:22:36,760 –&gt; 01:22:41,360<br>grand’s is happy wait the Randall we stay when he actually how I’m living tell him I’m living great</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15445 P9F202308 B+TreeIndexes</div>
+      <div>http://example.com/2025/10/24/CMU15445 P9F202308-B+TreeIndexes/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P8F202307-HashTables/" title="CMU15445 P8F202307 HashTables">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15445 P8F202307 HashTables</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P6F202305-StorageModelsDatabaseCompression/" title="CMU15445 P6F202305 StorageModelsDatabaseCompression">
+                        <span class="hidden-mobile">CMU15445 P6F202305 StorageModelsDatabaseCompression</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

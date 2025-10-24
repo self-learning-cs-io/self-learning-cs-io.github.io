@@ -1,0 +1,1881 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:28,440Alright, that was awesome. 200:00:28,440 –&gt; 00:00:29,440That’s great. 300:00:29,440 –&gt; 00:00:33,760So I know you have a whole bunch of gigs still left before comi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15445 P18F202317 TimestampOrderingConcurrencyControl">
+<meta property="og:url" content="http://example.com/2025/10/24/CMU15445%20P18F202317-TimestampOrderingConcurrencyControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:28,440Alright, that was awesome. 200:00:28,440 –&gt; 00:00:29,440That’s great. 300:00:29,440 –&gt; 00:00:33,760So I know you have a whole bunch of gigs still left before comi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-24T12:00:44.469Z">
+<meta property="article:modified_time" content="2025-10-24T12:06:28.541Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15445 P18F202317 TimestampOrderingConcurrencyControl - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15445 P18F202317 TimestampOrderingConcurrencyControl"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-24 20:00" pubdate>
+          2025年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          104 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15445 P18F202317 TimestampOrderingConcurrencyControl</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:28,440<br>Alright, that was awesome.</p>
+<p>2<br>00:00:28,440 –&gt; 00:00:29,440<br>That’s great.</p>
+<p>3<br>00:00:29,440 –&gt; 00:00:33,760<br>So I know you have a whole bunch of gigs still left before coming up this week.</p>
+<p>4<br>00:00:33,760 –&gt; 00:00:37,200<br>If the Cigetin C-MU does Diwali party down there, Diwali party.</p>
+<p>5<br>00:00:37,200 –&gt; 00:00:39,000<br>Okay, that sounds great.</p>
+<p>6<br>00:00:39,000 –&gt; 00:00:45,600<br>And hopefully it’s helping you put a little bit of a dent in the C-Mutuition rate or insignificant.</p>
+<p>7<br>00:00:45,600 –&gt; 00:00:46,799<br>I don’t think you’ve seen this.</p>
+<p>8<br>00:00:46,799 –&gt; 00:00:47,799<br>Okay, okay.</p>
+<p>9<br>00:00:47,799 –&gt; 00:00:49,799<br>Alright, alright.</p>
+<p>10<br>00:00:49,799 –&gt; 00:00:51,799<br>But you’re getting a great education in return, right?</p>
+<p>11<br>00:00:51,799 –&gt; 00:00:53,040<br>So it’s all going to be worth it.</p>
+<p>12<br>00:00:53,040 –&gt; 00:00:54,040<br>Do you think you get any change?</p>
+<p>13<br>00:00:54,040 –&gt; 00:00:55,040<br>I love it.</p>
+<p>14<br>00:00:55,040 –&gt; 00:00:56,040<br>That’s awesome.</p>
+<p>15<br>00:00:56,040 –&gt; 00:00:57,040<br>Great.</p>
+<p>16<br>00:00:57,039 –&gt; 00:01:04,079<br>Indeed, if one of you less than coming, it’s still valid till 2024.</p>
+<p>17<br>00:01:04,079 –&gt; 00:01:06,039<br>So you have a year to go.</p>
+<p>18<br>00:01:06,039 –&gt; 00:01:07,039<br>Alright.</p>
+<p>19<br>00:01:07,039 –&gt; 00:01:08,680<br>Okay, so let’s get started.</p>
+<p>20<br>00:01:08,680 –&gt; 00:01:11,480<br>We have a ton of material to cover today.</p>
+<p>21<br>00:01:11,480 –&gt; 00:01:15,120<br>We are going to pick up where we left off in the last class.</p>
+<p>22<br>00:01:15,120 –&gt; 00:01:18,960<br>And if you remember, we had talked about two-phase locking and then we had started to talk</p>
+<p>23<br>00:01:18,960 –&gt; 00:01:24,920<br>about hierarchical two-phase locking, which was a way to balance the number of locks you</p>
+<p>24<br>00:01:24,920 –&gt; 00:01:26,840<br>have to acquire.</p>
+<p>25<br>00:01:26,840 –&gt; 00:01:30,600<br>This is allowing powerism in the system.</p>
+<p>26<br>00:01:30,600 –&gt; 00:01:35,400<br>And the types of things that we would do with that, if you remember, there was this compactible</p>
+<p>27<br>00:01:35,400 –&gt; 00:01:36,400<br>table.</p>
+<p>28<br>00:01:36,400 –&gt; 00:01:40,120<br>So life is no longer just a shared lock and an exclusive lock.</p>
+<p>29<br>00:01:40,120 –&gt; 00:01:44,560<br>But now we also have these other different lock modes, including these weird things called</p>
+<p>30<br>00:01:44,560 –&gt; 00:01:50,920<br>IS and IX, which are intention to do something as you traverse down the hierarchy.</p>
+<p>31<br>00:01:50,920 –&gt; 00:01:55,159<br>And there’s a very interesting lock mode called six lock, which is I have a shared lock</p>
+<p>32<br>00:01:55,159 –&gt; 00:01:57,280<br>on everything else below.</p>
+<p>33<br>00:01:57,280 –&gt; 00:02:02,239<br>But if I need to grab something in an exclusive lock mode, I will grab an X-lock explicitly.</p>
+<p>34<br>00:02:02,239 –&gt; 00:02:06,640<br>But S-locks the entire hierarchy at which that six lock is sent.</p>
+<p>35<br>00:02:06,640 –&gt; 00:02:08,519<br>So how do we use these?</p>
+<p>36<br>00:02:08,519 –&gt; 00:02:11,359<br>Let’s go look at a couple examples.</p>
+<p>37<br>00:02:11,359 –&gt; 00:02:17,919<br>Imagine we have a very simple database, one table and a bunch of tuples below it.</p>
+<p>38<br>00:02:17,919 –&gt; 00:02:20,599<br>So we have a bunch of transactions.</p>
+<p>39<br>00:02:20,599 –&gt; 00:02:24,759<br>And remember the thing that we’re trying to do is to get as much parallelism in the system</p>
+<p>40<br>00:02:24,759 –&gt; 00:02:30,159<br>as possible without having to acquire a lot of locks because acquiring locks has overhead.</p>
+<p>41<br>00:02:30,159 –&gt; 00:02:33,459<br>So you have to put stuff in the lock table and you have to do deadlock management and all</p>
+<p>42<br>00:02:33,459 –&gt; 00:02:35,120<br>kinds of other stuff.</p>
+<p>43<br>00:02:35,120 –&gt; 00:02:41,079<br>So we were working with Andy and his bookies example where you want to read Andy’s record</p>
+<p>44<br>00:02:41,079 –&gt; 00:02:42,079<br>from this table.</p>
+<p>45<br>00:02:42,079 –&gt; 00:02:43,840<br>So that’s transaction T1.</p>
+<p>46<br>00:02:43,840 –&gt; 00:02:47,479<br>And so we’ll start by accessing the record.</p>
+<p>47<br>00:02:47,479 –&gt; 00:02:49,840<br>You’ll always access the record through the hierarchy.</p>
+<p>48<br>00:02:49,840 –&gt; 00:02:52,079<br>The hierarchy mirrors the storage hierarchy.</p>
+<p>49<br>00:02:52,080 –&gt; 00:02:55,480<br>So you’ll open up the file and start a scan on that.</p>
+<p>50<br>00:02:55,480 –&gt; 00:02:59,320<br>And you start to read these records as you go through it.</p>
+<p>51<br>00:02:59,320 –&gt; 00:03:04,880<br>And the way you would go about doing this is you will set an intention to share lock in</p>
+<p>52<br>00:03:04,880 –&gt; 00:03:05,880<br>the table.</p>
+<p>53<br>00:03:05,880 –&gt; 00:03:06,880<br>Right?</p>
+<p>54<br>00:03:06,880 –&gt; 00:03:10,600<br>You’re not grabbing a S-lock on the table because you don’t want to block everyone.</p>
+<p>55<br>00:03:10,600 –&gt; 00:03:13,080<br>You just grab an IS lock in that table.</p>
+<p>56<br>00:03:13,080 –&gt; 00:03:20,880<br>So if you go back again to this lock hierarchy, as you can see in the lock hierarchy, the lock</p>
+<p>57<br>00:03:20,879 –&gt; 00:03:23,359<br>modes that are really restrictive is like X.</p>
+<p>58<br>00:03:23,359 –&gt; 00:03:24,359<br>Right?</p>
+<p>59<br>00:03:24,359 –&gt; 00:03:25,680<br>Nothing is compatible with it.</p>
+<p>60<br>00:03:25,680 –&gt; 00:03:29,199<br>You want lock modes with lock mode green in the rows corresponding to that.</p>
+<p>61<br>00:03:29,199 –&gt; 00:03:30,199<br>Right?</p>
+<p>62<br>00:03:30,199 –&gt; 00:03:33,359<br>So you can see how IS lock has a lock mode greens with that.</p>
+<p>63<br>00:03:33,359 –&gt; 00:03:35,000<br>Lock mode things are compatible with it.</p>
+<p>64<br>00:03:35,000 –&gt; 00:03:37,680<br>But it’s not an explicit shared lock mode.</p>
+<p>65<br>00:03:37,680 –&gt; 00:03:41,639<br>You have to grab that explicit lock mode as you go further down.</p>
+<p>66<br>00:03:41,639 –&gt; 00:03:48,120<br>So coming back over here, to our example, to read a record, you’ll grab an IS lock on</p>
+<p>67<br>00:03:48,120 –&gt; 00:03:49,599<br>the table.</p>
+<p>68<br>00:03:49,599 –&gt; 00:03:51,360<br>The other lock modes are still permissible.</p>
+<p>69<br>00:03:51,360 –&gt; 00:03:54,920<br>So other transactions who need those compatible lock modes can still proceed.</p>
+<p>70<br>00:03:54,920 –&gt; 00:04:00,319<br>And then you start to go and grab the S-lock on the record that you go need to read.</p>
+<p>71<br>00:04:00,319 –&gt; 00:04:01,319<br>Okay?</p>
+<p>72<br>00:04:01,319 –&gt; 00:04:02,319<br>For now, assume indices are not present.</p>
+<p>73<br>00:04:02,319 –&gt; 00:04:06,439<br>We’ll talk about that briefly today if not in the next lecture.</p>
+<p>74<br>00:04:06,439 –&gt; 00:04:11,920<br>But transaction T1 grab only two locks and IS lock and an S-lock.</p>
+<p>75<br>00:04:11,920 –&gt; 00:04:17,680<br>So far, that seems like if I only had S and X-lock and I’m only reading one record, I</p>
+<p>76<br>00:04:17,680 –&gt; 00:04:18,680<br>grabbed one extra lock.</p>
+<p>77<br>00:04:18,680 –&gt; 00:04:19,680<br>Right?</p>
+<p>78<br>00:04:19,680 –&gt; 00:04:21,240<br>I grabbed an IS lock plus an S-lock.</p>
+<p>79<br>00:04:21,240 –&gt; 00:04:23,360<br>So did I do worse here?</p>
+<p>80<br>00:04:23,360 –&gt; 00:04:24,360<br>Maybe.</p>
+<p>81<br>00:04:24,360 –&gt; 00:04:25,680<br>But why do we have these lock modes?</p>
+<p>82<br>00:04:25,680 –&gt; 00:04:31,560<br>Let’s go and imagine what happens in this case if you didn’t know where Andy’s record</p>
+<p>83<br>00:04:31,560 –&gt; 00:04:32,560<br>is.</p>
+<p>84<br>00:04:32,560 –&gt; 00:04:36,720<br>And so you might actually be going through and grabbing a whole bunch of locks on these</p>
+<p>85<br>00:04:36,720 –&gt; 00:04:37,960<br>tables.</p>
+<p>86<br>00:04:37,960 –&gt; 00:04:42,000<br>So now let’s go take a look at another board.</p>
+<p>87<br>00:04:42,000 –&gt; 00:04:44,519<br>So let me just back up from there.</p>
+<p>88<br>00:04:44,519 –&gt; 00:04:47,280<br>We’re assuming no indices.</p>
+<p>89<br>00:04:47,279 –&gt; 00:04:51,119<br>So if you know exactly whether in this case, we still assume that we know kind of where</p>
+<p>90<br>00:04:51,119 –&gt; 00:04:52,839<br>Andy’s record is, tuple one.</p>
+<p>91<br>00:04:52,839 –&gt; 00:04:54,239<br>So we just have these two lock modes.</p>
+<p>92<br>00:04:54,239 –&gt; 00:04:55,239<br>Right?</p>
+<p>93<br>00:04:55,239 –&gt; 00:04:58,559<br>If you didn’t know, you would go and grab S-locks as you go further down.</p>
+<p>94<br>00:04:58,559 –&gt; 00:05:03,839<br>If you knew that you needed to grab all the read locks on the records below, what you</p>
+<p>95<br>00:05:03,839 –&gt; 00:05:08,719<br>would have done is on the table, you would have grabbed a S-lock or a S-I-X-lock.</p>
+<p>96<br>00:05:08,719 –&gt; 00:05:12,000<br>And more likely, just in this case, you would have just grabbed an S-lock.</p>
+<p>97<br>00:05:12,000 –&gt; 00:05:13,319<br>So that is permitted.</p>
+<p>98<br>00:05:13,319 –&gt; 00:05:18,159<br>If you knew that you’re going to touch every record, there’s nothing that stops you from</p>
+<p>99<br>00:05:18,159 –&gt; 00:05:20,240<br>grabbing an S-lock on the table itself.</p>
+<p>100<br>00:05:20,240 –&gt; 00:05:21,560<br>So that’s still permitted.</p>
+<p>101<br>00:05:21,560 –&gt; 00:05:25,719<br>But when you think you don’t need that lock at a higher level and you can do with the</p>
+<p>102<br>00:05:25,719 –&gt; 00:05:30,639<br>weaker lock because you kind of know what your access path is going to be below, you can</p>
+<p>103<br>00:05:30,639 –&gt; 00:05:33,000<br>grab a weaker lock mode up above.</p>
+<p>104<br>00:05:33,000 –&gt; 00:05:36,639<br>So let’s go into this with a little bit better example.</p>
+<p>105<br>00:05:36,639 –&gt; 00:05:37,639<br>Yep.</p>
+<p>106<br>00:05:37,639 –&gt; 00:05:41,360<br>So what really is like the perfect, you guys have it with my S-lock?</p>
+<p>107<br>00:05:41,360 –&gt; 00:05:42,360<br>Yeah.</p>
+<p>108<br>00:05:42,360 –&gt; 00:05:44,480<br>So the question is, what’s the purpose of an I-X-lock?</p>
+<p>109<br>00:05:44,480 –&gt; 00:05:46,680<br>It’s exactly what we are going to do right now.</p>
+<p>110<br>00:05:46,680 –&gt; 00:05:51,920<br>Imagine I had grabbed an S-lock on the table and that’s all I had done before.</p>
+<p>111<br>00:05:51,920 –&gt; 00:05:53,920<br>I didn’t have these different lock modes.</p>
+<p>112<br>00:05:53,920 –&gt; 00:05:58,840<br>A concurrent transaction that wanted to go and update the bookies record and Andy and</p>
+<p>113<br>00:05:58,840 –&gt; 00:06:02,360<br>the bookies records are obviously different records.</p>
+<p>114<br>00:06:02,360 –&gt; 00:06:07,759<br>So what is permissible now because you have different lock modes is that second transaction</p>
+<p>115<br>00:06:07,759 –&gt; 00:06:12,360<br>can say, I’m going to access the table and some record below it.</p>
+<p>116<br>00:06:12,360 –&gt; 00:06:14,959<br>But the table I’m only going to lock in an I-X mode.</p>
+<p>117<br>00:06:14,959 –&gt; 00:06:18,599<br>I intend to lock a record down below.</p>
+<p>118<br>00:06:18,599 –&gt; 00:06:23,439<br>And then on the record, it wants to write which is the bookies record, which is this last</p>
+<p>119<br>00:06:23,439 –&gt; 00:06:26,000<br>record in that case, it’ll grab a right lock.</p>
+<p>120<br>00:06:26,000 –&gt; 00:06:32,800<br>So now we allow a read to some portion of this table to happen while a write was happening</p>
+<p>121<br>00:06:32,800 –&gt; 00:06:36,159<br>to some other portion of the table.</p>
+<p>122<br>00:06:36,160 –&gt; 00:06:38,280<br>And we had these two different lock modes.</p>
+<p>123<br>00:06:38,280 –&gt; 00:06:41,520<br>So we are allowing more of these things to happen.</p>
+<p>124<br>00:06:41,520 –&gt; 00:06:46,880<br>And these different lock modes also allow us to go, nothing stops us from grabbing an S-lock</p>
+<p>125<br>00:06:46,880 –&gt; 00:06:49,480<br>on the table and switching over to a protocol like that.</p>
+<p>126<br>00:06:49,480 –&gt; 00:06:52,760<br>We just have more toys to play with now.</p>
+<p>127<br>00:06:52,760 –&gt; 00:06:53,760<br>Question?</p>
+<p>128<br>00:06:53,760 –&gt; 00:06:54,760<br>Yeah.</p>
+<p>129<br>00:06:54,760 –&gt; 00:06:58,400<br>This case on the graph and I-X-lock, what if we do the sequential task?</p>
+<p>130<br>00:06:58,400 –&gt; 00:06:59,400<br>Yeah.</p>
+<p>131<br>00:06:59,400 –&gt; 00:07:00,600<br>Please stop it and then.</p>
+<p>132<br>00:07:00,600 –&gt; 00:07:01,600<br>Yes.</p>
+<p>133<br>00:07:01,600 –&gt; 00:07:02,600<br>Yeah.</p>
+<p>134<br>00:07:02,600 –&gt; 00:07:03,600<br>Yeah.</p>
+<p>135<br>00:07:03,600 –&gt; 00:07:04,600<br>So maybe I confused the situation a little bit.</p>
+<p>136<br>00:07:04,600 –&gt; 00:07:10,240<br>I said ignore the indices, but then in Andy’s case, I basically just still only set one lock.</p>
+<p>137<br>00:07:10,240 –&gt; 00:07:14,040<br>So the national question is, oh, how did you know that tuple one was Andy’s lock?</p>
+<p>138<br>00:07:14,040 –&gt; 00:07:15,800<br>So I’m assuming I know that.</p>
+<p>139<br>00:07:15,800 –&gt; 00:07:20,800<br>If I didn’t know that, if I didn’t know that, and if I had to grab an S-lock on everything,</p>
+<p>140<br>00:07:20,800 –&gt; 00:07:25,360<br>then if I did an IS-lock on the table for the first transaction, then as I go further down,</p>
+<p>141<br>00:07:25,360 –&gt; 00:07:27,360<br>I would have to grab S-locks on everything.</p>
+<p>142<br>00:07:27,360 –&gt; 00:07:31,760<br>At that point, I could decide whether the S-locks is on the page or the tuple, but I’m still</p>
+<p>143<br>00:07:31,760 –&gt; 00:07:33,040<br>grabbing way more locks.</p>
+<p>144<br>00:07:33,040 –&gt; 00:07:38,240<br>But as I said, if I knew I’m a read-only transaction, I will not do the IS-lock on the table.</p>
+<p>145<br>00:07:38,240 –&gt; 00:07:40,160<br>I will just grab an S-lock on the table.</p>
+<p>146<br>00:07:40,160 –&gt; 00:07:43,040<br>I’m still allowed to play all the games I was playing before.</p>
+<p>147<br>00:07:43,040 –&gt; 00:07:46,080<br>I just have more room now to play around with things.</p>
+<p>148<br>00:07:46,080 –&gt; 00:07:50,280<br>Now, if I knew there was an index and a new record one is where it was, that’s where this</p>
+<p>149<br>00:07:50,280 –&gt; 00:07:51,280<br>really shines.</p>
+<p>150<br>00:07:51,280 –&gt; 00:07:55,200<br>So I’m not showing an index as a separate access path, but the general theory works out</p>
+<p>151<br>00:07:55,200 –&gt; 00:07:59,840<br>where this resource hierarchy of where the data is organized is not necessarily a tree,</p>
+<p>152<br>00:07:59,839 –&gt; 00:08:03,239<br>like a database to tables to records, but a DAG.</p>
+<p>153<br>00:08:03,239 –&gt; 00:08:07,639<br>So it could be a database to table to indices to records, and you could have index and records</p>
+<p>154<br>00:08:07,639 –&gt; 00:08:10,439<br>go through that, and this whole theory still works.</p>
+<p>155<br>00:08:10,439 –&gt; 00:08:13,359<br>So I, and again, plug for the advanced database class.</p>
+<p>156<br>00:08:13,359 –&gt; 00:08:17,519<br>We’ll talk about DAG structures and stuff like that, but that’s what was happening over here.</p>
+<p>157<br>00:08:17,519 –&gt; 00:08:20,719<br>Kind of new tuple one is where it was, but I didn’t show you the index, which seemed</p>
+<p>158<br>00:08:20,719 –&gt; 00:08:22,039<br>a little confusing.</p>
+<p>159<br>00:08:22,039 –&gt; 00:08:25,919<br>But the main point is, I can still, if I wanted to grab an S-lock, I could still do everything</p>
+<p>160<br>00:08:25,919 –&gt; 00:08:29,399<br>I could do with just two lock modes I can do a lot more down.</p>
+<p>161<br>00:08:29,399 –&gt; 00:08:43,759<br>So, yeah, so the question is like, can I grab an S-lock and release it, and then go and</p>
+<p>162<br>00:08:43,759 –&gt; 00:08:48,439<br>grab the next lock, like the latch coupling we were doing in the B-3 to keep it, the answer</p>
+<p>163<br>00:08:48,439 –&gt; 00:08:51,039<br>is, what will we violate?</p>
+<p>164<br>00:08:51,039 –&gt; 00:08:56,079<br>2PL, you will violate 2PL, that means I no longer have a serializable schedule.</p>
+<p>165<br>00:08:56,079 –&gt; 00:08:58,960<br>So we shall not do that if we want 2PL semantics.</p>
+<p>166<br>00:08:58,960 –&gt; 00:09:04,280<br>Furthermore, to do a strong straight 2PL, we keep those locks till the very end.</p>
+<p>167<br>00:09:04,280 –&gt; 00:09:07,720<br>But that’s, you know, as we’ll start to play around with the advanced concurrency control</p>
+<p>168<br>00:09:07,720 –&gt; 00:09:10,960<br>protocols that we are going to start on today, you’ll see we’ll start to do that.</p>
+<p>169<br>00:09:10,960 –&gt; 00:09:15,639<br>We’ll try to let go of stuff, or we’ll do things with timestamps to try and guess what</p>
+<p>170<br>00:09:15,639 –&gt; 00:09:20,560<br>would happen the best way to do it, and give us a little bit more room to rearrange stuff.</p>
+<p>171<br>00:09:20,560 –&gt; 00:09:26,960<br>This is locks are a pessimistic form of transaction of concurrency control, and they are basically</p>
+<p>172<br>00:09:26,960 –&gt; 00:09:30,480<br>doing it in the order in which things are happening.</p>
+<p>173<br>00:09:30,480 –&gt; 00:09:34,560<br>As we do timestamps and stuff, you’ll see we can start to play around with other games.</p>
+<p>174<br>00:09:34,560 –&gt; 00:09:40,600<br>So I guess, chicken from the practical difference between having an Ix on the table and not having</p>
+<p>175<br>00:09:40,600 –&gt; 00:09:41,600<br>life on the table.</p>
+<p>176<br>00:09:41,600 –&gt; 00:09:45,920<br>Like, if we just had an X and an S down and go, the practical difference is that if we wanted</p>
+<p>177<br>00:09:45,920 –&gt; 00:09:48,519<br>to do an X lock on the table, then we have a concur.</p>
+<p>178<br>00:09:48,519 –&gt; 00:09:50,519<br>Yeah, the Ix swap would not have been allowed.</p>
+<p>179<br>00:09:50,519 –&gt; 00:09:51,560<br>T2 would not have it.</p>
+<p>180<br>00:09:51,560 –&gt; 00:09:52,920<br>So the exactly, that’s right.</p>
+<p>181<br>00:09:52,919 –&gt; 00:09:57,120<br>So the question was, what’s the role of the Ix in this situation?</p>
+<p>182<br>00:09:57,120 –&gt; 00:09:59,159<br>Imagine, I do and needed to read all the records.</p>
+<p>183<br>00:09:59,159 –&gt; 00:10:02,639<br>I would grab an S lock on the table, and that would block everything.</p>
+<p>184<br>00:10:02,639 –&gt; 00:10:06,679<br>But imagine, I also had this index, and I said, you know, I really don’t think I’m reading</p>
+<p>185<br>00:10:06,679 –&gt; 00:10:07,679<br>the whole table.</p>
+<p>186<br>00:10:07,679 –&gt; 00:10:09,159<br>I’m just reading a few records.</p>
+<p>187<br>00:10:09,159 –&gt; 00:10:12,559<br>I’ll determine that by going to the index, which is not shown here, since you’re trying</p>
+<p>188<br>00:10:12,559 –&gt; 00:10:14,919<br>to keep the material simple.</p>
+<p>189<br>00:10:14,919 –&gt; 00:10:17,839<br>But that index is going to tell me, go to tuple one.</p>
+<p>190<br>00:10:17,839 –&gt; 00:10:19,599<br>And on that, I will grab an S lock.</p>
+<p>191<br>00:10:19,600 –&gt; 00:10:24,759<br>And index is also telling, go to tuple n for the bookies record, and that grab an S lock</p>
+<p>192<br>00:10:24,759 –&gt; 00:10:26,759<br>and so I can go make all of this happen.</p>
+<p>193<br>00:10:26,759 –&gt; 00:10:31,200<br>As he said, you can still do the S and X lock stuff at any level as before.</p>
+<p>194<br>00:10:31,200 –&gt; 00:10:33,519<br>You just have more playroom now.</p>
+<p>195<br>00:10:33,519 –&gt; 00:10:34,519<br>Okay?</p>
+<p>196<br>00:10:34,519 –&gt; 00:10:35,519<br>Yep.</p>
+<p>197<br>00:10:35,519 –&gt; 00:10:36,519<br>Yeah.</p>
+<p>198<br>00:10:36,519 –&gt; 00:10:37,519<br>Yeah.</p>
+<p>199<br>00:10:37,519 –&gt; 00:10:48,040<br>So the question is, how does this all relate to the S lock?</p>
+<p>200<br>00:10:48,039 –&gt; 00:10:51,599<br>So the question is, how does this all relate to the lock coupling stuff that we did in the</p>
+<p>201<br>00:10:51,599 –&gt; 00:10:52,599<br>Beatry?</p>
+<p>202<br>00:10:52,599 –&gt; 00:10:55,360<br>I would say, those are separate things.</p>
+<p>203<br>00:10:55,360 –&gt; 00:10:59,439<br>The intentional lock is to work with any arbitrary storage hierarchy in which you have this</p>
+<p>204<br>00:10:59,439 –&gt; 00:11:04,480<br>containment like semantics that I’ve got some organizational structure like a table below</p>
+<p>205<br>00:11:04,480 –&gt; 00:11:09,279<br>that is another structure pages, and then records, I didn’t show pages over here.</p>
+<p>206<br>00:11:09,279 –&gt; 00:11:13,639<br>The lock coupling stuff that you used in the Beatry stuff was very specifically in the</p>
+<p>207<br>00:11:13,639 –&gt; 00:11:14,639<br>Beatry.</p>
+<p>208<br>00:11:14,639 –&gt; 00:11:19,319<br>So you were letting go off these latches that you were creating and then going forward.</p>
+<p>209<br>00:11:19,319 –&gt; 00:11:22,360<br>There’s semantically what we are trying to do is that I’m going to treat the Beatry as</p>
+<p>210<br>00:11:22,360 –&gt; 00:11:27,319<br>a logical structure, and I’m going to allow maximum parallelism in that.</p>
+<p>211<br>00:11:27,319 –&gt; 00:11:32,519<br>All I need of the Beatry is to retain its semantical structure so that I go looking for keys.</p>
+<p>212<br>00:11:32,519 –&gt; 00:11:35,199<br>I will find it if I have it and if I don’t have it, I don’t.</p>
+<p>213<br>00:11:35,199 –&gt; 00:11:38,600<br>So we are playing around with tricks over there by releasing stuff.</p>
+<p>214<br>00:11:38,600 –&gt; 00:11:43,399<br>You’ll start to violate strict 2PL stuff, but the tree as a whole will look like it is</p>
+<p>215<br>00:11:43,399 –&gt; 00:11:46,639<br>still behaving in the broader scheme as a semantical structure.</p>
+<p>216<br>00:11:46,639 –&gt; 00:11:51,840<br>So it’s kind of like the nuance over here needs a full lecture, but think about it this</p>
+<p>217<br>00:11:51,840 –&gt; 00:11:52,840<br>way.</p>
+<p>218<br>00:11:52,840 –&gt; 00:11:57,439<br>When we talked about conflict serializable and view serializable, remember we said view</p>
+<p>219<br>00:11:57,439 –&gt; 00:12:03,559<br>serializable, if I know the application semantics, then I can play games that seem wrong, but</p>
+<p>220<br>00:12:03,559 –&gt; 00:12:08,480<br>the application semantics is all I care about and I could get more admissible schedules.</p>
+<p>221<br>00:12:08,480 –&gt; 00:12:11,399<br>Kind of what we are doing inside the Beatry is keeping its structure intact.</p>
+<p>222<br>00:12:11,399 –&gt; 00:12:14,159<br>We are playing all these games because we know what a Beatry semantics is.</p>
+<p>223<br>00:12:14,159 –&gt; 00:12:17,600<br>We are playing with the semantics to get more parallelism in there.</p>
+<p>224<br>00:12:17,600 –&gt; 00:12:23,199<br>This is a completely general scheme that works without, I don’t know, if I have a page</p>
+<p>225<br>00:12:23,199 –&gt; 00:12:25,959<br>and a record, all I’m saying is the page is a collection of records.</p>
+<p>226<br>00:12:25,959 –&gt; 00:12:29,240<br>It’s a slotted page, whatever, doesn’t matter.</p>
+<p>227<br>00:12:29,240 –&gt; 00:12:32,600<br>If it’s, you could apply this to LSMs, this will still work.</p>
+<p>228<br>00:12:32,600 –&gt; 00:12:36,399<br>Any hierarchical structure to this will work.</p>
+<p>229<br>00:12:36,399 –&gt; 00:12:39,600<br>And again, this is a plug for the advanced database class where we spend a whole semester</p>
+<p>230<br>00:12:39,600 –&gt; 00:12:47,440<br>or half a semester talking about these types of things.</p>
+<p>231<br>00:12:47,440 –&gt; 00:12:51,040<br>This illustrator, so the question is does this illustrate the difference between latches</p>
+<p>232<br>00:12:51,040 –&gt; 00:12:52,040<br>and locks?</p>
+<p>233<br>00:12:52,040 –&gt; 00:12:53,320<br>Yes, definitely.</p>
+<p>234<br>00:12:53,320 –&gt; 00:12:57,360<br>What we were doing in the Beatry was latches, but remembered latches and locks are trying</p>
+<p>235<br>00:12:57,360 –&gt; 00:13:01,399<br>at some level to say I want to make some form of parallelism safe.</p>
+<p>236<br>00:13:01,399 –&gt; 00:13:05,680<br>So that’s kind of the interesting thing is like there are ideas that can be crossed over</p>
+<p>237<br>00:13:05,679 –&gt; 00:13:07,559<br>from here to the other side.</p>
+<p>238<br>00:13:07,559 –&gt; 00:13:11,239<br>Should there be hierarchical latches?</p>
+<p>239<br>00:13:11,239 –&gt; 00:13:14,199<br>Nothing in the theory here says you can’t play around with games like that.</p>
+<p>240<br>00:13:14,199 –&gt; 00:13:17,799<br>Now would that be an overkill for the types of things you need to do?</p>
+<p>241<br>00:13:17,799 –&gt; 00:13:19,879<br>Maybe, maybe not, but these are open questions.</p>
+<p>242<br>00:13:19,879 –&gt; 00:13:22,000<br>They’re trying to go after the same types of questions.</p>
+<p>243<br>00:13:22,000 –&gt; 00:13:27,279<br>They’ve come from different places, but the concepts, the concepts you’re talking about</p>
+<p>244<br>00:13:27,279 –&gt; 00:13:33,279<br>over here where two faced locking and intentional locks are very general.</p>
+<p>245<br>00:13:33,279 –&gt; 00:13:35,360<br>There are more than two types of latches now, right?</p>
+<p>246<br>00:13:35,360 –&gt; 00:13:38,879<br>In many advanced programming languages, there are more latch modes and they’ll start to</p>
+<p>247<br>00:13:38,879 –&gt; 00:13:41,559<br>play games that look like that.</p>
+<p>248<br>00:13:41,559 –&gt; 00:13:43,319<br>Great question.</p>
+<p>249<br>00:13:43,319 –&gt; 00:13:48,079<br>Both of them are trying to make parallel higher parallelism while making some notion of safety</p>
+<p>250<br>00:13:48,079 –&gt; 00:13:49,559<br>hold in the application.</p>
+<p>251<br>00:13:49,559 –&gt; 00:13:50,559<br>Right?</p>
+<p>252<br>00:13:50,559 –&gt; 00:13:52,319<br>They stare that same philosophy.</p>
+<p>253<br>00:13:52,319 –&gt; 00:13:56,559<br>And then, if you’re taking an operating systems class, you think you’re always encouraged</p>
+<p>254<br>00:13:56,559 –&gt; 00:13:59,399<br>to think about mechanisms, right?</p>
+<p>255<br>00:13:59,399 –&gt; 00:14:00,399<br>Mechanisms are general.</p>
+<p>256<br>00:14:00,399 –&gt; 00:14:02,519<br>They’re tool sets that you can use for doing things.</p>
+<p>257<br>00:14:02,519 –&gt; 00:14:09,360<br>This is a general mechanism that works with any hierarchical structure to make it safe.</p>
+<p>258<br>00:14:09,360 –&gt; 00:14:13,159<br>You might apply this in all kinds of places, even outside databases, once you understand</p>
+<p>259<br>00:14:13,159 –&gt; 00:14:14,159<br>the concept.</p>
+<p>260<br>00:14:14,159 –&gt; 00:14:15,159<br>Okay.</p>
+<p>261<br>00:14:15,159 –&gt; 00:14:16,159<br>Great questions.</p>
+<p>262<br>00:14:16,159 –&gt; 00:14:17,159<br>All right.</p>
+<p>263<br>00:14:17,159 –&gt; 00:14:21,559<br>So, now you can see what we are doing over here with these intentional locks.</p>
+<p>264<br>00:14:21,559 –&gt; 00:14:27,879<br>Let’s keep going and take a look at how we might play around with three transactions.</p>
+<p>265<br>00:14:27,879 –&gt; 00:14:32,279<br>So here’s a transaction that’s going to scan all the records.</p>
+<p>266<br>00:14:32,279 –&gt; 00:14:34,919<br>It needs to scan all the records in this transaction.</p>
+<p>267<br>00:14:34,919 –&gt; 00:14:42,039<br>And what it can do is can grab a SIX lock, a six-swock, six-swock says, I have a shared lock</p>
+<p>268<br>00:14:42,039 –&gt; 00:14:45,799<br>on this and by that, it means everything below.</p>
+<p>269<br>00:14:45,799 –&gt; 00:14:50,279<br>Notice in all the hierarchical structure, we require that all access to records at the</p>
+<p>270<br>00:14:50,279 –&gt; 00:14:53,360<br>bottom of the tree in this case records have to go from top to bottom.</p>
+<p>271<br>00:14:53,360 –&gt; 00:14:55,639<br>So you have to follow that protocol, top down.</p>
+<p>272<br>00:14:55,639 –&gt; 00:14:59,000<br>If you read, again, in the advanced database class, it talks about it more formally.</p>
+<p>273<br>00:14:59,000 –&gt; 00:15:01,759<br>You always have to go top down and release top bottom up.</p>
+<p>274<br>00:15:01,759 –&gt; 00:15:04,519<br>You know all of that if you don’t because it will be like an hour conversation.</p>
+<p>275<br>00:15:04,519 –&gt; 00:15:06,879<br>But there’s a protocol you have to follow to do this.</p>
+<p>276<br>00:15:06,879 –&gt; 00:15:08,279<br>Just top down is what we need for now.</p>
+<p>277<br>00:15:08,279 –&gt; 00:15:10,200<br>So you’ll follow top down.</p>
+<p>278<br>00:15:10,200 –&gt; 00:15:14,559<br>This means no one can go grab a S-swock on a record because they have to come through</p>
+<p>279<br>00:15:14,559 –&gt; 00:15:15,559<br>me.</p>
+<p>280<br>00:15:15,559 –&gt; 00:15:16,840<br>They have to come through the hierarchy.</p>
+<p>281<br>00:15:16,840 –&gt; 00:15:20,759<br>So I’m putting a lock there saying I have a shared lock plus something else.</p>
+<p>282<br>00:15:20,759 –&gt; 00:15:24,720<br>I may grow actually get an X-swock on some records below.</p>
+<p>283<br>00:15:24,720 –&gt; 00:15:28,919<br>So this is a transaction that may want to read all the bank accounts, for example, and give</p>
+<p>284<br>00:15:28,919 –&gt; 00:15:31,240<br>$50 more to the highest bank account.</p>
+<p>285<br>00:15:31,240 –&gt; 00:15:35,799<br>First it needs to determine which the highest bank account is or accounts are if they are</p>
+<p>286<br>00:15:35,799 –&gt; 00:15:39,000<br>the same value and then do some updates to that.</p>
+<p>287<br>00:15:39,000 –&gt; 00:15:42,680<br>Read everything and update a few things.</p>
+<p>288<br>00:15:42,680 –&gt; 00:15:47,279<br>So we’ll start and it is allowed with the protocol and the hierarchy.</p>
+<p>289<br>00:15:47,279 –&gt; 00:15:48,399<br>I’ll let you work that out.</p>
+<p>290<br>00:15:48,399 –&gt; 00:15:55,039<br>But after a six-swock, I can allow it to take an X-swock on the record below in the same</p>
+<p>291<br>00:15:55,039 –&gt; 00:15:56,039<br>transaction.</p>
+<p>292<br>00:15:56,039 –&gt; 00:15:58,720<br>That is allowed by the protocol.</p>
+<p>293<br>00:15:58,720 –&gt; 00:16:02,320<br>That’s what the six-swock allowed us to do as we were further going down.</p>
+<p>294<br>00:16:02,320 –&gt; 00:16:07,920<br>Now, a second transaction that just wants to read a single record comes in.</p>
+<p>295<br>00:16:07,920 –&gt; 00:16:09,399<br>That’s the only record it wants to read.</p>
+<p>296<br>00:16:09,399 –&gt; 00:16:14,759<br>As you can see, there’s no conflict between these two transactions because they are doing</p>
+<p>297<br>00:16:14,759 –&gt; 00:16:15,759<br>different things.</p>
+<p>298<br>00:16:15,759 –&gt; 00:16:17,320<br>They’re not conflicting on that record.</p>
+<p>299<br>00:16:17,320 –&gt; 00:16:22,040<br>But if I didn’t have a six-swock, I would have to grab an X-swock on the table.</p>
+<p>300<br>00:16:22,040 –&gt; 00:16:24,160<br>If that’s the only level of hierarchy I had.</p>
+<p>301<br>00:16:24,160 –&gt; 00:16:27,960<br>If I only allowed table level locks, then that’s what I would do and I wouldn’t get</p>
+<p>302<br>00:16:27,960 –&gt; 00:16:28,960<br>an X-swock in general.</p>
+<p>303<br>00:16:28,960 –&gt; 00:16:33,400<br>Remember, we talked about how MongoDB had a global database lock, right, so of course,</p>
+<p>304<br>00:16:33,400 –&gt; 00:16:35,040<br>they don’t do that now.</p>
+<p>305<br>00:16:35,040 –&gt; 00:16:41,720<br>But in this case, what I can do is I can go and grab an IS lock intention to share which</p>
+<p>306<br>00:16:41,720 –&gt; 00:16:46,259<br>is compatible with the six lock in the matrix and I’m allowed to proceed.</p>
+<p>307<br>00:16:46,259 –&gt; 00:16:51,860<br>Now, notice what happened, transaction T1 only grabbed 2 locks.</p>
+<p>308<br>00:16:51,860 –&gt; 00:16:58,539<br>So it’s efficient, two locks, and only lock exactly what it needed to do.</p>
+<p>309<br>00:16:58,539 –&gt; 00:17:03,460<br>And transaction T1 grabbed two locks, and you know, yeah, you might say it grabbed the</p>
+<p>310<br>00:17:03,460 –&gt; 00:17:08,620<br>IS lock, but it wouldn’t have if it was operating under a simpler scheme, but that’s going to</p>
+<p>311<br>00:17:08,620 –&gt; 00:17:09,660<br>be a little bit of tradeoff.</p>
+<p>312<br>00:17:09,660 –&gt; 00:17:13,339<br>Some transactions are going to have to take a little bit more locks, but the bigger ones</p>
+<p>313<br>00:17:13,339 –&gt; 00:17:16,220<br>are going to get a lot less locking locks that they have to do.</p>
+<p>314<br>00:17:16,220 –&gt; 00:17:17,220<br>It’s a trade-off, right?</p>
+<p>315<br>00:17:17,220 –&gt; 00:17:20,420<br>And again, as I said, nothing tells you you have to use all the locks.</p>
+<p>316<br>00:17:20,420 –&gt; 00:17:24,860<br>It’s just saying if you want to play these games, you now have the way to do it.</p>
+<p>317<br>00:17:24,860 –&gt; 00:17:31,740<br>This other transaction that wants to read all the records, it can go in, but obviously it</p>
+<p>318<br>00:17:31,740 –&gt; 00:17:38,900<br>has, it can try to grab an IS lock, for example, on the table, and that won’t be compatible</p>
+<p>319<br>00:17:38,900 –&gt; 00:17:40,539<br>with these locks, so it’s going to have to wait, right?</p>
+<p>320<br>00:17:40,539 –&gt; 00:17:44,140<br>And the compatibility matrix, that’s not allowed.</p>
+<p>321<br>00:17:44,140 –&gt; 00:17:47,060<br>So doesn’t mean transactions never have to wait.</p>
+<p>322<br>00:17:47,060 –&gt; 00:17:49,740<br>Some of them will have to wait, but you’re going to get more parallelism and you’re trying</p>
+<p>323<br>00:17:49,740 –&gt; 00:17:53,620<br>to do this balance between how many locks do transactions have to acquire and how much</p>
+<p>324<br>00:17:53,620 –&gt; 00:17:56,620<br>parallelism you go allow in the system.</p>
+<p>325<br>00:17:56,620 –&gt; 00:17:59,220<br>Okay, questions?</p>
+<p>326<br>00:17:59,220 –&gt; 00:18:00,220<br>Yep.</p>
+<p>327<br>00:18:00,220 –&gt; 00:18:04,539<br>Is there a way to upgrade locks?</p>
+<p>328<br>00:18:04,539 –&gt; 00:18:08,779<br>Yes, and we will defer that to the advanced database class because it could be that you</p>
+<p>329<br>00:18:08,779 –&gt; 00:18:09,779<br>might say, you know what?</p>
+<p>330<br>00:18:09,779 –&gt; 00:18:12,940<br>I’m doing a lot of X locks on the Tuple Transaction T1.</p>
+<p>331<br>00:18:12,940 –&gt; 00:18:15,700<br>Can I go and update my six lock on the table to an X lock?</p>
+<p>332<br>00:18:15,700 –&gt; 00:18:16,700<br>That’s allowed.</p>
+<p>333<br>00:18:16,700 –&gt; 00:18:21,580<br>You go through an upgrade protocol, the lock table which I told you has a hash table,</p>
+<p>334<br>00:18:21,580 –&gt; 00:18:26,500<br>has things that are waiting for it, and there are upgrade requests too, and upgrade requests</p>
+<p>335<br>00:18:26,500 –&gt; 00:18:31,940<br>are treated differently than people just waiting for it because you might want to give them</p>
+<p>336<br>00:18:31,940 –&gt; 00:18:36,539<br>higher priority to get ahead of the queue and get the work done if it doesn’t conflict.</p>
+<p>337<br>00:18:36,539 –&gt; 00:18:38,539<br>Okay, other questions?</p>
+<p>338<br>00:18:38,539 –&gt; 00:18:50,940<br>Yes, so an SIX lock versus Slock, so let’s just go back here.</p>
+<p>339<br>00:18:50,940 –&gt; 00:18:58,259<br>Yeah, so you would do a shared lock and again it will depend upon how you’re implementing</p>
+<p>340<br>00:18:58,259 –&gt; 00:18:59,259<br>it.</p>
+<p>341<br>00:18:59,259 –&gt; 00:19:02,379<br>So if you say, I know in this transaction that I’m going to read everything, then I will</p>
+<p>342<br>00:19:02,379 –&gt; 00:19:06,940<br>grab an S lock on the table, I’m going to read every record, but the other transaction</p>
+<p>343<br>00:19:06,940 –&gt; 00:19:11,340<br>took a six lock because it said, I want to also update some, so it will depend upon the</p>
+<p>344<br>00:19:11,340 –&gt; 00:19:14,700<br>operation that the transaction wants to do.</p>
+<p>345<br>00:19:14,700 –&gt; 00:19:17,779<br>And you’ll try to grab the weakest lock mode at the highest level.</p>
+<p>346<br>00:19:17,779 –&gt; 00:19:24,779<br>What is one to do like a subset of the record?</p>
+<p>347<br>00:19:24,779 –&gt; 00:19:25,779<br>Yeah, yeah.</p>
+<p>348<br>00:19:25,779 –&gt; 00:19:34,180<br>So whether, so thank you for another connection, thank you.</p>
+<p>349<br>00:19:34,180 –&gt; 00:19:38,380<br>So yeah, the question is, what if I have to lock a subset of the object?</p>
+<p>350<br>00:19:38,380 –&gt; 00:19:42,740<br>So let’s take the transaction T1 and after this, I’m going to stop because we are now like,</p>
+<p>351<br>00:19:42,740 –&gt; 00:19:46,100<br>we need three lectures and I love it, but I need to get through some of the material,</p>
+<p>352<br>00:19:46,100 –&gt; 00:19:47,180<br>but this, these are great questions.</p>
+<p>353<br>00:19:47,180 –&gt; 00:19:51,580<br>So you’re asking a very interesting and important question.</p>
+<p>354<br>00:19:51,580 –&gt; 00:19:55,420<br>I am transaction T1, okay, so just let’s focus on that.</p>
+<p>355<br>00:19:55,420 –&gt; 00:20:02,220<br>It, let’s say when it started, it was a transaction that the code was written as begin transaction,</p>
+<p>356<br>00:20:02,220 –&gt; 00:20:06,140<br>ban all the records to find the interesting bank accounts and then for those interesting</p>
+<p>357<br>00:20:06,140 –&gt; 00:20:09,539<br>bank accounts, second SQL statement, go and update them and transaction.</p>
+<p>358<br>00:20:09,539 –&gt; 00:20:12,579<br>So transaction is going to two pieces of work.</p>
+<p>359<br>00:20:12,579 –&gt; 00:20:16,940<br>Does it know how many records are going to be updated in that second phase for which it</p>
+<p>360<br>00:20:16,940 –&gt; 00:20:17,940<br>needs an X lock?</p>
+<p>361<br>00:20:17,940 –&gt; 00:20:21,180<br>What if it is all the bank account numbers are exactly the same?</p>
+<p>362<br>00:20:21,180 –&gt; 00:20:23,980<br>They’re all the highest and everyone needs to be given 50 bucks.</p>
+<p>363<br>00:20:23,980 –&gt; 00:20:27,420<br>Or what if the number of things that they need to update is more than, you know, more than</p>
+<p>364<br>00:20:27,420 –&gt; 00:20:28,420<br>one?</p>
+<p>365<br>00:20:28,420 –&gt; 00:20:30,299<br>Maybe it is all the half of the records.</p>
+<p>366<br>00:20:30,299 –&gt; 00:20:31,299<br>Should I have?</p>
+<p>367<br>00:20:31,299 –&gt; 00:20:36,059<br>Imagine I was reading everything and then when I start to update, I find I’m updating everything,</p>
+<p>368<br>00:20:36,059 –&gt; 00:20:40,099<br>wouldn’t I have been better by just grabbing an X lock on the table up front?</p>
+<p>369<br>00:20:40,099 –&gt; 00:20:45,019<br>The answer is yes, but that could go through the lock upgrade request, for example.</p>
+<p>370<br>00:20:45,019 –&gt; 00:20:50,659<br>And so these protocols are then defined in more detail as to what you do, what’s the way</p>
+<p>371<br>00:20:50,659 –&gt; 00:20:56,099<br>in which you follow the general rule is try to grab the slowest lock at each level of</p>
+<p>372<br>00:20:56,099 –&gt; 00:20:58,460<br>the hierarchy as you go down.</p>
+<p>373<br>00:20:58,860 –&gt; 00:21:01,940<br>That way you’re allowing as many others to go through.</p>
+<p>374<br>00:21:01,940 –&gt; 00:21:04,700<br>And then if you start to find whoops, I’m grabbing a lot of X lock.</p>
+<p>375<br>00:21:04,700 –&gt; 00:21:06,860<br>I should upgrade my table level lock to an X lock.</p>
+<p>376<br>00:21:06,860 –&gt; 00:21:08,740<br>You’ll go through an upgrade path.</p>
+<p>377<br>00:21:08,740 –&gt; 00:21:10,380<br>So don’t make static decisions.</p>
+<p>378<br>00:21:10,380 –&gt; 00:21:14,140<br>You’ll try to make more dynamic decisions because you don’t know till you actually start</p>
+<p>379<br>00:21:14,140 –&gt; 00:21:16,900<br>to look at the values.</p>
+<p>380<br>00:21:16,900 –&gt; 00:21:22,100<br>So again, you know, this is a full lecture in the advanced database class.</p>
+<p>381<br>00:21:22,100 –&gt; 00:21:23,539<br>But you guys are thinking of the right things.</p>
+<p>382<br>00:21:23,539 –&gt; 00:21:25,660<br>It’s like, what am I winning and how do I win?</p>
+<p>383<br>00:21:25,660 –&gt; 00:21:28,100<br>And it’s a complicated answer.</p>
+<p>384<br>00:21:28,099 –&gt; 00:21:32,299<br>The only thing you need to know is now you have more points to play with.</p>
+<p>385<br>00:21:32,299 –&gt; 00:21:36,139<br>And you can follow the protocol and everything is safe.</p>
+<p>386<br>00:21:36,139 –&gt; 00:21:41,219<br>All of 2PL holes will grab these locks whether they’re intentional or real locks.</p>
+<p>387<br>00:21:41,219 –&gt; 00:21:44,059<br>Hold them till the end of transaction and strong sick 2PL.</p>
+<p>388<br>00:21:44,059 –&gt; 00:21:49,539<br>You’ll hold them till the very end won’t go through that monotonically decreasing phase.</p>
+<p>389<br>00:21:49,539 –&gt; 00:21:50,539<br>Okay?</p>
+<p>390<br>00:21:50,539 –&gt; 00:21:54,459<br>So all the things we talked about 2PL work with hierarchical locks.</p>
+<p>391<br>00:21:54,459 –&gt; 00:21:55,500<br>And that’s beautiful.</p>
+<p>392<br>00:21:56,500 –&gt; 00:21:57,500<br>Right?</p>
+<p>393<br>00:21:57,500 –&gt; 00:21:58,500<br>And you can prove that.</p>
+<p>394<br>00:21:58,500 –&gt; 00:22:02,740<br>And there’s a paper that proves that formula and says, don’t have to take my vote for it.</p>
+<p>395<br>00:22:02,740 –&gt; 00:22:05,019<br>But here’s the proof.</p>
+<p>396<br>00:22:05,019 –&gt; 00:22:06,019<br>All right.</p>
+<p>397<br>00:22:06,019 –&gt; 00:22:07,019<br>Lock escalation.</p>
+<p>398<br>00:22:07,019 –&gt; 00:22:08,019<br>We just talked about that.</p>
+<p>399<br>00:22:08,019 –&gt; 00:22:11,779<br>If I have to switch over and upgrade a lock to something else, then you that’s called</p>
+<p>400<br>00:22:11,779 –&gt; 00:22:13,380<br>lock escalation.</p>
+<p>401<br>00:22:13,380 –&gt; 00:22:16,819<br>And there are protocols that you go follow through that too.</p>
+<p>402<br>00:22:16,819 –&gt; 00:22:18,819<br>All right?</p>
+<p>403<br>00:22:18,819 –&gt; 00:22:23,220<br>Notice with all of these things, just reiterating from the last class, you’re not acquiring these</p>
+<p>404<br>00:22:23,220 –&gt; 00:22:28,339<br>locks manually like you as a SQL application programmer is not acquiring the locks manually</p>
+<p>405<br>00:22:28,339 –&gt; 00:22:29,339<br>typically.</p>
+<p>406<br>00:22:29,339 –&gt; 00:22:34,299<br>Those SQL statements do have options to allow you to lock entire tables.</p>
+<p>407<br>00:22:34,299 –&gt; 00:22:35,299<br>Not recommended.</p>
+<p>408<br>00:22:35,299 –&gt; 00:22:40,019<br>You’d only do that if you’re a power user that really knows what you’re doing.</p>
+<p>409<br>00:22:40,019 –&gt; 00:22:43,180<br>But in general, these will get acquired at the right point in the system.</p>
+<p>410<br>00:22:43,180 –&gt; 00:22:47,259<br>You as a database system programmer, if you’re the person developing the database system,</p>
+<p>411<br>00:22:47,259 –&gt; 00:22:49,740<br>you will have to worry about that and find the right abstraction.</p>
+<p>412<br>00:22:49,740 –&gt; 00:22:55,579<br>It’s on the call to the buffer pool or the call to the open of the page, open of the file</p>
+<p>413<br>00:22:55,579 –&gt; 00:22:57,900<br>or open of the page or open of the index.</p>
+<p>414<br>00:22:57,900 –&gt; 00:23:01,180<br>You’ll have to go start making these lock calls in there.</p>
+<p>415<br>00:23:01,180 –&gt; 00:23:04,500<br>But the application programmer generally doesn’t.</p>
+<p>416<br>00:23:04,500 –&gt; 00:23:10,299<br>However, SQL has many database systems have options to allow.</p>
+<p>417<br>00:23:10,299 –&gt; 00:23:13,660<br>This explicit locking of tables.</p>
+<p>418<br>00:23:13,660 –&gt; 00:23:15,980<br>It’s not part of standard SQL.</p>
+<p>419<br>00:23:15,980 –&gt; 00:23:22,259<br>For example, in Oracle Postgres and DB2, they have a similar syntax or the same syntax.</p>
+<p>420<br>00:23:22,259 –&gt; 00:23:26,980<br>You can say lock table, name of the table in and give an explicit mode.</p>
+<p>421<br>00:23:26,980 –&gt; 00:23:30,460<br>They’ll only allow you to give you shared and exclusive locks as requests.</p>
+<p>422<br>00:23:30,460 –&gt; 00:23:33,740<br>You’re saying, look, I know you’re going to do all this hierarchical locking and stuff</p>
+<p>423<br>00:23:33,740 –&gt; 00:23:34,740<br>like that.</p>
+<p>424<br>00:23:34,740 –&gt; 00:23:35,819<br>But I know what I’m doing.</p>
+<p>425<br>00:23:35,819 –&gt; 00:23:37,140<br>I want a shared lock.</p>
+<p>426<br>00:23:37,140 –&gt; 00:23:39,059<br>Don’t try to do this other stuff.</p>
+<p>427<br>00:23:39,059 –&gt; 00:23:40,660<br>They may not be doing hierarchical locking.</p>
+<p>428<br>00:23:40,660 –&gt; 00:23:44,500<br>They may be doing some of the locking protocol or timestamp based protocol.</p>
+<p>429<br>00:23:44,500 –&gt; 00:23:49,019<br>We’ll see MVCC, which is what Postgres does.</p>
+<p>430<br>00:23:49,019 –&gt; 00:23:51,220<br>But this allows you to say, I know what I’m doing.</p>
+<p>431<br>00:23:51,220 –&gt; 00:23:52,220<br>Go ahead and grab that.</p>
+<p>432<br>00:23:52,220 –&gt; 00:23:56,740<br>But now, along with great power comes greater responsibility than the application code better</p>
+<p>433<br>00:23:56,740 –&gt; 00:23:58,220<br>know what they’re doing.</p>
+<p>434<br>00:23:58,220 –&gt; 00:23:59,579<br>Generally, not recommended.</p>
+<p>435<br>00:23:59,579 –&gt; 00:24:02,539<br>You start splintering your SQL code with all of that stuff.</p>
+<p>436<br>00:24:02,539 –&gt; 00:24:07,660<br>We’ll talk about isolation levels, which you can set at the database level to say, I want</p>
+<p>437<br>00:24:07,660 –&gt; 00:24:11,579<br>read committer or read uncommitted, but that’s the lecture that we’re going to start on</p>
+<p>438<br>00:24:11,579 –&gt; 00:24:12,579<br>next.</p>
+<p>439<br>00:24:12,579 –&gt; 00:24:13,579<br>Okay?</p>
+<p>440<br>00:24:14,139 –&gt; 00:24:23,659<br>So you can also, SQL also has modes for when you’re doing a select query and then you want</p>
+<p>441<br>00:24:23,659 –&gt; 00:24:26,339<br>to set an exclusive lock on the matching records.</p>
+<p>442<br>00:24:26,339 –&gt; 00:24:28,980<br>You can do that kind of like the transactions that I was saying.</p>
+<p>443<br>00:24:28,980 –&gt; 00:24:31,339<br>I’m going to read all of this stuff and then some part of it.</p>
+<p>444<br>00:24:31,339 –&gt; 00:24:32,779<br>I’m going to do updates.</p>
+<p>445<br>00:24:32,779 –&gt; 00:24:37,220<br>So there are all kinds of ways in which you can start to give SQL hints in terms of what</p>
+<p>446<br>00:24:37,220 –&gt; 00:24:40,779<br>to do so that you get locks at the appropriate time.</p>
+<p>447<br>00:24:40,779 –&gt; 00:24:41,779<br>You don’t have to.</p>
+<p>448<br>00:24:41,779 –&gt; 00:24:46,019<br>The system will do the right thing, but if you want to, it’s kind of like query optimization.</p>
+<p>449<br>00:24:46,019 –&gt; 00:24:51,220<br>The system does things by itself, but every database system also has hints where you can</p>
+<p>450<br>00:24:51,220 –&gt; 00:24:56,180<br>say, oh, R is joined with S to join that first and then use a hash join for it.</p>
+<p>451<br>00:24:56,180 –&gt; 00:24:57,779<br>Don’t try something else for it.</p>
+<p>452<br>00:24:57,779 –&gt; 00:25:00,660<br>So SQL also has optional hints.</p>
+<p>453<br>00:25:00,660 –&gt; 00:25:04,379<br>They again, those hints are not part of SQL, but you can give hints to tell.</p>
+<p>454<br>00:25:04,379 –&gt; 00:25:08,139<br>I’m going to tell the optimizer what to do or at least tell you where to look.</p>
+<p>455<br>00:25:08,140 –&gt; 00:25:12,140<br>Similarly, there are things where you can explicitly start taking over some of these transaction</p>
+<p>456<br>00:25:12,140 –&gt; 00:25:14,180<br>mechanisms.</p>
+<p>457<br>00:25:14,180 –&gt; 00:25:22,580<br>So wrapping up the 2PL part is this two phase locking is used in almost every database system</p>
+<p>458<br>00:25:22,580 –&gt; 00:25:28,300<br>because you this whole idea of how to get this concurrency control is super important</p>
+<p>459<br>00:25:28,300 –&gt; 00:25:32,460<br>in that theory is what all the products are built off.</p>
+<p>460<br>00:25:32,460 –&gt; 00:25:37,620<br>We talked about locks and the protocols to PL and strong sick to PL.</p>
+<p>461<br>00:25:37,619 –&gt; 00:25:41,179<br>When you do locking, that doesn’t mean you are completely out of trouble.</p>
+<p>462<br>00:25:41,179 –&gt; 00:25:42,459<br>You can still get into deadlock.</p>
+<p>463<br>00:25:42,459 –&gt; 00:25:46,779<br>So you need deadlock prevention mechanisms and you can detect the deadlock and handle it</p>
+<p>464<br>00:25:46,779 –&gt; 00:25:48,259<br>or you can do deadlock prevention.</p>
+<p>465<br>00:25:48,259 –&gt; 00:25:52,379<br>And of course, we talked about hierarchical locking and all the other fun stuff that comes</p>
+<p>466<br>00:25:52,379 –&gt; 00:25:53,379<br>with it.</p>
+<p>467<br>00:25:53,379 –&gt; 00:25:54,379<br>All right.</p>
+<p>468<br>00:25:54,379 –&gt; 00:25:59,139<br>Let’s wrap this part up and now go.</p>
+<p>469<br>00:25:59,139 –&gt; 00:26:04,219<br>We are running behind in the semester and as you’re probably guessed.</p>
+<p>470<br>00:26:04,220 –&gt; 00:26:07,620<br>The good thing is if you keep asking questions and make us run behind, then there’s less</p>
+<p>471<br>00:26:07,620 –&gt; 00:26:10,299<br>stuff we can ask you questions in the final exam.</p>
+<p>472<br>00:26:10,299 –&gt; 00:26:13,779<br>But that’s also means the last chapters we hope to get through, we won’t get through.</p>
+<p>473<br>00:26:13,779 –&gt; 00:26:15,100<br>So it’s like a trade off.</p>
+<p>474<br>00:26:15,100 –&gt; 00:26:16,980<br>But keep asking questions.</p>
+<p>475<br>00:26:16,980 –&gt; 00:26:18,220<br>It’s good.</p>
+<p>476<br>00:26:18,220 –&gt; 00:26:21,420<br>All right.</p>
+<p>477<br>00:26:21,420 –&gt; 00:26:27,019<br>So now we are going to talk about a different way to do concurrency control.</p>
+<p>478<br>00:26:27,019 –&gt; 00:26:31,059<br>We said locking and we looked at all the protocols.</p>
+<p>479<br>00:26:31,059 –&gt; 00:26:35,940<br>And effectively the main theory we got from everything we’ve discussed before is we want</p>
+<p>480<br>00:26:35,940 –&gt; 00:26:41,899<br>this notion of serializable schedules so that we can allow arbitrary interleaving of</p>
+<p>481<br>00:26:41,899 –&gt; 00:26:45,379<br>actions from concurrent transactions, maximize the parallelism.</p>
+<p>482<br>00:26:45,379 –&gt; 00:26:51,259<br>But at the end of the day, guarantee that the database is in some consistent state as</p>
+<p>483<br>00:26:51,259 –&gt; 00:26:54,099<br>set up by the theory of the serializable schedule.</p>
+<p>484<br>00:26:54,099 –&gt; 00:26:55,099<br>Okay.</p>
+<p>485<br>00:26:55,099 –&gt; 00:26:58,139<br>And we largely focused on this conflict serializable stuff and we said this is notion of</p>
+<p>486<br>00:26:58,140 –&gt; 00:27:01,740<br>view serializable that allows a little bit more and we’ll touch a little bit on that</p>
+<p>487<br>00:27:01,740 –&gt; 00:27:06,940<br>view serialization today with a different protocol.</p>
+<p>488<br>00:27:06,940 –&gt; 00:27:08,940<br>So two-phase locking.</p>
+<p>489<br>00:27:08,940 –&gt; 00:27:09,940<br>What are we trying to achieve?</p>
+<p>490<br>00:27:09,940 –&gt; 00:27:14,940<br>We’re trying to do this concurrency control, the isolation part of acid.</p>
+<p>491<br>00:27:14,940 –&gt; 00:27:16,700<br>It is the eye in the acid.</p>
+<p>492<br>00:27:16,700 –&gt; 00:27:19,259<br>We’re still on that topic.</p>
+<p>493<br>00:27:19,259 –&gt; 00:27:24,860<br>And when we introduced that topic, we had noted that there are pessimistic protocols, locks</p>
+<p>494<br>00:27:24,860 –&gt; 00:27:26,820<br>are a pessimistic protocol.</p>
+<p>495<br>00:27:26,819 –&gt; 00:27:30,500<br>If you and I are going to have a read write conflict or a write write conflict or a write</p>
+<p>496<br>00:27:30,500 –&gt; 00:27:35,139<br>read conflict, the lock is basically a way of saying I’m noting that down and I will stop</p>
+<p>497<br>00:27:35,139 –&gt; 00:27:37,899<br>it at the first arc and I’m not going to let the arc close.</p>
+<p>498<br>00:27:37,899 –&gt; 00:27:41,939<br>I’m just going to, as soon as the arc forms, I’m going to suspend one of the transactions.</p>
+<p>499<br>00:27:41,939 –&gt; 00:27:44,899<br>So I’m not going to let the loop close.</p>
+<p>500<br>00:27:44,899 –&gt; 00:27:50,539<br>And hopefully you got that as we discussed this over the last two lectures.</p>
+<p>501<br>00:27:50,539 –&gt; 00:27:54,740<br>There’s something that we’re going to start talking about today called time stamp ordering</p>
+<p>502<br>00:27:54,740 –&gt; 00:27:56,379<br>that’s not going to need locks.</p>
+<p>503<br>00:27:56,380 –&gt; 00:27:58,900<br>All this discussion we had today is like locks are expensive.</p>
+<p>504<br>00:27:58,900 –&gt; 00:27:59,980<br>You have to grab these many locks.</p>
+<p>505<br>00:27:59,980 –&gt; 00:28:02,380<br>You have to figure this out with hierarchical locking.</p>
+<p>506<br>00:28:02,380 –&gt; 00:28:04,540<br>Yes, we made life a lot better.</p>
+<p>507<br>00:28:04,540 –&gt; 00:28:05,860<br>But is there a different way?</p>
+<p>508<br>00:28:05,860 –&gt; 00:28:09,020<br>And that’s what we are going to look at with these types of protocols at a time stamp based</p>
+<p>509<br>00:28:09,020 –&gt; 00:28:10,780<br>protocols.</p>
+<p>510<br>00:28:10,780 –&gt; 00:28:15,740<br>And we’ll start with a very simple textbook example of time stamp protocol called time stamp</p>
+<p>511<br>00:28:15,740 –&gt; 00:28:16,740<br>ordering.</p>
+<p>512<br>00:28:16,740 –&gt; 00:28:20,020<br>That’s the name of the protocol.</p>
+<p>513<br>00:28:20,020 –&gt; 00:28:22,100<br>And no one uses that.</p>
+<p>514<br>00:28:22,099 –&gt; 00:28:26,539<br>But it introduces the concepts on which we build the rest of it for the optimistic</p>
+<p>515<br>00:28:26,539 –&gt; 00:28:31,619<br>conferencing control and NBCC which a lot of systems use, which is the topic for the next</p>
+<p>516<br>00:28:31,619 –&gt; 00:28:32,619<br>lecture.</p>
+<p>517<br>00:28:32,619 –&gt; 00:28:35,299<br>So it’s the foundation stuff we are going to talk about.</p>
+<p>518<br>00:28:35,299 –&gt; 00:28:39,859<br>Now as we start talking about these protocols, a quick note, they will have names like time stamp</p>
+<p>519<br>00:28:39,859 –&gt; 00:28:40,859<br>ordering.</p>
+<p>520<br>00:28:40,859 –&gt; 00:28:44,299<br>Those were the names that were given when those protocols were invented in the 70s and</p>
+<p>521<br>00:28:44,299 –&gt; 00:28:47,419<br>80s or optimistic conferencing control.</p>
+<p>522<br>00:28:47,419 –&gt; 00:28:51,859<br>But as you’ll see, the terms that gets used over there will feel a little confusing.</p>
+<p>523<br>00:28:51,859 –&gt; 00:28:56,339<br>Everything that we talk about now, because the terms were just getting evolved at that</p>
+<p>524<br>00:28:56,339 –&gt; 00:28:57,339<br>time.</p>
+<p>525<br>00:28:57,339 –&gt; 00:28:58,339<br>So bear with us.</p>
+<p>526<br>00:28:58,339 –&gt; 00:29:00,659<br>We want to keep that historical name for what the protocol is.</p>
+<p>527<br>00:29:00,659 –&gt; 00:29:04,500<br>And I’ll try to point out where the name presents mean what it seems like it means.</p>
+<p>528<br>00:29:04,500 –&gt; 00:29:07,099<br>But we’ll still keep that name around.</p>
+<p>529<br>00:29:07,099 –&gt; 00:29:08,099<br>All right.</p>
+<p>530<br>00:29:08,099 –&gt; 00:29:13,139<br>So if we can, we’re going to try and get through both the time stamp ordering and the</p>
+<p>531<br>00:29:13,139 –&gt; 00:29:15,740<br>optimistic conferencing control protocols today.</p>
+<p>532<br>00:29:15,740 –&gt; 00:29:17,299<br>I don’t expect it will get through that.</p>
+<p>533<br>00:29:17,299 –&gt; 00:29:19,139<br>So we’ll try it.</p>
+<p>534<br>00:29:19,139 –&gt; 00:29:20,179<br>All right.</p>
+<p>535<br>00:29:20,180 –&gt; 00:29:25,299<br>So the time stamp ordering protocol has philosophically a different way.</p>
+<p>536<br>00:29:25,299 –&gt; 00:29:27,860<br>We’re going to use time stamps.</p>
+<p>537<br>00:29:27,860 –&gt; 00:29:32,539<br>And the way we use time stamps is we’ll have associated with records.</p>
+<p>538<br>00:29:32,539 –&gt; 00:29:34,500<br>Let’s assume we are doing everything at a record level.</p>
+<p>539<br>00:29:34,500 –&gt; 00:29:35,500<br>Right.</p>
+<p>540<br>00:29:35,500 –&gt; 00:29:36,500<br>So keep life simple.</p>
+<p>541<br>00:29:36,500 –&gt; 00:29:37,980<br>We’ll mark when it was read.</p>
+<p>542<br>00:29:37,980 –&gt; 00:29:38,980<br>Mark when it was written.</p>
+<p>543<br>00:29:38,980 –&gt; 00:29:41,140<br>So we keep time stamps like that around.</p>
+<p>544<br>00:29:41,140 –&gt; 00:29:44,259<br>And it’s not all these two time stamps as you’ll see with the optimistic conferencing control</p>
+<p>545<br>00:29:44,259 –&gt; 00:29:46,019<br>to be just one time stamp.</p>
+<p>546<br>00:29:46,019 –&gt; 00:29:49,220<br>But the general idea is we’re going to use the time stamps.</p>
+<p>547<br>00:29:49,220 –&gt; 00:29:53,180<br>And if I can mark every time I read or write an object, then I can use those time stamps</p>
+<p>548<br>00:29:53,180 –&gt; 00:29:57,420<br>and say, hey, these two records, two transactions wrote or read to it.</p>
+<p>549<br>00:29:57,420 –&gt; 00:29:58,420<br>Are they conflicting?</p>
+<p>550<br>00:29:58,420 –&gt; 00:30:01,539<br>If they read in very different times, then I’m okay going forward with that.</p>
+<p>551<br>00:30:01,539 –&gt; 00:30:05,620<br>If they’re conflicting, then can I resolve the conflict by finding a serial order?</p>
+<p>552<br>00:30:05,620 –&gt; 00:30:09,100<br>In which it all works out and have to do this across all the records that transactions</p>
+<p>553<br>00:30:09,100 –&gt; 00:30:10,100<br>touch.</p>
+<p>554<br>00:30:10,100 –&gt; 00:30:10,940<br>Okay.</p>
+<p>555<br>00:30:10,940 –&gt; 00:30:16,460<br>So we’ll also give transactions numbers.</p>
+<p>556<br>00:30:16,460 –&gt; 00:30:19,539<br>And those numbers now are not just going to be just random numbers, but they’re going</p>
+<p>557<br>00:30:19,539 –&gt; 00:30:21,059<br>to mean something.</p>
+<p>558<br>00:30:21,059 –&gt; 00:30:27,420<br>So if I transaction 10 and your transaction 20, then all my work should be done before</p>
+<p>559<br>00:30:27,420 –&gt; 00:30:28,819<br>your work.</p>
+<p>560<br>00:30:28,819 –&gt; 00:30:33,779<br>Are numbers correspond to the serial execution schedules order?</p>
+<p>561<br>00:30:33,779 –&gt; 00:30:40,100<br>So lower transaction stuff must be done first in that equivalent serial schedule than the</p>
+<p>562<br>00:30:40,100 –&gt; 00:30:41,460<br>other transactions.</p>
+<p>563<br>00:30:41,460 –&gt; 00:30:44,900<br>Of course, the work is happening all in parallel, but eventually we have to support a serial</p>
+<p>564<br>00:30:44,900 –&gt; 00:30:46,140<br>schedule, right?</p>
+<p>565<br>00:30:46,140 –&gt; 00:30:49,140<br>And the serial schedule, remember when we had two transactions, we said is T1 followed</p>
+<p>566<br>00:30:49,140 –&gt; 00:30:51,700<br>by T2 or T2 followed by T1.</p>
+<p>567<br>00:30:51,700 –&gt; 00:30:57,020<br>Now these T1s and T2s, the numbers are going to mean numbers and we’re going to need to ensure</p>
+<p>568<br>00:30:57,020 –&gt; 00:31:00,980<br>one happens before two if those are transaction numbers.</p>
+<p>569<br>00:31:00,980 –&gt; 00:31:01,980<br>Okay.</p>
+<p>570<br>00:31:01,980 –&gt; 00:31:04,540<br>And then we’ll use the time stamps and we’ll play around with tricks to say, let’s assign</p>
+<p>571<br>00:31:04,540 –&gt; 00:31:07,180<br>the numbers carefully to get more parallelism.</p>
+<p>572<br>00:31:07,180 –&gt; 00:31:08,980<br>So we’ll see how we do that.</p>
+<p>573<br>00:31:08,980 –&gt; 00:31:14,020<br>So everyone, okay, with the basic material that we now need, time stamps and transaction</p>
+<p>574<br>00:31:14,019 –&gt; 00:31:15,019<br>numbers now matter.</p>
+<p>575<br>00:31:15,019 –&gt; 00:31:16,379<br>They’re not random numbers.</p>
+<p>576<br>00:31:16,379 –&gt; 00:31:22,779<br>They determine the order of the serial schedule, serializable schedule, config serializable</p>
+<p>577<br>00:31:22,779 –&gt; 00:31:26,339<br>schedule that we are trying to achieve.</p>
+<p>578<br>00:31:26,339 –&gt; 00:31:27,339<br>All right.</p>
+<p>579<br>00:31:27,339 –&gt; 00:31:30,220<br>Now where do these time stamps come from?</p>
+<p>580<br>00:31:30,220 –&gt; 00:31:32,819<br>What do they look like?</p>
+<p>581<br>00:31:32,819 –&gt; 00:31:34,420<br>Some systems will use a time stamp.</p>
+<p>582<br>00:31:34,420 –&gt; 00:31:35,619<br>That’s a wall clock time.</p>
+<p>583<br>00:31:35,619 –&gt; 00:31:38,339<br>Just grab the wall clock and that’s my time stamp.</p>
+<p>584<br>00:31:38,339 –&gt; 00:31:41,299<br>But obviously if you’re a distributed system, the clocks may be out.</p>
+<p>585<br>00:31:41,299 –&gt; 00:31:42,900<br>You can’t quite do that.</p>
+<p>586<br>00:31:42,900 –&gt; 00:31:48,140<br>That’s what people will say is there’s a global counter and I can read it and then get</p>
+<p>587<br>00:31:48,140 –&gt; 00:31:49,140<br>my number.</p>
+<p>588<br>00:31:49,140 –&gt; 00:31:52,820<br>But of course, two people may try to read that number and increment it at the same time.</p>
+<p>589<br>00:31:52,820 –&gt; 00:31:57,060<br>Luckily in hardware, you’ve got instructions that an atomic one cycle will allow you to</p>
+<p>590<br>00:31:57,060 –&gt; 00:31:58,420<br>read an updated number.</p>
+<p>591<br>00:31:58,420 –&gt; 00:32:03,820<br>So if I had a global counter, I protected with one of those instructions that the hardware</p>
+<p>592<br>00:32:03,820 –&gt; 00:32:08,700<br>says I can do it automatically, then I can build a counter that I can counter.</p>
+<p>593<br>00:32:08,700 –&gt; 00:32:10,620<br>But again, that works if I have a single machine.</p>
+<p>594<br>00:32:10,619 –&gt; 00:32:14,379<br>If I have distributed machines I have to do something else, which is kind of what Spanner</p>
+<p>595<br>00:32:14,379 –&gt; 00:32:16,699<br>has to do and all these distributed systems have to do.</p>
+<p>596<br>00:32:16,699 –&gt; 00:32:20,259<br>So that’s like a logical counter or some combination of that.</p>
+<p>597<br>00:32:20,259 –&gt; 00:32:23,339<br>It’s not as important when these numbers come from.</p>
+<p>598<br>00:32:23,339 –&gt; 00:32:25,619<br>It is of course important if you have to implement it.</p>
+<p>599<br>00:32:25,619 –&gt; 00:32:29,339<br>But the material today will just assume that some way that we are getting these numbers</p>
+<p>600<br>00:32:29,339 –&gt; 00:32:33,179<br>from because even that counter stuff has to be protected because multiple people may be</p>
+<p>601<br>00:32:33,179 –&gt; 00:32:36,139<br>trying to write to that counter at the same time.</p>
+<p>602<br>00:32:36,139 –&gt; 00:32:37,379<br>So it’s the non-previal thing.</p>
+<p>603<br>00:32:37,379 –&gt; 00:32:39,619<br>You can’t ignore that if you’re trying to implement something.</p>
+<p>604<br>00:32:40,619 –&gt; 00:32:41,859<br>So we have a number.</p>
+<p>605<br>00:32:41,859 –&gt; 00:32:43,059<br>We have these timestamps.</p>
+<p>606<br>00:32:43,059 –&gt; 00:32:50,539<br>Let’s start with the basic time-order protocol which has the following components.</p>
+<p>607<br>00:32:50,539 –&gt; 00:32:54,539<br>Transactions are going to read and write objects, but there’s no locks now.</p>
+<p>608<br>00:32:54,539 –&gt; 00:32:56,699<br>This is a competing scheme.</p>
+<p>609<br>00:32:56,699 –&gt; 00:32:58,419<br>No locks are needed.</p>
+<p>610<br>00:32:58,419 –&gt; 00:33:05,299<br>Now, but remember, split 2PL and 2PL was all about getting a serial schedule.</p>
+<p>611<br>00:33:05,299 –&gt; 00:33:10,019<br>So we will still get a serializable schedule but without doing any of that stuff.</p>
+<p>612<br>00:33:10,019 –&gt; 00:33:13,460<br>So completely different way of thinking about it.</p>
+<p>613<br>00:33:13,460 –&gt; 00:33:18,339<br>Every object will be grabbed, will be tagged with the timestamp of the last transaction</p>
+<p>614<br>00:33:18,339 –&gt; 00:33:20,139<br>that read and wrote it.</p>
+<p>615<br>00:33:20,139 –&gt; 00:33:22,619<br>So again, every object has these two timestamps.</p>
+<p>616<br>00:33:22,619 –&gt; 00:33:26,379<br>And when they say object just referred to it as a record, but it’s generalizable to other</p>
+<p>617<br>00:33:26,379 –&gt; 00:33:27,379<br>things.</p>
+<p>618<br>00:33:27,379 –&gt; 00:33:29,019<br>If I’m doing page level locking, the object is a page.</p>
+<p>619<br>00:33:29,019 –&gt; 00:33:34,859<br>If I’m doing file level locking, it’s a file and depends on what that notion is.</p>
+<p>620<br>00:33:35,859 –&gt; 00:33:40,419<br>Now, if a transaction tries to the main principle we’ll do is the one that’s written up over</p>
+<p>621<br>00:33:40,419 –&gt; 00:33:44,979<br>here at the bottom is, we’ll use these timestamps philosophically in the following way.</p>
+<p>622<br>00:33:44,979 –&gt; 00:33:49,619<br>If I’m trying to do something to an object, read or write, I’ll look at the timestamps</p>
+<p>623<br>00:33:49,619 –&gt; 00:33:52,979<br>there and say, whoops, what do these timestamps tell me?</p>
+<p>624<br>00:33:52,979 –&gt; 00:33:56,779<br>Did someone do something to this object, read or write?</p>
+<p>625<br>00:33:56,779 –&gt; 00:34:01,419<br>And they’re ahead of me in that transaction number order or that logical order.</p>
+<p>626<br>00:34:01,420 –&gt; 00:34:06,940<br>If so, I need to back out of it because if I insert my operation now, I will end up,</p>
+<p>627<br>00:34:06,940 –&gt; 00:34:10,820<br>I’m guaranteed to end up with a non-serializable schedule.</p>
+<p>628<br>00:34:10,820 –&gt; 00:34:16,700<br>So now, a problem just becomes how we develop these conditions, these simple equations that</p>
+<p>629<br>00:34:16,700 –&gt; 00:34:19,460<br>tell us when I shouldn’t do bad stuff.</p>
+<p>630<br>00:34:19,460 –&gt; 00:34:23,340<br>And of course, every time I do some operation on an object, I better go update the timestamps,</p>
+<p>631<br>00:34:23,340 –&gt; 00:34:24,340<br>right?</p>
+<p>632<br>00:34:24,340 –&gt; 00:34:28,940<br>So that I can leave that marker behind saying, I was here and this is what I did to it.</p>
+<p>633<br>00:34:28,940 –&gt; 00:34:29,940<br>Okay?</p>
+<p>634<br>00:34:30,780 –&gt; 00:34:32,700<br>So let’s get going.</p>
+<p>635<br>00:34:32,700 –&gt; 00:34:40,139<br>So the basic TO protocol, again, as I said, it’s not practical, but it just provides us a foundation,</p>
+<p>636<br>00:34:40,139 –&gt; 00:34:45,659<br>is every time a transaction wants to read an object, it does the following, right?</p>
+<p>637<br>00:34:45,659 –&gt; 00:34:50,659<br>It is going to look at the, you’re going to start to get a little bit more familiar with</p>
+<p>638<br>00:34:50,659 –&gt; 00:34:51,659<br>these equations.</p>
+<p>639<br>00:34:51,659 –&gt; 00:34:53,420<br>So let’s just store down on these slides.</p>
+<p>640<br>00:34:53,420 –&gt; 00:34:59,340<br>You’ll see T s of ti, that is the timestamp of that transaction ti.</p>
+<p>641<br>00:34:59,340 –&gt; 00:35:02,579<br>Think of it as a transaction number, if that’s all we have, right?</p>
+<p>642<br>00:35:02,579 –&gt; 00:35:06,059<br>And then the right that is happening to that object X.</p>
+<p>643<br>00:35:06,059 –&gt; 00:35:08,059<br>So I’m trying to do something to object X.</p>
+<p>644<br>00:35:08,059 –&gt; 00:35:11,940<br>In this case, transaction ti wants to read object X, right?</p>
+<p>645<br>00:35:11,940 –&gt; 00:35:13,820<br>That’s the action, noted at the top.</p>
+<p>646<br>00:35:13,820 –&gt; 00:35:23,220<br>And if I see that the timestamp, the right timestamp of that object is bigger than my timestamp,</p>
+<p>647<br>00:35:23,219 –&gt; 00:35:30,459<br>then something happened to the object that’s a future value that X should not be seen, right?</p>
+<p>648<br>00:35:30,459 –&gt; 00:35:33,779<br>Because these timestamps, these numbers now mean something.</p>
+<p>649<br>00:35:33,779 –&gt; 00:35:35,779<br>These timestamps mean something, right?</p>
+<p>650<br>00:35:35,779 –&gt; 00:35:41,059<br>So I cannot basically, the most intuitive way to think about it is to say, I cannot read</p>
+<p>651<br>00:35:41,059 –&gt; 00:35:43,299<br>stuff from the future.</p>
+<p>652<br>00:35:43,299 –&gt; 00:35:45,500<br>Okay?</p>
+<p>653<br>00:35:45,500 –&gt; 00:35:47,219<br>I cannot see stuff in the future.</p>
+<p>654<br>00:35:47,219 –&gt; 00:35:52,299<br>Because otherwise, if I start doing that, then I’m going to get some sort of a normally,</p>
+<p>655<br>00:35:52,300 –&gt; 00:35:57,100<br>like I’ll get a WR, normally very easily, if I start doing that or an RW anomaly.</p>
+<p>656<br>00:35:57,100 –&gt; 00:35:59,380<br>Let’s start in this case, it would be RW.</p>
+<p>657<br>00:35:59,380 –&gt; 00:36:01,060<br>So okay?</p>
+<p>658<br>00:36:01,060 –&gt; 00:36:05,100<br>So if I hit that condition, when I’m seeing something in the future, I’ll abort.</p>
+<p>659<br>00:36:05,100 –&gt; 00:36:07,820<br>Otherwise, I will read.</p>
+<p>660<br>00:36:07,820 –&gt; 00:36:11,700<br>But now I need to let the world know that I read it.</p>
+<p>661<br>00:36:11,700 –&gt; 00:36:19,180<br>So I will update the read timestamp to be little tricky here, to be the maximum of my</p>
+<p>662<br>00:36:19,179 –&gt; 00:36:22,379<br>timestamp and whatever was already there.</p>
+<p>663<br>00:36:22,379 –&gt; 00:36:25,539<br>Since reads are compatible with each other and you’ll see that in an example in a little</p>
+<p>664<br>00:36:25,539 –&gt; 00:36:30,059<br>bit, if reads are compatible with each other, this max is saying if another future reader</p>
+<p>665<br>00:36:30,059 –&gt; 00:36:32,339<br>got ahead of me, I don’t care.</p>
+<p>666<br>00:36:32,339 –&gt; 00:36:34,460<br>I should simply not write.</p>
+<p>667<br>00:36:34,460 –&gt; 00:36:37,699<br>I should not have seen some future transactions write.</p>
+<p>668<br>00:36:37,699 –&gt; 00:36:39,699<br>Okay?</p>
+<p>669<br>00:36:39,699 –&gt; 00:36:41,859<br>So that max stuff you’ll see in a second.</p>
+<p>670<br>00:36:41,859 –&gt; 00:36:48,179<br>And now one more thing that we will do here is we will go and say that we are going to</p>
+<p>671<br>00:36:48,179 –&gt; 00:36:57,179<br>also, going to make a local copy of that object that we just read so that we can start to</p>
+<p>672<br>00:36:57,179 –&gt; 00:37:01,579<br>make sure that if I need to repeat that read, I’m okay with doing that.</p>
+<p>673<br>00:37:01,579 –&gt; 00:37:03,059<br>And you’ll see that in a second, right?</p>
+<p>674<br>00:37:03,059 –&gt; 00:37:04,940<br>Because x is value will keep getting changed.</p>
+<p>675<br>00:37:04,940 –&gt; 00:37:09,379<br>If I want to make sure repeatable reads, remember we had that repeatable read anomaly, right?</p>
+<p>676<br>00:37:09,379 –&gt; 00:37:13,659<br>If I want to prevent repeatable reads, then I need to make a copy for myself.</p>
+<p>677<br>00:37:13,659 –&gt; 00:37:14,659<br>Yep.</p>
+<p>678<br>00:37:14,659 –&gt; 00:37:19,980<br>We’ll talk about that in a bit.</p>
+<p>679<br>00:37:19,980 –&gt; 00:37:25,480<br>Yes, this can cause starvation, like deadlocks could cause deadlocks, this will cause starvation</p>
+<p>680<br>00:37:25,480 –&gt; 00:37:26,739<br>and their ways of getting around that.</p>
+<p>681<br>00:37:26,739 –&gt; 00:37:29,619<br>Just hold on to that question for about five minutes.</p>
+<p>682<br>00:37:29,619 –&gt; 00:37:30,619<br>Good question.</p>
+<p>683<br>00:37:30,619 –&gt; 00:37:34,779<br>Starvation will happen and then we’ll just make sure that timestamps are assigned in a way</p>
+<p>684<br>00:37:34,779 –&gt; 00:37:37,379<br>that we don’t infinitely start someone.</p>
+<p>685<br>00:37:37,379 –&gt; 00:37:38,379<br>That’s a quick answer.</p>
+<p>686<br>00:37:38,379 –&gt; 00:37:40,940<br>Okay, now we figured out what to do with reads.</p>
+<p>687<br>00:37:40,940 –&gt; 00:37:42,940<br>Now let’s figure out what to do with writes.</p>
+<p>688<br>00:37:42,940 –&gt; 00:37:45,139<br>So for writes, the conditions are a little complicated.</p>
+<p>689<br>00:37:45,139 –&gt; 00:37:48,500<br>Tsti is the transaction that’s trying to write, right?</p>
+<p>690<br>00:37:48,500 –&gt; 00:37:50,900<br>So that’s the timestamp of the transaction.</p>
+<p>691<br>00:37:50,900 –&gt; 00:37:55,220<br>And then we check if the read or the write timestamp of the object we are trying to read</p>
+<p>692<br>00:37:55,220 –&gt; 00:37:56,539<br>is in the future.</p>
+<p>693<br>00:37:56,539 –&gt; 00:38:00,659<br>Okay, again, similar to that, but for the writes, we have to check both the read and the</p>
+<p>694<br>00:38:00,659 –&gt; 00:38:01,659<br>write timestamp.</p>
+<p>695<br>00:38:01,659 –&gt; 00:38:04,059<br>For the reads, we just have to check the write timestamp.</p>
+<p>696<br>00:38:04,059 –&gt; 00:38:10,500<br>If you want to keep a mental model, the previous slide was about the RW anomaly.</p>
+<p>697<br>00:38:10,500 –&gt; 00:38:13,260<br>This is about the WR and WW.</p>
+<p>698<br>00:38:13,260 –&gt; 00:38:18,340<br>And if you understand dependency graph and cycles are bad, you can take any complicated</p>
+<p>699<br>00:38:18,340 –&gt; 00:38:21,940<br>protocol, put your head to it and it’ll start to look simpler.</p>
+<p>700<br>00:38:21,940 –&gt; 00:38:24,179<br>Okay.</p>
+<p>701<br>00:38:24,179 –&gt; 00:38:29,019<br>So now this basically says I cannot write if a future transaction has read or written to</p>
+<p>702<br>00:38:29,019 –&gt; 00:38:30,500<br>an object.</p>
+<p>703<br>00:38:30,500 –&gt; 00:38:32,980<br>And I will abort if I detect that condition.</p>
+<p>704<br>00:38:32,980 –&gt; 00:38:33,980<br>Otherwise, I will write.</p>
+<p>705<br>00:38:33,980 –&gt; 00:38:36,539<br>I know I better tell the world about that.</p>
+<p>706<br>00:38:36,539 –&gt; 00:38:39,500<br>So I need to go and update the write timestamp.</p>
+<p>707<br>00:38:40,340 –&gt; 00:38:41,340<br>Okay.</p>
+<p>708<br>00:38:41,340 –&gt; 00:38:43,820<br>All right, let’s say, yep.</p>
+<p>709<br>00:38:43,820 –&gt; 00:38:49,820<br>When do you assign the RTS and the WTS?</p>
+<p>710<br>00:38:49,820 –&gt; 00:38:55,820<br>So let’s actually go into that right now with this example and that will make it clear.</p>
+<p>711<br>00:38:55,820 –&gt; 00:38:56,820<br>Okay.</p>
+<p>712<br>00:38:56,820 –&gt; 00:38:58,019<br>So here’s an example.</p>
+<p>713<br>00:38:58,019 –&gt; 00:39:01,380<br>I’ve got a schedule in which transactions are happening.</p>
+<p>714<br>00:39:01,380 –&gt; 00:39:03,780<br>I’ve got big in and reads and writes.</p>
+<p>715<br>00:39:03,780 –&gt; 00:39:08,300<br>I’ve got a database and now associated with each object.</p>
+<p>716<br>00:39:08,300 –&gt; 00:39:10,180<br>We’ll have a read and a write timestamp.</p>
+<p>717<br>00:39:10,180 –&gt; 00:39:14,460<br>So every object is going to need those two values that are associated with it.</p>
+<p>718<br>00:39:14,460 –&gt; 00:39:18,220<br>And let’s start with the big in transaction and let’s assume right now that that’s when</p>
+<p>719<br>00:39:18,220 –&gt; 00:39:19,740<br>we assign the timestamp.</p>
+<p>720<br>00:39:19,740 –&gt; 00:39:21,940<br>So transaction T1 actually is one.</p>
+<p>721<br>00:39:21,940 –&gt; 00:39:22,940<br>That’s its number.</p>
+<p>722<br>00:39:22,940 –&gt; 00:39:27,060<br>Now this number has a meaning, which means all of T1 must happen before T2.</p>
+<p>723<br>00:39:27,060 –&gt; 00:39:30,140<br>In this schedule, we are going to allow.</p>
+<p>724<br>00:39:30,140 –&gt; 00:39:31,660<br>Okay.</p>
+<p>725<br>00:39:31,660 –&gt; 00:39:34,060<br>Now read happens.</p>
+<p>726<br>00:39:34,060 –&gt; 00:39:35,140<br>So now this is the first part.</p>
+<p>727<br>00:39:35,140 –&gt; 00:39:36,140<br>Remember two slides ago.</p>
+<p>728<br>00:39:36,139 –&gt; 00:39:40,460<br>We’ll read and say, hey, what’s the right timestamp of this object B?</p>
+<p>729<br>00:39:40,460 –&gt; 00:39:41,460<br>Oh, zero.</p>
+<p>730<br>00:39:41,460 –&gt; 00:39:42,460<br>Fine.</p>
+<p>731<br>00:39:42,460 –&gt; 00:39:43,460<br>It’s in the past.</p>
+<p>732<br>00:39:43,460 –&gt; 00:39:46,739<br>I can go read that and that’s totally fine.</p>
+<p>733<br>00:39:46,739 –&gt; 00:39:49,059<br>And oh, I need to record that I read it.</p>
+<p>734<br>00:39:49,059 –&gt; 00:39:53,460<br>So I’ll take the max of zero and one, which is one and I put one there.</p>
+<p>735<br>00:39:53,460 –&gt; 00:39:54,460<br>Okay.</p>
+<p>736<br>00:39:54,460 –&gt; 00:39:55,460<br>There was that max call.</p>
+<p>737<br>00:39:55,460 –&gt; 00:39:58,379<br>If you remember, in the read portion of this protocol.</p>
+<p>738<br>00:39:58,379 –&gt; 00:39:59,379<br>All right.</p>
+<p>739<br>00:39:59,379 –&gt; 00:40:01,859<br>Now I go to the second transaction.</p>
+<p>740<br>00:40:01,859 –&gt; 00:40:02,859<br>Context switches over.</p>
+<p>741<br>00:40:02,859 –&gt; 00:40:04,900<br>Let’s say the second transaction gets to run.</p>
+<p>742<br>00:40:04,900 –&gt; 00:40:05,900<br>Read assigned.</p>
+<p>743<br>00:40:05,900 –&gt; 00:40:07,380<br>It’s get transaction ID 2.</p>
+<p>744<br>00:40:07,380 –&gt; 00:40:11,980<br>So now all of its action must happen in the final state of the database after transaction</p>
+<p>745<br>00:40:11,980 –&gt; 00:40:14,380<br>1 and then read it.</p>
+<p>746<br>00:40:14,380 –&gt; 00:40:18,180<br>Read B and say, oh, I’m two.</p>
+<p>747<br>00:40:18,180 –&gt; 00:40:19,340<br>Right timestamp is zero.</p>
+<p>748<br>00:40:19,340 –&gt; 00:40:20,340<br>That’s fine.</p>
+<p>749<br>00:40:20,340 –&gt; 00:40:22,660<br>I’ll just make sure that everyone knows that I’ve read it.</p>
+<p>750<br>00:40:22,660 –&gt; 00:40:26,700<br>So I update the read timestamp to two and I move on.</p>
+<p>751<br>00:40:26,700 –&gt; 00:40:29,019<br>Now I get to write.</p>
+<p>752<br>00:40:29,019 –&gt; 00:40:31,740<br>I have to write to this object B.</p>
+<p>753<br>00:40:32,059 –&gt; 00:40:33,699<br>The right timestamp just before that happens.</p>
+<p>754<br>00:40:33,699 –&gt; 00:40:36,539<br>If I go back was zero, I’m fine.</p>
+<p>755<br>00:40:36,539 –&gt; 00:40:39,139<br>The read timestamp is two, not in the future.</p>
+<p>756<br>00:40:39,139 –&gt; 00:40:40,139<br>Right.</p>
+<p>757<br>00:40:40,139 –&gt; 00:40:40,979<br>So I look both at the read and write timestamp.</p>
+<p>758<br>00:40:40,979 –&gt; 00:40:42,419<br>They’re not in the future.</p>
+<p>759<br>00:40:42,419 –&gt; 00:40:48,299<br>I can do that right and make sure the right timestamp is now my timestamp.</p>
+<p>760<br>00:40:48,299 –&gt; 00:40:49,299<br>Right.</p>
+<p>761<br>00:40:49,299 –&gt; 00:40:50,299<br>So that answers your question.</p>
+<p>762<br>00:40:50,299 –&gt; 00:40:51,299<br>Okay.</p>
+<p>763<br>00:40:51,299 –&gt; 00:40:54,859<br>Then context switches over to T1.</p>
+<p>764<br>00:40:54,859 –&gt; 00:40:58,539<br>It says I have to read of A.</p>
+<p>765<br>00:40:59,460 –&gt; 00:41:02,340<br>And that’s okay because A was not read.</p>
+<p>766<br>00:41:02,340 –&gt; 00:41:04,099<br>So I’ll just let everyone know that A is read.</p>
+<p>767<br>00:41:04,099 –&gt; 00:41:09,019<br>So I made the A, which is an object we hadn’t touched so far, set it to be one.</p>
+<p>768<br>00:41:09,019 –&gt; 00:41:10,460<br>Same thing happens there.</p>
+<p>769<br>00:41:10,460 –&gt; 00:41:12,380<br>Very similar to what happened to be.</p>
+<p>770<br>00:41:12,380 –&gt; 00:41:17,460<br>And then I go back to read this value A.</p>
+<p>771<br>00:41:17,460 –&gt; 00:41:20,579<br>And that’s okay because the right timestamp is zero.</p>
+<p>772<br>00:41:21,820 –&gt; 00:41:24,139<br>T2 has interfered with me, but only on read.</p>
+<p>773<br>00:41:24,139 –&gt; 00:41:24,900<br>So it doesn’t matter.</p>
+<p>774<br>00:41:24,900 –&gt; 00:41:26,659<br>Read’s don’t interfere with reads.</p>
+<p>775<br>00:41:26,659 –&gt; 00:41:29,539<br>So notice how on the read side, I checked the right timestamp.</p>
+<p>776<br>00:41:29,539 –&gt; 00:41:33,019<br>And now you can see why I didn’t need to worry about the read timestamp on the read side.</p>
+<p>777<br>00:41:34,259 –&gt; 00:41:35,779<br>There’s no R, R anomaly.</p>
+<p>778<br>00:41:38,099 –&gt; 00:41:40,739<br>Now this is okay.</p>
+<p>779<br>00:41:40,739 –&gt; 00:41:43,179<br>T1 is less than T2, but that’s fine.</p>
+<p>780<br>00:41:43,179 –&gt; 00:41:44,139<br>That’s allowed.</p>
+<p>781<br>00:41:44,139 –&gt; 00:41:45,299<br>Right happens.</p>
+<p>782<br>00:41:45,299 –&gt; 00:41:47,139<br>Then we go update the right timestamp.</p>
+<p>783<br>00:41:47,139 –&gt; 00:41:48,179<br>That’s also allowed.</p>
+<p>784<br>00:41:48,179 –&gt; 00:41:49,500<br>And this transaction comets.</p>
+<p>785<br>00:41:49,500 –&gt; 00:41:53,940<br>And it’s as if even though we had this interleaving, the final state of the database is T1 followed by T2.</p>
+<p>786<br>00:41:54,940 –&gt; 00:41:55,940<br>Okay.</p>
+<p>787<br>00:41:55,940 –&gt; 00:42:01,500<br>Somehow totally different mechanism that doesn’t use locks can use timestamps, but we have to use it properly.</p>
+<p>788<br>00:42:04,500 –&gt; 00:42:05,659<br>Let’s keep going.</p>
+<p>789<br>00:42:05,659 –&gt; 00:42:06,659<br>Second example.</p>
+<p>790<br>00:42:09,420 –&gt; 00:42:10,420<br>Read A.</p>
+<p>791<br>00:42:10,420 –&gt; 00:42:12,099<br>Now you guys know how that works.</p>
+<p>792<br>00:42:12,099 –&gt; 00:42:14,019<br>You’re going to go update that.</p>
+<p>793<br>00:42:14,019 –&gt; 00:42:15,300<br>Right of A happens.</p>
+<p>794<br>00:42:15,300 –&gt; 00:42:16,099<br>We go do that.</p>
+<p>795<br>00:42:16,099 –&gt; 00:42:21,460<br>So after the read write, the transaction has A values read timestamp 1, right timestamp 2.</p>
+<p>796<br>00:42:22,300 –&gt; 00:42:24,820<br>Pretty similar to what we did so far.</p>
+<p>797<br>00:42:24,820 –&gt; 00:42:26,179<br>Now T2 comets.</p>
+<p>798<br>00:42:27,220 –&gt; 00:42:28,220<br>Right.</p>
+<p>799<br>00:42:28,220 –&gt; 00:42:32,500<br>T1 has to go right to a value A.</p>
+<p>800<br>00:42:34,740 –&gt; 00:42:35,740<br>What should happen here?</p>
+<p>801<br>00:42:38,740 –&gt; 00:42:40,420<br>Can it write to the value A?</p>
+<p>802<br>00:42:41,539 –&gt; 00:42:43,220<br>Because the right timestamp is 2, right?</p>
+<p>803<br>00:42:43,220 –&gt; 00:42:46,019<br>So following that protocol that we just said, it cannot.</p>
+<p>804<br>00:42:46,099 –&gt; 00:42:49,860<br>So it violates that piece because it’s an object in the future.</p>
+<p>805<br>00:42:49,860 –&gt; 00:42:50,900<br>I’m only one.</p>
+<p>806<br>00:42:50,900 –&gt; 00:42:55,139<br>My serial order in the config simulator as well is 1 followed by 2.</p>
+<p>807<br>00:42:55,139 –&gt; 00:42:56,500<br>How can I see two stuff?</p>
+<p>808<br>00:42:56,500 –&gt; 00:42:57,420<br>That’s wrong.</p>
+<p>809<br>00:42:57,420 –&gt; 00:42:59,460<br>So I cannot overwrite that.</p>
+<p>810<br>00:42:59,460 –&gt; 00:43:08,380<br>So transaction 2 has to go and basically abort and has to restart.</p>
+<p>811<br>00:43:08,380 –&gt; 00:43:09,619<br>At that point it restarts.</p>
+<p>812<br>00:43:09,619 –&gt; 00:43:12,420<br>It’ll grab a new timestamp and go about doing its own business.</p>
+<p>813<br>00:43:13,260 –&gt; 00:43:14,260<br>Okay.</p>
+<p>814<br>00:43:14,260 –&gt; 00:43:17,059<br>And when it gets a new timestamp, it’s time stuff will be more recent.</p>
+<p>815<br>00:43:17,059 –&gt; 00:43:18,900<br>But as we’ll talk about there are other ways of doing that.</p>
+<p>816<br>00:43:18,900 –&gt; 00:43:19,700<br>Yep, question.</p>
+<p>817<br>00:43:19,700 –&gt; 00:43:31,780<br>So you’re asking, so the question is related to the cascading abort kind of situation, right?</p>
+<p>818<br>00:43:31,780 –&gt; 00:43:37,780<br>What if T2, if there was some other interview in the right and the read and there was a cascading abort situation.</p>
+<p>819<br>00:43:37,780 –&gt; 00:43:39,539<br>So can cascading abort happen?</p>
+<p>820<br>00:43:39,539 –&gt; 00:43:40,099<br>Yes.</p>
+<p>821<br>00:43:40,099 –&gt; 00:43:41,380<br>In the similar kind of way.</p>
+<p>822<br>00:43:41,380 –&gt; 00:43:45,780<br>This is during the same type of server doing that for to avoid cascading abort.</p>
+<p>823<br>00:43:45,780 –&gt; 00:43:48,180<br>You would basically say any aborting transaction.</p>
+<p>824<br>00:43:48,180 –&gt; 00:43:49,539<br>You’ll do the same thing as we talked about.</p>
+<p>825<br>00:43:49,539 –&gt; 00:43:52,099<br>You’ll have to do the you’ll have to have the commit graph.</p>
+<p>826<br>00:43:52,099 –&gt; 00:43:54,340<br>It’s called the commit graph saying who’s committed?</p>
+<p>827<br>00:43:54,340 –&gt; 00:43:57,539<br>When can I commit and then keep track of that to keep around?</p>
+<p>828<br>00:43:57,539 –&gt; 00:44:03,059<br>And again, it’s like I will defer that topic because we could go down a rabbit hole to go figure that part out.</p>
+<p>829<br>00:44:03,059 –&gt; 00:44:08,180<br>But this is very similar in philosophy to what happens with all the abort stuff.</p>
+<p>830<br>00:44:08,180 –&gt; 00:44:08,820<br>Go for it.</p>
+<p>831<br>00:44:11,380 –&gt; 00:44:13,940<br>That’s what this is kind of really bad.</p>
+<p>832<br>00:44:13,940 –&gt; 00:44:14,740<br>Yeah.</p>
+<p>833<br>00:44:14,740 –&gt; 00:44:16,579<br>Yes, correct.</p>
+<p>834<br>00:44:16,579 –&gt; 00:44:19,059<br>So this is a bad protocol from that perspective.</p>
+<p>835<br>00:44:19,059 –&gt; 00:44:23,460<br>Now, a record, just even the reader, a pure reader is going to have to update timestamps.</p>
+<p>836<br>00:44:23,460 –&gt; 00:44:28,260<br>So it’s making updates to some place in the database and that is expensive.</p>
+<p>837<br>00:44:28,260 –&gt; 00:44:32,579<br>So no one implements this as, you know, there’s just an example to get us going.</p>
+<p>838<br>00:44:32,579 –&gt; 00:44:34,740<br>But we’ll talk about more efficient ways to do this.</p>
+<p>839<br>00:44:34,740 –&gt; 00:44:35,380<br>Absolutely.</p>
+<p>840<br>00:44:35,380 –&gt; 00:44:39,780<br>The pattern at runtime where it just like the end of planning off-line is fixed.</p>
+<p>841<br>00:44:39,780 –&gt; 00:44:41,380<br>What part happens at runtime?</p>
+<p>842<br>00:44:41,380 –&gt; 00:44:42,580<br>Can you be more specific?</p>
+<p>843<br>00:44:42,580 –&gt; 00:44:43,780<br>The timestamp stuff?</p>
+<p>844<br>00:44:43,780 –&gt; 00:44:44,340<br>Yes, yes.</p>
+<p>845<br>00:44:44,340 –&gt; 00:44:45,780<br>Like checking more conflicts, checking more.</p>
+<p>846<br>00:44:45,780 –&gt; 00:44:46,420<br>At runtime.</p>
+<p>847<br>00:44:46,420 –&gt; 00:44:52,420<br>So the question is does a timestamp check happen at runtime or some place else runtime when I’m accessing the record I’ll check?</p>
+<p>848<br>00:44:53,620 –&gt; 00:44:54,019<br>Yeah.</p>
+<p>849<br>00:45:02,740 –&gt; 00:45:03,220<br>That’s correct.</p>
+<p>850<br>00:45:04,019 –&gt; 00:45:08,980<br>Infer leaving quarter, might be different for the same query, but the same thing.</p>
+<p>851<br>00:45:08,980 –&gt; 00:45:09,459<br>Yep.</p>
+<p>852<br>00:45:09,459 –&gt; 00:45:10,659<br>You totally got that.</p>
+<p>853<br>00:45:10,659 –&gt; 00:45:16,259<br>So it all has to happen at runtime because otherwise the only thing you can do at static time is to grab an X lock on the database.</p>
+<p>854<br>00:45:16,259 –&gt; 00:45:17,939<br>Because you don’t know what you’re going to touch, right?</p>
+<p>855<br>00:45:17,939 –&gt; 00:45:22,019<br>And as we talked about, you know, you’re building a database and are rushing for time.</p>
+<p>856<br>00:45:22,019 –&gt; 00:45:22,819<br>You want to get it correct.</p>
+<p>857<br>00:45:22,819 –&gt; 00:45:26,980<br>That’s what you’ll do, but it will be a very slow database system.</p>
+<p>858<br>00:45:28,579 –&gt; 00:45:28,980<br>Questions?</p>
+<p>859<br>00:45:29,059 –&gt; 00:45:37,300<br>Can you analyze the transactions directly?</p>
+<p>860<br>00:45:37,300 –&gt; 00:45:41,219<br>So for that, I would need to know all the transactions that are going to come by, I’m running.</p>
+<p>861<br>00:45:41,219 –&gt; 00:45:42,740<br>I don’t know how long I’m going to run.</p>
+<p>862<br>00:45:42,740 –&gt; 00:45:44,260<br>I don’t know what’s going to come while I’m running.</p>
+<p>863<br>00:45:44,820 –&gt; 00:45:50,820<br>So if I had a schedule of transactions, if I said I have a database system that on Monday morning,</p>
+<p>864<br>00:45:50,820 –&gt; 00:45:55,139<br>only does these two transactions and they touch only these two records and a perfect plan,</p>
+<p>865<br>00:45:55,139 –&gt; 00:45:58,579<br>then yes, but everything is, you know, you can’t do that, right?</p>
+<p>866<br>00:45:58,579 –&gt; 00:46:03,779<br>The database is going to get queries when it gets queries and you don’t know how much stuff it’s going to take or touch</p>
+<p>867<br>00:46:04,980 –&gt; 00:46:06,579<br>in the data till it actually starts running.</p>
+<p>868<br>00:46:08,179 –&gt; 00:46:08,900<br>But it’s good.</p>
+<p>869<br>00:46:08,900 –&gt; 00:46:10,019<br>You’re thinking in the right ways.</p>
+<p>870<br>00:46:10,019 –&gt; 00:46:12,659<br>It’s like, oh, can I get better at this?</p>
+<p>871<br>00:46:12,659 –&gt; 00:46:18,019<br>If I knew something about the timing and if I knew something about the properties of these transactions,</p>
+<p>872<br>00:46:18,019 –&gt; 00:46:22,980<br>and what we want to do is to build something completely safe in general that no matter what happens,</p>
+<p>873<br>00:46:22,980 –&gt; 00:46:27,699<br>we are efficient and correct, which is hard, which is hard.</p>
+<p>874<br>00:46:29,460 –&gt; 00:46:31,059<br>All right. Are the questions?</p>
+<p>875<br>00:46:38,099 –&gt; 00:46:39,619<br>Both of these are committed right now.</p>
+<p>876<br>00:46:40,820 –&gt; 00:46:43,139<br>So the question is, do you about T2?</p>
+<p>877<br>00:46:43,139 –&gt; 00:46:44,099<br>Do you about T2?</p>
+<p>878<br>00:46:44,099 –&gt; 00:46:46,340<br>Sorry, T2 has already committed, so it’s fine.</p>
+<p>879<br>00:46:46,340 –&gt; 00:46:47,860<br>T1 is the one that we’ll abort.</p>
+<p>880<br>00:46:48,820 –&gt; 00:46:52,340<br>Doesn’t T1 come before like R1 or A?</p>
+<p>881<br>00:46:52,340 –&gt; 00:46:52,420<br>Yeah.</p>
+<p>882<br>00:46:54,420 –&gt; 00:46:58,660<br>Yeah, so you’re asking a good question because I said T1 got transaction number one,</p>
+<p>883<br>00:46:58,660 –&gt; 00:47:02,260<br>so it’s as if it is in the serial schedule ahead of T2.</p>
+<p>884<br>00:47:02,260 –&gt; 00:47:05,780<br>That is true, but right now there’s no dependency from T1 to T2, right?</p>
+<p>885<br>00:47:06,260 –&gt; 00:47:08,900<br>T2 is reading stuff that was already there before.</p>
+<p>886<br>00:47:08,900 –&gt; 00:47:15,460<br>So effectively, once we abort T1, it’s as if the world had started with only T2 in the picture.</p>
+<p>887<br>00:47:17,860 –&gt; 00:47:21,460<br>When that mess up the right, then it’s retried with T1 after that right?</p>
+<p>888<br>00:47:22,420 –&gt; 00:47:24,019<br>No, no, which rights?</p>
+<p>889<br>00:47:24,019 –&gt; 00:47:26,420<br>So right now we are on the right of A and T1.</p>
+<p>890<br>00:47:26,420 –&gt; 00:47:28,099<br>We’ll abort it so that right won’t go through.</p>
+<p>891<br>00:47:29,380 –&gt; 00:47:30,579<br>Yeah, so what is that right?</p>
+<p>892<br>00:47:30,579 –&gt; 00:47:32,260<br>So it’s happy before the T2, right?</p>
+<p>893<br>00:47:36,579 –&gt; 00:47:38,500<br>Yeah, yeah, yeah, I know exactly what you’re saying.</p>
+<p>894<br>00:47:38,500 –&gt; 00:47:42,500<br>So you’re saying, I started by saying T1 and T2, if they’re both in the system,</p>
+<p>895<br>00:47:42,500 –&gt; 00:47:45,140<br>I want the serial schedule of T1 followed by T2.</p>
+<p>896<br>00:47:45,219 –&gt; 00:47:46,659<br>I’m playing a little loose over here.</p>
+<p>897<br>00:47:47,219 –&gt; 00:47:48,819<br>We are aborting T1.</p>
+<p>898<br>00:47:48,819 –&gt; 00:47:50,339<br>So it’s as if I’m saying, oh, you know what?</p>
+<p>899<br>00:47:50,339 –&gt; 00:47:53,699<br>I went and fixed it in a correct way so that T1 never existed.</p>
+<p>900<br>00:47:54,259 –&gt; 00:47:58,019<br>So when a abort happens in a serial schedule, it’s all related to all this cascading about</p>
+<p>901<br>00:47:58,019 –&gt; 00:47:59,219<br>another stuff too.</p>
+<p>902<br>00:47:59,219 –&gt; 00:48:06,420<br>We’ve always talked about equivalent serial schedules as being transactions, T1 and T2,</p>
+<p>903<br>00:48:06,420 –&gt; 00:48:09,059<br>but implicitly, we’ve always been saying T1 and T2 commit.</p>
+<p>904<br>00:48:09,059 –&gt; 00:48:09,539<br>We know that.</p>
+<p>905<br>00:48:10,339 –&gt; 00:48:12,819<br>But if it’s a abort, it’s like they never existed before.</p>
+<p>906<br>00:48:12,820 –&gt; 00:48:13,860<br>So it’s a little trick.</p>
+<p>907<br>00:48:13,860 –&gt; 00:48:15,700<br>On the slide, I can only fit two examples.</p>
+<p>908<br>00:48:15,700 –&gt; 00:48:22,100<br>But if you imagine T1, T2, T3, it’s as if T1 aborted because of some violation and T2 and T3 safely</p>
+<p>909<br>00:48:22,100 –&gt; 00:48:22,900<br>could get along.</p>
+<p>910<br>00:48:22,900 –&gt; 00:48:26,820<br>It’s as if it happened as two followed by three and the aborted transaction never existed.</p>
+<p>911<br>00:48:26,820 –&gt; 00:48:30,260<br>It’s kind of like I could go and read out the history from the past when the aborted transaction.</p>
+<p>912<br>00:48:30,820 –&gt; 00:48:32,100<br>Yeah, but that’s a great observation.</p>
+<p>913<br>00:48:32,100 –&gt; 00:48:35,539<br>It’s like, whoa, whoa, you’re telling me one followed by two, but you took away one.</p>
+<p>914<br>00:48:35,539 –&gt; 00:48:38,500<br>You took away one because we’re going and changing the rules in that different way.</p>
+<p>915<br>00:48:39,140 –&gt; 00:48:39,380<br>Yeah.</p>
+<p>916<br>00:48:39,380 –&gt; 00:48:44,340<br>There’s someone you feel like intelligently scheduled because it’s pretty clear by looking at it.</p>
+<p>917<br>00:48:44,340 –&gt; 00:48:48,579<br>So the question is, can you intelligently schedule this?</p>
+<p>918<br>00:48:48,579 –&gt; 00:48:51,780<br>Yes, but I don’t know what T1 is going to do when T1 starts.</p>
+<p>919<br>00:48:51,780 –&gt; 00:48:53,700<br>I don’t know if it’s going to write to A.</p>
+<p>920<br>00:48:53,700 –&gt; 00:48:57,140<br>It will only know what it’s reading and writing as it proceeds in the transaction.</p>
+<p>921<br>00:48:57,140 –&gt; 00:48:58,340<br>That’s a whole game.</p>
+<p>922<br>00:48:58,340 –&gt; 00:49:02,260<br>We don’t know what the transaction is going to do until it starts to do its work.</p>
+<p>923<br>00:49:02,260 –&gt; 00:49:03,460<br>Is there any way to analyze it?</p>
+<p>924<br>00:49:04,180 –&gt; 00:49:08,980<br>Not necessarily because if I said I’ve got a transaction in which I’m going to read all the bank</p>
+<p>925<br>00:49:08,980 –&gt; 00:49:14,340<br>records and only the ones that are the highest I’m going to give a $50 bonus.</p>
+<p>926<br>00:49:14,900 –&gt; 00:49:17,780<br>Unless I look at the data statically, I cannot tell anything.</p>
+<p>927<br>00:49:20,659 –&gt; 00:49:24,500<br>You can tell what columns you’re going, but that’s going to not do you much because you don’t know</p>
+<p>928<br>00:49:25,619 –&gt; 00:49:27,780<br>which of those columns you’re eventually going to go update.</p>
+<p>929<br>00:49:34,260 –&gt; 00:49:38,500<br>The transaction, see, time is proceeding from top to bottom in all our schedules.</p>
+<p>930<br>00:49:38,980 –&gt; 00:49:42,820<br>At any point in time, you can imagine it’s as if we were at the beginning of T1.</p>
+<p>931<br>00:49:42,820 –&gt; 00:49:45,619<br>We don’t know what the world’s going to look like at the next time take.</p>
+<p>932<br>00:49:46,420 –&gt; 00:49:48,179<br>A read may come, a write may come.</p>
+<p>933<br>00:49:48,179 –&gt; 00:49:53,300<br>We are saying no matter what you throw at me, I want to make all of that safe and happen for you.</p>
+<p>934<br>00:49:55,139 –&gt; 00:49:59,219<br>Your question could be, if I knew exactly what it’s exactly the question that was asked before.</p>
+<p>935<br>00:49:59,219 –&gt; 00:50:03,619<br>If I knew exactly what the transaction was going to do, every transaction in my system only reads A</p>
+<p>936<br>00:50:03,699 –&gt; 00:50:09,539<br>and the other and writes A. The other transactions read A, write A and read B and write B.</p>
+<p>937<br>00:50:09,539 –&gt; 00:50:14,019<br>If that’s all I was doing, I can do all kinds of crazy schedule, but that’s a database system</p>
+<p>938<br>00:50:14,019 –&gt; 00:50:20,179<br>that can do much. We don’t know what read and writes are going to come till the transaction proceeds.</p>
+<p>939<br>00:50:20,819 –&gt; 00:50:23,619<br>So, yep.</p>
+<p>940<br>00:50:27,619 –&gt; 00:50:28,099<br>Sorry.</p>
+<p>941<br>00:50:32,819 –&gt; 00:50:33,699<br>Ask again, sorry.</p>
+<p>942<br>00:50:35,539 –&gt; 00:50:36,659<br>What we are for T1?</p>
+<p>943<br>00:50:36,659 –&gt; 00:50:38,419<br>Yeah. When you see a bought T1.</p>
+<p>944<br>00:50:42,019 –&gt; 00:50:44,339<br>Yeah, yeah. Yeah, exactly.</p>
+<p>945<br>00:50:44,500 –&gt; 00:50:50,100<br>So, if T1 is a bought it, then it will get rerun by some mechanism that mechanism could be you</p>
+<p>946<br>00:50:50,100 –&gt; 00:50:54,900<br>as the SQL programmer could have said, if I get an abort from this, you write the SQL code,</p>
+<p>947<br>00:50:54,900 –&gt; 00:50:58,579<br>you check for error condition. So, if I get a bought, read right again and you might say,</p>
+<p>948<br>00:50:58,579 –&gt; 00:51:02,579<br>read right five times or some number of times. So, the application code will typically have some</p>
+<p>949<br>00:51:02,579 –&gt; 00:51:08,100<br>handling of that. Okay, all right. I need to keep moving. I’m on slide 10 of 85.</p>
+<p>950<br>00:51:09,140 –&gt; 00:51:14,100<br>All right. Great. So, some of you might have noticed that,</p>
+<p>951<br>00:51:14,099 –&gt; 00:51:18,980<br>you could have told me here that that right of A going back to the question that was just asked</p>
+<p>952<br>00:51:18,980 –&gt; 00:51:25,539<br>here, hey, what if I just wrote that A through that right of A, because I know I, all that’s</p>
+<p>953<br>00:51:25,539 –&gt; 00:51:31,380<br>happening. If I wanted to really follow that T1 followed by T2, the database already has a</p>
+<p>954<br>00:51:31,380 –&gt; 00:51:35,860<br>right of T2, which is all I need to end up with, I could just have thrown this right of A and let</p>
+<p>955<br>00:51:35,860 –&gt; 00:51:42,900<br>T1 actually commit. And turns out that in very specific conditions like this, where you have a</p>
+<p>956<br>00:51:42,980 –&gt; 00:51:49,300<br>right over someone else’s right, but you are the previous transaction, you could actually under</p>
+<p>957<br>00:51:49,300 –&gt; 00:51:54,900<br>some conditions through that right of A and allow this to proceed. So, you are perhaps starting to</p>
+<p>958<br>00:51:54,900 –&gt; 00:51:59,380<br>think like that when you ask that question. There’s a rule called the Thomas right rule, which</p>
+<p>959<br>00:51:59,380 –&gt; 00:52:06,180<br>effectively says that in a more mathematical form, saying that when you have that specific</p>
+<p>960<br>00:52:06,180 –&gt; 00:52:11,059<br>condition of a right followed by a right based on this timestamp that the previous transaction</p>
+<p>961<br>00:52:11,059 –&gt; 00:52:17,539<br>is just trying to write that, you could allow that right to proceed. And effectively what this</p>
+<p>962<br>00:52:17,539 –&gt; 00:52:22,820<br>allows is with the Thomas right rule, you are now allowing schedules that become, that are view</p>
+<p>963<br>00:52:22,820 –&gt; 00:52:27,779<br>serializable and a little bit bigger than just the conflict serializable set of schedules. And I</p>
+<p>964<br>00:52:27,779 –&gt; 00:52:31,940<br>won’t prove it, but I will just leave that as a thought exercise, right? You are allowing more</p>
+<p>965<br>00:52:31,940 –&gt; 00:52:37,460<br>schedules than you would strictly allow, okay? So, there’s a proper rule, it’s not that important,</p>
+<p>966<br>00:52:37,460 –&gt; 00:52:42,500<br>as I said, no one writes transaction management system with this TO protocol that we talked about,</p>
+<p>967<br>00:52:42,500 –&gt; 00:52:47,380<br>and the right rule is very famous in database systems. So, if you ever talk to a transaction person,</p>
+<p>968<br>00:52:47,380 –&gt; 00:52:52,260<br>they’ll know about it, they’ll sometimes refer to it. But in practice, it’s not a rule that gets used</p>
+<p>969<br>00:52:52,260 –&gt; 00:52:56,340<br>because, as you talked about view serializable stuff, it’s not what we typically end up trying to</p>
+<p>970<br>00:52:56,340 –&gt; 00:53:03,619<br>get it super hard to implement. So, I’m going to just leave with one note that Andy had,</p>
+<p>971<br>00:53:03,619 –&gt; 00:53:08,179<br>Andy likes to go dig up all these things, it’s like, okay, who’s this Thomas guy? And so, when he</p>
+<p>972<br>00:53:08,179 –&gt; 00:53:14,659<br>dug this up, what he found was that this is a guy who was at BBN, which was a networking company that</p>
+<p>973<br>00:53:14,659 –&gt; 00:53:19,219<br>did one of the earliest internet, but they were also like a think tank and they did a whole bunch of</p>
+<p>974<br>00:53:19,219 –&gt; 00:53:26,339<br>actually super interesting database stuff in the late 70s and early 80s. And Andy suspects that</p>
+<p>975<br>00:53:26,339 –&gt; 00:53:31,059<br>this is the same guy who also wrote the first computer worm, there’s a Wikipedia article that</p>
+<p>976<br>00:53:31,059 –&gt; 00:53:37,940<br>talks about the first computer worm was written by someone called Bob Thomas also at BBN. So,</p>
+<p>977<br>00:53:37,940 –&gt; 00:53:42,500<br>it’s probably the same person. And if you guys know in the security literature, there’s always a</p>
+<p>978<br>00:53:42,500 –&gt; 00:53:46,340<br>Bob and Alice, right? They always have Bob and Alice trying to do something that someone else is</p>
+<p>979<br>00:53:46,340 –&gt; 00:53:53,539<br>trying to interfere with. So, very likely it is the same guy. I just leave that in the slides over</p>
+<p>980<br>00:53:53,539 –&gt; 00:53:58,739<br>here, you might find that interesting. All right, all right, also gives you a little bit of relief from</p>
+<p>981<br>00:53:58,739 –&gt; 00:54:04,819<br>thinking about transactions, which can start to weigh you down. But let’s get moving. Here’s</p>
+<p>982<br>00:54:04,819 –&gt; 00:54:12,899<br>another example with a basic time order protocol. And here what we are going to do is basically just</p>
+<p>983<br>00:54:12,899 –&gt; 00:54:19,619<br>start going through this. Read happens, write happens, same thing as before. Then this comment</p>
+<p>984<br>00:54:19,619 –&gt; 00:54:24,900<br>happens and now, oops, lost my slide, the write for A that happens,</p>
+<p>985<br>00:54:28,099 –&gt; 00:54:33,859<br>interferes because the write for two has a much higher value, right? So, we do not update that</p>
+<p>986<br>00:54:33,859 –&gt; 00:54:38,179<br>write timestamp. Now, we could skip doing this actual write as we talked about with the Thomas</p>
+<p>987<br>00:54:38,179 –&gt; 00:54:44,339<br>write rule if we were supporting that. But there’s a read following that, right? So, what you have to do</p>
+<p>988<br>00:54:44,340 –&gt; 00:54:50,500<br>is you do the write, but you keep it to the local copy so that the read is within your transaction</p>
+<p>989<br>00:54:50,500 –&gt; 00:54:54,260<br>itself, you should be reading what you just wrote and not seconds value, right? So, you’re going to</p>
+<p>990<br>00:54:54,260 –&gt; 00:55:00,420<br>start making a copy of stuff that you write to if you wanted to support that advanced mode,</p>
+<p>991<br>00:55:01,220 –&gt; 00:55:05,700<br>so that the reads in your transaction, which are now allowed, they shouldn’t see the second write,</p>
+<p>992<br>00:55:05,700 –&gt; 00:55:11,300<br>they should see your write. And so, you’re making local copies of things. And we use this mechanism</p>
+<p>993<br>00:55:11,300 –&gt; 00:55:17,300<br>of local copies for the next protocol that we’re going to talk about. All right. So,</p>
+<p>994<br>00:55:17,300 –&gt; 00:55:20,420<br>we’ve already covered this, I’m going to skim over it because your questions cover that.</p>
+<p>995<br>00:55:21,940 –&gt; 00:55:27,060<br>There’s no deadlocks because, you know, we don’t have that. There’s a possibility of starvation,</p>
+<p>996<br>00:55:27,060 –&gt; 00:55:30,740<br>the question that was just asked over here, a little while back. If I’ve got a long running</p>
+<p>997<br>00:55:30,740 –&gt; 00:55:35,700<br>transaction, I start on this end of the file, I may have a billion records to go through and I’m doing</p>
+<p>998<br>00:55:35,700 –&gt; 00:55:40,100<br>this at the record level. By the time I get there, someone’s probably gone in the head off me and I have</p>
+<p>999<br>00:55:40,099 –&gt; 00:55:44,980<br>to go restart and start to do other kinds of things with it. Now, if that happens, there are all kinds</p>
+<p>1000<br>00:55:44,980 –&gt; 00:55:48,980<br>of things you could do with it, including things at some point, you might say, I just have to pause all</p>
+<p>1001<br>00:55:48,980 –&gt; 00:55:53,380<br>these other guys so that I can go through that. But there are other protocols to go follow that.</p>
+<p>1002<br>00:55:53,380 –&gt; 00:55:59,219<br>All that is kind of not super important right now, as I said, no one ever builds this basic protocol,</p>
+<p>1003<br>00:55:59,219 –&gt; 00:56:05,699<br>we’re just going to use that to understand the other mechanisms. But notice, even in this next mechanism,</p>
+<p>1004<br>00:56:05,699 –&gt; 00:56:10,099<br>we’ll talk about this going to be this overhead, which is this overhead of copying data into the</p>
+<p>1005<br>00:56:10,099 –&gt; 00:56:15,299<br>transactions workspace, workspace. So as you saw, if you wanted to allow that read and T1 to happen,</p>
+<p>1006<br>00:56:15,299 –&gt; 00:56:19,219<br>if you’re operating on the Thomas’ right rule, I needed to make a copy of that. We’ll do a lot more</p>
+<p>1007<br>00:56:19,219 –&gt; 00:56:26,019<br>of that in the OCC protocol. We’re going to do that even more aggressively and that comes at a cost.</p>
+<p>1008<br>00:56:26,659 –&gt; 00:56:31,379<br>Locks have a cost, copies have a cost, right? So we’re making different choices here.</p>
+<p>1009<br>00:56:32,340 –&gt; 00:56:38,579<br>And long running transactions can get solved and we’ll move on with that.</p>
+<p>1010<br>00:56:40,420 –&gt; 00:56:45,140<br>The key observation, however, and this is important, why didn’t we stop at locking?</p>
+<p>1011<br>00:56:45,140 –&gt; 00:56:49,300<br>Why are we so interested in these protocols and their properties? It’s because if I have</p>
+<p>1012<br>00:56:49,300 –&gt; 00:56:54,099<br>transactions that are mostly short-lived, which is what happens a lot in OLTP systems, right?</p>
+<p>1013<br>00:56:54,099 –&gt; 00:56:57,619<br>Your shopping cart application is just going to look from all the customers and just pull up</p>
+<p>1014<br>00:56:57,619 –&gt; 00:57:03,380<br>your customer record. These OLTP applications, they read and write very few records. They might</p>
+<p>1015<br>00:57:03,380 –&gt; 00:57:07,940<br>have billions or trillions of records, but every transaction is just touching very, very small number</p>
+<p>1016<br>00:57:07,940 –&gt; 00:57:13,219<br>of records, reading and writing them. And so if everything is short-lived, then forcing transactions</p>
+<p>1017<br>00:57:13,219 –&gt; 00:57:16,980<br>even to come down with a hierarchical locking through the entire hierarchy and grabbing all those</p>
+<p>1018<br>00:57:16,980 –&gt; 00:57:22,500<br>locks seems like a little expensive. And these protocols that we are going to start looking,</p>
+<p>1019<br>00:57:22,579 –&gt; 00:57:28,260<br>as we’re starting to look at now, with the timestamp and MVCC, which we’ll talk about in the next class,</p>
+<p>1020<br>00:57:28,260 –&gt; 00:57:33,940<br>they’ll perform a lot better in those cases. Now, if you have a lot of conflicts, even if I have an</p>
+<p>1021<br>00:57:33,940 –&gt; 00:57:39,300<br>OLTP transaction, but let’s say there’s a pink Barbie doll at Christmas time, and then everyone wants</p>
+<p>1022<br>00:57:39,300 –&gt; 00:57:44,659<br>to buy that pink Barbie doll and there’s a lock you need to grab on that object for the inventory</p>
+<p>1023<br>00:57:44,659 –&gt; 00:57:48,980<br>count, then nothing’s going to save you, right? Everything’s going to just conflict. So it’s not just</p>
+<p>1024<br>00:57:48,980 –&gt; 00:57:55,059<br>short-lived, but it’s also like I’m relatively not interfering with someone else, you can allow more</p>
+<p>1025<br>00:57:55,059 –&gt; 00:57:59,460<br>of that parallelism to happen with these schemes and these different trade-offs you’re making.</p>
+<p>1026<br>00:58:01,059 –&gt; 00:58:05,940<br>So the protocol we are going to now look at is the optimistic on currency control protocol,</p>
+<p>1027<br>00:58:06,579 –&gt; 00:58:11,940<br>and that was actually invented over here. The locking stuff happened in the 70s, late 70s,</p>
+<p>1028<br>00:58:11,940 –&gt; 00:58:17,460<br>and H.T. Congo was here at Carnegie Mellon and came up with this beautiful protocol. It’s a</p>
+<p>1029<br>00:58:17,460 –&gt; 00:58:23,139<br>short paper. You’ll read it in the advanced graduate level class, but even if you don’t take that</p>
+<p>1030<br>00:58:23,139 –&gt; 00:58:28,019<br>class, just read this paper. It’s so beautifully written. Like in the, some of the short papers,</p>
+<p>1031<br>00:58:28,019 –&gt; 00:58:31,940<br>they have everything that you need to know about this protocol is in that paper, but it’s not like</p>
+<p>1032<br>00:58:31,940 –&gt; 00:58:36,980<br>20 pages, and every word in there matters. So if you skip a word, you’ll be like, whoops, I missed</p>
+<p>1033<br>00:58:36,980 –&gt; 00:58:43,139<br>an important detail. And obviously, we won’t go into the gory details of all of this paper, but</p>
+<p>1034<br>00:58:43,139 –&gt; 00:58:49,859<br>we’ll get through the essence of the main parts that’s in this paper. So what we will do is objects</p>
+<p>1035<br>00:58:50,579 –&gt; 00:58:56,659<br>are going to read stuff and they’ll create the workspace, like we were starting to create that</p>
+<p>1036<br>00:58:56,659 –&gt; 00:59:02,819<br>object A for transaction one. We’ll create a workspace where we will keep all the objects,</p>
+<p>1037<br>00:59:02,819 –&gt; 00:59:07,139<br>and now we’ll keep in that workspace everything we read or write in the transaction.</p>
+<p>1038<br>00:59:07,779 –&gt; 00:59:14,179<br>Not just things that we write, okay? And you’ll see examples in a second. And modifications that</p>
+<p>1039<br>00:59:14,179 –&gt; 00:59:17,859<br>you’ll make to the transaction is all going to happen to a local workspace. So it’s kind of like GitHub,</p>
+<p>1040<br>00:59:17,859 –&gt; 00:59:22,739<br>you check out the curve, and maybe just check out just what you need. You make all the changes there,</p>
+<p>1041<br>00:59:23,059 –&gt; 00:59:26,579<br>and then at some point you’re going to say, I’m going to commit that back, like GitHub commit,</p>
+<p>1042<br>00:59:26,579 –&gt; 00:59:31,059<br>right? So it’s kind of work like that. When you’ve checked out, there’s no interference. If both you and</p>
+<p>1043<br>00:59:31,059 –&gt; 00:59:36,739<br>your other members of your team are working on completely separate pieces of code, and the commit</p>
+<p>1044<br>00:59:36,739 –&gt; 00:59:41,779<br>is all going to merge in and do just fine, right? So the ideas are like that. You’re going to do</p>
+<p>1045<br>00:59:41,779 –&gt; 00:59:46,339<br>everything in your workspace, and then eventually you will have to write. You’ll have to do that</p>
+<p>1046<br>00:59:46,339 –&gt; 00:59:52,419<br>final right to the master, and when you write into what is called the global database,</p>
+<p>1047<br>00:59:52,419 –&gt; 00:59:57,619<br>before that you go and make checks and make sure that everything is safe and correct, okay?</p>
+<p>1048<br>00:59:58,419 –&gt; 01:00:01,059<br>All right, so let’s get going on that.</p>
+<p>1049<br>01:00:01,059 –&gt; 01:00:07,139<br>And today this camera is just refusing to stay focused.</p>
+<p>1050<br>01:00:10,019 –&gt; 01:00:18,820<br>All right, so there are three phases. Now this way the terminology is going to start to look a little</p>
+<p>1051<br>01:00:18,820 –&gt; 01:00:24,099<br>weird. The first phase you’re going to call a read phase. It’s a read phase because from the</p>
+<p>1052<br>01:00:24,099 –&gt; 01:00:30,420<br>global database perspective, all that each transaction is doing in the read phase is just reading stuff.</p>
+<p>1053<br>01:00:31,299 –&gt; 01:00:34,659<br>But in that read phase is when all the work of that transaction is going to happen. It’s actually</p>
+<p>1054<br>01:00:34,659 –&gt; 01:00:38,500<br>going to make the changes and all of that stuff. The read write, all of that stuff is happening,</p>
+<p>1055<br>01:00:38,500 –&gt; 01:00:42,579<br>but happening on local copies of the database, just like you checked out your GitHub code,</p>
+<p>1056<br>01:00:42,579 –&gt; 01:00:47,380<br>to the GitHub repo, it just looked like you read it, right? And then it’s only later on that the</p>
+<p>1057<br>01:00:47,380 –&gt; 01:00:53,299<br>right comes in. Similar. Now it’ll go through a validation phase. In the validation phase,</p>
+<p>1058<br>01:00:53,940 –&gt; 01:00:58,900<br>we’re going to check, is it safe for me to do the final thing which is actually make that right</p>
+<p>1059<br>01:00:58,900 –&gt; 01:01:03,780<br>and make all my changes from my workspace permanent. And all the changes is just going to mean the right.</p>
+<p>1060<br>01:01:05,780 –&gt; 01:01:12,579<br>So let’s go into that with a couple with an example first. So now we have a database.</p>
+<p>1061<br>01:01:13,460 –&gt; 01:01:18,660<br>We have the notion of checking stuff out right into our own workspace. And we’ll do that</p>
+<p>1062<br>01:01:18,660 –&gt; 01:01:22,340<br>unlike GitHub where you have to check out the whole repo here, we’ll just start creating into a</p>
+<p>1063<br>01:01:22,340 –&gt; 01:01:28,019<br>workspace object as we need it. As we talked about, the transaction as it is running doesn’t know</p>
+<p>1064<br>01:01:28,019 –&gt; 01:01:32,420<br>upfront. Everything is going to read and write. All that is just going to evolve, right? As the</p>
+<p>1065<br>01:01:32,420 –&gt; 01:01:36,659<br>database systems concern, it’s just going to get read and write requests. It just has to make sure</p>
+<p>1066<br>01:01:36,659 –&gt; 01:01:41,619<br>all those requests can be done as efficiently as possible, allow as many concurrent requests and make</p>
+<p>1067<br>01:01:41,619 –&gt; 01:01:45,940<br>it all safe. Correctness is important, right? So same thing. We don’t know what’s getting checked out.</p>
+<p>1068<br>01:01:45,940 –&gt; 01:01:51,460<br>So that’s where the GitHub analogy is now going to start breaking up, okay? So we start, we have a</p>
+<p>1069<br>01:01:51,539 –&gt; 01:01:59,780<br>transaction T1 starts and reads object A. Notice now in the global database, this is the main database,</p>
+<p>1070<br>01:01:59,780 –&gt; 01:02:04,740<br>right? There’s only one timestamp with the objects, which is a right timestamp. Don’t need the</p>
+<p>1071<br>01:02:04,740 –&gt; 01:02:10,659<br>read timestamp. So we just talked about how previously in the TO protocol, every transaction was</p>
+<p>1072<br>01:02:10,659 –&gt; 01:02:16,579<br>updating reads and write timestamps and that’s kind of very expensive because even a reader has to</p>
+<p>1073<br>01:02:16,579 –&gt; 01:02:21,139<br>do that. Here now we have only one timestamp and we worry about it only on writes. So still we have</p>
+<p>1074<br>01:02:21,619 –&gt; 01:02:26,579<br>one more field in the object but a lot better than like was just a few slides ago.</p>
+<p>1075<br>01:02:28,099 –&gt; 01:02:34,980<br>So the transaction is now in the protocol going to have read and there’s going to be this new thing</p>
+<p>1076<br>01:02:34,980 –&gt; 01:02:41,059<br>called validate and there’s a write and as I said these are the protocol terms. The write is different</p>
+<p>1077<br>01:02:41,059 –&gt; 01:02:46,099<br>than the w of a which is the right to the object. The red stuff is the steps in the transaction. So</p>
+<p>1078<br>01:02:46,099 –&gt; 01:02:51,299<br>don’t confuse that right with the right of a. As I said we are retaining the names from the</p>
+<p>1079<br>01:02:51,299 –&gt; 01:02:55,860<br>original terminology in that paper but hopefully you get that right. It’s just the right phase of</p>
+<p>1080<br>01:02:55,860 –&gt; 01:03:03,699<br>the protocol, hence shown in a different color in different parts. Okay? So read and as soon as you</p>
+<p>1081<br>01:03:03,699 –&gt; 01:03:09,940<br>start that read stuff you create a workspace which is empty and you’ll read into that the object</p>
+<p>1082<br>01:03:09,940 –&gt; 01:03:15,139<br>A. So A has a value of 123 and you’re going to pull that in. You can think of this workspace as</p>
+<p>1083<br>01:03:15,139 –&gt; 01:03:20,819<br>being organized as a key value store right. Yes the object and the value is whatever it is plus</p>
+<p>1084<br>01:03:20,819 –&gt; 01:03:29,059<br>the right time stamp and so now it is it is zero then t j starts and now notice I don’t have t1</p>
+<p>1085<br>01:03:29,059 –&gt; 01:03:35,619<br>and t2. I’m calling it ti and tj because whether i comes before j or j comes before i we’re going to</p>
+<p>1086<br>01:03:35,619 –&gt; 01:03:44,019<br>decide in a little bit right. So now we are using variables and then t2 comes in it’s grabbing from</p>
+<p>1087<br>01:03:44,019 –&gt; 01:03:50,659<br>the master database that same stuff doing its thing and at some point it reaches the validate phase</p>
+<p>1088<br>01:03:50,659 –&gt; 01:03:56,420<br>and the validated phase it says and what do I need to do with my stuff and it’ll look at its time</p>
+<p>1089<br>01:03:56,420 –&gt; 01:04:00,739<br>stamp I’ll talk about the protocol in a little bit and it’ll look at its time stamp and at that</p>
+<p>1090<br>01:04:00,739 –&gt; 01:04:06,980<br>point it’s going to grab the time stamp. So till now it’s as if ti and tj are babies they were born</p>
+<p>1091<br>01:04:06,980 –&gt; 01:04:12,500<br>without a name and now we assign them a name and that name is a number and that decides the order.</p>
+<p>1092<br>01:04:13,460 –&gt; 01:04:18,260<br>Okay so we delayed it we delayed assigning that number because we are trying to be optimistic</p>
+<p>1093<br>01:04:18,260 –&gt; 01:04:23,460<br>optimistic protocol philosophically says compared to the pessimistic protocol saying I think life is</p>
+<p>1094<br>01:04:23,460 –&gt; 01:04:28,739<br>good most transactions won’t interfere with each other so let them keep doing their stuff if I pick</p>
+<p>1095<br>01:04:28,739 –&gt; 01:04:35,860<br>ti and tj’s give proper names right up front then I’m giving myself less room to go and allow</p>
+<p>1096<br>01:04:35,860 –&gt; 01:04:40,340<br>parallelism and I’ll just leave that as a statement you have to read the paper or take the advanced</p>
+<p>1097<br>01:04:40,340 –&gt; 01:04:44,579<br>database class to really understand that and I’ll leave this a tidbit in fact you could delay this</p>
+<p>1098<br>01:04:44,579 –&gt; 01:04:49,780<br>even further even not at the end of read phase you could delay till the end of the right phase</p>
+<p>1099<br>01:04:49,780 –&gt; 01:04:53,940<br>and you could say readers I don’t even give you a number so it says if your ghost transaction never</p>
+<p>1100<br>01:04:53,940 –&gt; 01:04:58,820<br>happened didn’t interfere with everyone you could just go ahead so it’s like very cool tricks you</p>
+<p>1101<br>01:04:58,820 –&gt; 01:05:03,460<br>can play while still maintaining correctness with when you assign these transaction numbers when do</p>
+<p>1102<br>01:05:03,460 –&gt; 01:05:08,500<br>you name your transactions when you give them the names which are numbers in a case so you assign that</p>
+<p>1103<br>01:05:08,500 –&gt; 01:05:15,539<br>the name now it does a write and when it does the write and commit so that write will happen in</p>
+<p>1104<br>01:05:15,539 –&gt; 01:05:22,659<br>its workspace and then finally it will get committed t2 will do its right do its own sorry that</p>
+<p>1105<br>01:05:22,659 –&gt; 01:05:27,780<br>right stuff over here was that right phase which had nothing to do in this case because all it did</p>
+<p>1106<br>01:05:27,780 –&gt; 01:05:33,940<br>was a read only transaction t2 actually has a right right right to an object and so notice what</p>
+<p>1107<br>01:05:33,940 –&gt; 01:05:39,619<br>happens to the timestamp in the local copy it sets it to infinity it doesn’t have a name yet it</p>
+<p>1108<br>01:05:39,619 –&gt; 01:05:44,500<br>doesn’t have that number yet so infinity says something in the future this is think of the</p>
+<p>1109<br>01:05:44,500 –&gt; 01:05:50,019<br>right time stamp is saying it’s valid till infinity for now and then it actually gets a number let’s say</p>
+<p>1110<br>01:05:50,019 –&gt; 01:05:56,659<br>it is two it puts that and then finally two becomes a permanent copy in the global database validate</p>
+<p>1111<br>01:05:56,659 –&gt; 01:06:02,340<br>checks that am I safe to go or not and if it says safe that’s when it goes forward all right</p>
+<p>1112<br>01:06:02,579 –&gt; 01:06:08,660<br>so sound like a lot of stuff which is actually super simple remember I told you about 30 minutes ago</p>
+<p>1113<br>01:06:08,660 –&gt; 01:06:18,660<br>saying if you really understand dependence e graphs and anomalies the WRW and RW and you can really</p>
+<p>1114<br>01:06:18,660 –&gt; 01:06:24,260<br>picture that as happening as you do any protocol it will be super easy to understand that so if you</p>
+<p>1115<br>01:06:24,260 –&gt; 01:06:29,059<br>the first time I read the OCC protocol the first five times I read it I found it super complicated</p>
+<p>1116<br>01:06:29,539 –&gt; 01:06:34,579<br>and you kind of get it but you don’t get it and you miss certain corner cases till I drew the</p>
+<p>1117<br>01:06:34,579 –&gt; 01:06:39,299<br>pictures which I’m going to show you next and then it just became super clear so before we get</p>
+<p>1118<br>01:06:39,299 –&gt; 01:06:44,659<br>into the pictures the main thing is in the read phase we are now going to keep these local copies</p>
+<p>1119<br>01:06:45,299 –&gt; 01:06:51,460<br>and in these local copies we are going to do all of our rights and the dbms will copy all the</p>
+<p>1120<br>01:06:51,460 –&gt; 01:06:55,860<br>topple the transaction accesses from the shared space to the works base it’s kind of like the</p>
+<p>1121<br>01:06:55,860 –&gt; 01:07:00,980<br>checkout system right if you’re checking out just a file or a directory and for now we will ignore</p>
+<p>1122<br>01:07:01,620 –&gt; 01:07:07,700<br>what happens if these region rights to records happen via indices and we will actually not cover</p>
+<p>1123<br>01:07:07,700 –&gt; 01:07:14,340<br>that at all for optimistic methods in this class at all so just assume how do I get to object x if</p>
+<p>1124<br>01:07:14,340 –&gt; 01:07:18,420<br>I’m coming through an index or updating an index all of that stuff you’re just going to brush</p>
+<p>1125<br>01:07:18,420 –&gt; 01:07:24,099<br>under the covers but these things all work with that that’s all I need you to know okay all right so</p>
+<p>1126<br>01:07:25,059 –&gt; 01:07:30,259<br>where are these pictures that I’ve been promising so we’re going to optimistic concurrency control</p>
+<p>1127<br>01:07:30,259 –&gt; 01:07:35,779<br>works in three phases read is where I’m going to do all my work in my local copies check out from</p>
+<p>1128<br>01:07:35,779 –&gt; 01:07:41,380<br>the database only the objects I touched you then read and write and then I will enter the validation</p>
+<p>1129<br>01:07:41,380 –&gt; 01:07:47,779<br>phase and for the purpose of this of course we are saying at the end of the read phases when I get</p>
+<p>1130<br>01:07:47,780 –&gt; 01:07:55,300<br>named I get my transaction number then in the validation phase I’m going to check do I violate if</p>
+<p>1131<br>01:07:55,300 –&gt; 01:08:02,100<br>I take what I’ve checked out and if I put it back am I going to cause some violation of the serial</p>
+<p>1132<br>01:08:02,100 –&gt; 01:08:07,540<br>schedule that we are all trying to achieve I have a number now so I know when I belong in that order</p>
+<p>1133<br>01:08:07,540 –&gt; 01:08:11,540<br>am I going to cost trouble and if I think I’m going to cost trouble I’ll back out of it and abort</p>
+<p>1134<br>01:08:12,420 –&gt; 01:08:17,539<br>okay and if not I’ll go to the right phase where I’ll make add my changes happen in this</p>
+<p>1135<br>01:08:17,539 –&gt; 01:08:24,659<br>global database so time proceeds this way transactions life now is defined is broken up into three</p>
+<p>1136<br>01:08:24,659 –&gt; 01:08:30,739<br>phases T1 starts does a read phase where even the rights are happening in the local works phase</p>
+<p>1137<br>01:08:30,739 –&gt; 01:08:35,539<br>then the validation phase and then finally does the right phase okay so every transaction will have</p>
+<p>1138<br>01:08:35,539 –&gt; 01:08:39,539<br>those three phases the main work of the transaction is all happening in that read phase right the other</p>
+<p>1139<br>01:08:39,539 –&gt; 01:08:45,619<br>stuff is all the concurrency controls so if T2 starts and does its three phases after that no problem</p>
+<p>1140<br>01:08:45,619 –&gt; 01:08:52,340<br>right there’s no conflict trouble starts when you have things like this T3 which started at some</p>
+<p>1141<br>01:08:52,340 –&gt; 01:09:00,340<br>point compared to T2 T3 started before and these T3s are not numbers 3 is not a number now right it’s</p>
+<p>1142<br>01:09:00,340 –&gt; 01:09:05,380<br>just a just a logical name we haven’t given it a real name just yet so I probably should have</p>
+<p>1143<br>01:09:05,380 –&gt; 01:09:16,819<br>called it ij and k so T3 has started here and then its read phase is done way later T1 started did</p>
+<p>1144<br>01:09:16,819 –&gt; 01:09:20,900<br>all of that stuff is in the validation phase may have done other things with it so it’s these kinds</p>
+<p>1145<br>01:09:20,900 –&gt; 01:09:26,340<br>of things that we want to make safe okay so how do we make that safe and again the transactions are</p>
+<p>1146<br>01:09:26,340 –&gt; 01:09:33,619<br>signed at the end of the read phase the paper is beautiful because it says you have to worry only</p>
+<p>1147<br>01:09:33,619 –&gt; 01:09:41,059<br>about three things three checks okay for every pair of transactions that you’re considering if</p>
+<p>1148<br>01:09:41,059 –&gt; 01:09:45,460<br>anyone of these checks passes those those two pairs of transactions are done apply these three</p>
+<p>1149<br>01:09:45,460 –&gt; 01:09:50,180<br>conditions to all the transactions and you are basically done so what are these three conditions</p>
+<p>1150<br>01:09:50,739 –&gt; 01:09:56,819<br>either one of them holds mis means that pair of transactions say so I’ve got ti and tj and let’s say</p>
+<p>1151<br>01:09:56,819 –&gt; 01:10:03,220<br>i is before j so we have saying I want to assign i as being ahead of j in the serial schedule</p>
+<p>1152<br>01:10:03,220 –&gt; 01:10:08,980<br>don’t make sure all of i stuff happens before j so pictorially it looks like that right if I say</p>
+<p>1153<br>01:10:08,980 –&gt; 01:10:14,980<br>i and j i happens before j and if all of ti happened before tj this is trivially safe</p>
+<p>1154<br>01:10:15,619 –&gt; 01:10:23,619<br>ti completely got done before ti completely got done before tj and I’m totally fine and it’s</p>
+<p>1155<br>01:10:23,619 –&gt; 01:10:31,140<br>defined in the paper as saying the right phase of ti is completed before tj starts its read phase</p>
+<p>1156<br>01:10:31,140 –&gt; 01:10:38,340<br>very precise definition okay that means there’s no overlap and it’s all safe and no conflicts because</p>
+<p>1157<br>01:10:38,340 –&gt; 01:10:44,660<br>you can think about all all the changes in i happening before j slightly more complicated which is</p>
+<p>1158<br>01:10:44,660 –&gt; 01:10:54,660<br>condition number two that condition is where ti completes its right phase before ti starts its</p>
+<p>1159<br>01:10:54,659 –&gt; 01:11:01,139<br>right phase tj so tj could have as you can see in this example have started to read stuff that</p>
+<p>1160<br>01:11:02,099 –&gt; 01:11:09,139<br>ti is writing because the right phase of ti and the read phase of tj overlaps okay so we’ll</p>
+<p>1161<br>01:11:09,139 –&gt; 01:11:15,859<br>disallow this by having a very simple check I look at the right set of ti and the read set of tj</p>
+<p>1162<br>01:11:16,899 –&gt; 01:11:22,899<br>if they don’t conflict there’s nothing in common then I will declare these are safe these two</p>
+<p>1163<br>01:11:22,899 –&gt; 01:11:30,339<br>transactions are safe the last hardest case is there is a bunch of overlap and the more precise</p>
+<p>1164<br>01:11:30,339 –&gt; 01:11:36,979<br>condition is ti completes its read phase before tj starts its read phase you’re just seeing i before j</p>
+<p>1165<br>01:11:38,099 –&gt; 01:11:43,619<br>okay that’s all this is saying everything else every other type of overlap is allowed and there’s a</p>
+<p>1166<br>01:11:43,619 –&gt; 01:11:49,299<br>check that says check the right set of i and read set of j don’t overlap which is the same condition</p>
+<p>1167<br>01:11:49,300 –&gt; 01:11:55,060<br>from the previous slide you can verify later and that the right sets of these two transactions don’t</p>
+<p>1168<br>01:11:55,060 –&gt; 01:12:01,460<br>conflict and if so I can tell you it is safe now this sounds magical you give me three rules and you</p>
+<p>1169<br>01:12:01,460 –&gt; 01:12:07,619<br>telling me that we got serializable schedule and this is where it takes a long time to understand that</p>
+<p>1170<br>01:12:07,619 –&gt; 01:12:13,300<br>and this is the master picture put it like that case one case two case three can be thought of in</p>
+<p>1171<br>01:12:13,300 –&gt; 01:12:18,180<br>the following ways I just took exactly the same condition as before and remember case one said</p>
+<p>1172<br>01:12:18,180 –&gt; 01:12:22,420<br>right phase of i is done before read phase starts I just did that there’s a black transaction and</p>
+<p>1173<br>01:12:22,420 –&gt; 01:12:28,100<br>a blue transaction and the red line just says that red is the condition that ht con had in those three</p>
+<p>1174<br>01:12:28,100 –&gt; 01:12:34,579<br>conditions now why is this working out and we are saying if any transaction either satisfy</p>
+<p>1175<br>01:12:34,579 –&gt; 01:12:40,420<br>case one they find or satisfy case two it’s fine it’s not and any one of these checks if two pairs</p>
+<p>1176<br>01:12:40,420 –&gt; 01:12:46,740<br>of transactions pass they are safe with each other okay so why is this true as I told you all</p>
+<p>1177<br>01:12:46,739 –&gt; 01:12:53,460<br>these think of dependency graph reanormally that cause arcs read right right read right right</p>
+<p>1178<br>01:12:54,420 –&gt; 01:13:01,460<br>case number one trivially says none of those happen because the everything in i is happening before j</p>
+<p>1179<br>01:13:01,460 –&gt; 01:13:07,059<br>so all those dependencies are taken care of because i is less than j we’ve given these names and they</p>
+<p>1180<br>01:13:07,059 –&gt; 01:13:13,699<br>mean something this means for every transaction read followed by right is taken care of by that very</p>
+<p>1181<br>01:13:13,699 –&gt; 01:13:23,139<br>nature of i and j right the other part is where we run into trouble now space number two is slightly</p>
+<p>1182<br>01:13:23,139 –&gt; 01:13:31,139<br>more general than case number one and but the right phase of p j only starts later so right</p>
+<p>1183<br>01:13:31,139 –&gt; 01:13:38,099<br>right dependencies are taken care of right because of the red arrow that establishes the condition</p>
+<p>1184<br>01:13:38,099 –&gt; 01:13:42,899<br>using right right happens in this way that’s the part of the condition and so the only thing you</p>
+<p>1185<br>01:13:42,899 –&gt; 01:13:48,899<br>can’t check which we have to do some more work for is the read set and the right set and that gives</p>
+<p>1186<br>01:13:48,899 –&gt; 01:13:55,299<br>me my WR dependency and if it’s empty i don’t have any arc of the WR type so life is good</p>
+<p>1187<br>01:13:57,139 –&gt; 01:14:01,379<br>and now you can see how the other part is saying i couldn’t even tell that i couldn’t even tell</p>
+<p>1188<br>01:14:01,379 –&gt; 01:14:06,899<br>that so i had to do both of those checks and that becomes the basis for doing optimistic concurrency</p>
+<p>1189<br>01:14:07,859 –&gt; 01:14:17,139<br>okay questions it’s actually a beautiful protocol yes you’re checking out these copies for which</p>
+<p>1190<br>01:14:17,139 –&gt; 01:14:25,539<br>there’s a cost but these three conditions cover everything and you check those and you’ve got</p>
+<p>1191<br>01:14:25,539 –&gt; 01:14:35,699<br>a protocol that is correct could i explain the right right case for case two the case two the</p>
+<p>1192<br>01:14:35,699 –&gt; 01:14:40,819<br>condition in that if you go back to slides that was implicit in the definition of the condition</p>
+<p>1193<br>01:14:41,539 –&gt; 01:14:48,179<br>so case two said ti completes its right phase before tj so in the protocol what happens is that</p>
+<p>1194<br>01:14:48,179 –&gt; 01:14:53,939<br>when you’re in the validation phase you’ll check i am this transaction everyone else who’s active</p>
+<p>1195<br>01:14:53,939 –&gt; 01:14:59,220<br>with me for them i will check each pair and for each pair i will see one of these cases passes</p>
+<p>1196<br>01:14:59,220 –&gt; 01:15:05,139<br>this is a if condition that says i know for this pair that the right phase of i completes before t</p>
+<p>1197<br>01:15:05,140 –&gt; 01:15:10,579<br>j starts its right phase so it’s the condition right so it’s that if an else statement that you’re</p>
+<p>1198<br>01:15:10,579 –&gt; 01:15:15,140<br>checking you’re checking these three cases in that pairs of transaction checks that you’re making</p>
+<p>1199<br>01:15:16,260 –&gt; 01:15:22,900<br>okay so it is a said it’s it’s or right so one of these has to hold to it and in the worst case</p>
+<p>1200<br>01:15:22,900 –&gt; 01:15:28,180<br>you are always hitting case three in which case you have to do all these right right set read set</p>
+<p>1201<br>01:15:28,180 –&gt; 01:15:34,579<br>and right right set checks how to do that checks is let’s leave it aside it’s set containment which</p>
+<p>1202<br>01:15:34,579 –&gt; 01:15:41,140<br>you have to do efficiently but there are algorithms for doing that okay set intersection in this case</p>
+<p>1203<br>01:15:41,140 –&gt; 01:15:56,260<br>sorry yep yeah all of this is happening doing the validation phase up it’s it’s in the think about</p>
+<p>1204<br>01:15:56,260 –&gt; 01:16:02,899<br>it as a happening for ti and tj but the why am I hesitating with giving you an answer for simplicity</p>
+<p>1205<br>01:16:02,899 –&gt; 01:16:08,979<br>you can assume all of this is happening for tj ti for ti it’s it’s symmetric in the sense when you</p>
+<p>1206<br>01:16:08,979 –&gt; 01:16:14,179<br>are assigning these eyes and j’s is delayed but it won’t matter when it is happening you’re just</p>
+<p>1207<br>01:16:14,179 –&gt; 01:16:17,699<br>saying if i’m going to make a decision with everything else that is active i need to make sure this</p>
+<p>1208<br>01:16:17,699 –&gt; 01:16:27,299<br>applies</p>
+<p>1209<br>01:16:27,380 –&gt; 01:16:34,820<br>your failure to read and the other side but the reads overlap they are all happening to the local</p>
+<p>1210<br>01:16:34,820 –&gt; 01:16:40,500<br>copy right so when the reads are happening the right set and read set they are see this</p>
+<p>1211<br>01:16:40,500 –&gt; 01:16:44,340<br>where the read terminology is like what is that read mean in the read phase is we are creating the</p>
+<p>1212<br>01:16:44,340 –&gt; 01:16:49,860<br>read set and the right set so that read phase is where all the work is happening and these right</p>
+<p>1213<br>01:16:49,860 –&gt; 01:16:54,340<br>and read sets are getting created so they could overlap and that’s fine it only matters when they</p>
+<p>1214<br>01:16:54,340 –&gt; 01:17:01,539<br>are trying to write that you have to start worrying about things does that make sense no or you</p>
+<p>1215<br>01:17:01,539 –&gt; 01:17:16,980<br>ask something else if they overlap then you will have you will have to go and eventually one of them</p>
+<p>1216<br>01:17:16,980 –&gt; 01:17:22,020<br>is going to so let’s say they overlap then it’s one of them is going to read the right phase before</p>
+<p>1217<br>01:17:22,020 –&gt; 01:17:26,420<br>the other one reaches the right phase right so you then hit case number two where you have to go</p>
+<p>1218<br>01:17:26,420 –&gt; 01:17:30,900<br>check the right phase dependency see between any pair of transactions you have to check all these</p>
+<p>1219<br>01:17:30,900 –&gt; 01:17:35,700<br>conditions and say can I determine it is to be safe right if you can determine if any of these</p>
+<p>1220<br>01:17:35,700 –&gt; 01:17:40,820<br>conditions don’t hold then the the transaction that’s trying to check will abort itself and then</p>
+<p>1221<br>01:17:40,820 –&gt; 01:17:45,220<br>go back again and start to do things hold on let me just make sure that got answered</p>
+<p>1222<br>01:17:45,380 –&gt; 01:17:53,539<br>okay so I think the confusion is coming about like how can you convince me that there are only</p>
+<p>1223<br>01:17:53,539 –&gt; 01:17:58,260<br>these three cases and no other cases right is that the question you are asking yeah yeah yeah okay so</p>
+<p>1224<br>01:17:58,260 –&gt; 01:18:04,579<br>the simple answer is that if you try to construct any other case and we can take this offline it will</p>
+<p>1225<br>01:18:04,579 –&gt; 01:18:09,060<br>end up these are the checks that you have to do to declare safety if you can’t do any of these</p>
+<p>1226<br>01:18:09,060 –&gt; 01:18:14,340<br>safety checks you don’t know about that but the transactions because they’ll enter the right phase</p>
+<p>1227<br>01:18:14,340 –&gt; 01:18:18,980<br>in a certain way let me just talk about the serial protocols because and I’ll come back to that</p>
+<p>1228<br>01:18:18,980 –&gt; 01:18:24,900<br>question if it’s not I know there’s a question on the table this is all related to I’ve only</p>
+<p>1229<br>01:18:24,900 –&gt; 01:18:28,180<br>talked about the read phase where you’re creating the read right set then the validation phase where</p>
+<p>1230<br>01:18:28,180 –&gt; 01:18:32,100<br>we do these checks that is this right phase where everyone’s getting stuck on but that’s the next</p>
+<p>1231<br>01:18:32,100 –&gt; 01:18:39,220<br>lie so the question is like how do I do these rights so the simplest protocol is something called</p>
+<p>1232<br>01:18:39,220 –&gt; 01:18:44,020<br>serial comment only one transaction is allowed to be in the right phase at a given point in time</p>
+<p>1233<br>01:18:44,820 –&gt; 01:18:50,020<br>so that is why case number two will not ever have a right right overlaps you try to arrange anything</p>
+<p>1234<br>01:18:50,020 –&gt; 01:18:55,220<br>cases it’s gonna boil down to that right so if I say look all of these questions are coming because</p>
+<p>1235<br>01:18:55,220 –&gt; 01:18:59,060<br>oh what happens if I have some overlap that I haven’t thought of that will all boil down to say</p>
+<p>1236<br>01:18:59,060 –&gt; 01:19:05,539<br>am I allowing the right phase to be overlap with each other in some way okay now the first version</p>
+<p>1237<br>01:19:05,539 –&gt; 01:19:12,100<br>of the protocol in there says that I will grab a latch and only one transactions allowed to go</p>
+<p>1238<br>01:19:12,100 –&gt; 01:19:14,979<br>into the right phase when they go into the right phase they do all their rights to the global</p>
+<p>1239<br>01:19:14,979 –&gt; 01:19:19,140<br>database it’s like only a lot one person to commit to the master repo in others who have to commit</p>
+<p>1240<br>01:19:19,140 –&gt; 01:19:25,220<br>have to wait you can’t have parallel commits and that’s the serial protocol obviously that is</p>
+<p>1241<br>01:19:25,220 –&gt; 01:19:28,819<br>slow in that right phase but there’s a parallel protocol which I won’t talk about I’ll just</p>
+<p>1242<br>01:19:28,819 –&gt; 01:19:34,340<br>unmute to that high level because it takes an hour to get through so let me just put a pin on that</p>
+<p>1243<br>01:19:34,340 –&gt; 01:19:39,140<br>and hopefully that clarifies the confusion and and happy to take questions offline if you need to</p>
+<p>1244<br>01:19:40,980 –&gt; 01:19:43,220<br>take over to the strong of case name yeah</p>
+<p>1245<br>01:19:55,380 –&gt; 01:19:58,980<br>yeah yeah I think I have my diagram wrong over here yeah I will go fix that yep you’re right</p>
+<p>1246<br>01:19:58,979 –&gt; 01:20:03,939<br>slide number 25 is wrong is the one I spend like three hours on this is correct yeah</p>
+<p>1247<br>01:20:05,619 –&gt; 01:20:11,619<br>yeah thank you good catch okay good</p>
+<p>1248<br>01:20:13,859 –&gt; 01:20:22,019<br>what do you think you think I need to use the i and tb you should be and it’s because like I’m</p>
+<p>1249<br>01:20:22,019 –&gt; 01:20:25,779<br>telling you that the serial commit protocol is in place right so I didn’t tell you that that</p>
+<p>1250<br>01:20:26,420 –&gt; 01:20:31,460<br>until now that’s why you’re coming up with cases where it won’t hold but that’s what gets you</p>
+<p>1251<br>01:20:31,460 –&gt; 01:20:36,259<br>in place so the hand-viving stuff I’m going to say is that you can actually do better than the serial</p>
+<p>1252<br>01:20:36,259 –&gt; 01:20:40,579<br>protocol using something called the parallel commit protocol where you can actually allow parallelism</p>
+<p>1253<br>01:20:40,579 –&gt; 01:20:45,139<br>but its behavior is going to be identical to the serial stuff and it’s a whole section in the paper</p>
+<p>1254<br>01:20:45,139 –&gt; 01:20:50,579<br>that talks about that and and we’ll have to defer that to the advanced database class okay so</p>
+<p>1255<br>01:20:51,140 –&gt; 01:20:55,859<br>all right I’m gonna stop here since I know I’m a little bit over time already and then pick up</p>
+<p>1256<br>01:20:55,859 –&gt; 01:21:00,100<br>from slide 29 in the next class all right thank you</p>
+<p>1257<br>01:21:20,659 –&gt; 01:21:26,659<br>28 a gram depending on if it’s good huh you ain’t hit them all yet still got your sugar I smacked you with</p>
+<p>1258<br>01:21:26,659 –&gt; 01:21:31,300<br>the bottom of the chip to tell you look up show me what it’s safe set for a blow your face back</p>
+<p>1259<br>01:21:31,300 –&gt; 01:21:36,500<br>I got a block on taps the feds can’t trace that style is like temp a poop you can’t lace that</p>
+<p>1260<br>01:21:36,500 –&gt; 01:21:42,100<br>the Dominican oh you got call me Dominican black scally black love a black swate dimmelins my</p>
+<p>1261<br>01:21:42,100 –&gt; 01:21:46,579<br>whole black dirty eight is sent you to the perigates you get the zombie trying to skate and that’s</p>
+<p>1262<br>01:21:46,579 –&gt; 01:21:51,300<br>your first mistake I ain’t lying for that take your family see you wait my grand’s is happy wait</p>
+<p>1263<br>01:21:51,300 –&gt; 01:21:54,979<br>the Randall every state when they acting how I’m living I tell them I’m living great</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15445 P18F202317 TimestampOrderingConcurrencyControl</div>
+      <div>http://example.com/2025/10/24/CMU15445 P18F202317-TimestampOrderingConcurrencyControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P17F202316-Two-PhaseLockingConcurrencyControl/" title="CMU15445 P17F202316 Two PhaseLockingConcurrencyControl">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15445 P17F202316 Two PhaseLockingConcurrencyControl</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P16F202315-ConcurrencyControlTheory/" title="CMU15445 P16F202315 ConcurrencyControlTheory">
+                        <span class="hidden-mobile">CMU15445 P16F202315 ConcurrencyControlTheory</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

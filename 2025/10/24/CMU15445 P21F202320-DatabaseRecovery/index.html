@@ -1,0 +1,1425 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:27,839This is where we were at the last time. 200:00:27,839 –&gt; 00:00:38,840We were starting to look at the different logging schemes and looking at what we could do to wha">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15445 P21F202320 DatabaseRecovery">
+<meta property="og:url" content="http://example.com/2025/10/24/CMU15445%20P21F202320-DatabaseRecovery/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:27,839This is where we were at the last time. 200:00:27,839 –&gt; 00:00:38,840We were starting to look at the different logging schemes and looking at what we could do to wha">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-24T12:00:44.473Z">
+<meta property="article:modified_time" content="2025-10-24T12:06:28.542Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15445 P21F202320 DatabaseRecovery - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15445 P21F202320 DatabaseRecovery"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-24 20:00" pubdate>
+          2025年10月24日 晚上
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          8.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          72 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15445 P21F202320 DatabaseRecovery</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:27,839<br>This is where we were at the last time.</p>
+<p>2<br>00:00:27,839 –&gt; 00:00:38,840<br>We were starting to look at the different logging schemes and looking at what we could do to what do we need to log to make the recovery protocols work.</p>
+<p>3<br>00:00:38,840 –&gt; 00:00:41,840<br>And there were three logging schemes.</p>
+<p>4<br>00:00:41,840 –&gt; 00:00:51,840<br>The one is physical logging, which you can say every time you make changes to a page, you will capture in the log the before and after image for the page.</p>
+<p>5<br>00:00:51,840 –&gt; 00:01:02,840<br>And one downside of that is that could get really large if there were logical moves of the records happening in the page just like rearrangements, the diff will be large even though the change that you made was really small.</p>
+<p>6<br>00:01:02,840 –&gt; 00:01:11,840<br>So the way around it might be to do some form of logical logging where you effectively say I’m going to log the operation that happened.</p>
+<p>7<br>00:01:11,840 –&gt; 00:01:16,840<br>And the simplest way of logical logging is to log the entire query that made the change.</p>
+<p>8<br>00:01:16,840 –&gt; 00:01:25,840<br>But of course, this means that when you want to apply the log, you have to read on the whole query and if that query was took a long time to run, you’re going to have to do all of that stuff again.</p>
+<p>9<br>00:01:25,840 –&gt; 00:01:35,840<br>The preferred method at what systems use is called physiological logging and the way to understand that is this first line up over here.</p>
+<p>10<br>00:01:35,840 –&gt; 00:01:40,840<br>It is physical to a page and logical within a page.</p>
+<p>11<br>00:01:40,840 –&gt; 00:01:50,840<br>So imagine I’ve got a record that stands multiple pages, which can happen right records can span multiple pages and you made some changes to that record as a transaction.</p>
+<p>12<br>00:01:50,840 –&gt; 00:01:57,840<br>This means you updated one record, but you actually updated it bites across two pages in the database.</p>
+<p>13<br>00:01:57,840 –&gt; 00:02:07,840<br>So what you’ll do in the physiological logging is you will create two logs one for each page. So every page gets a lock.</p>
+<p>14<br>00:02:07,840 –&gt; 00:02:17,840<br>So it’s physical at that level, but within the page, you will use logical logging to simply say here is the slot number and within that slot number here, the bites that were changed in it.</p>
+<p>15<br>00:02:17,840 –&gt; 00:02:20,840<br>And so you get that best of both worlds.</p>
+<p>16<br>00:02:20,840 –&gt; 00:02:31,840<br>Okay, now of course that also applies when you have indices and stuff like that things get far more complicated with all of these components when you have indices in this course, we are going to ignore that.</p>
+<p>17<br>00:02:31,840 –&gt; 00:02:38,840<br>But again, if you’re interested in that, I can recommend some papers and perhaps the best source for that would be Jim Gray and writers transaction book.</p>
+<p>18<br>00:02:38,840 –&gt; 00:02:44,840<br>And if you want, you can come and borrow it from me if you want to dig deeper into some of those issues.</p>
+<p>19<br>00:02:44,840 –&gt; 00:02:53,840<br>So physical versus logical locking, this is just re-trading what we’ve said is logical locking requires less amount of data to be written.</p>
+<p>20<br>00:02:53,840 –&gt; 00:02:57,840<br>So the logs are smaller. These logs occasionally will have to be flushed out to this.</p>
+<p>21<br>00:02:57,840 –&gt; 00:03:08,840<br>So having small things is better. It’s difficult to implement recovery with a logical locking like imagine if I’m logging a query and have to undo the query.</p>
+<p>22<br>00:03:08,840 –&gt; 00:03:15,840<br>Now I really need an undo mechanism at some lower level, perhaps through version chaining and stuff like that to do that.</p>
+<p>23<br>00:03:15,840 –&gt; 00:03:29,840<br>So pure logical locking in the general case can become difficult in the case of a B tree turns out that if you want to do logical stuff within the B tree, it’s not that hard because B trees have certain semantics as long as you preserve the semantics you’re okay.</p>
+<p>24<br>00:03:29,840 –&gt; 00:03:35,840<br>So there are like not hard and fast rules, but you might actually use some combination for the purpose of this class.</p>
+<p>25<br>00:03:35,840 –&gt; 00:03:41,840<br>Just once you know the difference between these two and that and exactly what physiological logging means.</p>
+<p>26<br>00:03:41,840 –&gt; 00:03:47,840<br>Okay, so everyone clear in terms of what physiological locking means.</p>
+<p>27<br>00:03:47,840 –&gt; 00:03:49,840<br>Okay, all right.</p>
+<p>28<br>00:03:49,840 –&gt; 00:04:03,840<br>So last class I briefly mentioned that logging can sometimes be confused with does that mean using logging in a database system results in the log structured file system.</p>
+<p>29<br>00:04:03,840 –&gt; 00:04:14,840<br>No, when people say log structured file systems is just a different log different file organization, then a heap organization and you’ve seen that in the first half of the semester.</p>
+<p>30<br>00:04:14,840 –&gt; 00:04:31,840<br>However, there is a connection where if you look at log structured file systems, most of them will have something like a mem table, which is kept in memory where the changes are and eventually they will make it to the lower layers in the log structured file system, but for a little while.</p>
+<p>31<br>00:04:31,840 –&gt; 00:04:37,840<br>Actually data is simply going to sit in memory before it makes it right does that make sense.</p>
+<p>32<br>00:04:37,839 –&gt; 00:04:54,839<br>Now, if you wanted to protect changes that are happening in memory and we’re doing logging and recovery to say that if I say something’s written as the data platform and crashes of different types happen or failures of different types happen like we looked at earlier, we want to prevent that.</p>
+<p>33<br>00:04:54,839 –&gt; 00:05:08,839<br>So we imagine actually using recovery and logging mechanisms for the mem table stuff and being able to recover that so that you don’t lose changes because a lot of this is related to saying I want to use an efficient mechanism to cash.</p>
+<p>34<br>00:05:08,839 –&gt; 00:05:18,839<br>We’ve looked at the buffer pool throughout this material for this lecture and we’ve said buffer pool is where you want to keep your data because that is fast, but it is volatile.</p>
+<p>35<br>00:05:18,839 –&gt; 00:05:36,839<br>And if a failure happens, you want to handle that volatile information correctly same thing with the mem table, so you could actually use all of these techniques for keeping the mem table safe past all of these types of failures that we talked about questions.</p>
+<p>36<br>00:05:36,839 –&gt; 00:05:47,839<br>Alright, I’m going to skip over the next two slides or skim through it really fast because we’ll talk about checkpointing in great detail in the recovery component that we’re going to start.</p>
+<p>37<br>00:05:47,839 –&gt; 00:06:05,839<br>So we are logging things we are following the right ahead logging protocol, which basically says anytime I flush a page from my buffer pool in memory to stable storage, non volatile storage, disk, those all terms are interchangeable.</p>
+<p>38<br>00:06:05,839 –&gt; 00:06:21,839<br>I will flush the logs before I flush the changes and at commit time I’m going to flush these commit log records to disk, but this right ahead log that we are creating is effectively a list of all the changes that we’ve ever made and that can grow really large.</p>
+<p>39<br>00:06:21,839 –&gt; 00:06:37,839<br>And so we use this mechanism called check pointing to help us with managing that log and if you did nothing for example let’s say you started a database system get logging and logging it’s a brand new system all the hardware was awesome, but after a year things started to fail.</p>
+<p>40<br>00:06:37,839 –&gt; 00:06:50,839<br>Now, unless you do something like checkpointing, we have to go and recover the system by replaying all the transactions through the log for a year that’s too much right so we want to cap that amount of time that we need during recovery.</p>
+<p>41<br>00:06:50,839 –&gt; 00:07:03,839<br>So we’ll use this mechanism called check pointing to get us to that point so things will still be correct without checkpointing but you’re running to trouble with performance on recovery the recovery could take forever.</p>
+<p>42<br>00:07:04,839 –&gt; 00:07:25,839<br>So we’ll talk about the different ways of doing check pointing next, but the main point is we’re going to create a new log record, which is called a checkpoint record and as you’ll see in a little bit we create a big and check point and an end check point record when we start doing something called fuzzy check pointing so that range of algorithms to make check pointing even better than a simple approach.</p>
+<p>43<br>00:07:26,839 –&gt; 00:07:53,839<br>And at a very high level for the simple way of doing check pointing we will pause all queries, flush all the logs to disk, flush all the modified pages to the disk to which is basically have everything in stable storage and then write the checkpoint now that’s going to be very expensive if I’ve got a terabyte buffer pool and most of the pages were dirty this will the check pointing process itself could take a very long time so we look at ways in which we can make it better.</p>
+<p>44<br>00:07:53,839 –&gt; 00:08:02,839<br>But the general idea is this check pointing is used as a mechanism to make recovery go faster right it’s not essential but without that you don’t have a practical way to do database recovery.</p>
+<p>45<br>00:08:04,839 –&gt; 00:08:14,839<br>Okay so that’s all we need for this class this is this is an example that just says you will go create this checkpoint will look at better examples of this in a little bit.</p>
+<p>46<br>00:08:14,839 –&gt; 00:08:34,839<br>But I do want to cover this last point before switching over to the recovery lecture which is there is an issue of saying how frequently do I take these checkpoints the checkpoint is going to do some work we try to make that work as small as possible but still going to do some work and you’re going to pause the system for perhaps a very very small amount of time.</p>
+<p>47<br>00:08:34,840 –&gt; 00:09:03,840<br>But regardless it has to do IOs and stuff like that so the question is how frequently do you do checkpoint which means you’re using the resources for making eventually this recovery go faster versus you know how long can you wait for this recovery process so sometimes there are requirements that say you know my system has to come back up from a failure within a minute and you can actually go and set up this checkpointing interval many database system most database systems have a way to say.</p>
+<p>48<br>00:09:04,840 –&gt; 00:09:24,840<br>How frequently do you take this checkpoint it may be every hour every day every week and you can then control what that recovery time is so the main point is database systems give you this parameter that lets you control different components of this checkpoint the most important one is the frequency with which you take this checkpoint.</p>
+<p>49<br>00:09:25,840 –&gt; 00:09:47,840<br>And that’s all we’ll talk about the checkpoint and setting that up just want you to be aware that you if you’re ever running a database system you will have to ask yourself as to what’s my tolerance to that recovery time because when the system is recovering noterunctions will be taken can be admitted and if you don’t check point frequently enough then that recovery time could be very large.</p>
+<p>50<br>00:09:47,840 –&gt; 00:10:16,840<br>Alright so you’re going to switch over to the material for today’s talk and I feel pretty good today that if you interrupt me a lot I will still be alright so fire away today few announcements project for is on concurrency control that’s a do you want to send the 10th and the second part is Andy is going to start teaching again the next week onwards so the last three lectures is going to be done.</p>
+<p>51<br>00:10:17,840 –&gt; 00:10:45,840<br>So this is going to teach so this probably the last time I’ll see you this semester but I hope I see some of you especially if you are around the next semester and want to t a the database class so this class is going to get repeated next semester and I’m going to teach that and would love to get your help especially if you’ve done better in this class which I know everyone attending over here has and the one pitch I am hoping I’m taking notes so I have matched that stuff so so I think you guys are all good.</p>
+<p>52<br>00:10:45,840 –&gt; 00:11:14,840<br>I still don’t know why so many people don’t come to the classes which is like you know if you’re paying this much tuition you know give the extra two hour 40 minutes for your investment of your time to learn this stuff so anyways I’ll make a few changes next time perhaps to encourage people to come to class I’ve got a couple ideas but if you’re a TA you can help me come up with some of those ideas the last yep extra credit for coming to class something like that probably is coming.</p>
+<p>53<br>00:11:15,840 –&gt; 00:11:44,840<br>So second send and the N I note and if you’re on the edge maybe we might consider that right so maybe maybe but the real pages of all the lets I’m hoping some of you are most of your super excited about databases and all the things that we’re learning all these mechanisms that we are learning are very general systems mechanisms that you’re going to use all across so if you’re excited about systems you should be excited about database.</p>
+<p>54<br>00:11:45,840 –&gt; 00:12:14,840<br>The reason why I got so except for databases when when I was off your age which is a long time ago was because in one place you could connect all of these mechanisms not as individual mechanisms as you often will learn in other classes operating systems distributed systems but here you actually have to say how do I bring all of that together into something together and it’s not just learning each mechanism by itself but the interactions between that which makes it easy and I can’t think of any other system but a database system.</p>
+<p>55<br>00:12:15,840 –&gt; 00:12:44,840<br>Where all of these things like concurrent signal troll query optimization recovery and all of that come together in one place so the long story is when you teach for the first time even though you think you’ve got the material really understood you’ll be surprised how much deeper you understand the material when you actually have to tell someone and teach someone so that would be a real good reason especially if you’re excited about databases and really understand these many things.</p>
+<p>56<br>00:12:45,840 –&gt; 00:12:55,840<br>So you have to explain it to someone and you’ll be shocked by how much deeper you will get into it because you’ll be forced to think about it at a level that you’ve never thought about before.</p>
+<p>57<br>00:12:55,840 –&gt; 00:13:11,840<br>If you get 100 on the exam I guarantee you haven’t thought about it as deeply till you have to go and explain it to someone else and all of you guys are smart you’ll ask all kinds of random questions most of them are really good most of them and that forces you to think and be prepared.</p>
+<p>58<br>00:13:11,840 –&gt; 00:13:24,840<br>So that’s my last blog you can apply to this website where you can register if you’re interested and then shoot me a mail so especially if you’ve taken this class and have attended and I’ll pull you into the TA4.</p>
+<p>59<br>00:13:24,840 –&gt; 00:13:40,840<br>Okay. All right so enough of that let’s get started with the meat of what the recovery mechanism has to do so far we’ve said that we’ve got this mechanism of logging with physiological log.</p>
+<p>60<br>00:13:40,840 –&gt; 00:14:03,840<br>Physiological logging with the logs are going to be relatively small in size right so if I’ve got a thousand bite record and I just changed four bites I will only log those four bites and I have in the log enough information to tell me how to reapply a change and to unapply or undo a change because I keep track of the before and after images.</p>
+<p>61<br>00:14:03,840 –&gt; 00:14:31,840<br>Okay but that’s now still needs to put into this context of saying how am I going to recover from a crash and that’s what we’ll talk about today right so it’s a second part you’ve seen the slide before and we’ve covered that first bullet point in that at the bottom now we’re going to look at what is the algorithm that you used to recover and to guarantee that atomicity and durability and consistency comes because you’re not messing up any of the integrity constraints.</p>
+<p>62<br>00:14:31,840 –&gt; 00:14:57,840<br>So just to reset and re-emphasize what we are operating under hopefully from the last lectures material we are all in agreement that we want to use a steel no force policy to get an efficient buffer manager where the buffer pool replacement policy is purely based upon things like the LRU timestamp and the buffer pool is allowed to steal pages.</p>
+<p>63<br>00:14:57,840 –&gt; 00:15:20,840<br>And as long as it is unpinned it can flush that out to disk even if a transaction is running and it is not required to force all changes of committed transaction to disk at commit time okay so that we’ve established as being the efficient way to run a buffer pool okay to we wanted a low latency high throughput transaction system we needed both of those for it.</p>
+<p>64<br>00:15:20,840 –&gt; 00:15:41,840<br>Now we have to think about how are we going to deal with two big classes of transactions the first one so imagine this is time going from left to right and transaction T1 started bees the begin log record sees the commit log record is an abort log record.</p>
+<p>65<br>00:15:41,840 –&gt; 00:16:10,840<br>So what we want to happen over here is when the crash happens at the very end the changes of T1 and T2 because when the commit happened we already told the outside world as soon as the commit log record as per the second aspect of right of the wall principle hits the stable storage we tell the world that this transaction is committed so T1 and T2 have committed but their changes may still be in the buffer pool have not been flushed out to disk.</p>
+<p>66<br>00:16:11,840 –&gt; 00:16:40,840<br>So we have to deal with that T3 is a transaction that explicitly aborted right either the applications issued in a bot call or there was a deadlock or some other form of failure but its status is known it was about it that abort was public lead was disclosed we told the external world that this is an aborted transaction even if it has dirty pages that have been flushed out to disk already we need to go and undo those changes and T4 is this transaction that had begun.</p>
+<p>67<br>00:16:41,840 –&gt; 00:17:06,840<br>It was running its final state was not determined but the crash happened and we are going to treat it like an aborted transaction so any transactions running at the time of the crash need to be undone about it treated like an aborted transaction and explicitly about the transactions needs to be about it and the committed work has to get recombined so that’s the thing that we need to do with our recovery protocol.</p>
+<p>68<br>00:17:06,839 –&gt; 00:17:33,839<br>Okay, are we on okay with the setup here? All right, so the algorithm we are going to talk about is called aries and it was you know discovered by IBM the guy who did that was see Mohan who’s a N.A. member national comedy Academy of Engineering primarily for this work and it’s a beautiful protocol the paper however is very difficult to read it’s a seventy page paper.</p>
+<p>69<br>00:17:33,839 –&gt; 00:17:51,839<br>The text book has a pretty much all textbooks have good treatment for the high level overview of this paper and that’s what we’ll talk about that’s what everyone basically implements even if not exactly the way this paper talks about it but the mechanisms in here is essentially what everyone has.</p>
+<p>70<br>00:17:51,839 –&gt; 00:18:20,839<br>And it’s key thing is going to have these different components to it we have the right-hate logging that we will follow under the steel low force policy and we’ll do the two components of the right-hate logging which is flush logs to disk for before we flush the dirty page or we flush a page from the purple to disk and flush commit log records to disk and now the key part of this i’m just going to preview this diagram which we are going to look at in more detail in about eight slides from now is.</p>
+<p>71<br>00:18:21,839 –&gt; 00:18:44,839<br>There was lots of recovery protocols that came before that a reason gets its name that repeating part of it has a very interesting component to it called repeating history and what it does is it will do what seems like extra redundant work and it is redundant work but logically what it will do is it’s going to make three passes the first passes in analysis space where it will start from some point.</p>
+<p>72<br>00:18:44,839 –&gt; 00:19:13,839<br>Looking ahead it’s going to start from the checkpoint record and from that checkpoint record read all the logs forward so whenever you see an arrow in time for recovery purposes it basically means it’s following the log in time order and as we’ll see logs have that structure it will do a forward pass in the log essentially starting from the checkpoint replaying stuff to the forward pass at that point after the a pass is done the analysis pass it knows all the transactions that were running.</p>
+<p>73<br>00:19:14,839 –&gt; 00:19:43,839<br>At the time of the crash so it’s kind of like it’s figured out what all each of these transactions are you know are they a C or A or you know they were running and a little bit more information with them that will have reconstructed that state of where the world was and then in the redo pass it will go back and reapply all the changes in the log including changes of a boarded transaction and that’s where the repeating history part comes from in case of a robust property as a result of that is that even if you crash one time and you’re going to see a lot of the data that’s going to be a lot of the same thing.</p>
+<p>74<br>00:19:44,839 –&gt; 00:20:10,839<br>When you are recovering it you still end up with the right state and the protocol becomes a lot simpler and then at the end of the recovery phase it has effectively the database we created as of the time of the crash and then it will undo all the quote unquote called loser transactions they are all the aborted transactions again these terms loser transactions is in literature so I’m using it it’s 2023 so probably if you were doing this again you will call it something else.</p>
+<p>75<br>00:20:10,839 –&gt; 00:20:37,839<br>The repeating history part comes from the fact that that all part is going to get repeated it’s going to start and do all the stuff the protocols before that they were trying to hyper optimize the recovery protocol and say I will do the least amount of work in recovery and they had subtle bugs in them all the time it was super hard to implement it’s already super hard to implement aries and that is the beauty of this protocol is it’s logically a very clean algorithm now okay.</p>
+<p>76<br>00:20:37,839 –&gt; 00:21:07,799<br>It seems like we’re so you just go that to the point. Yeah, they’re three different errors so just hold on this picture is a preview the main thing I want to get across right now is there three passes because as I start talking about these passes you wonder do I start optimizing this stuff hold on to your optimization questions will be finished the protocol but the main part is that the three passes the a and r passes are forward passes the you pass the</p>
+<p>77<br>00:21:07,839 –&gt; 00:21:26,839<br>backward pass okay and the algorithm becomes super simple because of this and you see that in about 30 minutes from now okay all right that picture is detailed version of that explanation is coming in a little bit but I just want you to get that that we need a way to go back and forth in</p>
+<p>78<br>00:21:26,839 –&gt; 00:21:55,839<br>the first time and sometimes we may have to go backward so we’re going to have to do something special to make that happen in the logs so that’s what we start with the log sequence numbers which is the next topic and then we’ll go into what how do we create these logs what attention to detail to be have to pay to doing regular comment and about operations then we’ll talk about different types of check pointing the one that everyone implements that’s efficient is called fuzzy checkpointing but we’ll talk about two that are simple to understand and they are just</p>
+<p>79<br>00:21:55,839 –&gt; 00:22:25,799<br>examples but inefficient examples and then we’ll go into the actual recovery protocol okay so that’s the four things we’ll cover today so first we are going to talk about this very specific thing in the log call the log sequence number so far we’ve talked about this log records and they’ve information about what was the before and after image but now what we are going to do is add one more piece of information to these log records and as you’ll see as the slides progress the</p>
+<p>80<br>00:22:25,799 –&gt; 00:22:55,759<br>class progresses you can add a little bit more little bit more to each of these log records and you’ll see why but the first thing that everything will now need is called a log sequence number it’s a logical proxy for time and you can think about just as we were doing in the version NBC see stuff we needed some time stamp based up and we said we could actually take a time stamp or we could have a number integer number a global number that you automatically grab an increment using atomic instruction.</p>
+<p>81<br>00:22:55,799 –&gt; 00:23:23,799<br>Log sequence numbers are like that they’re going to be some number you do not take a time stamp for efficiency you’re going to take this monotonically increasing variable and you’re just going to grab that every time you want to go create a log record and you’re going to put that as a log sequence number as a result the logs are always going to be created in the log sequence number order and it’s going to be the history of time from the perspective of all the changes that were made okay.</p>
+<p>82<br>00:23:25,799 –&gt; 00:23:55,759<br>So don’t confuse any of this log sequence number with the time stamps we were grabbing or the version number the transaction numbers we were grabbing their different variables okay this variable has nothing to do with that okay this is just for recovery purposes right okay now there’s a lot of complexity in what we need to keep through even though I said a reason simple query optimization concurrency concurrency.</p>
+<p>83<br>00:23:55,799 –&gt; 00:24:11,799<br>So we’re going to do a whole recovery or the three hardest part in database systems okay so a picture will help and again at the foreshad it may not be clear but it will become clear in a couple sites that I just want to throw a picture again to get your mental ideas to what’s going on.</p>
+<p>84<br>00:24:11,799 –&gt; 00:24:41,799<br>So we’ve got different types of storage we’ve got DRAM also called wallet high storage which is your memory where your buffer pool sits there’ll be some things that we keep track of in the DRAM called the flushed lesson it will become obvious in a little bit so these lessons they come from a global counter but they also get used in different ways and that’s just introducing to you that there lots of lessons all come from that single global counter but we have to keep track of a bunch of other bookkeeping stuff in DRAM we are going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to do a lot of things and we’re going to</p>
+<p>85<br>00:24:41,799 –&gt; 00:25:11,799<br>keep track of this thing called flushed lesson on stable storage shown as this here this is the one that will survive a power failure we’ll keep track of something called page lessons and the log file which is where the log records are stored they are typically stored on disk two but it could be a separate disk often that disk is mirrored so that if one disk fails you still have the other log if you lose the log everything is lost and in many cases especially as you start looking at distributed transactions that log can actually be stored on disk</p>
+<p>86<br>00:25:11,799 –&gt; 00:25:41,799<br>but it’s somewhere remotely too so that you can have a copy of the log if there’s a single site that fails but the important part for today’s lecture is this additional part of this picture all pages the pages that you implemented for your buffer pool in your in your previous assignment will now have an extra field which is called the page lesson and that’s going to record what was the record that updated that page let me be</p>
+<p>87<br>00:25:41,799 –&gt; 00:26:10,799<br>bringing all of this up yep great so the LSN counter is going to be grabbed anytime we need to write a log record and we write a log record anytime we are going to update a page we’ll also grab that LSN for the begin transaction log record and transaction log record and commit transaction in a few other places but the most common reason we are going to grab and ask the LSN counter to give us a new LSN is because we are going to give us a new LSN</p>
+<p>88<br>00:26:10,799 –&gt; 00:26:35,799<br>is because we are updating a page when the update a page will of course create the log record for it now that log record has the LSN that we just grab that sitting in the log record but we’ll also take that log record that LSN and put it in the page which is sitting in the buffer pool so inside each page is a special area where we are going to keep track of this thing called the page LSN</p>
+<p>89<br>00:26:35,799 –&gt; 00:27:05,799<br>if you have multiple LSN you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN if you have multiple LSN</p>
+<p>90<br>00:27:05,799 –&gt; 00:27:11,539<br>that counter can also because balance can also be up at 16 to 12 gerade you can also because it could become count but can also become content</p>
+<p>91<br>00:27:11,539 –&gt; 00:27:12,779<br>you can even make content but can a fair value consider 1 so, it could become a Fair value consider 1 so, how do you compare to K surveying like you have multiple LN and Y bez</p>
+<p>92<br>00:27:12,779 –&gt; 00:27:27,480<br>if you have observations and Y bez</p>
+<p>93<br>00:27:27,480 –&gt; 00:27:35,319<br>If you have an LSN inflow for K surveying like you have multiple LN and Y bez</p>
+<p>94<br>00:27:35,319 –&gt; 00:27:39,519<br>Great. Other questions? All right.</p>
+<p>95<br>00:27:39,519 –&gt; 00:27:41,819<br>So in the page now,</p>
+<p>96<br>00:27:41,819 –&gt; 00:27:43,980<br>we’ll keep an area for the page LSN,</p>
+<p>97<br>00:27:43,980 –&gt; 00:27:45,379<br>which is every time you update,</p>
+<p>98<br>00:27:45,379 –&gt; 00:27:47,740<br>you put the log record in the log buffer pool,</p>
+<p>99<br>00:27:47,740 –&gt; 00:27:49,379<br>which is in memory right now,</p>
+<p>100<br>00:27:49,379 –&gt; 00:27:51,220<br>and you’ll record the page LSN.</p>
+<p>101<br>00:27:51,220 –&gt; 00:27:52,859<br>Keep a little room for something else called</p>
+<p>102<br>00:27:52,859 –&gt; 00:27:55,419<br>the rec LSN also on the page which is coming next,</p>
+<p>103<br>00:27:55,419 –&gt; 00:27:56,819<br>and you’ll see why.</p>
+<p>104<br>00:27:56,819 –&gt; 00:27:59,059<br>We’ll start making those changes.</p>
+<p>105<br>00:27:59,059 –&gt; 00:28:01,539<br>When the page is flushed out to disk,</p>
+<p>106<br>00:28:01,539 –&gt; 00:28:02,859<br>before that what will we do,</p>
+<p>107<br>00:28:02,859 –&gt; 00:28:05,619<br>we’ll make sure its logs are written to disk first,</p>
+<p>108<br>00:28:05,619 –&gt; 00:28:07,899<br>and then we’ll flush the page out to disk too.</p>
+<p>109<br>00:28:07,899 –&gt; 00:28:11,019<br>So pages are going to have page LSNs</p>
+<p>110<br>00:28:11,019 –&gt; 00:28:13,259<br>and rec LSNs coming in the next slide,</p>
+<p>111<br>00:28:13,259 –&gt; 00:28:16,139<br>on every page whether they’re in the buffer pool or on disk.</p>
+<p>112<br>00:28:16,139 –&gt; 00:28:19,459<br>So it’s a permanent change to the structure that we’re going to make.</p>
+<p>113<br>00:28:19,459 –&gt; 00:28:22,959<br>We’ll interpret these page and rec LSNs in a little bit.</p>
+<p>114<br>00:28:22,959 –&gt; 00:28:25,740<br>Now on this side up over here,</p>
+<p>115<br>00:28:25,740 –&gt; 00:28:30,019<br>you’re seeing a pictorial representation of the log records.</p>
+<p>116<br>00:28:30,019 –&gt; 00:28:32,500<br>These log records are sitting in a log file,</p>
+<p>117<br>00:28:32,500 –&gt; 00:28:36,599<br>and they also have a little space called the log buffer pool.</p>
+<p>118<br>00:28:36,599 –&gt; 00:28:38,519<br>Sometimes it’s the same buffer pool.</p>
+<p>119<br>00:28:38,519 –&gt; 00:28:40,180<br>Sometimes it’s separate for a purpose.</p>
+<p>120<br>00:28:40,180 –&gt; 00:28:42,099<br>Let’s assume it’s a separate buffer pool.</p>
+<p>121<br>00:28:42,099 –&gt; 00:28:44,619<br>As the log records get written,</p>
+<p>122<br>00:28:44,619 –&gt; 00:28:47,900<br>they’re written in memory sequentially.</p>
+<p>123<br>00:28:47,900 –&gt; 00:28:50,740<br>Ultimately, you’re going to run out of</p>
+<p>124<br>00:28:50,740 –&gt; 00:28:53,740<br>that log buffer pool space and you need to manage that.</p>
+<p>125<br>00:28:53,740 –&gt; 00:28:55,500<br>But there’s a simpler buffer pool management.</p>
+<p>126<br>00:28:55,500 –&gt; 00:28:57,059<br>There’s no replacement policy here.</p>
+<p>127<br>00:28:57,059 –&gt; 00:28:59,420<br>You’re simply going to keep flushing because</p>
+<p>128<br>00:28:59,420 –&gt; 00:29:00,779<br>this is sequential file,</p>
+<p>129<br>00:29:00,779 –&gt; 00:29:02,980<br>this is going to flush out the older pages.</p>
+<p>130<br>00:29:02,980 –&gt; 00:29:05,700<br>Internally, they get organized into pages too.</p>
+<p>131<br>00:29:05,700 –&gt; 00:29:07,779<br>They’re block level storage.</p>
+<p>132<br>00:29:07,779 –&gt; 00:29:11,420<br>You keep track of something called the Flush LSN,</p>
+<p>133<br>00:29:11,420 –&gt; 00:29:17,340<br>which is where is that log records boundary between what’s sitting on disk,</p>
+<p>134<br>00:29:17,340 –&gt; 00:29:19,539<br>the black portion is sitting on disk,</p>
+<p>135<br>00:29:19,539 –&gt; 00:29:23,860<br>and the gray portion in that log tail is sitting in D-Rap.</p>
+<p>136<br>00:29:23,860 –&gt; 00:29:27,460<br>We’ll have this flush LSN to keep track of.</p>
+<p>137<br>00:29:27,460 –&gt; 00:29:31,460<br>If I’m looking for a log record that is less than the flush LSN,</p>
+<p>138<br>00:29:31,460 –&gt; 00:29:32,900<br>I know I need to go to the disk.</p>
+<p>139<br>00:29:32,900 –&gt; 00:29:36,380<br>If it’s greater than that, I need a SN memory.</p>
+<p>140<br>00:29:36,380 –&gt; 00:29:39,140<br>But this flush LSN will also get used in</p>
+<p>141<br>00:29:39,140 –&gt; 00:29:43,340<br>a critical way to ensure that right-hand logging protocol.</p>
+<p>142<br>00:29:43,340 –&gt; 00:29:48,100<br>All right. If it wasn’t enough with just having a page LSN,</p>
+<p>143<br>00:29:48,100 –&gt; 00:29:52,299<br>flush LSN introduced,</p>
+<p>144<br>00:29:52,299 –&gt; 00:29:55,819<br>there’s a little bit more extra stuff we need.</p>
+<p>145<br>00:29:55,819 –&gt; 00:30:01,939<br>So, flush LSN you saw, page LSN you saw,</p>
+<p>146<br>00:30:01,939 –&gt; 00:30:06,859<br>one most structural change we need to the page is this rec LSN.</p>
+<p>147<br>00:30:06,859 –&gt; 00:30:16,539<br>It’s going to keep track of the log record that updated the page when it was flushed to disk.</p>
+<p>148<br>00:30:16,539 –&gt; 00:30:21,220<br>It’s usually going to be less than or equal to the page LSN.</p>
+<p>149<br>00:30:21,220 –&gt; 00:30:27,100<br>So, when the best way and this would become clear in a little bit,</p>
+<p>150<br>00:30:27,100 –&gt; 00:30:32,220<br>each page is going through different version changes.</p>
+<p>151<br>00:30:32,220 –&gt; 00:30:37,940<br>Those version changes are being recorded in the log records corresponding to that page.</p>
+<p>152<br>00:30:37,940 –&gt; 00:30:41,900<br>Now, rec LSN effectively says,</p>
+<p>153<br>00:30:41,900 –&gt; 00:30:48,579<br>what’s the oldest change that was applied to this page that</p>
+<p>154<br>00:30:48,579 –&gt; 00:30:53,699<br>since it was flushed out to disk and it’ll all become obvious in a little bit.</p>
+<p>155<br>00:30:53,699 –&gt; 00:30:58,659<br>But effectively, logically what it means is that between the rec LSN and the page LSN,</p>
+<p>156<br>00:30:58,659 –&gt; 00:31:01,859<br>those changes may not have made it to disk.</p>
+<p>157<br>00:31:01,859 –&gt; 00:31:06,299<br>So, is the rec LSN and page LSN the same as this?</p>
+<p>158<br>00:31:06,299 –&gt; 00:31:12,339<br>No. On disk, they can be the same when you’re flushing it out. Yes.</p>
+<p>159<br>00:31:12,339 –&gt; 00:31:15,899<br>So, then how can there ever be different on you?</p>
+<p>160<br>00:31:15,940 –&gt; 00:31:19,220<br>In the buffer pool. So, I brought a page from yep, great question.</p>
+<p>161<br>00:31:19,220 –&gt; 00:31:21,420<br>So, when can the rec and page LSN be different?</p>
+<p>162<br>00:31:21,420 –&gt; 00:31:25,740<br>I bring a page from disk. I now have the rec LSN.</p>
+<p>163<br>00:31:25,740 –&gt; 00:31:27,580<br>Now, it keeps applying changes to it.</p>
+<p>164<br>00:31:27,580 –&gt; 00:31:29,220<br>I’ll keep updating the page LSN.</p>
+<p>165<br>00:31:29,220 –&gt; 00:31:31,180<br>Now, they’ve gotten further away.</p>
+<p>166<br>00:31:31,180 –&gt; 00:31:33,860<br>At some point, I might flush this page out to disk.</p>
+<p>167<br>00:31:33,860 –&gt; 00:31:36,980<br>I will go make changes to that as I do it.</p>
+<p>168<br>00:31:36,980 –&gt; 00:31:41,780<br>But then again, if I bring it back, I’m going to start to see this thing separate out.</p>
+<p>169<br>00:31:41,779 –&gt; 00:31:46,899<br>But as the recovery protocol, we have to be ready to bring up a page where these things</p>
+<p>170<br>00:31:46,899 –&gt; 00:31:49,700<br>can be different and then deal with that.</p>
+<p>171<br>00:31:49,700 –&gt; 00:31:52,579<br>Now, we’re going to keep track of another data structure.</p>
+<p>172<br>00:31:52,579 –&gt; 00:31:56,460<br>So, remember, we have a log, if you’re doing a log-based scheme,</p>
+<p>173<br>00:31:56,460 –&gt; 00:31:58,220<br>then you have a log manager.</p>
+<p>174<br>00:31:58,220 –&gt; 00:32:00,379<br>And the buffer manager also has its own metadata.</p>
+<p>175<br>00:32:00,379 –&gt; 00:32:03,059<br>We’re going to keep track of one more metadata in memory.</p>
+<p>176<br>00:32:03,059 –&gt; 00:32:05,819<br>It’s called the active transaction table.</p>
+<p>177<br>00:32:05,819 –&gt; 00:32:08,139<br>And it’s going to keep track of which transactions are active,</p>
+<p>178<br>00:32:08,139 –&gt; 00:32:09,579<br>what the current state is.</p>
+<p>179<br>00:32:09,579 –&gt; 00:32:15,179<br>And in there, too, will be an LSN which was the last LSN that was created by that transaction.</p>
+<p>180<br>00:32:15,179 –&gt; 00:32:16,779<br>Multiple transactions could be running.</p>
+<p>181<br>00:32:16,779 –&gt; 00:32:21,339<br>Every transaction and wants to create a log record will get it from that LSN counter.</p>
+<p>182<br>00:32:21,339 –&gt; 00:32:25,460<br>But you need to know for each transaction which was the last counter for that.</p>
+<p>183<br>00:32:25,460 –&gt; 00:32:28,619<br>Okay, and you’ll see why we need that in a little bit.</p>
+<p>184<br>00:32:28,619 –&gt; 00:32:32,659<br>Last piece of information we need is something called the master record.</p>
+<p>185<br>00:32:32,659 –&gt; 00:32:35,899<br>This is something that will stay on disk.</p>
+<p>186<br>00:32:35,900 –&gt; 00:32:41,460<br>And when we start recovery, the first thing that recovery manager does is go pull up the master record,</p>
+<p>187<br>00:32:41,460 –&gt; 00:32:44,259<br>which is always at a known location on disk.</p>
+<p>188<br>00:32:44,259 –&gt; 00:32:47,100<br>Okay, that’s hardwired into the database system.</p>
+<p>189<br>00:32:47,100 –&gt; 00:32:50,580<br>Okay, and so it will always go to the disk, build that up.</p>
+<p>190<br>00:32:50,580 –&gt; 00:32:54,980<br>And that will contain the location of the checkpoint record.</p>
+<p>191<br>00:32:54,980 –&gt; 00:32:58,220<br>More precisely, the LSN of the checkpoint record,</p>
+<p>192<br>00:32:58,220 –&gt; 00:33:02,300<br>because LSN is effectively a logical pointer to a record, right?</p>
+<p>193<br>00:33:02,300 –&gt; 00:33:05,580<br>So, that master record will say, here’s the checkpoint record.</p>
+<p>194<br>00:33:05,579 –&gt; 00:33:08,859<br>You start the recovery protocol from this point on.</p>
+<p>195<br>00:33:08,859 –&gt; 00:33:12,699<br>All right, a lot that’s been thrown at you,</p>
+<p>196<br>00:33:12,699 –&gt; 00:33:16,939<br>but as we go through examples, it’ll become clear to make matters worse.</p>
+<p>197<br>00:33:16,939 –&gt; 00:33:18,579<br>Sometimes you have more than this information,</p>
+<p>198<br>00:33:18,579 –&gt; 00:33:22,579<br>but this is all that we need to cover the basics of what we need.</p>
+<p>199<br>00:33:22,579 –&gt; 00:33:27,980<br>Just like I said, we started and say, oh, there’s an SNX log and that is simple.</p>
+<p>200<br>00:33:27,980 –&gt; 00:33:31,259<br>And then we threw up and said, you know, real systems have a lot more stuff.</p>
+<p>201<br>00:33:31,259 –&gt; 00:33:34,339<br>Real systems have a lot more stuff.</p>
+<p>202<br>00:33:34,339 –&gt; 00:33:37,179<br>Okay, and some of it comes from beefries have all kinds of crazy stuff</p>
+<p>203<br>00:33:37,179 –&gt; 00:33:40,139<br>that can happen to it and you’ll do special stuff and things like that.</p>
+<p>204<br>00:33:40,139 –&gt; 00:33:42,059<br>So we’ll ignore all of that.</p>
+<p>205<br>00:33:42,059 –&gt; 00:33:45,220<br>So let’s just look at normal operation, what’s happening?</p>
+<p>206<br>00:33:45,220 –&gt; 00:33:51,699<br>So on the left side here is what’s sitting in DRAM, right?</p>
+<p>207<br>00:33:51,699 –&gt; 00:33:54,059<br>That’s the symbol for that.</p>
+<p>208<br>00:33:54,059 –&gt; 00:33:58,220<br>That side is sitting on disk in non-volatile storage.</p>
+<p>209<br>00:33:58,220 –&gt; 00:33:59,099<br>And then we’ll start.</p>
+<p>210<br>00:33:59,099 –&gt; 00:34:00,459<br>We are creating for the purpose.</p>
+<p>211<br>00:34:00,459 –&gt; 00:34:02,619<br>I’m not showing any pages and stuff right now.</p>
+<p>212<br>00:34:02,619 –&gt; 00:34:05,219<br>Today we just care about what’s happening to the logs.</p>
+<p>213<br>00:34:05,219 –&gt; 00:34:07,099<br>So a log tail, right?</p>
+<p>214<br>00:34:07,099 –&gt; 00:34:10,819<br>Remember the one about the flushed LSN is sitting on the left side.</p>
+<p>215<br>00:34:10,819 –&gt; 00:34:14,059<br>We have a buffer pool with a page that has a couple values.</p>
+<p>216<br>00:34:14,059 –&gt; 00:34:15,980<br>Now everything has a log sequence number.</p>
+<p>217<br>00:34:15,980 –&gt; 00:34:17,900<br>It’s monotonically increasing.</p>
+<p>218<br>00:34:17,900 –&gt; 00:34:22,139<br>And when we go make a change to the page,</p>
+<p>219<br>00:34:22,139 –&gt; 00:34:25,539<br>we are going to start making changes to the page LSN, right?</p>
+<p>220<br>00:34:25,539 –&gt; 00:34:28,059<br>Every time we grab a new log record, update a page,</p>
+<p>221<br>00:34:28,059 –&gt; 00:34:31,779<br>we’ll also do the page LSN, but notice the page also has a record LSN,</p>
+<p>222<br>00:34:31,780 –&gt; 00:34:37,220<br>which was the last log record whose changes have made it to disk.</p>
+<p>223<br>00:34:37,220 –&gt; 00:34:43,220<br>Now, when we also have this flushed LSN that is sitting in memory,</p>
+<p>224<br>00:34:43,220 –&gt; 00:34:45,780<br>and that’s just telling where the tail of the log is.</p>
+<p>225<br>00:34:45,780 –&gt; 00:34:50,660<br>So it’s just revisiting what we said before with the diagram.</p>
+<p>226<br>00:34:50,660 –&gt; 00:34:52,980<br>Master record says where the checkpoint record is,</p>
+<p>227<br>00:34:52,980 –&gt; 00:34:55,780<br>and we’ll talk about creating checkpoint records in a little bit.</p>
+<p>228<br>00:34:55,780 –&gt; 00:34:59,500<br>And essentially what you do is let’s say, yep, question.</p>
+<p>229<br>00:35:01,780 –&gt; 00:35:10,340<br>On disk, they could be different, but just hold on to that for a little bit.</p>
+<p>230<br>00:35:10,340 –&gt; 00:35:14,500<br>Yeah, it need not be because it’s okay.</p>
+<p>231<br>00:35:14,500 –&gt; 00:35:16,660<br>I can recover from it if it is different.</p>
+<p>232<br>00:35:16,660 –&gt; 00:35:20,900<br>So if a page on disk didn’t have the same page LSN and recalesson,</p>
+<p>233<br>00:35:20,900 –&gt; 00:35:25,380<br>I can recover that from disk as long as I follow the right-hand logging protocol.</p>
+<p>234<br>00:35:25,380 –&gt; 00:35:28,540<br>So as long as the logs are in disk,</p>
+<p>235<br>00:35:28,539 –&gt; 00:35:30,860<br>the best way to think about it is,</p>
+<p>236<br>00:35:30,860 –&gt; 00:35:32,300<br>you could also ask the question,</p>
+<p>237<br>00:35:32,300 –&gt; 00:35:36,380<br>should I enforce that to be the same on disk you could, but you don’t have to.</p>
+<p>238<br>00:35:36,380 –&gt; 00:35:38,619<br>As long as you follow the right-hand logging protocol,</p>
+<p>239<br>00:35:38,619 –&gt; 00:35:42,139<br>that says the logs must hit the disk before the page hits,</p>
+<p>240<br>00:35:42,139 –&gt; 00:35:46,860<br>then you are fine, but you may want to optimize that further by fixing certain things.</p>
+<p>241<br>00:35:46,860 –&gt; 00:35:49,019<br>So in general, yes, that’s what you would do.</p>
+<p>242<br>00:35:49,019 –&gt; 00:35:52,300<br>You would go and fix the recalesson when you flush it out to disk.</p>
+<p>243<br>00:35:52,300 –&gt; 00:35:54,779<br>But after the logs have hit the disk.</p>
+<p>244<br>00:35:54,779 –&gt; 00:35:55,340<br>Okay, yep.</p>
+<p>245<br>00:35:55,340 –&gt; 00:35:59,500<br>It’s logically the question of how could it ever get out of disk.</p>
+<p>246<br>00:35:59,500 –&gt; 00:36:03,420<br>Yeah, logically, the question is when can the recalesson and</p>
+<p>247<br>00:36:03,420 –&gt; 00:36:06,860<br>page LSN for something that’s been just flushed out to disk get out of sync,</p>
+<p>248<br>00:36:06,860 –&gt; 00:36:08,539<br>it’ll be based on the implementation.</p>
+<p>249<br>00:36:08,539 –&gt; 00:36:12,380<br>So generally, you would not make that happen.</p>
+<p>250<br>00:36:12,380 –&gt; 00:36:15,420<br>Yeah, but all I’m saying is the mechanisms are generally enough that</p>
+<p>251<br>00:36:15,420 –&gt; 00:36:17,579<br>if you want to use in a different way, you could.</p>
+<p>252<br>00:36:17,579 –&gt; 00:36:20,460<br>Okay, and we’ll just punt on that on that question,</p>
+<p>253<br>00:36:20,460 –&gt; 00:36:24,780<br>but you can assume for today’s lecture that they will be synchronized at that point.</p>
+<p>254<br>00:36:24,780 –&gt; 00:36:26,380<br>Okay, that’s a good question.</p>
+<p>255<br>00:36:26,380 –&gt; 00:36:27,019<br>Other questions?</p>
+<p>256<br>00:36:29,180 –&gt; 00:36:34,460<br>All right, so now if this puff of pool page has to be flushed out to disk,</p>
+<p>257<br>00:36:34,460 –&gt; 00:36:37,340<br>the first part of right-ahead logging protocol says,</p>
+<p>258<br>00:36:37,340 –&gt; 00:36:41,019<br>I check whether I can, it’s log better be sitting on disk,</p>
+<p>259<br>00:36:41,019 –&gt; 00:36:42,940<br>and we will do that check.</p>
+<p>260<br>00:36:42,940 –&gt; 00:36:47,500<br>I know in that page, I will look at the page LSN, that’s all I look at.</p>
+<p>261<br>00:36:47,500 –&gt; 00:36:49,980<br>And say, is it less than the flushed LSN?</p>
+<p>262<br>00:36:49,980 –&gt; 00:36:52,220<br>If it is, that means the log is sitting on disk, right?</p>
+<p>263<br>00:36:53,019 –&gt; 00:36:54,059<br>Which means it’s safe.</p>
+<p>264<br>00:36:54,059 –&gt; 00:36:55,019<br>I can go flush it.</p>
+<p>265<br>00:36:55,019 –&gt; 00:36:56,779<br>At that point, you could update the record LSN.</p>
+<p>266<br>00:36:57,819 –&gt; 00:37:02,939<br>Okay, and then I come back up over here,</p>
+<p>267<br>00:37:03,739 –&gt; 00:37:08,779<br>and basically my page LSN is referring to log number 19.</p>
+<p>268<br>00:37:08,779 –&gt; 00:37:11,739<br>If that is what the page LSN is in the second example,</p>
+<p>269<br>00:37:12,459 –&gt; 00:37:17,980<br>if that is not flushed out to disk because the LSN on disk is 16,</p>
+<p>270<br>00:37:17,980 –&gt; 00:37:22,780<br>I have to flush logs 17, 18, and 19 before I can do anything else.</p>
+<p>271<br>00:37:22,780 –&gt; 00:37:25,099<br>Now you might say, oh, I don’t need to flush.</p>
+<p>272<br>00:37:25,099 –&gt; 00:37:28,059<br>I only want to flush the log records corresponding to this page,</p>
+<p>273<br>00:37:28,059 –&gt; 00:37:31,740<br>which is true, but we’ll always treat the right-ahead log file as a sequential file,</p>
+<p>274<br>00:37:31,740 –&gt; 00:37:34,699<br>so we’ll flush everything up to the log record debug.</p>
+<p>275<br>00:37:34,699 –&gt; 00:37:37,340<br>We are not going to try to break apart the logs, okay?</p>
+<p>276<br>00:37:38,219 –&gt; 00:37:39,500<br>We’ll just keep it simple.</p>
+<p>277<br>00:37:39,500 –&gt; 00:37:41,659<br>Things can get super complicated and you’ll have subtle bugs,</p>
+<p>278<br>00:37:41,659 –&gt; 00:37:43,500<br>so we are just going to flush everything,</p>
+<p>279<br>00:37:43,500 –&gt; 00:37:46,219<br>just going to treat the log file as a sequential file.</p>
+<p>280<br>00:37:46,219 –&gt; 00:37:48,859<br>So we flush everything up to that 19,</p>
+<p>281<br>00:37:48,859 –&gt; 00:37:50,459<br>and once that is in there,</p>
+<p>282<br>00:37:50,459 –&gt; 00:37:53,659<br>we can go flush the buffer pool out, right?</p>
+<p>283<br>00:37:53,659 –&gt; 00:37:56,539<br>So that’s just the thing is the first part of right-ahead logging protocol,</p>
+<p>284<br>00:37:56,539 –&gt; 00:37:59,179<br>before you make changes to a disk permanent,</p>
+<p>285<br>00:37:59,179 –&gt; 00:38:00,379<br>to a page permanent,</p>
+<p>286<br>00:38:00,379 –&gt; 00:38:02,939<br>it’s log better have hit the disk before you do that.</p>
+<p>287<br>00:38:02,939 –&gt; 00:38:03,259<br>Question?</p>
+<p>288<br>00:38:03,980 –&gt; 00:38:06,059<br>Yes, this is the first like intermediate question.</p>
+<p>289<br>00:38:06,059 –&gt; 00:38:09,899<br>Do you generally flush anything that you have in the buffer pool when you’re like…</p>
+<p>290<br>00:38:09,899 –&gt; 00:38:11,659<br>In the log buffer pool, yes.</p>
+<p>291<br>00:38:13,099 –&gt; 00:38:15,419<br>Only it’s left and the point that he wants.</p>
+<p>292<br>00:38:15,420 –&gt; 00:38:16,940<br>Yeah, so the question is,</p>
+<p>293<br>00:38:16,940 –&gt; 00:38:21,659<br>do you flush everything in the log buffer pool or only up to the point you want?</p>
+<p>294<br>00:38:21,659 –&gt; 00:38:24,059<br>So generally only up to the point you want.</p>
+<p>295<br>00:38:24,059 –&gt; 00:38:26,780<br>Now, then you will not go wrong if you flush more.</p>
+<p>296<br>00:38:28,300 –&gt; 00:38:32,300<br>And so, you know, usually that’s also page-ified at page boundary,</p>
+<p>297<br>00:38:32,300 –&gt; 00:38:34,539<br>so you might flush up to the next page boundary,</p>
+<p>298<br>00:38:34,539 –&gt; 00:38:35,980<br>but you don’t have to.</p>
+<p>299<br>00:38:35,980 –&gt; 00:38:38,059<br>Correctness will ensure as long as you make sure</p>
+<p>300<br>00:38:39,019 –&gt; 00:38:40,780<br>at least 19 is flush to disk,</p>
+<p>301<br>00:38:41,500 –&gt; 00:38:44,300<br>and doesn’t matter if 20 also got flush to disk,</p>
+<p>302<br>00:38:44,300 –&gt; 00:38:45,660<br>because you’re trying to write 19 on.</p>
+<p>303<br>00:38:45,660 –&gt; 00:38:46,460<br>That will be okay.</p>
+<p>304<br>00:38:46,460 –&gt; 00:38:47,420<br>You’ll still be correct.</p>
+<p>305<br>00:38:47,420 –&gt; 00:38:52,300<br>You’re not going to do damage by writing more logs to disk than you absolutely need to.</p>
+<p>306<br>00:38:53,580 –&gt; 00:39:02,060<br>So, the question is, why do we need a recalescent?</p>
+<p>307<br>00:39:02,060 –&gt; 00:39:04,700<br>That’s going to come when we try to do the recovery protocol.</p>
+<p>308<br>00:39:04,700 –&gt; 00:39:05,820<br>So, just wait for that.</p>
+<p>309<br>00:39:05,820 –&gt; 00:39:06,060<br>Yep.</p>
+<p>310<br>00:39:08,780 –&gt; 00:39:12,700<br>So, the flush and flush centers will be the latest thing in the case, right?</p>
+<p>311<br>00:39:12,699 –&gt; 00:39:15,579<br>The flush tell us in, so here, let me go back to this diagram.</p>
+<p>312<br>00:39:15,579 –&gt; 00:39:18,139<br>Right now, maybe this makes a little bit more clear.</p>
+<p>313<br>00:39:18,139 –&gt; 00:39:21,500<br>The flush tell us in is that it’s saying, where’s the tail of the log?</p>
+<p>314<br>00:39:24,460 –&gt; 00:39:25,099<br>Oh, right.</p>
+<p>315<br>00:39:25,099 –&gt; 00:39:28,939<br>It’s the latest thing that we’ve left inside disk.</p>
+<p>316<br>00:39:28,939 –&gt; 00:39:30,139<br>In disk, yeah, it’s safe.</p>
+<p>317<br>00:39:30,139 –&gt; 00:39:32,139<br>Everything after that is not on disk.</p>
+<p>318<br>00:39:32,139 –&gt; 00:39:33,259<br>I don’t have a record for it.</p>
+<p>319<br>00:39:33,899 –&gt; 00:39:35,259<br>Why do we need to keep track of it?</p>
+<p>320<br>00:39:35,259 –&gt; 00:39:36,939<br>Like, I guess like,</p>
+<p>321<br>00:39:37,659 –&gt; 00:39:39,179<br>we’re going back to the other slide.</p>
+<p>322<br>00:39:39,500 –&gt; 00:39:44,460<br>Do we need granularity of like being able to choose exactly which logs you want to push?</p>
+<p>323<br>00:39:44,460 –&gt; 00:39:47,500<br>But what are the basic features of flush everything that we have?</p>
+<p>324<br>00:39:47,500 –&gt; 00:39:50,379<br>Yeah, the question is, can I flush everything I have all the time?</p>
+<p>325<br>00:39:50,379 –&gt; 00:39:50,619<br>Yes.</p>
+<p>326<br>00:39:51,500 –&gt; 00:39:52,379<br>It’ll be inefficient.</p>
+<p>327<br>00:39:52,379 –&gt; 00:39:55,019<br>You’ll be writing more log IOs than you need to.</p>
+<p>328<br>00:39:55,019 –&gt; 00:39:58,460<br>You could in fact say, oh, the logs records are always created on disk.</p>
+<p>329<br>00:39:58,460 –&gt; 00:39:59,659<br>I have no log buffer pool.</p>
+<p>330<br>00:39:59,659 –&gt; 00:40:01,339<br>That would be correct, but it would be very slow.</p>
+<p>331<br>00:40:03,819 –&gt; 00:40:09,019<br>So, in this case, you’re saying that we’re not allowed to flush simply long nights.</p>
+<p>332<br>00:40:09,579 –&gt; 00:40:11,500<br>Or, yeah, I’m saying,</p>
+<p>333<br>00:40:13,419 –&gt; 00:40:16,779<br>we will flush everything including 17, 18, and 19.</p>
+<p>334<br>00:40:16,779 –&gt; 00:40:22,940<br>Perhaps even 20 to disk, I’m not going to try and pull out just 19 because that’s the change</p>
+<p>335<br>00:40:22,940 –&gt; 00:40:24,539<br>to the page.</p>
+<p>336<br>00:40:24,539 –&gt; 00:40:28,779<br>Because, you know, there might be seven, there might be record 17 that is also,</p>
+<p>337<br>00:40:29,339 –&gt; 00:40:31,339<br>records 18 that is related to the page.</p>
+<p>338<br>00:40:31,339 –&gt; 00:40:34,779<br>I don’t want to go and try and grab all of that stuff and the protocol will get completely</p>
+<p>339<br>00:40:34,779 –&gt; 00:40:35,579<br>complicated.</p>
+<p>340<br>00:40:35,579 –&gt; 00:40:38,940<br>So, I guess what my question is, why do we need to close the O7?</p>
+<p>341<br>00:40:39,019 –&gt; 00:40:40,460<br>Why do you need the flush LSN?</p>
+<p>342<br>00:40:40,460 –&gt; 00:40:43,740<br>So that you can check whether the changes have been made to this.</p>
+<p>343<br>00:40:43,740 –&gt; 00:40:49,500<br>So, for example, if, imagine I had log 21, 22, and 23,</p>
+<p>344<br>00:40:49,500 –&gt; 00:40:53,740<br>and just because I needed to flush 19, I also flushed 20, 21, and 22 to disk.</p>
+<p>345<br>00:40:53,740 –&gt; 00:40:55,500<br>Because it was on the same page.</p>
+<p>346<br>00:40:55,500 –&gt; 00:40:58,619<br>Then, a next buffer pool page that has LSN,</p>
+<p>347<br>00:40:58,619 –&gt; 00:41:00,780<br>a page LSN of 20 comes in.</p>
+<p>348<br>00:41:00,780 –&gt; 00:41:01,820<br>You will say, oh, you know what?</p>
+<p>349<br>00:41:02,460 –&gt; 00:41:06,780<br>Flush LSN tells me that I don’t need to do any flushing of logs for you because you already done.</p>
+<p>350<br>00:41:08,940 –&gt; 00:41:15,420<br>So, we don’t necessarily have to write out the logs in a strictly second goal.</p>
+<p>351<br>00:41:15,420 –&gt; 00:41:16,619<br>The logs are written out.</p>
+<p>352<br>00:41:16,619 –&gt; 00:41:19,099<br>So, the question is, do we have to write the logs in sequential order?</p>
+<p>353<br>00:41:19,099 –&gt; 00:41:21,420<br>The logs are going to get written in sequential order.</p>
+<p>354<br>00:41:24,700 –&gt; 00:41:25,659<br>What’s the confusion?</p>
+<p>355<br>00:41:25,659 –&gt; 00:41:27,019<br>There’s some other confusion you have.</p>
+<p>356<br>00:41:28,619 –&gt; 00:41:28,940<br>Okay.</p>
+<p>357<br>00:41:29,900 –&gt; 00:41:33,740<br>So, is it true that the flush tells and always be close to the tail?</p>
+<p>358<br>00:41:35,579 –&gt; 00:41:38,059<br>The flush LSN is always pointing to the tail.</p>
+<p>359<br>00:41:38,059 –&gt; 00:41:39,900<br>Exactly as this diagram says.</p>
+<p>360<br>00:41:39,900 –&gt; 00:41:41,500<br>That’s what it is keeping track of.</p>
+<p>361<br>00:41:41,500 –&gt; 00:41:45,019<br>Like, what portion, what log sequence number has made it to disk?</p>
+<p>362<br>00:41:47,179 –&gt; 00:41:49,900<br>But you’ll have to go read the tail from somewhere and you’ll make a disk I.O.</p>
+<p>363<br>00:41:51,019 –&gt; 00:41:53,500<br>You don’t want to take a disk I.O. to find out where the tail is.</p>
+<p>364<br>00:41:54,699 –&gt; 00:41:55,179<br>Yeah.</p>
+<p>365<br>00:41:55,179 –&gt; 00:41:55,900<br>Yep.</p>
+<p>366<br>00:41:55,900 –&gt; 00:41:57,259<br>That’s why you’re keeping it in memory.</p>
+<p>367<br>00:41:57,259 –&gt; 00:42:00,699<br>As I said, you could come up with a protocol that says there’s no log buffer pool.</p>
+<p>368<br>00:42:00,699 –&gt; 00:42:01,340<br>Everything is on.</p>
+<p>369<br>00:42:01,900 –&gt; 00:42:04,219<br>Logs always hit stable storage, but that will be very slow.</p>
+<p>370<br>00:42:04,219 –&gt; 00:42:04,860<br>It will be correct.</p>
+<p>371<br>00:42:05,500 –&gt; 00:42:06,059<br>Okay.</p>
+<p>372<br>00:42:06,139 –&gt; 00:42:10,779<br>So, a lot of this is efficiency mixed with making the protocol work correctly.</p>
+<p>373<br>00:42:10,779 –&gt; 00:42:14,219<br>And simply, that simple part is super important.</p>
+<p>374<br>00:42:14,779 –&gt; 00:42:18,940<br>And that’s why we are not trying to optimize exactly which log records to write.</p>
+<p>375<br>00:42:18,940 –&gt; 00:42:20,380<br>We’re just going to write it sequentially.</p>
+<p>376<br>00:42:21,019 –&gt; 00:42:23,019<br>By the way, sequential writes are anyways pretty efficient.</p>
+<p>377<br>00:42:23,019 –&gt; 00:42:25,820<br>So, it’s actually going to be the right thing to do.</p>
+<p>378<br>00:42:27,099 –&gt; 00:42:27,420<br>Okay.</p>
+<p>379<br>00:42:28,299 –&gt; 00:42:30,460<br>So, we keep writing these log records.</p>
+<p>380<br>00:42:31,340 –&gt; 00:42:34,380<br>Just to get everyone reset, we’ll update the page.</p>
+<p>381<br>00:42:34,380 –&gt; 00:42:40,860<br>LSN every time a transaction modifies and update the flushed LSN in memory every time we flushed</p>
+<p>382<br>00:42:40,860 –&gt; 00:42:42,619<br>logs so that we know where the new tail is.</p>
+<p>383<br>00:42:43,180 –&gt; 00:42:43,340<br>Okay.</p>
+<p>384<br>00:42:43,340 –&gt; 00:42:48,059<br>Because that’s against which we are checking to figure out whether the first part of right-hid login</p>
+<p>385<br>00:42:48,059 –&gt; 00:42:51,820<br>protocol has to be taken care of when we flush the page out to test.</p>
+<p>386<br>00:42:52,860 –&gt; 00:42:55,420<br>So, normal execution, we’re going to simplify even further.</p>
+<p>387<br>00:42:55,980 –&gt; 00:43:01,500<br>We’re going to assume that all log records fit in a single page in the log file is also</p>
+<p>388<br>00:43:01,500 –&gt; 00:43:06,380<br>pageified. If it doesn’t, there are little sort of straightforward extensions to deal with,</p>
+<p>389<br>00:43:06,380 –&gt; 00:43:07,579<br>but you have to worry about it.</p>
+<p>390<br>00:43:07,579 –&gt; 00:43:08,780<br>Kind of what you have to worry about it.</p>
+<p>391<br>00:43:08,780 –&gt; 00:43:11,179<br>The log record spans four pages.</p>
+<p>392<br>00:43:11,900 –&gt; 00:43:14,860<br>You know, what does it mean for a log record to have hit disk and come back?</p>
+<p>393<br>00:43:14,860 –&gt; 00:43:19,099<br>All those four pages, quote unquote, have to be atomically written to disk and come back.</p>
+<p>394<br>00:43:19,099 –&gt; 00:43:20,860<br>And the operating system doesn’t provide you that.</p>
+<p>395<br>00:43:20,860 –&gt; 00:43:23,260<br>So, you have to provide other mechanisms to deal with it.</p>
+<p>396<br>00:43:23,260 –&gt; 00:43:26,699<br>Sidebar, I don’t want to go down a rabbit hole to go to drum and that.</p>
+<p>397<br>00:43:26,699 –&gt; 00:43:28,380<br>Our disks writes atomic.</p>
+<p>398<br>00:43:28,700 –&gt; 00:43:30,780<br>If not, there are other mechanisms to deal with that.</p>
+<p>399<br>00:43:30,780 –&gt; 00:43:33,420<br>We’re going to assume all of that stuff is okay for us today.</p>
+<p>400<br>00:43:34,619 –&gt; 00:43:36,140<br>That disk could also fail, as I said.</p>
+<p>401<br>00:43:36,140 –&gt; 00:43:37,019<br>You could mirror it.</p>
+<p>402<br>00:43:37,019 –&gt; 00:43:42,619<br>You could replicate it in a geographically distributed area to get that log to be available to you.</p>
+<p>403<br>00:43:43,980 –&gt; 00:43:48,460<br>We’re going to assume that we are operating with single version of records.</p>
+<p>404<br>00:43:48,460 –&gt; 00:43:51,740<br>There are multiple versions if we are doing MECC based protocols.</p>
+<p>405<br>00:43:51,740 –&gt; 00:43:54,059<br>Kind of the straightforward way of things apply.</p>
+<p>406<br>00:43:54,539 –&gt; 00:43:56,699<br>Not going to test you in the exam.</p>
+<p>407<br>00:43:56,699 –&gt; 00:43:59,099<br>But you can just think of a firm doing physiological logging.</p>
+<p>408<br>00:43:59,659 –&gt; 00:44:02,619<br>And if I’ve made it work with records that span multiple pages,</p>
+<p>409<br>00:44:02,619 –&gt; 00:44:04,460<br>the versioning stuff works out in a similar way.</p>
+<p>410<br>00:44:05,500 –&gt; 00:44:10,779<br>So, the basic point is this is all compatible with all the version creation stuff that we were doing.</p>
+<p>411<br>00:44:11,980 –&gt; 00:44:16,539<br>Okay, with the different types of storage structures that we had for version management.</p>
+<p>412<br>00:44:16,539 –&gt; 00:44:18,940<br>And of course, we are doing steel and no force.</p>
+<p>413<br>00:44:18,940 –&gt; 00:44:21,179<br>So, that’s just saying a lot of simplifications.</p>
+<p>414<br>00:44:22,619 –&gt; 00:44:24,059<br>Straight forward ways to go.</p>
+<p>415<br>00:44:24,059 –&gt; 00:44:29,659<br>Not straight forward, but you can extend it to deal with the other types of complexity that might come in the system.</p>
+<p>416<br>00:44:31,420 –&gt; 00:44:38,380<br>Now, we are going to introduce one more type of log record called the transaction end.</p>
+<p>417<br>00:44:38,380 –&gt; 00:44:41,579<br>But before that, just to re-trade that, when the transaction come in,</p>
+<p>418<br>00:44:41,579 –&gt; 00:44:43,420<br>it’s going to create a commit log record.</p>
+<p>419<br>00:44:43,980 –&gt; 00:44:46,780<br>And if a transaction abort says going to be an abort log record.</p>
+<p>420<br>00:44:47,420 –&gt; 00:44:52,700<br>And those, all these log flushes are happening to this log file, which is just sequentially getting flushed.</p>
+<p>421<br>00:44:53,580 –&gt; 00:44:58,940<br>Okay. Now, this at the, when the transaction comets,</p>
+<p>422<br>00:44:59,500 –&gt; 00:45:05,580<br>the second part of right-ahead logging protocol says that commit log record must hit the stable storage,</p>
+<p>423<br>00:45:05,580 –&gt; 00:45:06,620<br>must hit the log disk.</p>
+<p>424<br>00:45:07,180 –&gt; 00:45:12,940<br>It’s at that magical moment when you get that reply back from the log disk saying,</p>
+<p>425<br>00:45:12,940 –&gt; 00:45:17,579<br>a commit log record has hit disk and you could have written a few more log records after the commit log record.</p>
+<p>426<br>00:45:17,579 –&gt; 00:45:18,059<br>We don’t care.</p>
+<p>427<br>00:45:18,940 –&gt; 00:45:25,420<br>But as soon as that commit log record, the page corresponding to the way that commit log record is,</p>
+<p>428<br>00:45:25,420 –&gt; 00:45:29,740<br>hits disk, you can say, this transaction is committed, you can declare that to the outside world.</p>
+<p>429<br>00:45:29,740 –&gt; 00:45:32,619<br>And recovery will take care of the atomicity and durability part of it.</p>
+<p>430<br>00:45:34,139 –&gt; 00:45:41,500<br>Okay. But we will also do something for various bookkeeping purposes that become super important</p>
+<p>431<br>00:45:41,500 –&gt; 00:45:46,780<br>for efficiency where we will write the commit log record. That’s when the commit happened.</p>
+<p>432<br>00:45:46,780 –&gt; 00:45:51,579<br>But even for committed transactions, we’ll do all kinds of cleanup that we might have.</p>
+<p>433<br>00:45:51,579 –&gt; 00:45:57,739<br>For example, if I’m using OCC or some form of that, I’m going to clean up all my workspace in which I’ve</p>
+<p>434<br>00:45:57,739 –&gt; 00:46:02,059<br>checked out and kept all my read copies and stuff. I allocated a bunch of memory. I will throw away all of</p>
+<p>435<br>00:46:02,059 –&gt; 00:46:07,900<br>that, deallocate that memory. And when I’m completely done, I will write a end transaction log record.</p>
+<p>436<br>00:46:07,900 –&gt; 00:46:12,059<br>Even if you’re not doing OCC, there’s cleanup that you often need to do. You’ll do all of that and</p>
+<p>437<br>00:46:12,059 –&gt; 00:46:19,260<br>write the end log record. This does not have to be forced to disk. The commit log record has to be</p>
+<p>438<br>00:46:19,260 –&gt; 00:46:24,460<br>forced to disk to declare the transaction committed. Bookkeeping cleanup that you need it to do can be done</p>
+<p>439<br>00:46:24,460 –&gt; 00:46:29,740<br>later. This end log record, we will write that. But it will just help us when we’re doing the recovery</p>
+<p>440<br>00:46:29,740 –&gt; 00:46:34,619<br>protocol to say, you know what? I don’t need to worry about it. So as far as the recovery protocol</p>
+<p>441<br>00:46:34,619 –&gt; 00:46:39,500<br>that we are looking at, that we’ll look at shortly, it’s the end log record which will say, I’m done</p>
+<p>442<br>00:46:39,500 –&gt; 00:46:46,859<br>with you completely. So Chattish, want you to know there’s an end log record, but it doesn’t have to be</p>
+<p>443<br>00:46:47,420 –&gt; 00:46:52,380<br>flush to disk. Is the commit log records flush? That is the magical commit point for the transaction.</p>
+<p>444<br>00:46:54,619 –&gt; 00:47:00,219<br>All right. So let’s see what happens when regular commit. We are going to start. Let’s say we get to</p>
+<p>445<br>00:47:00,219 –&gt; 00:47:04,699<br>this commit point. We create this commit log record that’s sitting in the log buffer pool.</p>
+<p>446<br>00:47:05,339 –&gt; 00:47:12,539<br>Now what we are going to do is go and flush that out to disk to the log disk. Once that reply comes</p>
+<p>447<br>00:47:12,539 –&gt; 00:47:18,219<br>back, that’s when the commit has actually happened. We have that magical moment that we were looking for.</p>
+<p>448<br>00:47:19,259 –&gt; 00:47:24,939<br>Now what we’ll start to do is keep processing further. We’ll adjust the flush tell us in of course.</p>
+<p>449<br>00:47:24,939 –&gt; 00:47:29,899<br>We have to keep track of the tail. Notice how we do that. We flush the log first, then update the</p>
+<p>450<br>00:47:29,900 –&gt; 00:47:34,460<br>flush tell us in. It’s okay if your flush tell us in is a little bit off. Don’t do it the other way</p>
+<p>451<br>00:47:34,460 –&gt; 00:47:42,059<br>wrong. Just make sure the log is done before you adjust the tail. At some point we’ll clean up and</p>
+<p>452<br>00:47:42,059 –&gt; 00:47:46,220<br>write our end transaction log record. So recovery protocol has to be ready to look at these end</p>
+<p>453<br>00:47:46,220 –&gt; 00:47:52,860<br>transaction log records which is important. At this point, we could choose to trim away the</p>
+<p>454<br>00:47:52,860 –&gt; 00:47:59,660<br>flush tell the log that is in the buffer pool. We can make space for it. If it’s a buffered log</p>
+<p>455<br>00:48:00,139 –&gt; 00:48:03,579<br>file widget is, then we now have space to create new log pages.</p>
+<p>456<br>00:48:06,299 –&gt; 00:48:12,699<br>All right. For a botz, we have to do a little bit more work. So I’m going to introduce one more</p>
+<p>457<br>00:48:12,699 –&gt; 00:48:23,099<br>relic in type. So a transaction like T4 that we had in this schematic example a little while back.</p>
+<p>458<br>00:48:24,460 –&gt; 00:48:29,579<br>T4 that was running at the time of transaction and T3 that was explicitly aborted. They are both</p>
+<p>459<br>00:48:29,579 –&gt; 00:48:34,460<br>going to be treated as a botz transaction as far as A vs is concerned.</p>
+<p>460<br>00:48:35,659 –&gt; 00:48:45,340<br>So now for these botz transactions, excuse me, we are going to do the following. We are going to add</p>
+<p>461<br>00:48:45,340 –&gt; 00:48:53,579<br>one more field to a log record and this field is going to be called previous LSN and its job is to</p>
+<p>462<br>00:48:53,579 –&gt; 00:49:00,699<br>keep track. It’s not strictly needed, but it makes things more efficient. Its purpose is to allow</p>
+<p>463<br>00:49:00,699 –&gt; 00:49:07,739<br>me, if I’m undoing transaction T4 and I look at a log record which is a apply and update to a page,</p>
+<p>464<br>00:49:07,739 –&gt; 00:49:13,500<br>I will undo it and create a new log record for that called CLR that’s coming. But I’ll undo that</p>
+<p>465<br>00:49:13,500 –&gt; 00:49:17,819<br>and then I have to figure out what’s the other change that this transaction made and this previous</p>
+<p>466<br>00:49:17,819 –&gt; 00:49:22,940<br>LSN allows me to string together the log records of the same transaction. So it’s like a linked list</p>
+<p>467<br>00:49:22,940 –&gt; 00:49:27,500<br>for all the log records. Remember I may have hundreds of transactions happening. They are all doing</p>
+<p>468<br>00:49:27,500 –&gt; 00:49:32,700<br>their work, they are grabbing this LSN. So for a given transaction, its logs are scattered all</p>
+<p>469<br>00:49:32,700 –&gt; 00:49:36,940<br>across this LSN. They are monotonically increasing, but they are not sequentials, strictly sequential.</p>
+<p>470<br>00:49:38,460 –&gt; 00:49:43,260<br>So this is just an optimization, very important optimizations without that your recovery protocol</p>
+<p>471<br>00:49:43,260 –&gt; 00:49:50,059<br>will be really slow and this picture I’ll come back again to in a little bit, but the part,</p>
+<p>472<br>00:49:50,299 –&gt; 00:49:56,860<br>so ignore this undo next LSN just hinting one more LSN type is coming. I know your head is probably</p>
+<p>473<br>00:49:56,860 –&gt; 00:50:03,820<br>spinning at this point, right? I promise that’s the last LSN we need. But to demonstrate the previous</p>
+<p>474<br>00:50:03,820 –&gt; 00:50:09,579<br>LSN, so imagine I’ve got a transaction that did an update, some other transaction ran, then this</p>
+<p>475<br>00:50:09,579 –&gt; 00:50:14,380<br>this a red transaction and a blue transaction, then the red transaction did a second update,</p>
+<p>476<br>00:50:14,380 –&gt; 00:50:21,019<br>then a few log records later did a third update. So its action was one, two, and three, but its</p>
+<p>477<br>00:50:21,019 –&gt; 00:50:26,700<br>LSNs are not sequential, right? There’s gaps, gap of one here, gap of two here and so on.</p>
+<p>478<br>00:50:27,579 –&gt; 00:50:33,099<br>When you undo the transaction’s work for an abotting transaction, you’ll undo it in the</p>
+<p>479<br>00:50:33,099 –&gt; 00:50:38,140<br>reverse order. We’ll talk about that in a little bit more detail, but intuitively we’ll undo</p>
+<p>480<br>00:50:38,140 –&gt; 00:50:44,140<br>this update first for which we’ll write a compensating log record, which will also have a</p>
+<p>481<br>00:50:44,139 –&gt; 00:50:50,460<br>previous LSN that says that’s what I untied. And now when you undo that, this thing had a previous</p>
+<p>482<br>00:50:50,460 –&gt; 00:50:55,019<br>LSN that points to you too, and that’s going to make it easy when you’re doing the undo to say</p>
+<p>483<br>00:50:55,019 –&gt; 00:50:59,819<br>which action do I want to do next? Oh, I know where that record is. Otherwise, you have to traverse</p>
+<p>484<br>00:50:59,819 –&gt; 00:51:04,699<br>this chain backward and these two could be spread hundreds or millions of log records apart. It’ll</p>
+<p>485<br>00:51:04,699 –&gt; 00:51:11,019<br>just be very expensive IO because all of that may not even fit on in memory, right? So it’s just a</p>
+<p>486<br>00:51:11,019 –&gt; 00:51:16,699<br>chain. The previous LSN just changed together the transactions. The log records created by the</p>
+<p>487<br>00:51:16,699 –&gt; 00:51:22,460<br>same transaction. It’s not essential, but will allow us to go back and figure out what were the</p>
+<p>488<br>00:51:22,460 –&gt; 00:51:27,179<br>log records for an individual transaction much more easily because these pointers help us.</p>
+<p>489<br>00:51:29,980 –&gt; 00:51:38,940<br>And we’ll talk about undo LSNs and CLR in two slides. So what does it look like? I’ve got the,</p>
+<p>490<br>00:51:38,940 –&gt; 00:51:42,059<br>what is the abort scenario look like? Here, I’ve got the tail of the log.</p>
+<p>491<br>00:51:43,820 –&gt; 00:51:52,940<br>And now, besides the LSN, there’s a previous LSN. In this case, there’s no gaps in between just</p>
+<p>492<br>00:51:52,940 –&gt; 00:51:59,019<br>to make it all work in PowerPoint, but you saw that picture. There could be gaps. And when an abort</p>
+<p>493<br>00:51:59,019 –&gt; 00:52:05,579<br>happens, a bots don’t have to be flushed to disk because if a transaction state is unknown,</p>
+<p>494<br>00:52:05,579 –&gt; 00:52:08,860<br>after a cover time, we’re going to treat it like an abort. So unlike Comet, you don’t flush</p>
+<p>495<br>00:52:08,860 –&gt; 00:52:14,460<br>about log records to disk. Eventually, we will end it, but in this case, when it’s an abort,</p>
+<p>496<br>00:52:15,099 –&gt; 00:52:20,219<br>between the abort log record and the end log record are going to be a bunch of other log records,</p>
+<p>497<br>00:52:20,219 –&gt; 00:52:24,940<br>those are going to be the compensating log records. Okay? So that is the work and the</p>
+<p>498<br>00:52:24,940 –&gt; 00:52:29,500<br>aborting transaction has to do. And there’ll be more log records that will be created over there.</p>
+<p>499<br>00:52:30,779 –&gt; 00:52:35,179<br>Okay. Question. Before we go to the compensating log records. And I promise that’s the</p>
+<p>500<br>00:52:35,179 –&gt; 00:52:39,579<br>last log type because I’ve already introduced the checkpoint log records to you.</p>
+<p>501<br>00:52:41,099 –&gt; 00:52:46,059<br>Why do we need the previous LSN for this? Yeah. Don’t need the previous LSN for this. We needed</p>
+<p>502<br>00:52:46,059 –&gt; 00:52:47,179<br>it in the recovery protocol.</p>
+<p>503<br>00:52:52,699 –&gt; 00:52:52,940<br>Yeah.</p>
+<p>504<br>00:52:53,739 –&gt; 00:52:56,859<br>Before the report details. Yes. We know in between the</p>
+<p>505<br>00:52:58,139 –&gt; 00:53:04,619<br>aborting transaction, there would be log records. Yeah. Got it. So the question is,</p>
+<p>506<br>00:53:04,619 –&gt; 00:53:08,299<br>can you clarify that aborted log transactions don’t have to be flushed to disk?</p>
+<p>507<br>00:53:08,299 –&gt; 00:53:12,219<br>The abort doesn’t have to be flushed to disk. And we’ll see that in the recovery protocol</p>
+<p>508<br>00:53:12,219 –&gt; 00:53:17,659<br>in a little bit because we’ll just redo and undo it. But if between the abort and the transaction</p>
+<p>509<br>00:53:17,659 –&gt; 00:53:21,179<br>and there was a Comet transaction of some of the transaction, then we would definitely have</p>
+<p>510<br>00:53:21,179 –&gt; 00:53:25,500<br>to flush that to disk. Right? And as we flushed that to disk, we left flushed everything,</p>
+<p>511<br>00:53:25,500 –&gt; 00:53:30,299<br>including the abort log record. And maybe part of the CLR for this transaction. And that’s okay.</p>
+<p>512<br>00:53:31,100 –&gt; 00:53:35,580<br>So you won’t go wrong ever flushing more to disk, but we’re trying to minimize how much</p>
+<p>513<br>00:53:35,580 –&gt; 00:53:40,539<br>you have to flush because the disk I was expensive. Yeah. So it wouldn’t be incorrect. But of course,</p>
+<p>514<br>00:53:40,539 –&gt; 00:53:44,140<br>if there’s a Comet between those two, the Comet has to follow that second part of the right-hand</p>
+<p>515<br>00:53:44,140 –&gt; 00:53:46,780<br>log protocol. Questions? Yep.</p>
+<p>516<br>00:53:52,460 –&gt; 00:53:56,860<br>Very good. The question is, in the recovery phase, can other transactions be admitted?</p>
+<p>517<br>00:53:56,860 –&gt; 00:54:01,660<br>For this entire course, we’re going to assume they cannot, but there are ways you can do certain</p>
+<p>518<br>00:54:01,660 –&gt; 00:54:08,300<br>things even at that stage. But we will say no right now. Okay? But it gets tricky pretty fast and</p>
+<p>519<br>00:54:09,180 –&gt; 00:54:13,980<br>certainly not during the analysis phase. Maybe during the undo phase, you can start to get a</p>
+<p>520<br>00:54:13,980 –&gt; 00:54:18,380<br>little crazier, but maybe even not there. You have to acquire the appropriate logs to lock the pages</p>
+<p>521<br>00:54:18,380 –&gt; 00:54:23,260<br>out into the dirty page table and not have anyone do anything with that. That’s a quick answer.</p>
+<p>522<br>00:54:23,260 –&gt; 00:54:28,620<br>Doesn’t make sense after you look at the video on Zoom, come talk to me during my office hours.</p>
+<p>523<br>00:54:28,620 –&gt; 00:54:31,900<br>So there are certain points where you can start to admit transactions even before the recovery is</p>
+<p>524<br>00:54:31,900 –&gt; 00:54:41,020<br>completely done. But ignore that if you didn’t understand it. Okay. So last type of log record,</p>
+<p>525<br>00:54:41,820 –&gt; 00:54:47,180<br>the checkpoint log records are coming, but that you already kind of know is the compensating log</p>
+<p>526<br>00:54:47,180 –&gt; 00:54:53,100<br>record. And it has the last lesson that we need, which is the undo next lesson. Again, it’s a</p>
+<p>527<br>00:54:53,099 –&gt; 00:55:01,339<br>convenience mechanism. An effectory what it says is if we go to the diagram that we have just a</p>
+<p>528<br>00:55:01,339 –&gt; 00:55:09,500<br>little a few slides ago. Here, as you can see, imagine I am CLR3, which is undying the update to</p>
+<p>529<br>00:55:10,299 –&gt; 00:55:14,860<br>the update third update that happened in this transaction. And let’s say I crash here.</p>
+<p>530<br>00:55:15,980 –&gt; 00:55:22,539<br>I want to I will start by reading the end of the log and imagine CLR3 made it to this, to the log</p>
+<p>531<br>00:55:23,340 –&gt; 00:55:27,980<br>disc. This pointer simply helps me find you too fast. The next thing I need to undo.</p>
+<p>532<br>00:55:27,980 –&gt; 00:55:33,659<br>Otherwise, I have to follow this chain and imagine if I were over here, because I’m the second undo,</p>
+<p>533<br>00:55:33,659 –&gt; 00:55:38,699<br>I have to follow this chain counting how many CLRs I need. So it’s one, and I have to skip that many</p>
+<p>534<br>00:55:38,699 –&gt; 00:55:44,460<br>to get to the next one. But CLR2 directly tells me that it’s the next one to do. So again, it is not</p>
+<p>535<br>00:55:45,179 –&gt; 00:55:50,380<br>important, but it helps with all of these things, including and especially when you’re trying to</p>
+<p>536<br>00:55:50,380 –&gt; 00:55:55,420<br>recover from during a crash. And by the way, that sounds like a made-up scenario, but it’s extremely</p>
+<p>537<br>00:55:55,420 –&gt; 00:55:59,660<br>common because sometimes many times when something fails, the likelihood of that failure happening</p>
+<p>538<br>00:55:59,660 –&gt; 00:56:04,380<br>again is pretty high. Especially if the failure happened because the disc went bad. Once it starts</p>
+<p>539<br>00:56:04,380 –&gt; 00:56:11,900<br>to go bad, the second failure probably comes pretty fast. So it’s again a convenient stop to go find</p>
+<p>540<br>00:56:11,900 –&gt; 00:56:18,059<br>these pointers back so that you know where to pick up work from. All right, so if you understand</p>
+<p>541<br>00:56:18,059 –&gt; 00:56:22,059<br>the diagram, then the rest of it is pretty straightforward. So let’s just go through what the</p>
+<p>542<br>00:56:22,059 –&gt; 00:56:28,539<br>example looks like as we create these CLRs. So we’ll start. In this case, we have transaction T1.</p>
+<p>543<br>00:56:28,539 –&gt; 00:56:35,259<br>We’ll create, we are trying to abort it. So we will create a CLR, just given it a type CLR,</p>
+<p>544<br>00:56:35,259 –&gt; 00:56:40,699<br>and then it will have the before and after values, right? So that CLR is for that update, the last</p>
+<p>545<br>00:56:40,699 –&gt; 00:56:47,179<br>update that happened. And basically the before after values are essentially cross of what the</p>
+<p>546<br>00:56:47,179 –&gt; 00:56:55,500<br>update log record was. Okay? So we will, we will basically do that. And then this is the chain that</p>
+<p>547<br>00:56:55,500 –&gt; 00:56:59,819<br>I was talking about pictorially that you just saw again a convenient stop. If you didn’t have the</p>
+<p>548<br>00:56:59,819 –&gt; 00:57:03,659<br>undue next cell lesson, you can still get a correct protocol. But these log chains can be large,</p>
+<p>549<br>00:57:03,659 –&gt; 00:57:08,460<br>right? In a heavy transaction system, for example, many of the in-memory database transaction systems</p>
+<p>550<br>00:57:08,460 –&gt; 00:57:16,379<br>will do hundreds of thousands, maybe millions of transactions per second. So logs can get very large,</p>
+<p>551<br>00:57:16,380 –&gt; 00:57:25,660<br>very fast. Okay? All right. And that’s the picture that we are now familiar with. Okay? So CLRs</p>
+<p>552<br>00:57:25,660 –&gt; 00:57:33,500<br>are these things that will have these two log pointers. All right. So we’ll write the log record</p>
+<p>553<br>00:57:33,500 –&gt; 00:57:41,260<br>when we do the abort. Then we’ll analyze the transactions updates in reverse order. So in the slide</p>
+<p>554<br>00:57:41,340 –&gt; 00:57:47,020<br>as you saw, if I had an update followed by a second update and a third update, we’ll undo the</p>
+<p>555<br>00:57:47,020 –&gt; 00:57:51,980<br>third update first, then the second, then the first. We’ll update in reverse order.</p>
+<p>556<br>00:57:53,340 –&gt; 00:58:00,460<br>Okay? To get the correct result. And sidebar, if you didn’t, don’t understand the next sentence,</p>
+<p>557<br>00:58:00,460 –&gt; 00:58:05,900<br>we’ll just let it be. Why do you have to strictly do in the reverse order? Because it may be that</p>
+<p>558<br>00:58:05,900 –&gt; 00:58:11,900<br>this update and this update were updating overlapping bytes. And if you didn’t update in the exact</p>
+<p>559<br>00:58:11,900 –&gt; 00:58:16,539<br>reverse order, you won’t reconstruct the world as of before. And if you didn’t get that comment,</p>
+<p>560<br>00:58:16,539 –&gt; 00:58:19,660<br>let it be because it’s going to be a 30-minute sidebar. Yep, question.</p>
+<p>561<br>00:58:22,059 –&gt; 00:58:27,900<br>What is that? The prevalescent is pointing to the previous log record that was created by that</p>
+<p>562<br>00:58:27,900 –&gt; 00:58:35,900<br>transaction. So for update log record 2, or if you see, in this example, the prevalescent is 11 saying</p>
+<p>563<br>00:58:35,900 –&gt; 00:58:42,940<br>I’m CLR1 and that was my previous log record in transaction T1, the whole bunch of other log records</p>
+<p>564<br>00:58:42,940 –&gt; 00:58:48,460<br>in between from 11 to 26. It’s just reconstructing my chain of log records for me. Others have to</p>
+<p>565<br>00:58:48,460 –&gt; 00:58:52,059<br>reverse troubles back this log all the time, which is very expensive.</p>
+<p>566<br>00:58:58,780 –&gt; 00:59:05,740<br>Yeah, why do we need undue backs next to a lesson? So imagine I’m at CLR2 and that’s where I pick up</p>
+<p>567<br>00:59:05,740 –&gt; 00:59:10,940<br>because you know maybe the transaction was partially aborted and system crashed. So if I’m at CLR2,</p>
+<p>568<br>00:59:10,940 –&gt; 00:59:19,420<br>now I need to find U1 to go apply CLR1. I could do that by chasing previous a lessons, but</p>
+<p>569<br>00:59:19,420 –&gt; 00:59:23,740<br>imagine instead of three updates, there were a million updates in this transaction. I love a long</p>
+<p>570<br>00:59:23,739 –&gt; 00:59:29,659<br>link list to traverse on disk. That’ll be very slow. These link list are being traversed on disk.</p>
+<p>571<br>00:59:30,379 –&gt; 00:59:36,139<br>So this just gives me a fast pointer to get there. So it’s an efficiency stuff not essential</p>
+<p>572<br>00:59:37,099 –&gt; 00:59:38,379<br>optimization. Yep.</p>
+<p>573<br>00:59:41,019 –&gt; 00:59:45,579<br>Are this CLR and to the restoring an actual operation that undoes something?</p>
+<p>574<br>00:59:45,579 –&gt; 00:59:50,859<br>Yeah, no, no, this is a CLR record. So it will say here’s my before and after image,</p>
+<p>575<br>00:59:50,860 –&gt; 00:59:55,900<br>very much like you have your update stuff. So it will basically have the same thing as an update</p>
+<p>576<br>00:59:55,900 –&gt; 01:00:05,099<br>log record has. Yeah, sorry. Because it is a special type called CLR, which is have to be</p>
+<p>577<br>01:00:05,099 –&gt; 01:00:13,500<br>treated differently when you’re dealing with the recovery protocol. It’s semantically like an update</p>
+<p>578<br>01:00:13,500 –&gt; 01:00:22,059<br>log record, except it’s saying I am an undo. So because you will undo, when you start, let’s say I’m</p>
+<p>579<br>01:00:22,619 –&gt; 01:00:28,619<br>take this example, right? You don’t want to you don’t want to undo an undo, which also you can do,</p>
+<p>580<br>01:00:28,619 –&gt; 01:00:33,099<br>but essentially you don’t want to undo an undo unnecessarily, right? It’s the better answer.</p>
+<p>581<br>01:00:33,099 –&gt; 01:00:38,300<br>So here is the update log record. I’m going to undo that and I’m going to keep track of that.</p>
+<p>582<br>01:00:38,300 –&gt; 01:00:43,019<br>For all purpose, it is similar to that, except this will also have that undo next lesson.</p>
+<p>583<br>01:00:43,019 –&gt; 01:00:49,820<br>And it will also have that only the CLR log records are going to have this extra piece of</p>
+<p>584<br>01:00:49,820 –&gt; 01:00:56,380<br>information. All log records don’t have that. So CLR is a little bit bigger. And right now in the</p>
+<p>585<br>01:00:56,380 –&gt; 01:01:00,940<br>diagram, it feels like all log records, including bigger than comment are the same size, but log files</p>
+<p>586<br>01:01:00,940 –&gt; 01:01:05,739<br>are usually variable length records and you won’t unnecessarily waste fields because you’re trying to</p>
+<p>587<br>01:01:05,739 –&gt; 01:01:12,779<br>be efficient with the log record size. Okay. All right. So now let’s get to the checkpoints.</p>
+<p>588<br>01:01:13,899 –&gt; 01:01:17,579<br>We’ll start with a very simple checkpoint. As I said at the beginning of the lecture,</p>
+<p>589<br>01:01:17,579 –&gt; 01:01:23,099<br>the checkpoints purpose is to tell the master log record tells you where to start the recovery</p>
+<p>590<br>01:01:23,099 –&gt; 01:01:29,579<br>process from. So it’s to limit the amount of work that you have to do. So the simplest way to do</p>
+<p>591<br>01:01:29,579 –&gt; 01:01:35,819<br>the checkpoint, that algorithm, I know that, but just introducing the idea is to say, all right,</p>
+<p>592<br>01:01:36,380 –&gt; 01:01:40,779<br>I’ve got a million transactions running in the system right now. I’m going to stop any new</p>
+<p>593<br>01:01:40,779 –&gt; 01:01:45,340<br>transactions from coming in. I’m going to drain out all these transactions. Let them finish.</p>
+<p>594<br>01:01:45,340 –&gt; 01:01:50,059<br>Right. So drain out. Let them finish. It’ll create their log records, they’ll get flush, whatever</p>
+<p>595<br>01:01:50,059 –&gt; 01:01:56,380<br>they need to flush out to disk. And then I have a state of the world. What I’ll do at that point</p>
+<p>596<br>01:01:56,380 –&gt; 01:02:01,180<br>is I can take all the dirty pages that are in the buffer pool. I’ve stopped everyone right from</p>
+<p>597<br>01:02:01,180 –&gt; 01:02:09,900<br>running. Flush it out to disk. So everything that is committed is all on disk. Everything is clean.</p>
+<p>598<br>01:02:09,900 –&gt; 01:02:15,019<br>Nothing too undue. Nothing too worry about. I’ve got a clean snapshot of a database that is correct</p>
+<p>599<br>01:02:15,019 –&gt; 01:02:20,860<br>effectively. But what the challenge with that is if I’ve got a buffer pool that’s a million pages,</p>
+<p>600<br>01:02:20,860 –&gt; 01:02:25,500<br>it’ll take a, you know, writing a million pages out. And sometimes you might have buffer pools that</p>
+<p>601<br>01:02:25,500 –&gt; 01:02:30,380<br>are even larger than that because you have terabyte memories. You will have stopped the world for</p>
+<p>602<br>01:02:30,380 –&gt; 01:02:34,300<br>a very long time. So there was a question that was asked about like when can transactions start to</p>
+<p>603<br>01:02:34,300 –&gt; 01:02:38,860<br>run? You don’t want to check point, which is an efficiency thing to stop the world for a long time.</p>
+<p>604<br>01:02:38,860 –&gt; 01:02:46,219<br>Could be hours. All right. So the other way you can do, which is also a bad protocol, is to say,</p>
+<p>605<br>01:02:46,219 –&gt; 01:02:51,900<br>I’ve got, let’s say three pages in memory and transaction that is running is updating page three</p>
+<p>606<br>01:02:51,900 –&gt; 01:02:58,780<br>and will eventually go and update page one. What I’ll do is I will not stop everything as we were</p>
+<p>607<br>01:02:58,780 –&gt; 01:03:05,740<br>doing before, but I will pause everything. I don’t have to do the draining business, right? But I’ll</p>
+<p>608<br>01:03:05,740 –&gt; 01:03:10,380<br>pause everything and then either checkpoint record is just going to go through all the pages is one to</p>
+<p>609<br>01:03:10,380 –&gt; 01:03:15,099<br>three. Usually you’ll go through it in the sequential order, flush them out to disk. But then once my</p>
+<p>610<br>01:03:15,099 –&gt; 01:03:20,139<br>checkpoint is done, transaction T1 comes in and updates page one. Effectively what you have on disk</p>
+<p>611<br>01:03:20,139 –&gt; 01:03:25,579<br>is not a stable snapshot. It has got partially committed changes. So it’s not as clean. Your recovery</p>
+<p>612<br>01:03:25,579 –&gt; 01:03:30,619<br>protocol is still complicated, but you pause for a little amount of time. Little better, but still</p>
+<p>613<br>01:03:30,619 –&gt; 01:03:35,420<br>pretty bad. We’re going to do something that’s going to make the recovery protocol a little bit more</p>
+<p>614<br>01:03:35,420 –&gt; 01:03:41,099<br>complicated, but we’ll make checkpointing a lot faster. So to do that, we’re going to introduce</p>
+<p>615<br>01:03:41,099 –&gt; 01:03:46,779<br>the final two data structures, which is an active transaction table and a dirty page table.</p>
+<p>616<br>01:03:46,940 –&gt; 01:03:56,620<br>Every time a new transaction comes into the system, we’re going to create its entry in a table that</p>
+<p>617<br>01:03:56,620 –&gt; 01:04:02,140<br>is called an active transaction table. We’ll just say this is the transaction ID that was assigned to</p>
+<p>618<br>01:04:02,140 –&gt; 01:04:08,140<br>you. That’s a different number, right, from the log sequence number. Your status at this point,</p>
+<p>619<br>01:04:08,140 –&gt; 01:04:15,340<br>you’re active or you could have committed a botted or ended. And the last lesson that you grab as a</p>
+<p>620<br>01:04:15,340 –&gt; 01:04:20,860<br>transaction to do some change. Initially that field is empty. And then the transaction status could</p>
+<p>621<br>01:04:20,860 –&gt; 01:04:29,740<br>be I’m running, completed or I need to be undone. The dirty page table is going to keep track of</p>
+<p>622<br>01:04:29,740 –&gt; 01:04:36,780<br>every page in the buffer pool that has been dirty, but whose changes have not been flushed out to</p>
+<p>623<br>01:04:36,780 –&gt; 01:04:41,340<br>disk. And you can see how it would be pretty easy to keep track of this information in the buffer</p>
+<p>624<br>01:04:41,340 –&gt; 01:04:48,220<br>pool manager that you build. And that will keep track in the dirty page table of recalesson,</p>
+<p>625<br>01:04:49,500 –&gt; 01:04:56,380<br>which is the log record that first calls that entry to be dirty. And effectively that recalesson</p>
+<p>626<br>01:04:56,380 –&gt; 01:05:02,620<br>will be kept over there. And when you flush the page out, you will add it to that page’s recalesson.</p>
+<p>627<br>01:05:02,620 –&gt; 01:05:06,300<br>Like we talked about, you can update it at that point, which is usually what you would end up doing.</p>
+<p>628<br>01:05:07,260 –&gt; 01:05:13,019<br>So now we have a slightly better checkpoint where here’s the log record on the right hand side.</p>
+<p>629<br>01:05:13,019 –&gt; 01:05:17,100<br>As you can see, there’s a bunch of big ins and comets and there’s a checkpoint log record that is</p>
+<p>630<br>01:05:17,100 –&gt; 01:05:23,340<br>created. Now this checkpoint log record is going to have copies of that ATT and DPT</p>
+<p>631<br>01:05:23,980 –&gt; 01:05:30,220<br>as part of its log record. So that log record is big. Imagine I have a million active transaction</p>
+<p>632<br>01:05:30,219 –&gt; 01:05:36,939<br>that ATT table is a million entries long. So it could be megabytes in size. The dirty page table</p>
+<p>633<br>01:05:36,939 –&gt; 01:05:41,019<br>could be pretty large too. If I’ve got a very large buffer pool and everything is dirty,</p>
+<p>634<br>01:05:41,019 –&gt; 01:05:48,379<br>that could be megabytes, hundreds of megabytes maybe even more. But what I’ll do is I’ll have in</p>
+<p>635<br>01:05:48,379 –&gt; 01:05:53,980<br>that checkpoint record my ATT and DPT. So in this case, let’s assume there was T1 and T2.</p>
+<p>636<br>01:05:54,940 –&gt; 01:06:01,099<br>At the first checkpoint, assuming P11 was plus to this, in my DPT, what is only left when I’m doing</p>
+<p>637<br>01:06:01,099 –&gt; 01:06:06,539<br>the checkpoint is 22. So it’s only what’s in the DPT, which I’m maintaining is what will get stored.</p>
+<p>638<br>01:06:07,179 –&gt; 01:06:12,699<br>And I’ll keep creating these checkpoint periodically based upon some criteria. Maybe it’s like</p>
+<p>639<br>01:06:12,699 –&gt; 01:06:18,780<br>every five minutes. If I really want recovery to be fast. And essentially, whatever is active in</p>
+<p>640<br>01:06:18,860 –&gt; 01:06:24,220<br>those tables will be what we’ll go create. So no real rocket science here. The magic is going to</p>
+<p>641<br>01:06:24,220 –&gt; 01:06:30,380<br>start coming in a little bit. Okay, so the next step is what people end up really doing. And that is</p>
+<p>642<br>01:06:30,380 –&gt; 01:06:36,540<br>called a fuzzy checkpoint. So the previous technique that I told you was much better than stopping the</p>
+<p>643<br>01:06:36,540 –&gt; 01:06:42,540<br>whole world and draining all the transactions. But it still required us to grab that dirty page table</p>
+<p>644<br>01:06:42,779 –&gt; 01:06:49,820<br>and other table and basically do all of that work. We’re going to optimize that a little bit and say</p>
+<p>645<br>01:06:50,619 –&gt; 01:06:55,900<br>because that checkpoint, when it started, it will basically copy all of that stuff, write all of</p>
+<p>646<br>01:06:55,900 –&gt; 01:07:02,380<br>that out to disk and then be done. But that disk I was going to be super expensive. So what if we</p>
+<p>647<br>01:07:02,380 –&gt; 01:07:06,380<br>could do something really simple, which is to say, I need to pause, but I’ll pause for a very</p>
+<p>648<br>01:07:06,380 –&gt; 01:07:12,700<br>little amount of time. I’ve got a hundred megabyte and a one gigabyte ATT and DPT respectively.</p>
+<p>649<br>01:07:12,700 –&gt; 01:07:17,340<br>So I’ll latch both those structures for a short amount of time, make copies of that in memory.</p>
+<p>650<br>01:07:19,099 –&gt; 01:07:22,860<br>And just while doing that, and copying memory is much faster than writing to disk, right?</p>
+<p>651<br>01:07:22,860 –&gt; 01:07:28,140<br>Autos of magnitude. So yeah, I’ll stop the world, but for a very little amount of time, I will</p>
+<p>652<br>01:07:28,780 –&gt; 01:07:34,300<br>then start writing that to disk in a separate checkpoint record. So when I start my checkpoint,</p>
+<p>653<br>01:07:34,300 –&gt; 01:07:39,740<br>I’ll grab the big and checkpoint record, write that to the log buffer pool. Don’t have to flush it.</p>
+<p>654<br>01:07:41,580 –&gt; 01:07:49,180<br>I’ll make copies, then prepare my commit log record, which is big. But after my big and commit log</p>
+<p>655<br>01:07:49,180 –&gt; 01:07:53,500<br>record, I’ve unlatched both the ATT and DPT. I just got a consistent snapshot of both of those.</p>
+<p>656<br>01:07:54,060 –&gt; 01:07:58,539<br>Other transactions can keep making changes to it and then eventually I will write, I’ll get a chance</p>
+<p>657<br>01:07:58,539 –&gt; 01:08:06,139<br>to write my commit, checkpoint end log record, which is this massive log record with all this</p>
+<p>658<br>01:08:06,139 –&gt; 01:08:12,300<br>information. None of this has to be flushed to disk by the way. You may want to flush the checkpoint</p>
+<p>659<br>01:08:12,300 –&gt; 01:08:16,539<br>log record to disk for efficiency to really get that recovery guarantee. That’s typically what</p>
+<p>660<br>01:08:16,539 –&gt; 01:08:23,100<br>is done. The end checkpoint log record is often flushed to disk. And if you did, if it didn’t make it</p>
+<p>661<br>01:08:23,100 –&gt; 01:08:29,100<br>to disk, you’ll just have to start recovery from way further back. So that’s what we’ll do. So if you</p>
+<p>662<br>01:08:29,100 –&gt; 01:08:35,020<br>look at this example, we’ll start. And you can see now there’s a big and checkpoint log record,</p>
+<p>663<br>01:08:35,020 –&gt; 01:08:41,180<br>which is where those copies will only pause for that short amount of time to make that copy.</p>
+<p>664<br>01:08:41,180 –&gt; 01:08:46,940<br>And then the IO disk IO for this or preparing that log record, even preparing that log record may</p>
+<p>665<br>01:08:46,939 –&gt; 01:08:58,139<br>take you a bunch of time. The checkpoint is correct as of this time point in the LSN sequence number,</p>
+<p>666<br>01:08:58,139 –&gt; 01:09:02,859<br>except the information for this is coming late. So all that we did is split that work into two parts</p>
+<p>667<br>01:09:02,859 –&gt; 01:09:08,139<br>and allow the checkpointing process to be more efficient and block the world for as little time as we can.</p>
+<p>668<br>01:09:09,339 –&gt; 01:09:13,259<br>And there are things you can do to block it for even less because if I’ve got a million entries in</p>
+<p>669<br>01:09:13,260 –&gt; 01:09:18,539<br>the buffer pool, even doing that, you can latch and pieces in portions of it and have everyone</p>
+<p>670<br>01:09:18,539 –&gt; 01:09:23,820<br>going the right direction, but again, there are optimizations to make this even better and to stop</p>
+<p>671<br>01:09:23,820 –&gt; 01:09:28,619<br>the world for even less amount of time. But already we’ve gotten a lot better from where we are.</p>
+<p>672<br>01:09:28,619 –&gt; 01:09:32,940<br>And by and large, this fuzzy checkpoint gives you the biggest efficiency from the other</p>
+<p>673<br>01:09:32,940 –&gt; 01:09:42,300<br>simpler types of checkpoints that we talked about. And then we will record the checkpoint in the master</p>
+<p>674<br>01:09:42,300 –&gt; 01:09:47,100<br>record, you’re going to record the begin checkpoint log number because that’s really where the</p>
+<p>675<br>01:09:47,100 –&gt; 01:09:53,340<br>checkpoint happened. So we’ll flush that, flush these things out to this typically, the end checkpoint,</p>
+<p>676<br>01:09:53,340 –&gt; 01:09:57,420<br>but record in the master the begin checkpoints location because that’s from where the recovery needs</p>
+<p>677<br>01:09:57,420 –&gt; 01:10:05,420<br>to start. All right, so now, and this is basically just saying the ATT and DPT are constructed</p>
+<p>678<br>01:10:05,739 –&gt; 01:10:11,579<br>based on that. So if you see here in ATT, it is T2 because T1 ended, so it didn’t need to be in the</p>
+<p>679<br>01:10:11,579 –&gt; 01:10:18,380<br>ATT, right? That could have been removed from the ATT in the ATT that we create when you see the end</p>
+<p>680<br>01:10:18,380 –&gt; 01:10:26,060<br>is when you can remove it from the ATT table. And T2 is in the ATT in that end checkpoint log record.</p>
+<p>681<br>01:10:27,260 –&gt; 01:10:31,500<br>Even if it had committed, it doesn’t have a commit here, but if it had a commit here, but the end</p>
+<p>682<br>01:10:31,500 –&gt; 01:10:36,460<br>wasn’t there, it would still be in the ATT. So the end log record is just for ATT management.</p>
+<p>683<br>01:10:36,460 –&gt; 01:10:40,939<br>It’s to remove it from the ATT after which you don’t have to worry about it. And again,</p>
+<p>684<br>01:10:40,939 –&gt; 01:10:45,260<br>that details as to why you do that. We are not going to worry excessively about that in this class,</p>
+<p>685<br>01:10:45,260 –&gt; 01:10:52,539<br>beyond just that statement of M8. Okay? There are no answers even there. All right. So we have to get</p>
+<p>686<br>01:10:52,539 –&gt; 01:10:57,420<br>to the recovery protocol. It’s pretty fast now, even though it’s only 10 minutes left because if</p>
+<p>687<br>01:10:57,420 –&gt; 01:11:03,260<br>you understood everything so far, it’s really simple and that’s all the machinery we needed to make</p>
+<p>688<br>01:11:03,260 –&gt; 01:11:07,899<br>this aeries work really well. We already talked about their three phases, so let’s just get to it.</p>
+<p>689<br>01:11:08,619 –&gt; 01:11:14,220<br>We’ll start. So we’ve got all these log records. We followed right-hand logging protocol. We’ve got</p>
+<p>690<br>01:11:14,220 –&gt; 01:11:18,619<br>these different types of log types and we’ve got checkpoints and we’re going to start by recovering</p>
+<p>691<br>01:11:18,619 –&gt; 01:11:25,020<br>from a crash. So at the crash point, we will go and consult the master log record to figure out where</p>
+<p>692<br>01:11:25,020 –&gt; 01:11:30,060<br>the checkpoint log record is. If one doesn’t exist, we’ll start from the fullest log record in the file.</p>
+<p>693<br>01:11:31,020 –&gt; 01:11:37,660<br>Okay? Then we will go and analyze the system from top to bottom from that start checkpoint</p>
+<p>694<br>01:11:37,660 –&gt; 01:11:42,860<br>all the way up to the last log record we have to reconstruct the ATT and DPT. We’ll see that in</p>
+<p>695<br>01:11:42,860 –&gt; 01:11:49,660<br>our next slide. Then we will find from the dirty page table that we reconstructed, which is the</p>
+<p>696<br>01:11:49,659 –&gt; 01:11:57,739<br>smallest recalism, which is the largest log record that costs some page potentially to be dirty</p>
+<p>697<br>01:11:57,739 –&gt; 01:12:03,500<br>in the buffer pool that we have to reapply changes to. We’ll reapply all of those changes even though</p>
+<p>698<br>01:12:03,500 –&gt; 01:12:08,059<br>there might be stuff here that we don’t need to apply to keep the algorithm simple. As you revisit</p>
+<p>699<br>01:12:08,059 –&gt; 01:12:11,899<br>this lecture, you’ll say, I could have optimized something here to keep it simple. We are going to</p>
+<p>700<br>01:12:11,899 –&gt; 01:12:16,220<br>reapply in the whole world as that. Try to optimize the hell out of this your protocol. That’s already</p>
+<p>701<br>01:12:16,220 –&gt; 01:12:20,380<br>complicated. We’ll get so complicated. You’re very likely to have a subtle bug that’s going to</p>
+<p>702<br>01:12:20,380 –&gt; 01:12:25,980<br>break your system. So don’t muck with it. Just reapply. Maybe you’ll do a little extra work. It’s worth it.</p>
+<p>703<br>01:12:25,980 –&gt; 01:12:30,220<br>Just take more frequent checkpoints that will help flush pages from the buffer pool that will help</p>
+<p>704<br>01:12:30,220 –&gt; 01:12:37,180<br>reduce all this work. Then we’ll do the undo, which is going to go backwards and that’s going to go</p>
+<p>705<br>01:12:37,180 –&gt; 01:12:42,539<br>up to the oldest log record of a transaction that was active and needs to be aborted at the time of</p>
+<p>706<br>01:12:42,539 –&gt; 01:12:49,180<br>the crash. So let’s go through each of these. Analysis space is going to, I’ll just explain this with</p>
+<p>707<br>01:12:49,180 –&gt; 01:12:55,979<br>a picture. Then I’ll come back to that slide. Analysis space is going to start with, let’s say we have</p>
+<p>708<br>01:12:56,619 –&gt; 01:13:03,260<br>checkpoint record and the end checkpoint log record. We’ll start to reconstruct the ATT and DPT.</p>
+<p>709<br>01:13:03,260 –&gt; 01:13:07,500<br>We’ll start here. Just a checkpoint record. That’s where the master record points us, right?</p>
+<p>710<br>01:13:08,140 –&gt; 01:13:12,380<br>Then we’ll come here and say, oh, this is the first time I’m seeing transaction T96.</p>
+<p>711<br>01:13:13,420 –&gt; 01:13:18,220<br>I’m in the recovery protocol. My ATT has been destroyed. It’s been lost because it was in DRAB</p>
+<p>712<br>01:13:18,220 –&gt; 01:13:23,739<br>and reconstructing it. So I’ll say, I know what must have happened. The transaction table at that point</p>
+<p>713<br>01:13:23,739 –&gt; 01:13:29,020<br>must have T96. But at this point, I don’t know what happens to T96. Maybe I’ll see a commit later.</p>
+<p>714<br>01:13:29,020 –&gt; 01:13:34,060<br>Maybe I won’t. Right now, I’m just going to say I don’t know what the status is. I’m going to mark</p>
+<p>715<br>01:13:34,140 –&gt; 01:13:41,100<br>you as a U, which means you need to be under. Then I also noticed that page 33 is modified.</p>
+<p>716<br>01:13:41,100 –&gt; 01:13:46,620<br>It must have existed in the dirty page table. Now I will record the record lesson, which is the</p>
+<p>717<br>01:13:47,900 –&gt; 01:13:53,740<br>log record 20. Remember that would also be in the page itself, but we are not fetching the page.</p>
+<p>718<br>01:13:53,740 –&gt; 01:13:58,620<br>We are just looking at the log record right now. Only looking at the logs, we are not fetching the page yet.</p>
+<p>719<br>01:13:59,500 –&gt; 01:14:06,059<br>We’ll say, I’m going to guess you were about 20. You were exactly 20. That’s fine. I could be</p>
+<p>720<br>01:14:06,059 –&gt; 01:14:13,340<br>conservative, but I’ll be correct. Then keep moving forward. I’ll hit the checkpoint log record.</p>
+<p>721<br>01:14:13,340 –&gt; 01:14:19,739<br>That’s what my ATT looked like. You’ll say, oh, there’s a 97 there. I’m going to add you here.</p>
+<p>722<br>01:14:20,300 –&gt; 01:14:25,260<br>I’m going to mark you as a U. Then I’ll also notice the dirty page table, which is part of the</p>
+<p>723<br>01:14:25,260 –&gt; 01:14:33,420<br>log record. I’ll update my dirty page table to have page 20. I’m assuming this 0.8 came in from</p>
+<p>724<br>01:14:33,420 –&gt; 01:14:41,340<br>this DPT. I couldn’t fit it all in this slide. Then I get to this summit log record, which tells me</p>
+<p>725<br>01:14:41,340 –&gt; 01:14:49,180<br>that 96 has to be committed. It gets a C level. Then we keep going up to the transaction.</p>
+<p>726<br>01:14:49,180 –&gt; 01:14:55,100<br>It says, oh, I can actually remove 96 from the transaction table. Don’t need to worry about it,</p>
+<p>727<br>01:14:55,100 –&gt; 01:15:00,140<br>but pages it may have changes still here. That’s okay. Transaction table just needs to,</p>
+<p>728<br>01:15:00,140 –&gt; 01:15:03,659<br>ATT just needs to keep track of the transactions that I still need to worry about.</p>
+<p>729<br>01:15:06,220 –&gt; 01:15:12,780<br>That’s all the analysis based on. It’s going to reconstruct the ATT and DPT.</p>
+<p>730<br>01:15:13,739 –&gt; 01:15:18,619<br>Again, if this phrase doesn’t make sense, conservatively, it might be overly conservative,</p>
+<p>731<br>01:15:18,619 –&gt; 01:15:21,259<br>but it’ll be correct as of the time of the crash.</p>
+<p>732<br>01:15:21,260 –&gt; 01:15:28,460<br>So, can that definitely be modified or could have modified?</p>
+<p>733<br>01:15:34,860 –&gt; 01:15:41,980<br>Transaction 96 may have modified P33. That doesn’t matter because P33 changes,</p>
+<p>734<br>01:15:41,980 –&gt; 01:15:46,380<br>we will flush to this. So just wait for the redo phase. The ATT is simply saying,</p>
+<p>735<br>01:15:46,380 –&gt; 01:15:53,180<br>what transactions do I need to worry about? It doesn’t say that undo transaction 96 is work.</p>
+<p>736<br>01:15:53,180 –&gt; 01:15:57,180<br>Transactions 96 work will show up in the redo phase. So just hold on to that for a minute.</p>
+<p>737<br>01:15:57,180 –&gt; 01:16:00,699<br>It’s just saying what transactions do I need to worry about further? It is not changing the</p>
+<p>738<br>01:16:00,699 –&gt; 01:16:07,340<br>commit status of that transaction. All right, redo phase best to go through it with an example,</p>
+<p>739<br>01:16:07,340 –&gt; 01:16:14,060<br>and then I’ll come back to it if it’s not clear. So here is, maybe I actually might need to do this</p>
+<p>740<br>01:16:15,020 –&gt; 01:16:18,780<br>part. This part is important. So the redo phase, we are going to reapply the log records from</p>
+<p>741<br>01:16:18,780 –&gt; 01:16:27,580<br>start to the end, and the critical part is that as I do need this part here. We are going to</p>
+<p>742<br>01:16:27,580 –&gt; 01:16:33,420<br>reapply all the history, and you saw this dirty page table that we have here, which is 33 and</p>
+<p>743<br>01:16:33,420 –&gt; 01:16:42,220<br>page 20, and it tells me the log records here are 20 and 08. What does that 08 tell you? That’s</p>
+<p>744<br>01:16:42,220 –&gt; 01:16:51,659<br>a recalessant saying page 20, 08 was the first log record after the checkpoint record that</p>
+<p>745<br>01:16:51,659 –&gt; 01:16:57,420<br>messed it up, that made some change to it. That may not or may have made it to this, but everything</p>
+<p>746<br>01:16:57,420 –&gt; 01:17:03,740<br>before 08 is on this, I know that for sure. Now, 08 may also be on this, and if 10 was a log</p>
+<p>747<br>01:17:03,740 –&gt; 01:17:08,140<br>record for that page that may also be on this, I don’t know that till I find the page.</p>
+<p>748<br>01:17:08,700 –&gt; 01:17:13,020<br>But it tells me I don’t need to go any further than the smallest of these two numbers,</p>
+<p>749<br>01:17:13,020 –&gt; 01:17:17,100<br>there could be a large number of pages in my log record to reapply all the changes.</p>
+<p>750<br>01:17:17,740 –&gt; 01:17:23,180<br>And imagine page 20 had 8 applied to it. When I bring the page up, I will look at the page</p>
+<p>751<br>01:17:23,180 –&gt; 01:17:29,420<br>LSN, and if it says I am 10, I will not apply the 8 log record. I’ll just throw it away.</p>
+<p>752<br>01:17:29,900 –&gt; 01:17:35,579<br>But at this point in the analysis phase, all I’ve done is collected that piece of information,</p>
+<p>753<br>01:17:35,659 –&gt; 01:17:40,699<br>but that 30 page table tells me I do not need to go any further back than the</p>
+<p>754<br>01:17:40,699 –&gt; 01:17:46,779<br>min of those numbers in the 30 page table, in this case min of 28, and from that I’ll just</p>
+<p>755<br>01:17:46,779 –&gt; 01:17:50,699<br>blindly start reapplying all of the log records to get my redo phase.</p>
+<p>756<br>01:17:52,619 –&gt; 01:17:59,340<br>And in this redo phase, we will do the following, which is apply all these transactions,</p>
+<p>757<br>01:18:00,060 –&gt; 01:18:01,579<br>and whoops.</p>
+<p>758<br>01:18:05,420 –&gt; 01:18:15,020<br>And as we see the update log record, we will see is that page in the dirty page table. So</p>
+<p>759<br>01:18:15,020 –&gt; 01:18:18,699<br>at this point, we are still going through the logs from that 0, 8 in that example,</p>
+<p>760<br>01:18:19,340 –&gt; 01:18:25,180<br>and say, okay, is the page that this log record refers to in the dirty page table? If it is not,</p>
+<p>761<br>01:18:25,659 –&gt; 01:18:31,980<br>its changes are safe. I don’t need to worry about it. If it is, so far we are only reading logs,</p>
+<p>762<br>01:18:32,700 –&gt; 01:18:37,740<br>now I go fetch the page in question, expensive, right? So we’re trying to avoid doing this as much as</p>
+<p>763<br>01:18:37,740 –&gt; 01:18:44,380<br>possible. And then we are going to check, when we bring that log record, we will say,</p>
+<p>764<br>01:18:44,380 –&gt; 01:18:50,619<br>is the affected page, it’s in the dirty page table, but the log records LSN, the log that I’ve</p>
+<p>765<br>01:18:50,699 –&gt; 01:18:56,699<br>just encountered in the redo phase, if it is less than the page, the recollection on the page that</p>
+<p>766<br>01:18:56,699 –&gt; 01:19:02,699<br>I just fetched from disk. So this came to us from the recollection on that page. And this</p>
+<p>767<br>01:19:03,420 –&gt; 01:19:08,619<br>comes from the log record that we are trying to redo, if that is behind it, then I know this has</p>
+<p>768<br>01:19:08,619 –&gt; 01:19:14,859<br>been applied already. Otherwise, I will apply it. Now, I have a modified version of that page in</p>
+<p>769<br>01:19:14,859 –&gt; 01:19:20,140<br>the buffer pool, right? So I’m doing all the work that I do as my transaction was going forward,</p>
+<p>770<br>01:19:20,140 –&gt; 01:19:25,180<br>and I will proceed to go do all of that. So I’ll just explain that with an example, and then I’ll</p>
+<p>771<br>01:19:25,180 –&gt; 01:19:32,940<br>talk about the undo phase. So here, I’ve got this checkpoint log record. I have got this abort.</p>
+<p>772<br>01:19:33,900 –&gt; 01:19:40,780<br>Sorry, I will have to do the undo phase to make that example work. So redo, as we’ll see in a little</p>
+<p>773<br>01:19:40,780 –&gt; 01:19:46,460<br>bit, is going to the analysis phase reconstructed the dirty page table and ATT as of the time of the</p>
+<p>774<br>01:19:46,460 –&gt; 01:19:51,819<br>crash. redo is going to reconstruct the database as of the time of the crash. Now, the last thing we</p>
+<p>775<br>01:19:51,819 –&gt; 01:19:58,300<br>need to do is we need to undo all the transactions that are explicitly aborted. They will have an U</p>
+<p>776<br>01:19:58,300 –&gt; 01:20:03,659<br>in the ATT or transactions that were running at the time of the crash, which will also be a U in the</p>
+<p>777<br>01:20:03,659 –&gt; 01:20:09,100<br>ATT because when we started the analysis phase, every transaction got a U with it. So all the U’s in</p>
+<p>778<br>01:20:09,100 –&gt; 01:20:16,300<br>the ATT now have to be undone. So now, what we’ll do is the transaction table tells us the last log</p>
+<p>779<br>01:20:17,100 –&gt; 01:20:24,060<br>record for each of the transactions that need to be undone. Let’s say it is 9 and 14. We will take</p>
+<p>780<br>01:20:24,060 –&gt; 01:20:32,300<br>the max of those two, which is 14, undo that, and then write a CLR. From that CLR, we’ll say for that</p>
+<p>781<br>01:20:32,300 –&gt; 01:20:38,140<br>transaction that we just undid what is the next update log record we need to undo. Let’s say that</p>
+<p>782<br>01:20:38,140 –&gt; 01:20:45,020<br>is 6. So now, we have 6 and 9. As the next log we need to undo. We’ll do 9. So we can mix and match</p>
+<p>783<br>01:20:45,020 –&gt; 01:20:49,580<br>the log changes from other transactions. Basically, you’re picking the largest number first</p>
+<p>784<br>01:20:51,100 –&gt; 01:20:56,780<br>in this reverse order. And that’s all to allow the safe way so that if two transactions now</p>
+<p>785<br>01:20:56,780 –&gt; 01:21:01,660<br>had changes happening to overlapping bytes of data, you get that correctly. So this reverse thing</p>
+<p>786<br>01:21:01,660 –&gt; 01:21:05,740<br>has to happen by looking at the max transaction number that we have to undo.</p>
+<p>787<br>01:21:06,380 –&gt; 01:21:10,460<br>And you can look at the slide later on to get that idea. Now, let’s go to this example.</p>
+<p>788<br>01:21:11,260 –&gt; 01:21:16,060<br>We’ll start. And I’ll see if Andy wants to redo this for example in the next class. I’ll just take</p>
+<p>789<br>01:21:16,060 –&gt; 01:21:21,659<br>one moment. I know I’m over time. So I’ll stop. But we’ll create that compensating log record for</p>
+<p>790<br>01:21:21,659 –&gt; 01:21:29,100<br>transaction T1. Basically, we’ll undo this update that happened here. And we’ll mark that LSN</p>
+<p>791<br>01:21:29,100 –&gt; 01:21:35,659<br>as 10 saying that’s the next one I want to undo, which basically that was for T2. So we simply end</p>
+<p>792<br>01:21:36,300 –&gt; 01:21:41,899<br>it. And then this is the previous LSN chain. Now we can go and undo the other transaction. And then</p>
+<p>793<br>01:21:41,899 –&gt; 01:21:48,139<br>so on. Okay. So that was just the abort for T2 that happened followed by the changes to T1.</p>
+<p>794<br>01:21:48,139 –&gt; 01:21:53,500<br>Now if I crashed over here, I can come back. So that’s the same thing as before. Imagine I’m doing</p>
+<p>795<br>01:21:53,500 –&gt; 01:21:59,260<br>that undo phase. I’ve crashed over here. I’ve reconstructed my ATT and DPT. So assume that is</p>
+<p>796<br>01:21:59,260 –&gt; 01:22:04,460<br>correct. I have got 50 and 60 as the ones that I need to undo next because that’s what the</p>
+<p>797<br>01:22:04,539 –&gt; 01:22:11,180<br>last LSN is. We’ll take the max, which is 60. Find that log record. Undo that. Write it CLR.</p>
+<p>798<br>01:22:11,819 –&gt; 01:22:18,939<br>Then keep going on until we are done with all of that. And we are done. So basically at the end of</p>
+<p>799<br>01:22:18,939 –&gt; 01:22:23,659<br>this, the nice thing about this is that it crashes even during restart because we are repeating</p>
+<p>800<br>01:22:23,659 –&gt; 01:22:29,819<br>history and redoing everything. Life is going to be safe and it all works out. All right. I know I’m</p>
+<p>801<br>01:22:29,819 –&gt; 01:22:34,219<br>over time. I’ll see if Andy can go through this full example one more time because it would probably</p>
+<p>802<br>01:22:34,219 –&gt; 01:22:39,979<br>make sense to take five minutes in there. I’ll let you read slide 44 and slide 45 as to</p>
+<p>803<br>01:22:39,979 –&gt; 01:22:44,059<br>additional things that you can do for performance improvement because you might have questions related</p>
+<p>804<br>01:22:44,059 –&gt; 01:22:49,979<br>to that. But hopefully you got a decent idea for the mechanisms of what Aries has of log gain</p>
+<p>805<br>01:22:49,979 –&gt; 01:22:56,699<br>following right ahead, logging protocol and having this three phase algorithm. So Andy will start the</p>
+<p>806<br>01:22:56,779 –&gt; 01:23:00,779<br>last three lectures, which is about distributed database. Sorry, we went a little bit over time,</p>
+<p>807<br>01:23:00,779 –&gt; 01:23:11,659<br>but we’ll end this with music and I hope I see you guys around the database corridor.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15445 P21F202320 DatabaseRecovery</div>
+      <div>http://example.com/2025/10/24/CMU15445 P21F202320-DatabaseRecovery/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月24日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P24F202323-DistributedDataWarehouseOLAPDatabases/" title="CMU15445 P24F202323 DistributedDataWarehouseOLAPDatabases">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15445 P24F202323 DistributedDataWarehouseOLAPDatabases</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/24/CMU15445%20P22F202321-IntrotoDistributedDatabases/" title="CMU15445 P22F202321 IntrotoDistributedDatabases">
+                        <span class="hidden-mobile">CMU15445 P22F202321 IntrotoDistributedDatabases</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
