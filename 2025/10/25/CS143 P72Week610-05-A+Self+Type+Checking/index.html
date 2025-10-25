@@ -1,0 +1,713 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,040In this video, we’re going to use what we’ve learned so far about self-type to incorporate 200:00:08,040 –&gt; 00:00:13,839self-type into the type-checking rules for co">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P72Week610 05 A+Self+Type+Checking">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P72Week610-05-A+Self+Type+Checking/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,040In this video, we’re going to use what we’ve learned so far about self-type to incorporate 200:00:08,040 –&gt; 00:00:13,839self-type into the type-checking rules for co">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.410Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.225Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P72Week610 05 A+Self+Type+Checking - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P72Week610 05 A+Self+Type+Checking"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P72Week610 05 A+Self+Type+Checking</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,040<br>In this video, we’re going to use what we’ve learned so far about self-type to incorporate</p>
+<p>2<br>00:00:08,040 –&gt; 00:00:13,839<br>self-type into the type-checking rules for cool.</p>
+<p>3<br>00:00:13,839 –&gt; 00:00:18,240<br>First let’s remind ourselves what the type-checking rules for cool actually prove.</p>
+<p>4<br>00:00:18,240 –&gt; 00:00:23,719<br>So the sentences in the type logic look like this and they prove things of the form that</p>
+<p>5<br>00:00:23,719 –&gt; 00:00:26,080<br>some expression has some type.</p>
+<p>6<br>00:00:26,079 –&gt; 00:00:30,399<br>When they do that under the assumption that object identifiers have some types given</p>
+<p>7<br>00:00:30,399 –&gt; 00:00:36,039<br>by O, methods have signatures given by M, and the enclosing class, the current class</p>
+<p>8<br>00:00:36,039 –&gt; 00:00:40,960<br>in which E sits and in which we’re doing our type-checking is class C.</p>
+<p>9<br>00:00:40,960 –&gt; 00:00:45,759<br>And the whole reason for this additional piece here, we haven’t actually discussed this</p>
+<p>10<br>00:00:45,759 –&gt; 00:00:50,920<br>before, why we needed this C, it is because self-types meaning depends on the enclosing</p>
+<p>11<br>00:00:50,920 –&gt; 00:00:51,920<br>class.</p>
+<p>12<br>00:00:51,920 –&gt; 00:01:01,240<br>So if you recall that we introduced this notation, self-type, sub C to record in what class,</p>
+<p>13<br>00:01:01,240 –&gt; 00:01:06,320<br>a particular occurrence of self-type sits, and this C in the environment is exactly that</p>
+<p>14<br>00:01:06,320 –&gt; 00:01:07,319<br>subscript.</p>
+<p>15<br>00:01:07,319 –&gt; 00:01:08,920<br>It is tracking what class we are in.</p>
+<p>16<br>00:01:08,920 –&gt; 00:01:13,560<br>So when we see occurrence in occurrence of self-type, we know what kind of self-type</p>
+<p>17<br>00:01:13,560 –&gt; 00:01:16,840<br>we’re talking about.</p>
+<p>18<br>00:01:16,840 –&gt; 00:01:20,719<br>So now we’re ready to actually give the type rules that use self-type.</p>
+<p>19<br>00:01:20,719 –&gt; 00:01:25,760<br>And for the most part, this is really easy because the rules just remain the same.</p>
+<p>20<br>00:01:25,760 –&gt; 00:01:29,760<br>That is they look the same, but they are actually a little bit different because they use</p>
+<p>21<br>00:01:29,760 –&gt; 00:01:34,680<br>the new sub-typing and least upper bound operations that we defined before.</p>
+<p>22<br>00:01:34,680 –&gt; 00:01:40,760<br>So for example, here is the rule for assignment, and this looks identical to the rule for</p>
+<p>23<br>00:01:40,760 –&gt; 00:01:44,760<br>assignment that we discussed several videos ago.</p>
+<p>24<br>00:01:44,760 –&gt; 00:01:50,560<br>But notice that this use of sub-typing here is now the extended definition of sub-typing</p>
+<p>25<br>00:01:50,560 –&gt; 00:01:55,400<br>to incorporate self-type, and so now this rule works with self-type as well as with the</p>
+<p>26<br>00:01:55,400 –&gt; 00:01:59,040<br>normal class names.</p>
+<p>27<br>00:01:59,040 –&gt; 00:02:02,880<br>Now there are some rules that have to change in the presence of self-type, and in particular</p>
+<p>28<br>00:02:02,880 –&gt; 00:02:05,600<br>the dispatch rules need to be updated.</p>
+<p>29<br>00:02:05,600 –&gt; 00:02:12,319<br>So here is the old rule for dynamic dispatch, and this rule, this part of the rule actually</p>
+<p>30<br>00:02:12,319 –&gt; 00:02:14,959<br>doesn’t change, it stays the same.</p>
+<p>31<br>00:02:14,959 –&gt; 00:02:18,439<br>But I just want to point out the essential restriction in this rule is that the return</p>
+<p>32<br>00:02:18,439 –&gt; 00:02:21,280<br>type of the method could not be self-type.</p>
+<p>33<br>00:02:21,280 –&gt; 00:02:23,799<br>And that’s actually the place where self-type buys us something.</p>
+<p>34<br>00:02:23,799 –&gt; 00:02:29,079<br>So the whole purpose of having self-type is to have methods whose return type is self-type,</p>
+<p>35<br>00:02:29,079 –&gt; 00:02:32,919<br>because that’s where we actually get the extra expressive power.</p>
+<p>36<br>00:02:32,919 –&gt; 00:02:37,079<br>And now we have to consider the case, now that we have self-type and we’ve done all this</p>
+<p>37<br>00:02:37,079 –&gt; 00:02:40,639<br>work, what if the method’s return type is self-type?</p>
+<p>38<br>00:02:40,639 –&gt; 00:02:42,519<br>How are we going to type check that?</p>
+<p>39<br>00:02:42,519 –&gt; 00:02:44,119<br>Well, here is the rule.</p>
+<p>40<br>00:02:44,119 –&gt; 00:02:50,039<br>So as usual, we type check the expression that we’re dispatching to, that’s E0, and all</p>
+<p>41<br>00:02:50,039 –&gt; 00:02:53,679<br>of the arguments, and we just get their types, and they’re just type checked in the same</p>
+<p>42<br>00:02:53,679 –&gt; 00:02:57,359<br>environment as the entire expression.</p>
+<p>43<br>00:02:57,359 –&gt; 00:03:03,759<br>And now, just like before, we look up in class T0, the type of E0, the method F, and we</p>
+<p>44<br>00:03:03,759 –&gt; 00:03:07,039<br>get its signature.</p>
+<p>45<br>00:03:07,039 –&gt; 00:03:11,599<br>And then we have to check that the arguments conform that every actual argument, E1 through</p>
+<p>46<br>00:03:11,599 –&gt; 00:03:16,680<br>EN, has a type that’s compatible with the corresponding formal parameter in the method</p>
+<p>47<br>00:03:16,680 –&gt; 00:03:17,680<br>signature.</p>
+<p>48<br>00:03:17,680 –&gt; 00:03:22,799<br>And if all of that works out, then we can say that this dispatch is going to have type,</p>
+<p>49<br>00:03:22,799 –&gt; 00:03:25,319<br>oh look, T0.</p>
+<p>50<br>00:03:25,319 –&gt; 00:03:26,599<br>So where did that come from?</p>
+<p>51<br>00:03:26,599 –&gt; 00:03:32,959<br>Well, the return type is self-type, and so the result of this entire dispatch is going</p>
+<p>52<br>00:03:32,960 –&gt; 00:03:34,840<br>to be the type of whatever E0 was.</p>
+<p>53<br>00:03:34,840 –&gt; 00:03:42,520<br>E0 is the self-parameter, whatever type we got for E0, that is a sound static type for</p>
+<p>54<br>00:03:42,520 –&gt; 00:03:45,200<br>the result of the entire expression.</p>
+<p>55<br>00:03:45,200 –&gt; 00:03:54,159<br>So we simply use the type of E0 as the type of the entire dynamic dispatch.</p>
+<p>56<br>00:03:54,159 –&gt; 00:04:01,760<br>Now, recall the four parameters of a function cannot have type, self-type, but the actual</p>
+<p>57<br>00:04:01,759 –&gt; 00:04:06,479<br>arguments can have type, self-type, and the extended sub-typing relationship will handle</p>
+<p>58<br>00:04:06,479 –&gt; 00:04:08,759<br>that case just fine.</p>
+<p>59<br>00:04:08,759 –&gt; 00:04:14,759<br>One interesting detail is that the dispatch expression itself could have a type, self-type.</p>
+<p>60<br>00:04:14,759 –&gt; 00:04:16,319<br>And so what do I mean by that?</p>
+<p>61<br>00:04:16,319 –&gt; 00:04:26,319<br>Well, let’s think about E0, dispatching to method F, and then what happens if E0 has type,</p>
+<p>62<br>00:04:26,319 –&gt; 00:04:27,319<br>self-type?</p>
+<p>63<br>00:04:27,319 –&gt; 00:04:31,879<br>And we can improve that E0 has type, self-type.</p>
+<p>64<br>00:04:31,879 –&gt; 00:04:37,800<br>And the problem here is that we need to look up in the, in the M environment, in the method</p>
+<p>65<br>00:04:37,800 –&gt; 00:04:44,560<br>environment, in some class, the definition of, or the signature of method F. We have to</p>
+<p>66<br>00:04:44,560 –&gt; 00:04:48,319<br>get back that type signature so that we can do the rest of the type checking.</p>
+<p>67<br>00:04:48,319 –&gt; 00:04:53,000<br>And if E0 has type, self-type, normally we use the type of E0 to do that, to do that</p>
+<p>68<br>00:04:53,000 –&gt; 00:04:55,560<br>look up, what type do we use here?</p>
+<p>69<br>00:04:55,560 –&gt; 00:05:00,480<br>Well, if this whole thing is occurring in class C, if we have, if we’re type checking</p>
+<p>70<br>00:05:00,480 –&gt; 00:05:08,120<br>in class C, let me just put the line there, then it’s safe, then this is a self-type sub-C.</p>
+<p>71<br>00:05:08,120 –&gt; 00:05:13,680<br>And as always, it’s safe to replace self-type sub-C by C. And so we’ll just use the class</p>
+<p>72<br>00:05:13,680 –&gt; 00:05:21,560<br>C there, the current class that we are type checking in to look up the method name F.</p>
+<p>73<br>00:05:22,560 –&gt; 00:05:28,680<br>We have to make similar changes to the rule for static dispatch. So here is the original</p>
+<p>74<br>00:05:28,680 –&gt; 00:05:34,079<br>rule for static dispatch. And again, this part of the rule will not change. This is, this</p>
+<p>75<br>00:05:34,079 –&gt; 00:05:42,160<br>handles the case where the return type of the method is not self-type. But if the return</p>
+<p>76<br>00:05:42,160 –&gt; 00:05:46,920<br>type of the method is self-type, then the rule looks a little bit different. So we, once</p>
+<p>77<br>00:05:46,920 –&gt; 00:05:52,280<br>again, we type check the expression that we’re dispatching to and all the arguments in the</p>
+<p>78<br>00:05:52,280 –&gt; 00:05:58,800<br>same environment as that of the entire expression. Oh, we have to check that the class we’re</p>
+<p>79<br>00:05:58,800 –&gt; 00:06:06,120<br>dispatching to, the type T0 is a sub-type of the class, the name in the static dispatch.</p>
+<p>80<br>00:06:06,120 –&gt; 00:06:10,840<br>We have to look up the method. It has to exist in that class that we’re statically dispatching</p>
+<p>81<br>00:06:10,840 –&gt; 00:06:15,600<br>to. So we have to look up in class T, the method F, and get its signature. And then we have</p>
+<p>82<br>00:06:15,600 –&gt; 00:06:20,840<br>to check that the actual arguments conform to the formal parameters of their types, the types</p>
+<p>83<br>00:06:20,840 –&gt; 00:06:25,800<br>of the arguments match the types, the declared types of the formal parameters. And then the</p>
+<p>84<br>00:06:25,800 –&gt; 00:06:31,240<br>only thing that’s kind of curious about this rule is that the result type here is again T0.</p>
+<p>85<br>00:06:31,240 –&gt; 00:06:39,280<br>And why is that right? It could have been a T. It could have been the type to which we</p>
+<p>86<br>00:06:39,279 –&gt; 00:06:46,279<br>statically dispatched. And it’s not because self-type is the type of the self-parameter. And even</p>
+<p>87<br>00:06:46,279 –&gt; 00:06:51,879<br>though we’re dispatching to a method in class T, the self-parameter still has type T0. And we</p>
+<p>88<br>00:06:51,879 –&gt; 00:06:57,679<br>call it T0 is a sub-type of T. So we use the static dispatch to reach a method definition</p>
+<p>89<br>00:06:57,679 –&gt; 00:07:03,599<br>that’s hidden potentially by overwritten methods in the sub-classes. But that doesn’t change</p>
+<p>90<br>00:07:03,599 –&gt; 00:07:08,000<br>the type of the self-parameter. The self-parameter still has type T0, even though we’re running</p>
+<p>91<br>00:07:08,000 –&gt; 00:07:16,639<br>a method in a superclass of T0. There are two new rules for self-type. One involves</p>
+<p>92<br>00:07:16,639 –&gt; 00:07:21,639<br>the self-object. So the self-object has type self-type sub-c. And notice that this is one</p>
+<p>93<br>00:07:21,639 –&gt; 00:07:26,240<br>of those places where we need to know the enclosing class so we know what kind of self-type we’re</p>
+<p>94<br>00:07:26,240 –&gt; 00:07:31,639<br>referring to. And similarly, there’s a rule for allocating something of type-self-type.</p>
+<p>95<br>00:07:31,639 –&gt; 00:07:36,959<br>So the expression new self-type also produces something of type-self-type sub-c.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P72Week610 05 A+Self+Type+Checking</div>
+      <div>http://example.com/2025/10/25/CS143 P72Week610-05-A+Self+Type+Checking/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P78Week611-03-activation-records/" title="CS143 P78Week611 03 Activation Records">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P78Week611 03 Activation Records</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P73Week610-05-B+Self+Type+Checking/" title="CS143 P73Week610 05 B+Self+Type+Checking">
+                        <span class="hidden-mobile">CS143 P73Week610 05 B+Self+Type+Checking</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

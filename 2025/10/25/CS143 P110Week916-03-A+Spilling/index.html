@@ -1,0 +1,810 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,200In this video, we’re going to continue our discussion of register allocation. 200:00:07,200 –&gt; 00:00:10,480And this time, we’re going to talk about what happens when">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P110Week916 03 A+Spilling">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P110Week916-03-A+Spilling/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,200In this video, we’re going to continue our discussion of register allocation. 200:00:07,200 –&gt; 00:00:10,480And this time, we’re going to talk about what happens when">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.385Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.217Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P110Week916 03 A+Spilling - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P110Week916 03 A+Spilling"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.9k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P110Week916 03 A+Spilling</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,200<br>In this video, we’re going to continue our discussion of register allocation.</p>
+<p>2<br>00:00:07,200 –&gt; 00:00:10,480<br>And this time, we’re going to talk about what happens when we can’t successfully color</p>
+<p>3<br>00:00:10,480 –&gt; 00:00:17,760<br>the graph, in which case we have to do something known as spilling.</p>
+<p>4<br>00:00:17,760 –&gt; 00:00:22,320<br>The graph coloring heuristic that we discussed in the previous video doesn’t always succeed</p>
+<p>5<br>00:00:22,320 –&gt; 00:00:28,280<br>in coloring an arbitrary graph, and it may well get stuck and not be able to find a coloring.</p>
+<p>6<br>00:00:28,280 –&gt; 00:00:32,679<br>And so in that case, the only conclusion we can reach is that we can’t hold all the values</p>
+<p>7<br>00:00:32,679 –&gt; 00:00:34,039<br>that we’d like to in registers.</p>
+<p>8<br>00:00:34,039 –&gt; 00:00:38,000<br>We have more temporary values than we have registers to hold them.</p>
+<p>9<br>00:00:38,000 –&gt; 00:00:40,920<br>And those temporary values have to live somewhere, and so where should they live?</p>
+<p>10<br>00:00:40,920 –&gt; 00:00:42,600<br>Well, they’re going to have to live in memory.</p>
+<p>11<br>00:00:42,600 –&gt; 00:00:45,040<br>That’s the only other kind of storage that we have.</p>
+<p>12<br>00:00:45,040 –&gt; 00:00:48,040<br>And so we’re going to pick some values and spill them into memory.</p>
+<p>13<br>00:00:48,040 –&gt; 00:00:52,520<br>The idea is that we have the picture in your mind should be of a bucket, and it can hold</p>
+<p>14<br>00:00:52,520 –&gt; 00:00:54,000<br>a fixed amount of stuff.</p>
+<p>15<br>00:00:54,000 –&gt; 00:00:55,480<br>Those are the registers.</p>
+<p>16<br>00:00:55,479 –&gt; 00:01:02,439<br>And when it gets too full, some of the stuff spills over and ends up someplace else.</p>
+<p>17<br>00:01:02,439 –&gt; 00:01:04,640<br>Now when does a graph coloring heuristic get stuck?</p>
+<p>18<br>00:01:04,640 –&gt; 00:01:08,719<br>Well, the only situation in which it won’t be able to make progress is if all the nodes</p>
+<p>19<br>00:01:08,719 –&gt; 00:01:11,439<br>have K or more neighbors.</p>
+<p>20<br>00:01:11,439 –&gt; 00:01:15,479<br>So let’s take a look at our favorite register interference graph, the one we’ve been using</p>
+<p>21<br>00:01:15,479 –&gt; 00:01:16,799<br>in our examples.</p>
+<p>22<br>00:01:16,799 –&gt; 00:01:21,039<br>And now let’s say that the machine we want to use only has three registers.</p>
+<p>23<br>00:01:21,040 –&gt; 00:01:25,880<br>And so we instead of finding a four coloring of this graph, we need to find a three coloring.</p>
+<p>24<br>00:01:25,880 –&gt; 00:01:28,560<br>So let’s think about how to find a three coloring of this graph.</p>
+<p>25<br>00:01:28,560 –&gt; 00:01:32,360<br>Well, if we apply the heuristic, we’ll remove A from the graph.</p>
+<p>26<br>00:01:32,360 –&gt; 00:01:35,960<br>But then we’re going to get stuck because once you take A out of the graph and it edges</p>
+<p>27<br>00:01:35,960 –&gt; 00:01:42,840<br>out, every node that’s left has more than as three or more neighbors, as at least three</p>
+<p>28<br>00:01:42,840 –&gt; 00:01:43,840<br>neighbors.</p>
+<p>29<br>00:01:43,840 –&gt; 00:01:48,360<br>And so there’s no node that we can delete from the graph and be guaranteed to be able to</p>
+<p>30<br>00:01:48,359 –&gt; 00:01:56,719<br>find a coloring for it with the heuristic that we discussed in the previous video.</p>
+<p>31<br>00:01:56,719 –&gt; 00:02:00,840<br>So in this situation, what we’re going to do is we’re going to pick a node as a candidate</p>
+<p>32<br>00:02:00,840 –&gt; 00:02:01,840<br>for spilling.</p>
+<p>33<br>00:02:01,840 –&gt; 00:02:07,920<br>This is a node that we, or a temporary, that we are probably, or we think we may have to</p>
+<p>34<br>00:02:07,920 –&gt; 00:02:11,560<br>assign to a memory location rather than to a register.</p>
+<p>35<br>00:02:11,560 –&gt; 00:02:16,400<br>And let’s just assume for the sake of this example that we pick F. And we’ll talk later</p>
+<p>36<br>00:02:16,400 –&gt; 00:02:19,560<br>about how to choose the node to spill.</p>
+<p>37<br>00:02:19,560 –&gt; 00:02:23,360<br>There’s a number of different ways to choose the particular node to spill.</p>
+<p>38<br>00:02:23,360 –&gt; 00:02:26,200<br>But for the illustration of this example, it doesn’t matter how we pick it, we just have</p>
+<p>39<br>00:02:26,200 –&gt; 00:02:28,879<br>to pick one to remove from the graph.</p>
+<p>40<br>00:02:28,879 –&gt; 00:02:33,400<br>Okay, so we’re going to say we’re going to remove, that we’re going to spill F. So what</p>
+<p>41<br>00:02:33,400 –&gt; 00:02:38,599<br>we’ll do then is we’ll remove F from the graph just like before and then we’ll continue</p>
+<p>42<br>00:02:38,599 –&gt; 00:02:39,599<br>with our simplification.</p>
+<p>43<br>00:02:39,599 –&gt; 00:02:43,159<br>And this will now succeed because once we remove F from the graph, we can see that all</p>
+<p>44<br>00:02:43,159 –&gt; 00:02:49,400<br>the nodes, well actually several of the nodes have fewer than three neighbors.</p>
+<p>45<br>00:02:49,400 –&gt; 00:02:54,759<br>And so B, C, and D, sorry B and D both only have two neighbors.</p>
+<p>46<br>00:02:54,759 –&gt; 00:02:58,120<br>Once they’re deleted, E and C will only have one neighbor each.</p>
+<p>47<br>00:02:58,120 –&gt; 00:03:00,439<br>And so clearly coloring will now succeed.</p>
+<p>48<br>00:03:00,439 –&gt; 00:03:07,400<br>And here’s one order that will succeed with this reduced graph.</p>
+<p>49<br>00:03:07,400 –&gt; 00:03:13,079<br>After we decide to spill F and we successfully color the subgraph, now we have to try to</p>
+<p>50<br>00:03:13,080 –&gt; 00:03:19,320<br>assign a color to F. And it could be, we could get lucky and discover that even though F</p>
+<p>51<br>00:03:19,320 –&gt; 00:03:25,480<br>had more than three neighbors or three or more neighbors, when we removed it from the</p>
+<p>52<br>00:03:25,480 –&gt; 00:03:31,400<br>graph, it could be that when we go and start coloring for the subgraph, that those neighbors</p>
+<p>53<br>00:03:31,400 –&gt; 00:03:33,439<br>actually don’t use all of the registers.</p>
+<p>54<br>00:03:33,439 –&gt; 00:03:37,400<br>It could wind up being that all those neighbors, for example, are assigned to the same register.</p>
+<p>55<br>00:03:37,400 –&gt; 00:03:41,760<br>And so there are plenty of registers left over to assign to F.</p>
+<p>56<br>00:03:41,759 –&gt; 00:03:44,639<br>And so this is called optimistic coloring.</p>
+<p>57<br>00:03:44,639 –&gt; 00:03:46,560<br>So we pick a candidate for spilling.</p>
+<p>58<br>00:03:46,560 –&gt; 00:03:50,439<br>We try to color the subgraph once we have a coloring for the subgraph, then we see if we</p>
+<p>59<br>00:03:50,439 –&gt; 00:03:58,039<br>just get lucky and are able to assign a register to F, in which case we can just go ahead and</p>
+<p>60<br>00:03:58,039 –&gt; 00:04:00,959<br>continue to color the rest of the graph as if nothing had happened.</p>
+<p>61<br>00:04:00,959 –&gt; 00:04:03,560<br>So in this case, let’s take a look what happens.</p>
+<p>62<br>00:04:03,560 –&gt; 00:04:10,799<br>We’re going to add F back into the graph and look at all and look at its neighbors and we</p>
+<p>63<br>00:04:10,800 –&gt; 00:04:16,879<br>see that we have a neighbor that’s using R1, we have a neighbor that’s using R2, and</p>
+<p>64<br>00:04:16,879 –&gt; 00:04:18,879<br>we have a neighbor that’s using R3.</p>
+<p>65<br>00:04:18,879 –&gt; 00:04:21,759<br>And so in this case, optimistic coloring will not work.</p>
+<p>66<br>00:04:21,759 –&gt; 00:04:27,960<br>So in fact, F had more than K neighbors and after we color the subgraph, it turns out that</p>
+<p>67<br>00:04:27,960 –&gt; 00:04:33,199<br>those neighbors are using all K, in this case, three, all three of the register names.</p>
+<p>68<br>00:04:33,199 –&gt; 00:04:37,879<br>And so F, well there is no register left over for F, and we’re going to have to actually</p>
+<p>69<br>00:04:37,879 –&gt; 00:04:42,079<br>spill it and store it in memory.</p>
+<p>70<br>00:04:42,079 –&gt; 00:04:46,600<br>So if optimistic coloring fails as it does in this example, then we spill F. So what we’re</p>
+<p>71<br>00:04:46,600 –&gt; 00:04:50,839<br>going to do is allocate a memory location for F, and typically what that means is that</p>
+<p>72<br>00:04:50,839 –&gt; 00:04:54,319<br>it will allocate a position in the current stack frame.</p>
+<p>73<br>00:04:54,319 –&gt; 00:04:59,199<br>Let’s call this address FAA for the address of F.</p>
+<p>74<br>00:04:59,199 –&gt; 00:05:02,399<br>And then we’re going to modify the control flow graph.</p>
+<p>75<br>00:05:02,399 –&gt; 00:05:05,839<br>We’re going to change the code that we’re compiling.</p>
+<p>76<br>00:05:05,839 –&gt; 00:05:12,479<br>So before each operation that reads F, we’re going to insert a load that loads from that</p>
+<p>77<br>00:05:12,479 –&gt; 00:05:16,079<br>address the current value of F into a temporary name.</p>
+<p>78<br>00:05:16,079 –&gt; 00:05:20,279<br>Okay, and that makes sense because if the value is out in memory, then if we have an operation</p>
+<p>79<br>00:05:20,279 –&gt; 00:05:24,439<br>that needs to actually use the value, we’re going to have to load it from memory first</p>
+<p>80<br>00:05:24,439 –&gt; 00:05:27,039<br>into a register.</p>
+<p>81<br>00:05:27,039 –&gt; 00:05:31,279<br>And similarly, after each operation that writes F, we’re going to insert the store.</p>
+<p>82<br>00:05:31,279 –&gt; 00:05:39,719<br>So we’re going to save the current value of F into its location in memory.</p>
+<p>83<br>00:05:39,719 –&gt; 00:05:43,839<br>So here’s the original code from which we constructed the register interference graph.</p>
+<p>84<br>00:05:43,839 –&gt; 00:05:48,119<br>And notice that there’s a few references to F in here and we just highlight them.</p>
+<p>85<br>00:05:48,119 –&gt; 00:05:51,519<br>All right, so we have a couple of reads and we have a write.</p>
+<p>86<br>00:05:51,519 –&gt; 00:05:55,000<br>And so now what are we going to do?</p>
+<p>87<br>00:05:55,000 –&gt; 00:06:00,279<br>So here we have here we had the use of F, the read of F in this statement.</p>
+<p>88<br>00:06:00,279 –&gt; 00:06:01,879<br>Now we’ve proceeded that by a load.</p>
+<p>89<br>00:06:01,879 –&gt; 00:06:03,679<br>And notice that I’ve given a new name here.</p>
+<p>90<br>00:06:03,679 –&gt; 00:06:05,559<br>I’ve called this F1.</p>
+<p>91<br>00:06:05,559 –&gt; 00:06:10,079<br>And that’s because the different uses of F in the control of the graph don’t all have</p>
+<p>92<br>00:06:10,079 –&gt; 00:06:12,319<br>to have the same temporary name.</p>
+<p>93<br>00:06:12,319 –&gt; 00:06:14,919<br>And actually it will be a good idea to separate them.</p>
+<p>94<br>00:06:14,919 –&gt; 00:06:17,839<br>So each distinct use of F will get its own name.</p>
+<p>95<br>00:06:17,839 –&gt; 00:06:21,919<br>So here we load the value of F and then it gets used in this statement.</p>
+<p>96<br>00:06:21,919 –&gt; 00:06:26,319<br>Here we have a write to F and so we store the current value of F. And now as I hear, I’ve</p>
+<p>97<br>00:06:26,319 –&gt; 00:06:27,919<br>given a different name F2.</p>
+<p>98<br>00:06:27,920 –&gt; 00:06:31,759<br>So the temporary that’s computed here is going to be stored is called F2.</p>
+<p>99<br>00:06:31,759 –&gt; 00:06:38,160<br>And finally, the third use of F, there’s another load of F right here which is then used</p>
+<p>100<br>00:06:38,160 –&gt; 00:06:42,000<br>in this computation here of B.</p>
+<p>101<br>00:06:42,000 –&gt; 00:06:50,879<br>Okay, so that is a systematic way to modify the code to use F in storage.</p>
+<p>102<br>00:06:50,879 –&gt; 00:06:54,360<br>And now we have to recompute the liveness of F.</p>
+<p>103<br>00:06:54,360 –&gt; 00:06:55,759<br>And so what happens there?</p>
+<p>104<br>00:06:56,599 –&gt; 00:07:00,959<br>Well, here’s the original liveness information from which we computed the register interference</p>
+<p>105<br>00:07:00,959 –&gt; 00:07:01,959<br>graph.</p>
+<p>106<br>00:07:01,959 –&gt; 00:07:02,800<br>Okay.</p>
+<p>107<br>00:07:02,800 –&gt; 00:07:06,319<br>And now notice that F is gone.</p>
+<p>108<br>00:07:06,319 –&gt; 00:07:11,319<br>We no longer use F in the program so we can delete all the places where we mentioned that</p>
+<p>109<br>00:07:11,319 –&gt; 00:07:12,800<br>F was live.</p>
+<p>110<br>00:07:12,800 –&gt; 00:07:16,120<br>And now we have the three new names, F1, F2 and F3.</p>
+<p>111<br>00:07:16,120 –&gt; 00:07:18,839<br>And we have to add in their liveness information.</p>
+<p>112<br>00:07:18,839 –&gt; 00:07:23,159<br>So it created some new program points here where we inserted statements.</p>
+<p>113<br>00:07:23,160 –&gt; 00:07:29,160<br>And of course where we have a load of the current value of F, that value is live right</p>
+<p>114<br>00:07:29,160 –&gt; 00:07:31,560<br>before the use in the next statement.</p>
+<p>115<br>00:07:31,560 –&gt; 00:07:37,080<br>Here we have the right of the current value of F and that’s li right before the store.</p>
+<p>116<br>00:07:37,080 –&gt; 00:07:42,440<br>And then here’s another load of the current value of F which is live until the store,</p>
+<p>117<br>00:07:42,440 –&gt; 00:07:45,720<br>sorry, until the use in the next statement.</p>
+<p>118<br>00:07:45,720 –&gt; 00:07:46,720<br>Okay.</p>
+<p>119<br>00:07:46,760 –&gt; 00:07:53,640<br>So notice here that F used to be live in many, many, many places in the code.</p>
+<p>120<br>00:07:53,640 –&gt; 00:08:02,720<br>And now not only is F or the different versions of F live in fewer places, also we’ve distinguished</p>
+<p>121<br>00:08:02,720 –&gt; 00:08:03,720<br>them.</p>
+<p>122<br>00:08:03,720 –&gt; 00:08:06,440<br>So we’ve actually separated the different uses of F. And so these will have their own</p>
+<p>123<br>00:08:06,440 –&gt; 00:08:11,360<br>nodes and their own set of interferences in the graph and they won’t share them with</p>
+<p>124<br>00:08:11,360 –&gt; 00:08:12,600<br>the other uses of F.</p>
+<p>125<br>00:08:12,600 –&gt; 00:08:18,879<br>And that will actually also reduce the number of edges in the graph.</p>
+<p>126<br>00:08:18,879 –&gt; 00:08:21,680<br>So summarize the example on the previous slide.</p>
+<p>127<br>00:08:21,680 –&gt; 00:08:26,720<br>Once we have decided that we’re actually going to spill a temporary F, that means we’re</p>
+<p>128<br>00:08:26,720 –&gt; 00:08:30,000<br>going to change the program, we’re going to have loads and stores to the program and</p>
+<p>129<br>00:08:30,000 –&gt; 00:08:33,720<br>now we’re going to have a different program and that’s going to change our register allocation</p>
+<p>130<br>00:08:33,720 –&gt; 00:08:34,720<br>problems.</p>
+<p>131<br>00:08:34,720 –&gt; 00:08:37,320<br>We’re going to have to recompute the live disinformation, we’re going to have to rebuild</p>
+<p>132<br>00:08:37,320 –&gt; 00:08:42,360<br>the register interference graph and then we’re going to have to try again to color that</p>
+<p>133<br>00:08:42,360 –&gt; 00:08:43,360<br>graph.</p>
+<p>134<br>00:08:43,360 –&gt; 00:08:48,840<br>Now it turns out that this new live disinformation is almost the same as it was before.</p>
+<p>135<br>00:08:48,840 –&gt; 00:08:55,440<br>So all the temporary names other than F are not much affected by the new statements that</p>
+<p>136<br>00:08:55,440 –&gt; 00:08:56,440<br>are added.</p>
+<p>137<br>00:08:56,440 –&gt; 00:08:59,759<br>There’s a few new program points where they might be live, but every place they were live</p>
+<p>138<br>00:08:59,759 –&gt; 00:09:02,120<br>before, they’re still live.</p>
+<p>139<br>00:09:02,120 –&gt; 00:09:06,680<br>And F itself has changed fairly dramatically.</p>
+<p>140<br>00:09:06,680 –&gt; 00:09:09,200<br>Its live disinformation has changed fairly dramatically.</p>
+<p>141<br>00:09:09,200 –&gt; 00:09:14,840<br>Certainly the old name F is no longer used and so its live disinformation goes away.</p>
+<p>142<br>00:09:14,840 –&gt; 00:09:20,280<br>And then we’ve also split F into three, in this case, three different temporaries, one</p>
+<p>143<br>00:09:20,280 –&gt; 00:09:24,320<br>for each of the different uses of F in the control flow graph.</p>
+<p>144<br>00:09:24,320 –&gt; 00:09:29,320<br>And now notice that each of these new uses of F or these new versions of F is live in</p>
+<p>145<br>00:09:29,320 –&gt; 00:09:31,879<br>a very, very small area.</p>
+<p>146<br>00:09:31,879 –&gt; 00:09:38,400<br>So a load, for a load instruction, the thing that we’re loading, the temporary that we’re</p>
+<p>147<br>00:09:38,399 –&gt; 00:09:44,319<br>loading F i is live only between the load and the next instruction where it’s used.</p>
+<p>148<br>00:09:44,319 –&gt; 00:09:50,840<br>And similarly for a store, the store of a temporary F i is live only between the store itself</p>
+<p>149<br>00:09:50,840 –&gt; 00:09:54,360<br>and the preceding instruction, the one that created F i.</p>
+<p>150<br>00:09:54,360 –&gt; 00:09:59,679<br>And the effect of this is to greatly reduce the live range of the spill variable.</p>
+<p>151<br>00:09:59,679 –&gt; 00:10:04,360<br>So whatever name we decide to spill by adding the loads and stores right next to the places</p>
+<p>152<br>00:10:04,360 –&gt; 00:10:08,720<br>where those values are used, we dramatically reduce the live range.</p>
+<p>153<br>00:10:08,720 –&gt; 00:10:13,879<br>And in addition, as I mentioned on the previous slide, by splitting the name F into multiple</p>
+<p>154<br>00:10:13,879 –&gt; 00:10:22,399<br>different names, we also avoid sharing those different live ranges between the different</p>
+<p>155<br>00:10:22,399 –&gt; 00:10:25,840<br>versions of F.</p>
+<p>156<br>00:10:25,840 –&gt; 00:10:31,399<br>So because the live range of F is reduced by spilling, it has fewer interferences in the</p>
+<p>157<br>00:10:31,399 –&gt; 00:10:34,199<br>new program than it did in the old program.</p>
+<p>158<br>00:10:34,199 –&gt; 00:10:38,039<br>And what that means in particular is that in the rebuilt register interference graph, F will</p>
+<p>159<br>00:10:38,039 –&gt; 00:10:40,120<br>have fewer neighbors.</p>
+<p>160<br>00:10:40,120 –&gt; 00:10:46,319<br>Some of the neighbors that it had before have gone away because it just live in fewer places.</p>
+<p>161<br>00:10:46,319 –&gt; 00:10:50,159<br>So if we look at the new register interference graph, we can see that among all the different</p>
+<p>162<br>00:10:50,159 –&gt; 00:10:56,319<br>versions of F, remember that F has been split into three temporaries in this graph, we see</p>
+<p>163<br>00:10:56,320 –&gt; 00:11:03,560<br>that they only interfere now with the Nc, whereas before F had several other neighbors</p>
+<p>164<br>00:11:03,560 –&gt; 00:11:04,560<br>in the graph.</p>
+<p>165<br>00:11:04,560 –&gt; 00:11:07,960<br>And now in fact, this new graph is three colorable.</p>
+<p>166<br>00:11:07,960 –&gt; 00:11:13,640<br>Now, of course, it might be the case that we can’t just spill one name.</p>
+<p>167<br>00:11:13,640 –&gt; 00:11:18,440<br>We might have to spill several different temporaries before our coloring is found.</p>
+<p>168<br>00:11:18,440 –&gt; 00:11:21,520<br>And the tricky part is deciding what to spill.</p>
+<p>169<br>00:11:21,520 –&gt; 00:11:25,920<br>So this is the hard decision that has to be made during register allocation.</p>
+<p>170<br>00:11:25,919 –&gt; 00:11:27,439<br>Now any choice is correct.</p>
+<p>171<br>00:11:27,439 –&gt; 00:11:29,519<br>It’s only a question of performance.</p>
+<p>172<br>00:11:29,519 –&gt; 00:11:35,399<br>So some choices of spilling will lead to better code than others, but any choice of spilling</p>
+<p>173<br>00:11:35,399 –&gt; 00:11:38,199<br>is going to result in a correct program.</p>
+<p>174<br>00:11:38,199 –&gt; 00:11:43,879<br>And there are some heuristics that people use to pick which temporaries to spill.</p>
+<p>175<br>00:11:43,879 –&gt; 00:11:47,079<br>And here are a few, or I think three of the most popular ones.</p>
+<p>176<br>00:11:47,079 –&gt; 00:11:50,759<br>One is to spill the temporaries and have the most conflicts.</p>
+<p>177<br>00:11:50,759 –&gt; 00:11:56,360<br>And the reason for that is that this is the temporary, the one thing that you can move</p>
+<p>178<br>00:11:56,360 –&gt; 00:12:01,639<br>into memory that will most affect the number of interferences in the graph.</p>
+<p>179<br>00:12:01,639 –&gt; 00:12:06,840<br>So the idea is by possibly spilling just this one variable will remove enough edges from</p>
+<p>180<br>00:12:06,840 –&gt; 00:12:11,120<br>the graph that it becomes colorable with the number of registers we have.</p>
+<p>181<br>00:12:11,120 –&gt; 00:12:16,159<br>Another possibility is to spill temporaries that have few definitions and uses.</p>
+<p>182<br>00:12:16,159 –&gt; 00:12:21,839<br>And here the idea is that by spilling those, since they’re not used very much, the number</p>
+<p>183<br>00:12:21,839 –&gt; 00:12:25,519<br>of loads and stores will have to add will be relatively small.</p>
+<p>184<br>00:12:25,519 –&gt; 00:12:30,399<br>And so if a variable disinsisting it in very many places, then the actual cost in terms</p>
+<p>185<br>00:12:30,399 –&gt; 00:12:37,439<br>of additional instructions that are going to be executed to spill it is relatively small.</p>
+<p>186<br>00:12:37,439 –&gt; 00:12:41,839<br>And another one, and this is actually one that I think that all the compiler’s implement</p>
+<p>187<br>00:12:41,839 –&gt; 00:12:44,039<br>is to avoid spilling in inter loops.</p>
+<p>188<br>00:12:44,039 –&gt; 00:12:49,799<br>So if you have a choice between spilling a variable that’s used within the intermost</p>
+<p>189<br>00:12:49,799 –&gt; 00:12:55,439<br>loop of the program and one that’s used someplace else, you probably prefer to spill the one</p>
+<p>190<br>00:12:55,439 –&gt; 00:13:00,679<br>that’s used not in the intermost loop because again, that will result in fewer loads and</p>
+<p>191<br>00:13:00,679 –&gt; 00:13:01,679<br>stores.</p>
+<p>192<br>00:13:01,679 –&gt; 00:13:05,199<br>You really want to avoid adding additional instructions to your interloop.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P110Week916 03 A+Spilling</div>
+      <div>http://example.com/2025/10/25/CS143 P110Week916-03-A+Spilling/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P111Week916-03-B+Spilling/" title="CS143 P111Week916 03 B+Spilling">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P111Week916 03 B+Spilling</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P109Week916-02-B+Graph+Coloring/" title="CS143 P109Week916 02 B+Graph+Coloring">
+                        <span class="hidden-mobile">CS143 P109Week916 02 B+Graph+Coloring</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

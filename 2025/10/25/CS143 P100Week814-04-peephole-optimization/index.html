@@ -1,0 +1,675 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,960In this short video, I’m going to say a few words about a variation on local optimization 200:00:07,960 –&gt; 00:00:15,839that applies directly to assembly code called">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P100Week814 04 Peephole Optimization">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P100Week814-04-peephole-optimization/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,960In this short video, I’m going to say a few words about a variation on local optimization 200:00:07,960 –&gt; 00:00:15,839that applies directly to assembly code called">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.379Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.215Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P100Week814 04 Peephole Optimization - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P100Week814 04 Peephole Optimization"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          546 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P100Week814 04 Peephole Optimization</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,960<br>In this short video, I’m going to say a few words about a variation on local optimization</p>
+<p>2<br>00:00:07,960 –&gt; 00:00:15,839<br>that applies directly to assembly code called P poll optimization.</p>
+<p>3<br>00:00:15,839 –&gt; 00:00:20,600<br>The basic idea here is that instead of optimizing an intermediate code, we could do our optimization</p>
+<p>4<br>00:00:20,600 –&gt; 00:00:22,879<br>directly on assembly code.</p>
+<p>5<br>00:00:22,879 –&gt; 00:00:25,600<br>And P poll optimization is one such technique.</p>
+<p>6<br>00:00:25,600 –&gt; 00:00:30,720<br>The P poll stands for a short sequence of usually contiguous instructions.</p>
+<p>7<br>00:00:30,720 –&gt; 00:00:36,920<br>The idea is that we have our program, we can think of it as a long sequence of instructions,</p>
+<p>8<br>00:00:36,920 –&gt; 00:00:40,640<br>and our P poll is some window onto this program.</p>
+<p>9<br>00:00:40,640 –&gt; 00:00:44,960<br>So if we have a P poll of size 4, we can think of ourselves as staring through a small hole</p>
+<p>10<br>00:00:44,960 –&gt; 00:00:49,400<br>at the program, and all we can see is a short sequence of four instructions, and then we</p>
+<p>11<br>00:00:49,400 –&gt; 00:00:51,400<br>can optimize that sequence.</p>
+<p>12<br>00:00:51,399 –&gt; 00:00:56,359<br>And then we can slide the P poll around to optimize different parts of the program.</p>
+<p>13<br>00:00:56,359 –&gt; 00:01:01,519<br>And what the optimizer will do is it will stare at this short sequence of instructions,</p>
+<p>14<br>00:01:01,519 –&gt; 00:01:07,079<br>and if it knows a better sequence, it will replace that sequence by the other one, and then</p>
+<p>15<br>00:01:07,079 –&gt; 00:01:12,439<br>it will repeat this, as I said, applying other transformations to possibly the same or other</p>
+<p>16<br>00:01:12,439 –&gt; 00:01:16,599<br>parts of the assembly program.</p>
+<p>17<br>00:01:16,599 –&gt; 00:01:19,759<br>So people optimization are generally written as replacement rules.</p>
+<p>18<br>00:01:19,760 –&gt; 00:01:24,160<br>So the window of instructions on the left will be some sequence of instructions, and we’ll</p>
+<p>19<br>00:01:24,160 –&gt; 00:01:27,960<br>know some other sequence of instructions that we would prefer on the right.</p>
+<p>20<br>00:01:27,960 –&gt; 00:01:31,719<br>So if we see this instruction sequence on the left, then we’ll replace it by the one</p>
+<p>21<br>00:01:31,719 –&gt; 00:01:33,760<br>on the right-hand side.</p>
+<p>22<br>00:01:33,760 –&gt; 00:01:41,120<br>So for example, if I have a move from register B to register A, and then a move back from</p>
+<p>23<br>00:01:41,120 –&gt; 00:01:46,880<br>register A to register B, well, the second move is useless, and can just be deleted.</p>
+<p>24<br>00:01:46,879 –&gt; 00:01:53,239<br>And so we can replace this two instruction sequence by a one instruction sequence.</p>
+<p>25<br>00:01:53,239 –&gt; 00:01:57,799<br>And this will work provided that there’s no possible jump target here.</p>
+<p>26<br>00:01:57,799 –&gt; 00:02:02,759<br>So if there’s no possibility that the code would ever jump to this instruction, then that</p>
+<p>27<br>00:02:02,759 –&gt; 00:02:05,239<br>instruction can be removed.</p>
+<p>28<br>00:02:05,239 –&gt; 00:02:12,000<br>Another example, if I add I to the register A, and then I subsequently add J to the register</p>
+<p>29<br>00:02:12,000 –&gt; 00:02:17,520<br>A, I can do a constant folding optimization here, and combine those two additions into</p>
+<p>30<br>00:02:17,520 –&gt; 00:02:24,080<br>one addition where I add the sum of I plus J to the register A.</p>
+<p>31<br>00:02:24,080 –&gt; 00:02:28,520<br>So many, but not quite all of the basic block optimizations that we’ve discussed in the</p>
+<p>32<br>00:02:28,520 –&gt; 00:02:32,599<br>last video can be cast also as people optimizations.</p>
+<p>33<br>00:02:32,599 –&gt; 00:02:40,039<br>So for example, if we are adding zero to a register, and then storing another register, well,</p>
+<p>34<br>00:02:40,039 –&gt; 00:02:42,879<br>that can be replaced by a register move.</p>
+<p>35<br>00:02:42,879 –&gt; 00:02:48,079<br>If we’re moving a value from the same register to itself, so this is like a self assignment,</p>
+<p>36<br>00:02:48,079 –&gt; 00:02:52,919<br>well, that instruction can just be deleted replaced by the empty sequence of instructions.</p>
+<p>37<br>00:02:52,919 –&gt; 00:02:57,959<br>And together for those two instructions, those two optimizations, excuse me, would be</p>
+<p>38<br>00:02:57,959 –&gt; 00:03:01,399<br>able to eliminate adding zero to a register.</p>
+<p>39<br>00:03:01,399 –&gt; 00:03:08,599<br>So first, this we get translated into a move from A to A, and then the move from A to A</p>
+<p>40<br>00:03:08,599 –&gt; 00:03:10,639<br>would get deleted.</p>
+<p>41<br>00:03:10,639 –&gt; 00:03:15,039<br>And as this little example illustrates, just like with local optimizations, people optimizations</p>
+<p>42<br>00:03:15,039 –&gt; 00:03:21,840<br>have to be applied repeatedly to get the maximum effect.</p>
+<p>43<br>00:03:21,840 –&gt; 00:03:26,560<br>I hope this simple discussion has illustrated for you that many optimizations can be applied</p>
+<p>44<br>00:03:26,560 –&gt; 00:03:32,639<br>directly to assembly code, and that there’s really nothing magic about optimizing intermediate</p>
+<p>45<br>00:03:32,639 –&gt; 00:03:33,639<br>code.</p>
+<p>46<br>00:03:33,639 –&gt; 00:03:37,319<br>So if you have a program written in any language, source language, intermediate language,</p>
+<p>47<br>00:03:37,319 –&gt; 00:03:42,599<br>assembly language, it makes sense to talk about doing transformations of programs written</p>
+<p>48<br>00:03:42,599 –&gt; 00:03:46,840<br>in that language to improve the behavior of the program.</p>
+<p>49<br>00:03:46,840 –&gt; 00:03:51,879<br>And it’s also a good time here to mention that program optimization is really a terrible</p>
+<p>50<br>00:03:51,879 –&gt; 00:03:53,479<br>term.</p>
+<p>51<br>00:03:53,479 –&gt; 00:04:00,680<br>The compilers do not produce optimal code, and it’s purely an accident if a compiler were</p>
+<p>52<br>00:04:00,680 –&gt; 00:04:05,639<br>to somehow generate the best possible code for a given program.</p>
+<p>53<br>00:04:05,639 –&gt; 00:04:10,159<br>Basically what compilers do is they have a bunch of transformations that they know will</p>
+<p>54<br>00:04:10,159 –&gt; 00:04:14,479<br>improve the behavior of the program, and they’ll just improve it as much as they can.</p>
+<p>55<br>00:04:14,479 –&gt; 00:04:18,439<br>So really what program optimization is all about is program improvement.</p>
+<p>56<br>00:04:18,439 –&gt; 00:04:23,839<br>We’re trying to make the program better, but there’s no guarantee that we will reach</p>
+<p>57<br>00:04:23,839 –&gt; 00:04:26,759<br>the best possible code for a given program.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P100Week814 04 Peephole Optimization</div>
+      <div>http://example.com/2025/10/25/CS143 P100Week814-04-peephole-optimization/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P103Week815-03-analysis-of-loops/" title="CS143 P103Week815 03 Analysis Of Loops">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P103Week815 03 Analysis Of Loops</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P102Week815-02-constant-propagation/" title="CS143 P102Week815 02 Constant Propagation">
+                        <span class="hidden-mobile">CS143 P102Week815 02 Constant Propagation</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

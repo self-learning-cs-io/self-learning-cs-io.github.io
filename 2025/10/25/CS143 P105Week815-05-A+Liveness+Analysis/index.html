@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,000In this video, we’re going to look at another global analysis called 200:00:07,000 –&gt; 00:00:11,000likeness analysis. 300:00:11,000 –&gt; 00:00:14,000So in the past s">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P105Week815 05 A+Liveness+Analysis">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P105Week815-05-A+Liveness+Analysis/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,000In this video, we’re going to look at another global analysis called 200:00:07,000 –&gt; 00:00:11,000likeness analysis. 300:00:11,000 –&gt; 00:00:14,000So in the past s">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.380Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.216Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P105Week815 05 A+Liveness+Analysis - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P105Week815 05 A+Liveness+Analysis"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P105Week815 05 A+Liveness+Analysis</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,000<br>In this video, we’re going to look at another global analysis called</p>
+<p>2<br>00:00:07,000 –&gt; 00:00:11,000<br>likeness analysis.</p>
+<p>3<br>00:00:11,000 –&gt; 00:00:14,000<br>So in the past several videos, we’ve looked at a procedure for</p>
+<p>4<br>00:00:14,000 –&gt; 00:00:17,000<br>globally propagating constants through a control flow graph.</p>
+<p>5<br>00:00:17,000 –&gt; 00:00:21,000<br>And let’s, here’s one of the control flow graphs we’ve been looking at and</p>
+<p>6<br>00:00:21,000 –&gt; 00:00:25,000<br>recall that this algorithm that we discussed would be sufficient to show that</p>
+<p>7<br>00:00:25,000 –&gt; 00:00:29,000<br>we could replace this use of x here by the constant three.</p>
+<p>8<br>00:00:29,000 –&gt; 00:00:35,000<br>And once we do that, this assignment x might no longer be useful.</p>
+<p>9<br>00:00:35,000 –&gt; 00:00:39,000<br>It might not be used anywhere and so we could potentially delete this statement</p>
+<p>10<br>00:00:39,000 –&gt; 00:00:43,000<br>from the program and that would be a real optimization, an important</p>
+<p>11<br>00:00:43,000 –&gt; 00:00:48,000<br>optimization to do. However, we can only do that if x is not used elsewhere in the</p>
+<p>12<br>00:00:48,000 –&gt; 00:00:50,000<br>program.</p>
+<p>13<br>00:00:50,000 –&gt; 00:00:54,000<br>So let’s be a little more careful about what we mean by saying that x is not</p>
+<p>14<br>00:00:54,000 –&gt; 00:00:59,000<br>used. So down here is a use of x, a reference to x in a statement.</p>
+<p>15<br>00:00:59,000 –&gt; 00:01:07,000<br>And clearly, this particular reference to x is picking up the value that’s</p>
+<p>16<br>00:01:07,000 –&gt; 00:01:12,000<br>defined by this right dex here. So we say that the right of x here is</p>
+<p>17<br>00:01:12,000 –&gt; 00:01:15,000<br>live. This one is live.</p>
+<p>18<br>00:01:15,000 –&gt; 00:01:19,000<br>Okay. And what that means is that the value may be used in the future.</p>
+<p>19<br>00:01:19,000 –&gt; 00:01:26,000<br>So live equals maybe used in the future.</p>
+<p>20<br>00:01:26,000 –&gt; 00:01:29,000<br>Okay.</p>
+<p>21<br>00:01:29,000 –&gt; 00:01:35,000<br>So the value written to x at this line of code may be used by some subsequent</p>
+<p>22<br>00:01:35,000 –&gt; 00:01:39,000<br>instruction. And here it’s not just that it may be used, it’s actually guaranteed</p>
+<p>23<br>00:01:39,000 –&gt; 00:01:44,000<br>to be used because it’s only one path and that one path has a reference to x on it</p>
+<p>24<br>00:01:44,000 –&gt; 00:01:46,000<br>before there’s another assignment dex.</p>
+<p>25<br>00:01:46,000 –&gt; 00:01:50,000<br>Okay. So this particular value of x has written here is guaranteed to be used,</p>
+<p>26<br>00:01:50,000 –&gt; 00:01:54,000<br>but in general, we don’t require that. We just mean there has to be a possibility</p>
+<p>27<br>00:01:54,000 –&gt; 00:01:58,000<br>that it will be used. Now in contrast, let’s take a look at this other</p>
+<p>28<br>00:01:58,000 –&gt; 00:02:03,000<br>statement in this example here. We assign x to value three, but this assignment</p>
+<p>29<br>00:02:03,000 –&gt; 00:02:07,000<br>dex, this value of x is never used. This one is dead.</p>
+<p>30<br>00:02:07,000 –&gt; 00:02:13,000<br>All right. Because the value three here is overwritten by the value four before</p>
+<p>31<br>00:02:13,000 –&gt; 00:02:19,000<br>there’s any use of the variable x. Okay. So this particular right dex will never</p>
+<p>32<br>00:02:19,000 –&gt; 00:02:22,000<br>see the light of day. You’ll never get used by any part of the program.</p>
+<p>33<br>00:02:22,000 –&gt; 00:02:25,000<br>And we say that it is dead.</p>
+<p>34<br>00:02:25,000 –&gt; 00:02:30,000<br>So to summarize, a variable x is live at a statement s if there exists some</p>
+<p>35<br>00:02:30,000 –&gt; 00:02:34,000<br>statement that uses x. Okay. So some other statement s prime that uses x.</p>
+<p>36<br>00:02:34,000 –&gt; 00:02:40,000<br>And there is a path from s to s prime. And there’s no intervening assignment on</p>
+<p>37<br>00:02:41,000 –&gt; 00:02:45,000<br>that path dex. All right. So there needs to be an assignment to x.</p>
+<p>38<br>00:02:45,000 –&gt; 00:02:52,000<br>At some statement s, there is some path through the program that reaches a</p>
+<p>39<br>00:02:52,000 –&gt; 00:03:01,000<br>read of x at some statement s prime. And along that path, there is no right to x.</p>
+<p>40<br>00:03:01,000 –&gt; 00:03:07,000<br>Okay. And if this situation arises, then we say that this value written in this</p>
+<p>41<br>00:03:07,000 –&gt; 00:03:13,000<br>first statement s is live. Now if a value is not live, then it is dead.</p>
+<p>42<br>00:03:13,000 –&gt; 00:03:18,000<br>And a statement that assigns dex is going to be dead code if x is dead after the</p>
+<p>43<br>00:03:18,000 –&gt; 00:03:22,000<br>assignment. So if we know that immediately after the assignment meaning immediately</p>
+<p>44<br>00:03:22,000 –&gt; 00:03:27,000<br>after this assignment dex, there is no possibility that a value of x will be</p>
+<p>45<br>00:03:27,000 –&gt; 00:03:31,000<br>used in the future. Well, then the assignment was useless and the entire</p>
+<p>46<br>00:03:31,000 –&gt; 00:03:34,000<br>statement can be removed. All right. So dead statements can be deleted from the</p>
+<p>47<br>00:03:34,000 –&gt; 00:03:39,000<br>program. But notice that in order to do that, we have to have the liveness</p>
+<p>48<br>00:03:39,000 –&gt; 00:03:44,000<br>information. We need to know whether x is dead at this point.</p>
+<p>49<br>00:03:44,000 –&gt; 00:03:48,000<br>So once again, what we want to do is to have global information about the control</p>
+<p>50<br>00:03:48,000 –&gt; 00:03:52,000<br>flow graph. In this case, the property is whether x will be used in the future.</p>
+<p>51<br>00:03:52,000 –&gt; 00:03:56,000<br>We want to make that information local to a specific point in the program so we can</p>
+<p>52<br>00:03:56,000 –&gt; 00:04:01,000<br>make a local optimization decision. All right. And just like for constant</p>
+<p>53<br>00:04:01,000 –&gt; 00:04:06,000<br>propagation, we’re going to define an algorithm for performing liveness analysis.</p>
+<p>54<br>00:04:06,000 –&gt; 00:04:11,000<br>And it’s going to follow the same framework. We’re going to express liveness in terms of</p>
+<p>55<br>00:04:11,000 –&gt; 00:04:15,000<br>information transferred between adjacent statements just as we did for a copy or</p>
+<p>56<br>00:04:15,000 –&gt; 00:04:19,000<br>constant propagation. And it’s going to turn out that liveness is actually quite a bit</p>
+<p>57<br>00:04:19,000 –&gt; 00:04:22,000<br>simpler or somewhat simpler than constant propagation since it’s just a boolean</p>
+<p>58<br>00:04:22,000 –&gt; 00:04:28,000<br>property. It’s either true or false. All right. So let’s take a look at some of</p>
+<p>59<br>00:04:28,000 –&gt; 00:04:35,000<br>the rules for liveness. So here, we’re defining what it means for x to be live</p>
+<p>60<br>00:04:35,000 –&gt; 00:04:41,000<br>at this point here. So immediately after p is x live. And it’s going to be live.</p>
+<p>61<br>00:04:41,000 –&gt; 00:04:46,000<br>Remember what the intuition is. The intuition is that the variable x is live right</p>
+<p>62<br>00:04:46,000 –&gt; 00:04:53,000<br>after p. If the value of x is used on some path on one of the paths that begin at</p>
+<p>63<br>00:04:53,000 –&gt; 00:04:58,000<br>p. All right. And so in order to know whether it’s live, we’re going to take the</p>
+<p>64<br>00:04:58,000 –&gt; 00:05:03,000<br>liveness information at each of the input points. So that would be here, here,</p>
+<p>65<br>00:05:03,000 –&gt; 00:05:07,000<br>here, and here. So each of the successor statements after p. And we’re going to ask,</p>
+<p>66<br>00:05:07,000 –&gt; 00:05:12,000<br>is x live at any of those points? So it’s just a big or over the liveness of x at all</p>
+<p>67<br>00:05:12,000 –&gt; 00:05:18,000<br>of the successors of p. And that’s the liveness of x at the out of p.</p>
+<p>68<br>00:05:18,000 –&gt; 00:05:23,000<br>Next, let’s consider the effect of individual statements on the liveness of x.</p>
+<p>69<br>00:05:23,000 –&gt; 00:05:27,000<br>So the first rule is that if we have a statement and it reads the value of x.</p>
+<p>70<br>00:05:27,000 –&gt; 00:05:31,000<br>Okay. So here we have an assignment statement and on the right hand side it refers to x.</p>
+<p>71<br>00:05:31,000 –&gt; 00:05:37,000<br>So it’s reading x. Then x is live before that statement. Clearly, x is just about to be</p>
+<p>72<br>00:05:37,000 –&gt; 00:05:41,000<br>used on the end of this statement. And so x is live at that point. All right.</p>
+<p>73<br>00:05:41,000 –&gt; 00:05:49,000<br>So if a statement reads the value of x, then the end of that statement x is true.</p>
+<p>74<br>00:05:49,000 –&gt; 00:05:53,000<br>Sorry, the liveness of x is true.</p>
+<p>75<br>00:05:53,000 –&gt; 00:05:58,000<br>A second case is when a statement writes the value of x. So here we have an assignment</p>
+<p>76<br>00:05:58,000 –&gt; 00:06:03,000<br>dex. And the rest of the statement does not refer to x, does not read the value of x.</p>
+<p>77<br>00:06:03,000 –&gt; 00:06:10,000<br>So there’s no x in e. Okay. So in this situation, x is not live.</p>
+<p>78<br>00:06:10,000 –&gt; 00:06:18,000<br>Before the statement x is not live or we could say that x is dead before the statement.</p>
+<p>79<br>00:06:18,000 –&gt; 00:06:25,000<br>And why is that? Well, we’re overriding the value of x. So whatever value x had before this statement is never</p>
+<p>80<br>00:06:25,000 –&gt; 00:06:30,000<br>going to be read. Okay. Because the e here, the right hand side of the assignment doesn’t refer to x.</p>
+<p>81<br>00:06:30,000 –&gt; 00:06:35,000<br>And so immediately before the statement, the current value of x is never going to be used in the future.</p>
+<p>82<br>00:06:35,000 –&gt; 00:06:45,000<br>And so x is dead at that point. And finally, the last case is what if we have a statement that does not refer to x.</p>
+<p>83<br>00:06:45,000 –&gt; 00:06:54,000<br>Okay. So it neither reads nor writes x. Well, then whatever the liveness is of x after the statement, it has the same</p>
+<p>84<br>00:06:54,000 –&gt; 00:07:03,000<br>liveness before the statement. So if x is live here, then x will be live here.</p>
+<p>85<br>00:07:03,000 –&gt; 00:07:10,000<br>Okay. And similarly, if x is dead after the statement, then x must be dead before the statement.</p>
+<p>86<br>00:07:10,000 –&gt; 00:07:17,000<br>And that’s because x, if x is not used in the future after the statement s, then it still won’t be used in the future</p>
+<p>87<br>00:07:17,000 –&gt; 00:07:22,000<br>before the statement s since the statement s neither reads nor writes x.</p>
+<p>88<br>00:07:22,000 –&gt; 00:07:30,000<br>So those are the only four rules. And now we can give the algorithm. So initially, we let the liveness information for x be false at all</p>
+<p>89<br>00:07:30,000 –&gt; 00:07:36,000<br>program points. And then we repeat the following until all the statements satisfy the rules one through four.</p>
+<p>90<br>00:07:36,000 –&gt; 00:07:44,000<br>And just as it’s the same algorithm that we used for constant propagation, we pick some statement where the information is inconsistent and then</p>
+<p>91<br>00:07:44,000 –&gt; 00:07:49,000<br>update the information at that statement with the appropriate rule.</p>
+<p>92<br>00:07:49,000 –&gt; 00:07:57,000<br>So let’s do a simple example, something with a loop. So let’s begin say by initializing x to zero.</p>
+<p>93<br>00:07:57,000 –&gt; 00:08:09,000<br>And then what should our loop body do? Well, we can check whether x is equal to 10. And if it is, we’ll exit the loop.</p>
+<p>94<br>00:08:10,000 –&gt; 00:08:24,000<br>And let’s assume that x is dead on exit. So x is not referred to outside of the loop. And otherwise, if x is not 10, then we will increment x and we’ll branch back to the top of the loop.</p>
+<p>95<br>00:08:24,000 –&gt; 00:08:33,000<br>So this is a very, very silly little program. It just counts to 10 and exits. But let’s do the liveness analysis to see where x is live.</p>
+<p>96<br>00:08:34,000 –&gt; 00:08:45,000<br>So since x is dead here on exit, it’s clearly going to be dead on the out of this conditional on this branch.</p>
+<p>97<br>00:08:45,000 –&gt; 00:08:59,000<br>So I should say that x is not live. So we’re using Boolean’s here. So x’s liveness would be false. And we’re assuming that x is also not live every place else initially.</p>
+<p>98<br>00:08:59,000 –&gt; 00:09:04,000<br>And so there’s a program point in there also where the liveness of x is false.</p>
+<p>99<br>00:09:04,000 –&gt; 00:09:13,000<br>Okay, so now let’s propagate the information. Well, so here we have a read of x. And let me switch colors here. So here we have a read of x.</p>
+<p>100<br>00:09:13,000 –&gt; 00:09:20,000<br>So in fact, the information is inconsistent here because right before this statement, since we have a read of x, x must be live.</p>
+<p>101<br>00:09:20,000 –&gt; 00:09:27,000<br>So in fact, x is live at this point. Now notice that this statement both reads and writes x.</p>
+<p>102<br>00:09:27,000 –&gt; 00:09:36,000<br>Okay, but the rule that says x is live before when we do a read takes priority here because the read happens before the right.</p>
+<p>103<br>00:09:36,000 –&gt; 00:09:42,000<br>So we’ll read the old value of x before we write the new value of x. Okay, so the old value of x does get used.</p>
+<p>104<br>00:09:42,000 –&gt; 00:09:45,000<br>And that’s why x is live merely before this statement.</p>
+<p>105<br>00:09:46,000 –&gt; 00:09:50,000<br>So then here’s another read of x.</p>
+<p>106<br>00:09:50,000 –&gt; 00:09:59,000<br>Okay, so on the, so at the point immediately before this while left out one program point here, x is also live.</p>
+<p>107<br>00:09:59,000 –&gt; 00:10:08,000<br>Okay, and then following edges backwards, well, that means x is going to be live on the back edge of the loop. And it’s also going to be live.</p>
+<p>108<br>00:10:08,000 –&gt; 00:10:11,000<br>Going into the initialization block.</p>
+<p>109<br>00:10:11,000 –&gt; 00:10:20,000<br>Right. Now we come back around here and we see that we’re done because x is already known to be live within the loop body.</p>
+<p>110<br>00:10:20,000 –&gt; 00:10:28,000<br>And now x is also live here. And then the question is, you know, what about this point on the entrance at the entrance to the control flow graph?</p>
+<p>111<br>00:10:28,000 –&gt; 00:10:36,000<br>Well, there’s a right of x. And with no read of x on the right hand side. So in fact, x is not live on entry to this control flow graph.</p>
+<p>112<br>00:10:36,000 –&gt; 00:10:43,000<br>So in fact, x is dead at this point. So whatever value x has when we enter the control of the graph, it will never be used in the future.</p>
+<p>113<br>00:10:43,000 –&gt; 00:10:52,000<br>Right. And so that is the correct liveness information for every program point in this example.</p>
+<p>114<br>00:10:52,000 –&gt; 00:11:01,000<br>Now another thing you can see from our little example is that the values change from false to true, but not the other way around.</p>
+<p>115<br>00:11:01,000 –&gt; 00:11:10,000<br>So every value starts at false and it can change it most once to say that the values actually live that the property becomes true.</p>
+<p>116<br>00:11:10,000 –&gt; 00:11:16,000<br>And then it won’t ever change back to false again. So going back to orderings.</p>
+<p>117<br>00:11:16,000 –&gt; 00:11:22,000<br>We only have two values in this analysis, false and true. And the ordering is at false is less than true.</p>
+<p>118<br>00:11:22,000 –&gt; 00:11:30,000<br>Okay. And so everything starts at the lowest possible element of the ordering and they only move up and so they can be promoted to true, but not vice versa.</p>
+<p>119<br>00:11:30,000 –&gt; 00:11:40,000<br>And so since each value can only change once termination is guaranteed, eventually we’re guaranteed to have consistent information throughout the control flow graph and the analysis will terminate.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P105Week815 05 A+Liveness+Analysis</div>
+      <div>http://example.com/2025/10/25/CS143 P105Week815-05-A+Liveness+Analysis/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P104Week815-04-orderings/" title="CS143 P104Week815 04 Orderings">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P104Week815 04 Orderings</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P103Week815-03-analysis-of-loops/" title="CS143 P103Week815 03 Analysis Of Loops">
+                        <span class="hidden-mobile">CS143 P103Week815 03 Analysis Of Loops</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

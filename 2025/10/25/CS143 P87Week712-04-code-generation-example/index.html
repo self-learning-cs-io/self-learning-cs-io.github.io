@@ -1,0 +1,743 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,000In this video, we’re going to generate code for a small example program. 200:00:07,000 –&gt; 00:00:17,000The program will take a look at, takes a positive integer x, an">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P87Week712 04 Code Generation Example">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P87Week712-04-code-generation-example/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,000In this video, we’re going to generate code for a small example program. 200:00:07,000 –&gt; 00:00:17,000The program will take a look at, takes a positive integer x, an">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.414Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.227Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P87Week712 04 Code Generation Example - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P87Week712 04 Code Generation Example"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P87Week712 04 Code Generation Example</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,000<br>In this video, we’re going to generate code for a small example program.</p>
+<p>2<br>00:00:07,000 –&gt; 00:00:17,000<br>The program will take a look at, takes a positive integer x, and sums all the numbers from 0 up to x.</p>
+<p>3<br>00:00:17,000 –&gt; 00:00:26,000<br>So if x is 0, then the result is 0. Otherwise, it is x plus the sum of all the numbers up to x minus 1.</p>
+<p>4<br>00:00:26,000 –&gt; 00:00:37,000<br>So this isn’t a very interesting program, but it does illustrate all of the features that we’ve discussed in the previous couple of videos.</p>
+<p>5<br>00:00:37,000 –&gt; 00:00:41,000<br>So let’s dive right in and talk about how we’re going to generate code for sum two.</p>
+<p>6<br>00:00:41,000 –&gt; 00:00:46,000<br>So we begin by giving it a label for the entry point to the function.</p>
+<p>7<br>00:00:46,000 –&gt; 00:00:51,000<br>So there’ll be the sum two entry.</p>
+<p>8<br>00:00:51,000 –&gt; 00:00:58,000<br>All right, and now we have to generate code for the callers side, call call E side, excuse me, of the calling sequence.</p>
+<p>9<br>00:00:58,000 –&gt; 00:01:07,000<br>So what was that? So the first thing we have to do is we have to set up the frame pointer, which will just be the value of the stack pointer.</p>
+<p>10<br>00:01:07,000 –&gt; 00:01:11,000<br>So that’s the frame pointer for this activation.</p>
+<p>11<br>00:01:11,000 –&gt; 00:01:19,000<br>And then we’re going to have to store the return address at the current value of the stack pointer.</p>
+<p>12<br>00:01:19,000 –&gt; 00:01:29,000<br>And then we’re going to move the stack pointer into positions where whenever we store something on the stack, we have to move the stack pointer to the next unused location.</p>
+<p>13<br>00:01:29,000 –&gt; 00:01:30,000<br>All right.</p>
+<p>14<br>00:01:30,000 –&gt; 00:01:31,000<br>Okay.</p>
+<p>15<br>00:01:31,000 –&gt; 00:01:35,000<br>And so now we have to generate code for this if then else.</p>
+<p>16<br>00:01:35,000 –&gt; 00:01:36,000<br>All right.</p>
+<p>17<br>00:01:36,000 –&gt; 00:01:44,000<br>And the very first thing if you go back and look at the code for if then else is a generate code for the first sub expression of the predicate.</p>
+<p>18<br>00:01:44,000 –&gt; 00:01:47,000<br>So we’re going to generate code for X and that’s really easy.</p>
+<p>19<br>00:01:47,000 –&gt; 00:01:54,000<br>Remember generating code for a variable just looks up the variable in the current position of the frame.</p>
+<p>20<br>00:01:54,000 –&gt; 00:01:59,000<br>Sorry, at the correct offset from the frame pointer.</p>
+<p>21<br>00:01:59,000 –&gt; 00:02:01,000<br>All right.</p>
+<p>22<br>00:02:01,000 –&gt; 00:02:02,000<br>All right.</p>
+<p>23<br>00:02:02,000 –&gt; 00:02:05,000<br>So once we do that, now we’re generating code for the predicate.</p>
+<p>24<br>00:02:05,000 –&gt; 00:02:06,000<br>And how do we do that?</p>
+<p>25<br>00:02:06,000 –&gt; 00:02:08,000<br>Well, we’ve generated code for this for sub expression.</p>
+<p>26<br>00:02:08,000 –&gt; 00:02:15,000<br>And now we have to save that sub expression somewhere because we’re going to generate code for another sub expression.</p>
+<p>27<br>00:02:15,000 –&gt; 00:02:17,000<br>So the equality there is binary operator.</p>
+<p>28<br>00:02:17,000 –&gt; 00:02:22,000<br>So we have to save the value we just computed somewhere on the stack.</p>
+<p>29<br>00:02:22,000 –&gt; 00:02:23,000<br>All right. So we’ll do that.</p>
+<p>30<br>00:02:23,000 –&gt; 00:02:30,000<br>So we’ll store the value of a zero on the stack.</p>
+<p>31<br>00:02:30,000 –&gt; 00:02:37,000<br>And that will involve as always moving the stack pointer.</p>
+<p>32<br>00:02:37,000 –&gt; 00:02:40,000<br>Okay.</p>
+<p>33<br>00:02:40,000 –&gt; 00:02:45,000<br>And now we generate code for the second sub expression of the predicate.</p>
+<p>34<br>00:02:45,000 –&gt; 00:02:48,000<br>All right. And that’s also easy.</p>
+<p>35<br>00:02:48,000 –&gt; 00:02:53,000<br>That’s just a load immediate of the immediate value into the accumulator.</p>
+<p>36<br>00:02:53,000 –&gt; 00:02:54,000<br>All right.</p>
+<p>37<br>00:02:54,000 –&gt; 00:03:03,000<br>And now we’re going to load the value that we saved for the first argument of the predicate back into a temporary register and actually do the comparison.</p>
+<p>38<br>00:03:03,000 –&gt; 00:03:07,000<br>So this is more code that’s actually part of the conditional.</p>
+<p>39<br>00:03:07,000 –&gt; 00:03:08,000<br>All right.</p>
+<p>40<br>00:03:08,000 –&gt; 00:03:16,000<br>So we do a load word into T1.</p>
+<p>41<br>00:03:16,000 –&gt; 00:03:20,000<br>Of the value that we saved before.</p>
+<p>42<br>00:03:20,000 –&gt; 00:03:21,000<br>Okay.</p>
+<p>43<br>00:03:21,000 –&gt; 00:03:26,000<br>And now we need to.</p>
+<p>44<br>00:03:26,000 –&gt; 00:03:28,000<br>We need to pop the stack.</p>
+<p>45<br>00:03:28,000 –&gt; 00:03:29,000<br>Okay.</p>
+<p>46<br>00:03:29,000 –&gt; 00:03:31,000<br>So we’ll do that here.</p>
+<p>47<br>00:03:31,000 –&gt; 00:03:40,000<br>All right. Because we’re done with that value. So we’ll.</p>
+<p>48<br>00:03:40,000 –&gt; 00:03:41,000<br>All right.</p>
+<p>49<br>00:03:41,000 –&gt; 00:03:43,000<br>And now we can do the branch.</p>
+<p>50<br>00:03:43,000 –&gt; 00:03:47,000<br>So now we test whether.</p>
+<p>51<br>00:03:47,000 –&gt; 00:03:51,000<br>The two sub expressions of the predicate are equal or not.</p>
+<p>52<br>00:03:51,000 –&gt; 00:03:53,000<br>And if they are, then we jump to the true branch.</p>
+<p>53<br>00:03:53,000 –&gt; 00:03:58,000<br>And here I’m going to give the true branch a unique label because this might be part of a larger program where there are many if the analysis.</p>
+<p>54<br>00:03:58,000 –&gt; 00:04:04,000<br>And so I’m going to append some identifying number on the end instead of writing out true branch.</p>
+<p>55<br>00:04:04,000 –&gt; 00:04:06,000<br>I’ll just call this true one.</p>
+<p>56<br>00:04:06,000 –&gt; 00:04:07,000<br>All right.</p>
+<p>57<br>00:04:07,000 –&gt; 00:04:08,000<br>Okay.</p>
+<p>58<br>00:04:08,000 –&gt; 00:04:10,000<br>And if we fall through.</p>
+<p>59<br>00:04:10,000 –&gt; 00:04:14,000<br>Then we’re on the false branch. We’ll call that false one.</p>
+<p>60<br>00:04:14,000 –&gt; 00:04:19,000<br>And now we’re generating code for the false branch, which is this summation here.</p>
+<p>61<br>00:04:19,000 –&gt; 00:04:27,000<br>All right. And how are we going to do that? Well, this whole thing is a plus expression, which means we have to generate code first for the first sub expression, which is just X.</p>
+<p>62<br>00:04:27,000 –&gt; 00:04:31,000<br>All right. So what do we do? Well, we load.</p>
+<p>63<br>00:04:31,000 –&gt; 00:04:37,000<br>To generate code for X, we look up X at its current offset.</p>
+<p>64<br>00:04:37,000 –&gt; 00:04:42,000<br>And yet it’s appropriate offset in the in the frame using the frame pointer case the only argument.</p>
+<p>65<br>00:04:42,000 –&gt; 00:04:45,000<br>And so it’s at four from the frame pointer.</p>
+<p>66<br>00:04:45,000 –&gt; 00:04:47,000<br>I’m sorry, the only argument to the procedure.</p>
+<p>67<br>00:04:47,000 –&gt; 00:04:54,000<br>And so that’s stored at the first position for arguments, which is always at four from the frame pointer and our scheme.</p>
+<p>68<br>00:04:54,000 –&gt; 00:04:59,000<br>All right. And now that we’ve loaded it, we have to save it because it’s part of a binary operation.</p>
+<p>69<br>00:04:59,000 –&gt; 00:05:07,000<br>So we’re going to save that value on the stack.</p>
+<p>70<br>00:05:07,000 –&gt; 00:05:17,000<br>Okay. And now we will adjust the stack where.</p>
+<p>71<br>00:05:17,000 –&gt; 00:05:19,000<br>Okay.</p>
+<p>72<br>00:05:19,000 –&gt; 00:05:22,000<br>And what are we going to do next?</p>
+<p>73<br>00:05:22,000 –&gt; 00:05:27,000<br>Well, now we’ve we’ve computed this sub expression, this X.</p>
+<p>74<br>00:05:27,000 –&gt; 00:05:32,000<br>All right. We can’t do the plus yet until we compute the second sub expression, which is the function call.</p>
+<p>75<br>00:05:32,000 –&gt; 00:05:35,000<br>All right. So now we have to generate code for the function call.</p>
+<p>76<br>00:05:35,000 –&gt; 00:05:41,000<br>And I’m going to move up here to the other side of the screen here to show the rest of the code.</p>
+<p>77<br>00:05:41,000 –&gt; 00:05:51,000<br>Okay. And the first thing we do to generate code for the function call is to start setting up our activation record.</p>
+<p>78<br>00:05:51,000 –&gt; 00:05:56,000<br>This is the new activation record for the function call we’re about to make.</p>
+<p>79<br>00:05:56,000 –&gt; 00:06:01,000<br>All right. So what do we do there? We store the frame pointer.</p>
+<p>80<br>00:06:01,000 –&gt; 00:06:04,000<br>We store our old frame pointer.</p>
+<p>81<br>00:06:04,000 –&gt; 00:06:13,000<br>At the stack. Okay. On the stack.</p>
+<p>82<br>00:06:13,000 –&gt; 00:06:18,000<br>All right. And now we have to compute the argument.</p>
+<p>83<br>00:06:18,000 –&gt; 00:06:25,000<br>We have to compute the X minus one. So that code gets inserted here in the template for a function call.</p>
+<p>84<br>00:06:25,000 –&gt; 00:06:28,000<br>So what’s going to happen there? Well, we’re computing a subtraction.</p>
+<p>85<br>00:06:28,000 –&gt; 00:06:35,000<br>So the template for subtraction is to first generate code for the first sub expression, then generate code for the second sub expression, and then subtract them.</p>
+<p>86<br>00:06:35,000 –&gt; 00:06:45,000<br>All right. So let’s do that. So first we generate code for X again.</p>
+<p>87<br>00:06:45,000 –&gt; 00:06:54,000<br>Okay. And now since it’s the first argument of a binary operation, we’re going to save it on the stack.</p>
+<p>88<br>00:06:54,000 –&gt; 00:07:03,000<br>All right.</p>
+<p>89<br>00:07:03,000 –&gt; 00:07:09,000<br>All right. Now we generate code for the second argument of the subtraction.</p>
+<p>90<br>00:07:09,000 –&gt; 00:07:19,000<br>Okay. And now we perform the subtractions. We have to load the first argument back into a temporary register.</p>
+<p>91<br>00:07:19,000 –&gt; 00:07:28,000<br>We have to actually do the subtraction.</p>
+<p>92<br>00:07:28,000 –&gt; 00:07:31,000<br>Excuse me here.</p>
+<p>93<br>00:07:31,000 –&gt; 00:07:41,000<br>All right. And now we can pop the temporary value off the stack.</p>
+<p>94<br>00:07:41,000 –&gt; 00:07:53,000<br>Okay. So now we’ve actually done the subtraction. And let me see. That is everything from about here down to here is computing X minus one.</p>
+<p>95<br>00:07:53,000 –&gt; 00:08:01,000<br>Okay. And this was computing X. And this was computing one. And then this whole thing is computing the subtraction.</p>
+<p>96<br>00:08:01,000 –&gt; 00:08:05,000<br>All right. So now we compute the argument.</p>
+<p>97<br>00:08:05,000 –&gt; 00:08:16,000<br>What are we going to do? Well, we save it on the stack. So now we save the result on the stack. We’re saving it into the new activation record that we’re building.</p>
+<p>98<br>00:08:16,000 –&gt; 00:08:26,000<br>All right. And then we have to advance or move the stack pointers always.</p>
+<p>99<br>00:08:26,000 –&gt; 00:08:36,000<br>And now we’re ready to actually do the function calls. Now we do the jump in the link to the entry point of some two.</p>
+<p>100<br>00:08:36,000 –&gt; 00:08:43,000<br>Okay. And now when this returns, what’s it going to return with? It’s going to return with the result of computing some two in the accumulator.</p>
+<p>101<br>00:08:43,000 –&gt; 00:08:46,000<br>All right. And so then we’re ready to perform the addition.</p>
+<p>102<br>00:08:46,000 –&gt; 00:09:01,000<br>Because now we’ve computed the second argument to the addition. And how do we do that? Well, look back at the template for addition. The next thing that happens is we reload the temporary value that we saved on the stack.</p>
+<p>103<br>00:09:01,000 –&gt; 00:09:14,000<br>All right. And now we can actually perform the addition.</p>
+<p>104<br>00:09:14,000 –&gt; 00:09:24,000<br>Okay. And then we can pop the temporary value of the stack.</p>
+<p>105<br>00:09:24,000 –&gt; 00:09:41,000<br>All right. And that actually ends the else branch, the false branch of the entire if then else. Okay. So now we branch around the rest of the if then else code.</p>
+<p>106<br>00:09:41,000 –&gt; 00:09:51,000<br>And we’ll call that label and if one and now comes the code for the true branch.</p>
+<p>107<br>00:09:51,000 –&gt; 00:10:04,000<br>And what are we going to put there? Well, it’s not very complicated because all we’re doing on the true branch is loading or generating code for zero, which is just a single load immediate load immediate.</p>
+<p>108<br>00:10:04,000 –&gt; 00:10:14,000<br>All right. And that’s the entire true branch. And so now we’re at this. There should not be a call. And there excuse me. In fact, I can just erase that a little bit.</p>
+<p>109<br>00:10:14,000 –&gt; 00:10:29,000<br>All right. And now we’re at and actually I see I wrote this in the wrong place. So let’s fix that. So this is a branch at the end of the false branch at the end of the end of the else part of the if.</p>
+<p>110<br>00:10:29,000 –&gt; 00:10:34,000<br>And we’re going to branch around the code for the true branch, which is only one instruction.</p>
+<p>111<br>00:10:34,000 –&gt; 00:10:42,000<br>And so the very next instruction is the label and if so now what’s left to do we’ve to carry code for the whole if then else.</p>
+<p>112<br>00:10:42,000 –&gt; 00:10:52,000<br>And so now it goes here is the rest of the template for the function definition. So now we have to generate the code that returns back to the caller.</p>
+<p>113<br>00:10:52,000 –&gt; 00:11:01,000<br>We do that while we have to load the return address from the stack.</p>
+<p>114<br>00:11:01,000 –&gt; 00:11:15,000<br>Okay. And now we pop the stack. So we pop the entire activation record off the stack and how big is our activation record. Well, remember, there’s always two words one for the return address and one for the frame pointer and then a number of words equals to the number of arguments was only one argument here.</p>
+<p>115<br>00:11:15,000 –&gt; 00:11:22,000<br>So we have three words such 12 bytes. So we increment the stack pointer by 12.</p>
+<p>116<br>00:11:22,000 –&gt; 00:11:33,000<br>And then we load the old frame pointer. We store the frame pointer.</p>
+<p>117<br>00:11:33,000 –&gt; 00:11:41,000<br>Okay. And then we return. So one more instruction. You do a jump register to the return address.</p>
+<p>118<br>00:11:41,000 –&gt; 00:11:57,000<br>And that is the entire code for this simple function sum to and as a couple things to point out. So first of all, the code is constructed as a bunch of templates, paste it together and I tried to point out as we go along how that works.</p>
+<p>119<br>00:11:57,000 –&gt; 00:12:11,000<br>But you do wind up with one linear sequence of code. All right. And if if you’re at all confused, it’s be worth it to go back and look at those templates and look at this example and understand how the code all fits together and how it works.</p>
+<p>120<br>00:12:11,000 –&gt; 00:12:22,000<br>And the other thing I would point out is just that this is extremely inefficient code. So like over here, where we were generating code to check whether X is equal to zero.</p>
+<p>121<br>00:12:22,000 –&gt; 00:12:36,000<br>Notice here that we load X. So this is a load of X. And then we immediately store the X again into the stacks. We just loaded it from the frame. Then we immediately store it back in the memory.</p>
+<p>122<br>00:12:36,000 –&gt; 00:12:47,000<br>And then we load an immediate value. And then we reload the value of X here. So moving the value of X, we all around. So we load it. We store it. We load it again.</p>
+<p>123<br>00:12:47,000 –&gt; 00:13:00,000<br>And so there’s a lot of wasted motion here. And that’s a result of this very simple code generation strategy where we want to compile to compose code together, but we’ll be able to compose these templates in a way that will work properly.</p>
+<p>124<br>00:13:00,000 –&gt; 00:13:14,000<br>Code does not have to be this inefficient in the lot of the techniques that we’ll discuss in subsequent lectures. We’ll talk about smarter code generation techniques and also optimizations that can even improve the code further.</p>
+<p>125<br>00:13:14,000 –&gt; 00:13:16,000<br>Code further.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P87Week712 04 Code Generation Example</div>
+      <div>http://example.com/2025/10/25/CS143 P87Week712-04-code-generation-example/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P91Week712-06-B+Object+Layout/" title="CS143 P91Week712 06 B+Object+Layout">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P91Week712 06 B+Object+Layout</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P86Week712-03-B+Code+Generation+II/" title="CS143 P86Week712 03 B+Code+Generation+II">
+                        <span class="hidden-mobile">CS143 P86Week712 03 B+Code+Generation+II</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

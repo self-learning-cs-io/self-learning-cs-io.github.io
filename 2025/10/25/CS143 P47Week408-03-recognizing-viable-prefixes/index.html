@@ -1,0 +1,852 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,359In this video, we’re finally going to come to the technical highlight of bottom-up parsing. 200:00:08,359 –&gt; 00:00:11,919So after all the definitions of the previous">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P47Week408 03 Recognizing Viable Prefixes">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P47Week408-03-recognizing-viable-prefixes/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,359In this video, we’re finally going to come to the technical highlight of bottom-up parsing. 200:00:08,359 –&gt; 00:00:11,919So after all the definitions of the previous">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.401Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.222Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P47Week408 03 Recognizing Viable Prefixes - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P47Week408 03 Recognizing Viable Prefixes"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P47Week408 03 Recognizing Viable Prefixes</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,359<br>In this video, we’re finally going to come to the technical highlight of bottom-up parsing.</p>
+<p>2<br>00:00:08,359 –&gt; 00:00:11,919<br>So after all the definitions of the previous videos, now we’re actually going to be able</p>
+<p>3<br>00:00:11,919 –&gt; 00:00:15,320<br>to give the algorithm for recognizing viable prefixes.</p>
+<p>4<br>00:00:15,320 –&gt; 00:00:20,440<br>So let’s dive straight into the algorithm.</p>
+<p>5<br>00:00:20,440 –&gt; 00:00:27,560<br>The first step really is just a very technical point and it’s not that important, but we’re</p>
+<p>6<br>00:00:27,559 –&gt; 00:00:30,759<br>going to do it anyway because it makes things simpler.</p>
+<p>7<br>00:00:30,759 –&gt; 00:00:36,399<br>Is to add a dummy production, s prime goes to s to our grammar of interest g.</p>
+<p>8<br>00:00:36,399 –&gt; 00:00:40,840<br>So just to set the stage here, we’re trying to compute the viable prefixes of g.</p>
+<p>9<br>00:00:40,840 –&gt; 00:00:46,239<br>We’re trying to come up with an algorithm for recognizing the viable prefixes of g.</p>
+<p>10<br>00:00:46,239 –&gt; 00:00:50,039<br>If s is the start symbol, we’re just going to make up a new start symbol, s prime.</p>
+<p>11<br>00:00:50,039 –&gt; 00:00:52,719<br>So s prime will be the new start symbol of the augmented grammar.</p>
+<p>12<br>00:00:52,719 –&gt; 00:00:55,960<br>And there’s just one production for s prime, s prime goes to s.</p>
+<p>13<br>00:00:55,960 –&gt; 00:01:00,240<br>So this just allows us to know exactly where our start symbol is used.</p>
+<p>14<br>00:01:00,240 –&gt; 00:01:04,760<br>In particular, our new start symbol s prime is only used in one place on the left hand side</p>
+<p>15<br>00:01:04,760 –&gt; 00:01:06,079<br>of this one production.</p>
+<p>16<br>00:01:06,079 –&gt; 00:01:09,920<br>And that just makes things a little bit simpler.</p>
+<p>17<br>00:01:09,920 –&gt; 00:01:15,280<br>Now recall what we are trying to do, which we claim that the set of viable prefixes for</p>
+<p>18<br>00:01:15,280 –&gt; 00:01:18,799<br>a given grammar is regular.</p>
+<p>19<br>00:01:18,799 –&gt; 00:01:23,040<br>And so what we’re going to do is we’re going to construct in non-deterministic finite automaton</p>
+<p>20<br>00:01:23,040 –&gt; 00:01:25,960<br>that recognizes the viable prefixes.</p>
+<p>21<br>00:01:25,960 –&gt; 00:01:31,120<br>And the states of this NFA are going to be the items of the grammar.</p>
+<p>22<br>00:01:31,120 –&gt; 00:01:34,480<br>Now the input to the NFA is the stack.</p>
+<p>23<br>00:01:34,480 –&gt; 00:01:38,000<br>So the NFA reads the stack.</p>
+<p>24<br>00:01:38,000 –&gt; 00:01:40,640<br>And then it, so let’s just indicate this.</p>
+<p>25<br>00:01:40,640 –&gt; 00:01:43,160<br>So the NFA is going to take the stack as an argument.</p>
+<p>26<br>00:01:43,160 –&gt; 00:01:46,760<br>And it’s either going to say yes, that’s a viable prefix or no.</p>
+<p>27<br>00:01:46,760 –&gt; 00:01:48,920<br>And it’s going to read the stack from bottom to top.</p>
+<p>28<br>00:01:48,920 –&gt; 00:01:53,000<br>So it’s going to start at the bottom of the stack and read towards the top of the stack.</p>
+<p>29<br>00:01:53,000 –&gt; 00:01:58,120<br>And our goal here is to write a non-deterministic finite automaton that recognizes the valid</p>
+<p>30<br>00:01:58,120 –&gt; 00:01:59,840<br>stack, so the parser.</p>
+<p>31<br>00:01:59,840 –&gt; 00:02:05,359<br>So that is how we’ll know that our parser hasn’t encountered any pars errors because this</p>
+<p>32<br>00:02:05,359 –&gt; 00:02:10,400<br>automaton that we’re going to construct will always output either yes, this stack is okay,</p>
+<p>33<br>00:02:10,400 –&gt; 00:02:17,520<br>meaning it could wind up parsing the input or know what we’ve got on the stack now doesn’t</p>
+<p>34<br>00:02:17,520 –&gt; 00:02:24,520<br>resemble any valid stack for any possible parse of any input string for this grammar.</p>
+<p>35<br>00:02:24,520 –&gt; 00:02:31,800<br>Okay, so let’s think about what we need the moves of this machine to be.</p>
+<p>36<br>00:02:31,800 –&gt; 00:02:36,320<br>So let’s say that we’re in the state e aero alpha dot x beta.</p>
+<p>37<br>00:02:36,320 –&gt; 00:02:37,640<br>Now what does that say?</p>
+<p>38<br>00:02:37,640 –&gt; 00:02:42,040<br>So that says that so far we’ve seen alpha on the stack.</p>
+<p>39<br>00:02:42,040 –&gt; 00:02:47,480<br>Okay, so remember the machine is reading the stack from bottom to top.</p>
+<p>40<br>00:02:47,479 –&gt; 00:02:51,879<br>This records the fact that the machine has already seen alpha on the stack.</p>
+<p>41<br>00:02:51,879 –&gt; 00:02:54,479<br>So what would be an okay thing to see next on the stack?</p>
+<p>42<br>00:02:54,479 –&gt; 00:02:58,799<br>Well if this is a valid stack, if having alpha on the stack of this point is valid, well</p>
+<p>43<br>00:02:58,799 –&gt; 00:03:02,319<br>then certainly it would be okay if the next thing on the stack was an x.</p>
+<p>44<br>00:03:02,319 –&gt; 00:03:07,479<br>So we have a transition that if we’re in this state where we’re working on this production</p>
+<p>45<br>00:03:07,479 –&gt; 00:03:12,719<br>and we’ve seen alpha on the stack, if the next thing is an x on input x then we can go</p>
+<p>46<br>00:03:12,719 –&gt; 00:03:17,319<br>to this state where now we record the fact that we’ve seen alpha x on the stack and we’re</p>
+<p>47<br>00:03:17,319 –&gt; 00:03:21,239<br>waiting to see the remaining portion beta of that production.</p>
+<p>48<br>00:03:21,239 –&gt; 00:03:27,840<br>Okay, so this is one kind of move that the non-deterministic finite atomic can make.</p>
+<p>49<br>00:03:27,840 –&gt; 00:03:31,280<br>And again we do, we add this kind of a move for every item.</p>
+<p>50<br>00:03:31,280 –&gt; 00:03:36,439<br>So for every item in the grammar, if the dot is not all the way at the right end then</p>
+<p>51<br>00:03:36,439 –&gt; 00:03:40,799<br>there will be a move like this where the dot moves over for whatever symbol happens to</p>
+<p>52<br>00:03:40,799 –&gt; 00:03:44,519<br>come to the right of the dot.</p>
+<p>53<br>00:03:44,520 –&gt; 00:03:49,800<br>The other class of transitions are the following and these are the more interesting ones.</p>
+<p>54<br>00:03:49,800 –&gt; 00:03:56,820<br>So let’s say that we’re in this configuration here where again we’ve seen alpha and then</p>
+<p>55<br>00:03:56,820 –&gt; 00:04:03,760<br>the next thing on the stack is x and here x is a non-terminal.</p>
+<p>56<br>00:04:03,760 –&gt; 00:04:09,520<br>And I should have said that in the previous case x was either a terminal or non-terminal.</p>
+<p>57<br>00:04:09,520 –&gt; 00:04:13,240<br>So this x here is any grammar symbol, not just a non-terminal.</p>
+<p>58<br>00:04:13,240 –&gt; 00:04:18,560<br>But this number four here, the move here at part four are specifically for non-terminals.</p>
+<p>59<br>00:04:18,560 –&gt; 00:04:25,040<br>Okay, so anyway, if x is not on the stack, okay, let’s assume that we’ve seen alpha and</p>
+<p>60<br>00:04:25,040 –&gt; 00:04:27,800<br>then the next thing on the stack is not x.</p>
+<p>61<br>00:04:27,800 –&gt; 00:04:33,800<br>Well, is it possible that there could be a valid configuration of the parser where we saw</p>
+<p>62<br>00:04:33,800 –&gt; 00:04:36,400<br>alpha but then x didn’t appear next?</p>
+<p>63<br>00:04:36,400 –&gt; 00:04:42,240<br>And the answer is yes because as we said before, the stack is a sequence of partial right-hand</p>
+<p>64<br>00:04:42,240 –&gt; 00:04:43,240<br>side.</p>
+<p>65<br>00:04:43,240 –&gt; 00:04:47,800<br>So it could be that all that’s on the stack right now for this production is alpha.</p>
+<p>66<br>00:04:47,800 –&gt; 00:04:51,879<br>And the next thing on the stack is eventually going to reduce stacks.</p>
+<p>67<br>00:04:51,879 –&gt; 00:04:55,720<br>Might not be x itself, it might be something that will eventually reduce stacks.</p>
+<p>68<br>00:04:55,720 –&gt; 00:04:57,199<br>But what does that mean?</p>
+<p>69<br>00:04:57,199 –&gt; 00:05:01,079<br>Well, that means that whatever is there on the stack has to be derived from x.</p>
+<p>70<br>00:05:01,079 –&gt; 00:05:07,199<br>It has to be something that can be generated by using a sequence of x productions because</p>
+<p>71<br>00:05:07,199 –&gt; 00:05:09,240<br>eventually it’s going to reduce stacks.</p>
+<p>72<br>00:05:09,240 –&gt; 00:05:15,079<br>So for every item that looks like this and every production for x now, we’re going to add</p>
+<p>73<br>00:05:15,079 –&gt; 00:05:16,079<br>the following move.</p>
+<p>74<br>00:05:16,079 –&gt; 00:05:20,600<br>We’re going to say that if there’s no x on the stack, well then we can make an epsilon move.</p>
+<p>75<br>00:05:20,600 –&gt; 00:05:25,199<br>We can just shift to a state where we try to recognize the right-hand side of something</p>
+<p>76<br>00:05:25,199 –&gt; 00:05:27,600<br>derived from x.</p>
+<p>77<br>00:05:27,600 –&gt; 00:05:29,480<br>And these are the only two kinds of moves.</p>
+<p>78<br>00:05:29,480 –&gt; 00:05:36,199<br>Either the grammar symbols we’re looking for are there on the stack and we extend the</p>
+<p>79<br>00:05:36,199 –&gt; 00:05:37,639<br>prefix of our right-hand side.</p>
+<p>80<br>00:05:37,639 –&gt; 00:05:43,319<br>So this rule here extends a prefix, says yes, we see more of that production on the stack.</p>
+<p>81<br>00:05:43,319 –&gt; 00:05:47,599<br>Or it tries to guess or tries to discover where the ends of the prefix is are.</p>
+<p>82<br>00:05:47,599 –&gt; 00:05:52,120<br>So if alpha is as much of the production that is on the stack currently, well then this</p>
+<p>83<br>00:05:52,120 –&gt; 00:05:57,519<br>must be this x here, this point here must mark the start of another right-hand side in</p>
+<p>84<br>00:05:57,519 –&gt; 00:05:58,800<br>our stack of right-hand sides.</p>
+<p>85<br>00:05:58,800 –&gt; 00:06:06,279<br>And we would expect to see something derived from some production for x.</p>
+<p>86<br>00:06:06,279 –&gt; 00:06:10,759<br>Two more rules, every state in this automaton is going to be an accepting state.</p>
+<p>87<br>00:06:10,759 –&gt; 00:06:17,039<br>That means that if the automaton manages to successfully consume the entire stack, then</p>
+<p>88<br>00:06:17,039 –&gt; 00:06:20,839<br>the stack is viable.</p>
+<p>89<br>00:06:20,839 –&gt; 00:06:25,719<br>And just notice that not every state is going to have a transition on every possible symbol.</p>
+<p>90<br>00:06:25,719 –&gt; 00:06:30,359<br>So there will be plenty of possible stacks that are rejected simply because the automaton</p>
+<p>91<br>00:06:30,359 –&gt; 00:06:32,159<br>gets stuck.</p>
+<p>92<br>00:06:32,160 –&gt; 00:06:37,360<br>And finally, the start state of this automaton is the item s prime goes to .s.</p>
+<p>93<br>00:06:37,360 –&gt; 00:06:40,920<br>So remember the states of the machine are the items of the grammar.</p>
+<p>94<br>00:06:40,920 –&gt; 00:06:46,200<br>And this is why we added this dummy production is just so that we could conveniently name</p>
+<p>95<br>00:06:46,200 –&gt; 00:06:50,040<br>the start state.</p>
+<p>96<br>00:06:50,040 –&gt; 00:06:54,120<br>So now let’s consider one of our grammars we’ve been using a lot.</p>
+<p>97<br>00:06:54,120 –&gt; 00:06:55,600<br>So this is the grammar.</p>
+<p>98<br>00:06:55,600 –&gt; 00:07:00,480<br>And now we’re going to augment it with the extra production s prime goes to e.</p>
+<p>99<br>00:07:00,480 –&gt; 00:07:06,120<br>And let’s take a look at the automaton for that recognizes the viable prefixes of this</p>
+<p>100<br>00:07:06,120 –&gt; 00:07:07,600<br>grammar.</p>
+<p>101<br>00:07:07,600 –&gt; 00:07:08,600<br>And here it is.</p>
+<p>102<br>00:07:08,600 –&gt; 00:07:10,600<br>And as you can see, it’s rather large.</p>
+<p>103<br>00:07:10,600 –&gt; 00:07:13,840<br>It has a lot of states and a lot of transitions.</p>
+<p>104<br>00:07:13,840 –&gt; 00:07:18,439<br>And I just want to show it to you here before we describe how we calculated it just so you</p>
+<p>105<br>00:07:18,439 –&gt; 00:07:24,960<br>can get an idea that these automaton for recognizing viable prefixes for grammars are actually</p>
+<p>106<br>00:07:24,960 –&gt; 00:07:27,280<br>quite elaborate.</p>
+<p>107<br>00:07:27,279 –&gt; 00:07:32,639<br>But now let’s break this down and see how it was produced.</p>
+<p>108<br>00:07:32,639 –&gt; 00:07:35,199<br>So let’s begin with the start state for this machine.</p>
+<p>109<br>00:07:35,199 –&gt; 00:07:37,359<br>So we have s prime goes to .e.</p>
+<p>110<br>00:07:37,359 –&gt; 00:07:41,759<br>And remember what this says is we want to be able to reduce to the start symbol to our</p>
+<p>111<br>00:07:41,759 –&gt; 00:07:43,039<br>new start symbol.</p>
+<p>112<br>00:07:43,039 –&gt; 00:07:46,919<br>And so we’re reading the stack and we’re hoping to see an e on the stack.</p>
+<p>113<br>00:07:46,919 –&gt; 00:07:50,279<br>But if we don’t, then we’ll be happy to see something derived for me.</p>
+<p>114<br>00:07:50,279 –&gt; 00:07:52,439<br>So what transitions can we make from the state?</p>
+<p>115<br>00:07:52,439 –&gt; 00:07:57,560<br>Well, one possibility is that we do in fact see an e on the stack.</p>
+<p>116<br>00:07:57,560 –&gt; 00:08:03,480<br>And in that case, the dot simply moves over saying yes, we’ve read the first item on the</p>
+<p>117<br>00:08:03,480 –&gt; 00:08:06,040<br>stack or we’ve read the e on the stack.</p>
+<p>118<br>00:08:06,040 –&gt; 00:08:09,680<br>And so we’ve seen the full right hand side of this production.</p>
+<p>119<br>00:08:09,680 –&gt; 00:08:12,399<br>Now that would indicate that we were probably done with parsing.</p>
+<p>120<br>00:08:12,399 –&gt; 00:08:16,120<br>This is the state that you would reach if you’d read the entire input and successfully</p>
+<p>121<br>00:08:16,120 –&gt; 00:08:17,120<br>parsed it.</p>
+<p>122<br>00:08:17,120 –&gt; 00:08:22,159<br>You would have reduced to the old start symbol and be about to reduce to the augmented</p>
+<p>123<br>00:08:23,160 –&gt; 00:08:25,960<br>the new start symbol.</p>
+<p>124<br>00:08:25,960 –&gt; 00:08:30,360<br>But if you’re not so fortunate as to see an e on the stack, then you need to hope that</p>
+<p>125<br>00:08:30,360 –&gt; 00:08:31,560<br>you’ll see something derived for me.</p>
+<p>126<br>00:08:31,560 –&gt; 00:08:33,800<br>And there are a couple of possibilities there.</p>
+<p>127<br>00:08:33,800 –&gt; 00:08:38,120<br>One is that is that we could see something that would eventually use this production.</p>
+<p>128<br>00:08:38,120 –&gt; 00:08:39,639<br>E goes to t.</p>
+<p>129<br>00:08:39,639 –&gt; 00:08:43,519<br>And since we haven’t seen any of it yet, we put the dot all the way at the left</p>
+<p>130<br>00:08:43,519 –&gt; 00:08:47,519<br>indicating that we’re hoping to see a t, which could then reduce to e, which could</p>
+<p>131<br>00:08:47,519 –&gt; 00:08:50,720<br>then reduce to s prime.</p>
+<p>132<br>00:08:50,720 –&gt; 00:08:54,680<br>Now if we don’t see a t on the stack by itself, the other possibility is that we could</p>
+<p>133<br>00:08:54,680 –&gt; 00:08:58,480<br>be working on this production e goes to t plus e.</p>
+<p>134<br>00:08:58,480 –&gt; 00:08:59,759<br>And again, we haven’t seen any of it.</p>
+<p>135<br>00:08:59,759 –&gt; 00:09:02,120<br>So the dot goes on the left hand side.</p>
+<p>136<br>00:09:02,120 –&gt; 00:09:08,440<br>And now notice how we’re crucially using the power of non deterministic automata.</p>
+<p>137<br>00:09:08,440 –&gt; 00:09:12,560<br>So here we don’t know which production is going to, which right hand side of a production</p>
+<p>138<br>00:09:12,560 –&gt; 00:09:13,800<br>is going to appear on the stack.</p>
+<p>139<br>00:09:13,800 –&gt; 00:09:19,680<br>And in fact, I noticed that these productions are not even, are not even left factored.</p>
+<p>140<br>00:09:19,679 –&gt; 00:09:24,239<br>So we don’t know whether it’s going to be just a t there or a t plus e.</p>
+<p>141<br>00:09:24,239 –&gt; 00:09:27,439<br>But we just use the guessing power of the non deterministic automaton.</p>
+<p>142<br>00:09:27,439 –&gt; 00:09:31,079<br>Let it choose which one to use.</p>
+<p>143<br>00:09:31,079 –&gt; 00:09:36,199<br>Remember the non deterministic automaton accepts if any possible choice accepts.</p>
+<p>144<br>00:09:36,199 –&gt; 00:09:38,319<br>So it can always guess correctly.</p>
+<p>145<br>00:09:38,319 –&gt; 00:09:40,679<br>So intuitively it will be able to pick the right one.</p>
+<p>146<br>00:09:40,679 –&gt; 00:09:45,519<br>Now of course, we can compile this down to a deterministic machine that won’t have to</p>
+<p>147<br>00:09:45,519 –&gt; 00:09:47,000<br>make any guesses.</p>
+<p>148<br>00:09:47,000 –&gt; 00:09:49,320<br>But at this level we’re writing the non deterministic machine.</p>
+<p>149<br>00:09:49,320 –&gt; 00:09:53,960<br>It’s extremely useful not to have to figure out which of these two productions to use.</p>
+<p>150<br>00:09:53,960 –&gt; 00:09:59,360<br>We can just try both and see what happens.</p>
+<p>151<br>00:09:59,360 –&gt; 00:10:03,279<br>Now let’s focus on this state.</p>
+<p>152<br>00:10:03,279 –&gt; 00:10:05,039<br>E goes to dot t.</p>
+<p>153<br>00:10:05,039 –&gt; 00:10:06,440<br>What are the possibilities there?</p>
+<p>154<br>00:10:06,440 –&gt; 00:10:09,320<br>Well, one possibility is that we see a t on the stack.</p>
+<p>155<br>00:10:09,320 –&gt; 00:10:11,799<br>And then we’ve seen a complete right hand side.</p>
+<p>156<br>00:10:11,799 –&gt; 00:10:16,519<br>And notice how when the dot moves all the way to the right hand side, that is going to</p>
+<p>157<br>00:10:16,519 –&gt; 00:10:18,519<br>indicate that we’re ready to do a reduce.</p>
+<p>158<br>00:10:18,519 –&gt; 00:10:20,519<br>So we’ll talk about that a little bit later.</p>
+<p>159<br>00:10:20,519 –&gt; 00:10:22,399<br>But essentially that’s how we’re going to recognize handles.</p>
+<p>160<br>00:10:22,399 –&gt; 00:10:25,960<br>When we finally reach a state where the dot is all the way to the right hand side, that’s</p>
+<p>161<br>00:10:25,960 –&gt; 00:10:32,079<br>going to say, this could be a handle that you might want to reduce.</p>
+<p>162<br>00:10:32,079 –&gt; 00:10:36,120<br>Now if we don’t see a t on the stack, then we need to see something derived from t.</p>
+<p>163<br>00:10:36,120 –&gt; 00:10:39,480<br>And there’s a couple of possibilities, a few possibilities there.</p>
+<p>164<br>00:10:39,480 –&gt; 00:10:42,039<br>One possibility is that it’s going to be the production t goes to int.</p>
+<p>165<br>00:10:42,039 –&gt; 00:10:45,679<br>So since we’re just starting on this production again, we just put the dot all the way at the</p>
+<p>166<br>00:10:45,679 –&gt; 00:10:46,679<br>left.</p>
+<p>167<br>00:10:46,679 –&gt; 00:10:52,319<br>Another possibility is that we’re working on t goes to open parent e close parent.</p>
+<p>168<br>00:10:52,319 –&gt; 00:10:55,479<br>And the third possibility is that we’re working on t goes to int times t.</p>
+<p>169<br>00:10:55,479 –&gt; 00:10:59,559<br>And in each case here, notice that that does all the way to the left indicating that we’re</p>
+<p>170<br>00:10:59,559 –&gt; 00:11:00,559<br>just getting started.</p>
+<p>171<br>00:11:00,559 –&gt; 00:11:06,799<br>We haven’t actually seen any of the right hand side yet.</p>
+<p>172<br>00:11:06,799 –&gt; 00:11:09,000<br>Now let’s shift our focus to this production.</p>
+<p>173<br>00:11:09,000 –&gt; 00:11:11,959<br>E goes to dot t plus e.</p>
+<p>174<br>00:11:11,959 –&gt; 00:11:14,479<br>This item, excuse me.</p>
+<p>175<br>00:11:14,480 –&gt; 00:11:21,000<br>One possibility is that we see an t on the stack, which case the dot just moves over.</p>
+<p>176<br>00:11:21,000 –&gt; 00:11:25,360<br>And the other possibility is that we see something derived from t, which case we will go to one</p>
+<p>177<br>00:11:25,360 –&gt; 00:11:27,360<br>of the states that begins a t production.</p>
+<p>178<br>00:11:27,360 –&gt; 00:11:31,159<br>And notice here that we already have all three of those items in our automaton.</p>
+<p>179<br>00:11:31,159 –&gt; 00:11:36,480<br>We’re just going to states that we went to from the item e goes to dot t.</p>
+<p>180<br>00:11:36,480 –&gt; 00:11:46,039<br>So this item e goes to dot t plus e can also move to those three states.</p>
+<p>181<br>00:11:46,039 –&gt; 00:11:48,360<br>Now let’s focus on this item here.</p>
+<p>182<br>00:11:48,360 –&gt; 00:11:51,320<br>T goes to dot open parent e close parent.</p>
+<p>183<br>00:11:51,320 –&gt; 00:11:53,159<br>Well, there’s only one possible move here.</p>
+<p>184<br>00:11:53,159 –&gt; 00:11:55,399<br>So this is only a terminal.</p>
+<p>185<br>00:11:55,399 –&gt; 00:11:57,000<br>There’s not a non terminal.</p>
+<p>186<br>00:11:57,000 –&gt; 00:12:00,680<br>So there’s not going to be any possibility of having something derived from open parent.</p>
+<p>187<br>00:12:00,680 –&gt; 00:12:03,320<br>We just have to see the open parent and the input.</p>
+<p>188<br>00:12:03,320 –&gt; 00:12:06,840<br>So there’s only one possible transition here, which is that we see the open parent, excuse</p>
+<p>189<br>00:12:06,840 –&gt; 00:12:11,440<br>me, on the stack and the dot just moves over.</p>
+<p>190<br>00:12:11,440 –&gt; 00:12:17,000<br>Now from this state, once again, the dot is next to a or just to the left of a non terminal.</p>
+<p>191<br>00:12:17,000 –&gt; 00:12:20,440<br>So here we might either see that non terminal on the stack or we might see something derived</p>
+<p>192<br>00:12:20,440 –&gt; 00:12:21,680<br>from that non terminal.</p>
+<p>193<br>00:12:21,680 –&gt; 00:12:25,840<br>Well, if we see the non terminal on the stack and the dot just moves over and we get t</p>
+<p>194<br>00:12:25,840 –&gt; 00:12:30,680<br>open parent e dot close parent indicating that we’ve seen both an open parent and e on</p>
+<p>195<br>00:12:30,679 –&gt; 00:12:34,599<br>the stack and we’re still waiting to see the close parent.</p>
+<p>196<br>00:12:34,599 –&gt; 00:12:37,599<br>But we might also see something derived from me.</p>
+<p>197<br>00:12:37,599 –&gt; 00:12:44,439<br>And so we have these two transitions to the two items that begin productions for me.</p>
+<p>198<br>00:12:44,439 –&gt; 00:12:45,439<br>All right.</p>
+<p>199<br>00:12:45,439 –&gt; 00:12:47,239<br>Now let’s focus on this state.</p>
+<p>200<br>00:12:47,239 –&gt; 00:12:52,799<br>T goes to open parent e dot close parent again, because it’s a terminal that the dot is next</p>
+<p>201<br>00:12:52,799 –&gt; 00:12:54,319<br>to is only one possible move.</p>
+<p>202<br>00:12:54,319 –&gt; 00:12:57,559<br>We have to see that open parent if we see anything at all.</p>
+<p>203<br>00:12:57,719 –&gt; 00:13:01,759<br>And we’ll wind up with the item t goes to open parent e close parent dot and now we’ve</p>
+<p>204<br>00:13:01,759 –&gt; 00:13:07,000<br>recognized the entire right hand side of that production on the stack.</p>
+<p>205<br>00:13:07,000 –&gt; 00:13:09,000<br>Let’s take a look at this item.</p>
+<p>206<br>00:13:09,000 –&gt; 00:13:13,639<br>So we’re here because a terminal symbol, the only possibility is to read that terminal</p>
+<p>207<br>00:13:13,639 –&gt; 00:13:14,639<br>symbol on the stack.</p>
+<p>208<br>00:13:14,639 –&gt; 00:13:22,639<br>So this would be the next item e goes to t plus dot e focusing on that item again.</p>
+<p>209<br>00:13:22,639 –&gt; 00:13:25,599<br>We could possibly see an e on the stack.</p>
+<p>210<br>00:13:26,440 –&gt; 00:13:29,759<br>In which case we would have recognized the entire right hand side of this production.</p>
+<p>211<br>00:13:29,759 –&gt; 00:13:34,399<br>We’d have e goes to t plus e dot or we could see something derived for me in which case</p>
+<p>212<br>00:13:34,399 –&gt; 00:13:40,000<br>we’ll make a transition back to one of those two states.</p>
+<p>213<br>00:13:40,000 –&gt; 00:13:44,639<br>Now where we got productions left to go or items left to go here.</p>
+<p>214<br>00:13:44,639 –&gt; 00:13:47,279<br>We got t goes to dot int.</p>
+<p>215<br>00:13:47,279 –&gt; 00:13:51,120<br>So we would have to see int next on the stack and that would be the full right hand side</p>
+<p>216<br>00:13:51,120 –&gt; 00:13:54,440<br>of that production.</p>
+<p>217<br>00:13:54,440 –&gt; 00:13:58,320<br>And down here we still have t goes to dot int times t.</p>
+<p>218<br>00:13:58,320 –&gt; 00:14:01,920<br>So again, there’s a terminal symbol here int.</p>
+<p>219<br>00:14:01,920 –&gt; 00:14:06,240<br>And so that would be the next thing we would need to see on the stack for this production</p>
+<p>220<br>00:14:06,240 –&gt; 00:14:09,120<br>to remain viable.</p>
+<p>221<br>00:14:09,120 –&gt; 00:14:13,920<br>And once we’ve seen the int, we would like to see the times.</p>
+<p>222<br>00:14:13,920 –&gt; 00:14:17,920<br>So we wind up in this state and now we’ve got dot next to t.</p>
+<p>223<br>00:14:17,920 –&gt; 00:14:22,360<br>So again, one possibility is that we see the t on the stack and then we’ve seen the</p>
+<p>224<br>00:14:22,360 –&gt; 00:14:24,560<br>full right hand side of this production.</p>
+<p>225<br>00:14:24,560 –&gt; 00:14:27,560<br>But we might only see something derived from t.</p>
+<p>226<br>00:14:27,560 –&gt; 00:14:29,879<br>The t might not be there yet.</p>
+<p>227<br>00:14:29,879 –&gt; 00:14:34,279<br>It might be in a state where we’re still waiting for the t to appear through some sequence</p>
+<p>228<br>00:14:34,279 –&gt; 00:14:35,279<br>of reductions.</p>
+<p>229<br>00:14:35,279 –&gt; 00:14:37,320<br>But then we would need to see something derived from t.</p>
+<p>230<br>00:14:37,320 –&gt; 00:14:43,080<br>In this case, we would make a transition to one of the three states that begin the</p>
+<p>231<br>00:14:43,080 –&gt; 00:14:46,759<br>productions for t.</p>
+<p>232<br>00:14:46,759 –&gt; 00:14:48,399<br>And that’s the full automaton.</p>
+<p>233<br>00:14:48,399 –&gt; 00:14:53,799<br>And those are all the states and all the transitions for the automaton that recognizes the</p>
+<p>234<br>00:14:53,799 –&gt; 00:14:55,480<br>viable prefixes of this grammar.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P47Week408 03 Recognizing Viable Prefixes</div>
+      <div>http://example.com/2025/10/25/CS143 P47Week408-03-recognizing-viable-prefixes/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P49Week408-05-slr-parsing/" title="CS143 P49Week408 05 Slr Parsing">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P49Week408 05 Slr Parsing</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P46Week408-02-recognizing-handles/" title="CS143 P46Week408 02 Recognizing Handles">
+                        <span class="hidden-mobile">CS143 P46Week408 02 Recognizing Handles</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

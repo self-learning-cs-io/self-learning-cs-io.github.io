@@ -1,0 +1,736 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,560In this video, we’re going to continue our discussion of analysis of control flow graphs by 200:00:08,560 –&gt; 00:00:13,560focusing on what is undoubtedly the most int">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P103Week815 03 Analysis Of Loops">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P103Week815-03-analysis-of-loops/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,560In this video, we’re going to continue our discussion of analysis of control flow graphs by 200:00:08,560 –&gt; 00:00:13,560focusing on what is undoubtedly the most int">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.380Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.216Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P103Week815 03 Analysis Of Loops - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P103Week815 03 Analysis Of Loops"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P103Week815 03 Analysis Of Loops</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,560<br>In this video, we’re going to continue our discussion of analysis of control flow graphs by</p>
+<p>2<br>00:00:08,560 –&gt; 00:00:13,560<br>focusing on what is undoubtedly the most interesting aspect of the whole problem, the analysis</p>
+<p>3<br>00:00:13,560 –&gt; 00:00:17,440<br>of loops.</p>
+<p>4<br>00:00:17,440 –&gt; 00:00:20,240<br>Here’s an example of control flow graph with a loop in it.</p>
+<p>5<br>00:00:20,240 –&gt; 00:00:26,359<br>And it turns out that the need for the special element bottom in our analysis is intimately</p>
+<p>6<br>00:00:26,359 –&gt; 00:00:28,719<br>tied to the analysis of loops.</p>
+<p>7<br>00:00:28,719 –&gt; 00:00:34,799<br>And so let’s just think about how we would do our constant propagation example analysis</p>
+<p>8<br>00:00:34,799 –&gt; 00:00:38,000<br>with this particular control flow graph.</p>
+<p>9<br>00:00:38,000 –&gt; 00:00:40,799<br>So what do we know about x?</p>
+<p>10<br>00:00:40,799 –&gt; 00:00:43,039<br>So initially we don’t know anything.</p>
+<p>11<br>00:00:43,039 –&gt; 00:00:48,120<br>So before we enter the control flow graph, its value is top.</p>
+<p>12<br>00:00:48,120 –&gt; 00:00:52,480<br>And after the assignment to three, we’ll know that x has the value three.</p>
+<p>13<br>00:00:52,480 –&gt; 00:00:57,480<br>The conditional branch here, the predicate, won’t affect the value of x.</p>
+<p>14<br>00:00:57,479 –&gt; 00:01:01,519<br>So it’ll be three on both branches, the assignment to y won’t affect it, so it’ll be three</p>
+<p>15<br>00:01:01,519 –&gt; 00:01:03,679<br>here as well.</p>
+<p>16<br>00:01:03,679 –&gt; 00:01:05,640<br>And now we come here.</p>
+<p>17<br>00:01:05,640 –&gt; 00:01:08,799<br>And let’s focus on this statement right here.</p>
+<p>18<br>00:01:08,799 –&gt; 00:01:16,039<br>So the rule is that the analysis of x at y equals zero.</p>
+<p>19<br>00:01:16,039 –&gt; 00:01:23,959<br>Okay, so with the value of x right here before the assignment to y is a function of all the</p>
+<p>20<br>00:01:23,959 –&gt; 00:01:24,959<br>predecessors.</p>
+<p>21<br>00:01:24,959 –&gt; 00:01:28,039<br>We need to know what the value of x is on both of the incoming edges.</p>
+<p>22<br>00:01:28,039 –&gt; 00:01:30,159<br>Okay, well we don’t have a value down here yet.</p>
+<p>23<br>00:01:30,159 –&gt; 00:01:35,759<br>So the question is, what is the value of x here on this edge?</p>
+<p>24<br>00:01:35,759 –&gt; 00:01:38,000<br>And in order to figure that out, we’d have to look at its predecessors.</p>
+<p>25<br>00:01:38,000 –&gt; 00:01:39,399<br>Okay, well what are its predecessors?</p>
+<p>26<br>00:01:39,399 –&gt; 00:01:42,319<br>Well, there’s this point here after the predicate.</p>
+<p>27<br>00:01:42,319 –&gt; 00:01:44,839<br>There’s this point here between the two statements.</p>
+<p>28<br>00:01:44,839 –&gt; 00:01:47,639<br>And then there’s this point here after the execution of y.</p>
+<p>29<br>00:01:47,639 –&gt; 00:01:52,599<br>We’re just following the edges backwards here, looking at where we need to know information</p>
+<p>30<br>00:01:52,599 –&gt; 00:01:53,599<br>for x.</p>
+<p>31<br>00:01:53,599 –&gt; 00:01:58,319<br>So here we need to know it here and we need to know it here.</p>
+<p>32<br>00:01:58,319 –&gt; 00:02:03,719<br>All right, and then because of this edge, that means we again need to know it at both</p>
+<p>33<br>00:02:03,719 –&gt; 00:02:06,119<br>of the predecessors of y equals to zero.</p>
+<p>34<br>00:02:06,119 –&gt; 00:02:09,159<br>So now we’re in the loop and this isn’t too surprising.</p>
+<p>35<br>00:02:09,159 –&gt; 00:02:14,319<br>I mean, if you have, if information about x depends on the predecessors of a statement and</p>
+<p>36<br>00:02:14,319 –&gt; 00:02:18,959<br>you do follow that recursively, then you’re going to wind up going around loops like this.</p>
+<p>37<br>00:02:19,680 –&gt; 00:02:26,159<br>And there’s no good way, at least it’s not in a particularly immediately obvious way,</p>
+<p>38<br>00:02:26,159 –&gt; 00:02:27,159<br>to solve this problem.</p>
+<p>39<br>00:02:27,159 –&gt; 00:02:33,439<br>So how do we get information about the predecessor, the predecessors of y equals zero,</p>
+<p>40<br>00:02:33,439 –&gt; 00:02:34,879<br>when they depend on themselves?</p>
+<p>41<br>00:02:36,879 –&gt; 00:02:41,000<br>So I’d be more precise looking at that particular statement again, in order to compute</p>
+<p>42<br>00:02:41,000 –&gt; 00:02:46,920<br>whether x is constant at the point right before the statement y equals zero,</p>
+<p>43<br>00:02:46,919 –&gt; 00:02:52,399<br>we need to know whether x is constant at the two predecessors and that information depends</p>
+<p>44<br>00:02:52,399 –&gt; 00:02:55,399<br>on his predecessors, which include y equals to zero.</p>
+<p>45<br>00:02:55,399 –&gt; 00:02:56,919<br>Okay, so this is the conundrum.</p>
+<p>46<br>00:02:56,919 –&gt; 00:03:02,079<br>So how are we to solve this recursive problem?</p>
+<p>47<br>00:03:04,079 –&gt; 00:03:10,239<br>And there’s a standard solution that is actually used in many areas of mathematics,</p>
+<p>48<br>00:03:10,239 –&gt; 00:03:13,560<br>not just in the analysis of loops.</p>
+<p>49<br>00:03:13,560 –&gt; 00:03:18,039<br>When you have these kinds of recurrence relationships or recursive equations.</p>
+<p>50<br>00:03:18,039 –&gt; 00:03:24,039<br>And the standard solution is to break the cycle by starting with some initial guess.</p>
+<p>51<br>00:03:24,039 –&gt; 00:03:31,879<br>So you have some initial approximation that is really not perhaps even expected to be the final result,</p>
+<p>52<br>00:03:31,879 –&gt; 00:03:33,319<br>but allows you to get going.</p>
+<p>53<br>00:03:33,319 –&gt; 00:03:36,840<br>So, and so what we’re going to do is that because of the cycles, all the points,</p>
+<p>54<br>00:03:36,840 –&gt; 00:03:40,520<br>all the program points have to have values at all times.</p>
+<p>55<br>00:03:40,520 –&gt; 00:03:44,360<br>And so we’re going to assign an initial value and that is what bottom is for.</p>
+<p>56<br>00:03:44,360 –&gt; 00:03:48,879<br>And the initial value bottom means so far as we know, control never reaches this point.</p>
+<p>57<br>00:03:48,879 –&gt; 00:03:52,840<br>Remember, we said this quite a while ago several videos ago.</p>
+<p>58<br>00:03:52,840 –&gt; 00:03:55,640<br>And this will allow us to make progress.</p>
+<p>59<br>00:03:57,080 –&gt; 00:04:04,480<br>And to see that, let’s go ahead and analyze this control flow graph now,</p>
+<p>60<br>00:04:04,480 –&gt; 00:04:08,520<br>where we assume that all points, at all points initially,</p>
+<p>61<br>00:04:08,520 –&gt; 00:04:10,840<br>x has a value bottom except at the entry point.</p>
+<p>62<br>00:04:10,840 –&gt; 00:04:12,159<br>So the entry point is special.</p>
+<p>63<br>00:04:12,159 –&gt; 00:04:17,960<br>Here we assume that we don’t know anything about x because we know the control reaches the initial point.</p>
+<p>64<br>00:04:17,960 –&gt; 00:04:23,040<br>But initially, we’re going to just say, well, x is bottom everywhere else.</p>
+<p>65<br>00:04:23,040 –&gt; 00:04:27,079<br>Okay, so let’s put the bottom there.</p>
+<p>66<br>00:04:27,079 –&gt; 00:04:28,960<br>Let’s put the bottom there.</p>
+<p>67<br>00:04:28,960 –&gt; 00:04:31,680<br>I’m just going to fill in all the values.</p>
+<p>68<br>00:04:31,680 –&gt; 00:04:38,519<br>And I’m just writing it everywhere here.</p>
+<p>69<br>00:04:38,519 –&gt; 00:04:45,120<br>And there’s really another one right here after the merge of these two paths.</p>
+<p>70<br>00:04:45,120 –&gt; 00:04:46,280<br>So I’ll indicate that.</p>
+<p>71<br>00:04:46,280 –&gt; 00:04:47,519<br>All right, so there.</p>
+<p>72<br>00:04:47,519 –&gt; 00:04:50,000<br>Now we have our initial setup.</p>
+<p>73<br>00:04:50,000 –&gt; 00:04:52,040<br>And now remember what the procedure is.</p>
+<p>74<br>00:04:52,040 –&gt; 00:04:55,519<br>We go and look where the information is inconsistent and we update it.</p>
+<p>75<br>00:04:55,519 –&gt; 00:04:57,680<br>So where’s the place where the information is inconsistent?</p>
+<p>76<br>00:04:57,680 –&gt; 00:05:00,319<br>Well, clearly it’s not correct here.</p>
+<p>77<br>00:05:00,319 –&gt; 00:05:04,800<br>All right, because we know that after if control reaches the point before x equals three,</p>
+<p>78<br>00:05:04,800 –&gt; 00:05:08,759<br>then after the assignment, x will be equal to three.</p>
+<p>79<br>00:05:08,759 –&gt; 00:05:12,600<br>Again, the predicate will not change the value of x.</p>
+<p>80<br>00:05:12,600 –&gt; 00:05:17,240<br>So we have to update the results on the two branches after the predicate.</p>
+<p>81<br>00:05:17,240 –&gt; 00:05:21,120<br>And after it’s assignment that doesn’t affect x to make that information consistent, we have that.</p>
+<p>82<br>00:05:21,120 –&gt; 00:05:24,439<br>Now, let’s come back to our interesting case here.</p>
+<p>83<br>00:05:24,439 –&gt; 00:05:29,319<br>We know that x is equal to three on this branch coming into y equals zero.</p>
+<p>84<br>00:05:29,319 –&gt; 00:05:34,599<br>And so far as we know, control never reaches the other predecessor.</p>
+<p>85<br>00:05:34,599 –&gt; 00:05:38,839<br>So we’re going to start out by assuming that that part that path is never taken.</p>
+<p>86<br>00:05:38,839 –&gt; 00:05:41,519<br>And if that path is never taken, then it won’t contribute anything.</p>
+<p>87<br>00:05:41,519 –&gt; 00:05:45,519<br>And so at this point in the program, we will know that x is equal to three.</p>
+<p>88<br>00:05:45,519 –&gt; 00:05:50,800<br>So assuming that all this information is correct, we will be able to conclude that x is equal to three at this point.</p>
+<p>89<br>00:05:50,800 –&gt; 00:05:54,000<br>And notice how we’ve been able to break the cycle here and get started.</p>
+<p>90<br>00:05:54,000 –&gt; 00:05:59,159<br>So we just assume that the this last edge in the cycle never executes.</p>
+<p>91<br>00:05:59,160 –&gt; 00:06:01,439<br>And if that’s not correct, we’ll find out later.</p>
+<p>92<br>00:06:01,439 –&gt; 00:06:04,360<br>And this value down here will become something other than bottom.</p>
+<p>93<br>00:06:04,360 –&gt; 00:06:06,640<br>And then we’ll update the assignment again.</p>
+<p>94<br>00:06:06,640 –&gt; 00:06:09,480<br>All right, so let’s continue on.</p>
+<p>95<br>00:06:09,480 –&gt; 00:06:14,400<br>So we have x is equal to three before y is assigned zero.</p>
+<p>96<br>00:06:14,400 –&gt; 00:06:17,040<br>So the assignment to y will not affect the value of x.</p>
+<p>97<br>00:06:17,040 –&gt; 00:06:19,400<br>So make the information afterwards consistent.</p>
+<p>98<br>00:06:19,400 –&gt; 00:06:21,640<br>We’ll have to make x equal to three there.</p>
+<p>99<br>00:06:21,640 –&gt; 00:06:23,879<br>Now we have a merge of two paths.</p>
+<p>100<br>00:06:23,879 –&gt; 00:06:28,520<br>Okay, so at this point here before the execution of this assignment,</p>
+<p>101<br>00:06:28,560 –&gt; 00:06:30,959<br>we will also know that x is equal to three.</p>
+<p>102<br>00:06:30,959 –&gt; 00:06:32,839<br>The assignment to a will not affect x.</p>
+<p>103<br>00:06:32,839 –&gt; 00:06:35,000<br>We’ll update that point there.</p>
+<p>104<br>00:06:35,000 –&gt; 00:06:37,240<br>And the predicate will not affect the value of x.</p>
+<p>105<br>00:06:37,240 –&gt; 00:06:40,319<br>So we’ll know that x is equal to three on this back edge.</p>
+<p>106<br>00:06:40,319 –&gt; 00:06:42,359<br>And now this information has changed.</p>
+<p>107<br>00:06:42,359 –&gt; 00:06:47,079<br>We now know the control can reach this edge because we followed a control path all the way to here.</p>
+<p>108<br>00:06:47,079 –&gt; 00:06:49,560<br>We have some new information about x.</p>
+<p>109<br>00:06:49,560 –&gt; 00:06:52,799<br>And so now we have to double check that everything is still okay.</p>
+<p>110<br>00:06:52,799 –&gt; 00:06:56,599<br>So here we have x is equal to three on this edge, x is equal to three on this edge.</p>
+<p>111<br>00:06:56,600 –&gt; 00:07:02,560<br>And our previous conclusion was that x was equal to three on entry to the statement y equals zero.</p>
+<p>112<br>00:07:02,560 –&gt; 00:07:04,200<br>Well, that’s all still consistent.</p>
+<p>113<br>00:07:04,200 –&gt; 00:07:07,879<br>There are no places left in the control flow graph that are inconsistent.</p>
+<p>114<br>00:07:07,879 –&gt; 00:07:10,920<br>So all the information is consistent with all the rules.</p>
+<p>115<br>00:07:10,920 –&gt; 00:07:11,600<br>And so we’re done.</p>
+<p>116<br>00:07:11,600 –&gt; 00:07:13,000<br>And this is the final analysis.</p>
+<p>117<br>00:07:13,000 –&gt; 00:07:16,520<br>We’re able to conclude that all of these points here,</p>
+<p>118<br>00:07:16,520 –&gt; 00:07:20,720<br>like say every point except the entry point that x is in fact the constant three.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P103Week815 03 Analysis Of Loops</div>
+      <div>http://example.com/2025/10/25/CS143 P103Week815-03-analysis-of-loops/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P105Week815-05-A+Liveness+Analysis/" title="CS143 P105Week815 05 A+Liveness+Analysis">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P105Week815 05 A+Liveness+Analysis</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P100Week814-04-peephole-optimization/" title="CS143 P100Week814 04 Peephole Optimization">
+                        <span class="hidden-mobile">CS143 P100Week814 04 Peephole Optimization</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

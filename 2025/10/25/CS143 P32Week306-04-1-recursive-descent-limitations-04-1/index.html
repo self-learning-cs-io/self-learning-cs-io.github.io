@@ -1,0 +1,665 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,000In this video, I’m going to cover a limitation of the recursive descent algorithm that I presented last time. 200:00:07,000 –&gt; 00:00:19,000Here’s the grammar from ou">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P32Week306 04 1 Recursive Descent Limitations 04 1">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P32Week306-04-1-recursive-descent-limitations-04-1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,000In this video, I’m going to cover a limitation of the recursive descent algorithm that I presented last time. 200:00:07,000 –&gt; 00:00:19,000Here’s the grammar from ou">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.396Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.220Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P32Week306 04 1 Recursive Descent Limitations 04 1 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P32Week306 04 1 Recursive Descent Limitations 04 1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          535 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          5 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P32Week306 04 1 Recursive Descent Limitations 04 1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,000<br>In this video, I’m going to cover a limitation of the recursive descent algorithm that I presented last time.</p>
+<p>2<br>00:00:07,000 –&gt; 00:00:19,000<br>Here’s the grammar from our last presentation, and here’s its implementation again as a set of mutually recursive functions that together implement a simple recursive descent strategy.</p>
+<p>3<br>00:00:19,000 –&gt; 00:00:28,000<br>Now let’s think about what happens when we go to parse the input int, the simplest possible input string.</p>
+<p>4<br>00:00:28,000 –&gt; 00:00:38,000<br>Well, let’s work through it. So remember, we start with the function that implements all the productions for the non-terminal E.</p>
+<p>5<br>00:00:38,000 –&gt; 00:00:43,000<br>And so what we’re going to do here, we’re going to call E, and that will try calling E1.</p>
+<p>6<br>00:00:43,000 –&gt; 00:00:51,000<br>And what is E1 going to do, E1 is going to call T, because of course the first production is E goes to T.</p>
+<p>7<br>00:00:51,000 –&gt; 00:00:58,000<br>So let’s take a little bit with T does, T is going to try out the production T1.</p>
+<p>8<br>00:00:58,000 –&gt; 00:01:05,000<br>And what does T1 do? Well, T1 recognizes an int, so that’s good.</p>
+<p>9<br>00:01:05,000 –&gt; 00:01:12,000<br>And it will match it and return, and then E will return, and we will succeed in parsing.</p>
+<p>10<br>00:01:12,000 –&gt; 00:01:19,000<br>And I forgot to mention it also in the process the input pointer will be moved across the int.</p>
+<p>11<br>00:01:19,000 –&gt; 00:01:31,000<br>And so when we’re done, E will return, and we will have succeeded in parsing the string int, because E return true, the production for E return true, and we consumed all of the input.</p>
+<p>12<br>00:01:31,000 –&gt; 00:01:38,000<br>So now let’s consider a slightly more complicated example.</p>
+<p>13<br>00:01:38,000 –&gt; 00:01:49,000<br>So let’s try the input string int times int.</p>
+<p>14<br>00:01:49,000 –&gt; 00:01:58,000<br>So again we start with the production E. And the first thing we’ll do is we’ll try the production E1, the same thing we did last time.</p>
+<p>15<br>00:01:58,000 –&gt; 00:02:09,000<br>E1 is going to call the function T, and T is going to try the first production for T, which again is the production int.</p>
+<p>16<br>00:02:09,000 –&gt; 00:02:16,000<br>And the input pointer of course is here, and then it will try to match that against an int.</p>
+<p>17<br>00:02:16,000 –&gt; 00:02:23,000<br>It will match the first token in the input stream against the terminal int, and it will succeed.</p>
+<p>18<br>00:02:23,000 –&gt; 00:02:28,000<br>So the input pointer will be moved over, so T1 will return true.</p>
+<p>19<br>00:02:28,000 –&gt; 00:02:39,000<br>And as a result, this right hand side here of the function T will also succeed, because T1 returns true, so T will return true.</p>
+<p>20<br>00:02:39,000 –&gt; 00:02:45,000<br>Therefore, E1 will return true, and E1 returning true will cause E to return true.</p>
+<p>21<br>00:02:45,000 –&gt; 00:02:48,000<br>And in fact that will be the end of the execution of the program.</p>
+<p>22<br>00:02:48,000 –&gt; 00:02:56,000<br>And we’ll terminate, E will return true, and the input pointer will only have advanced as far as int, and so we will reject the parse.</p>
+<p>23<br>00:02:56,000 –&gt; 00:02:59,000<br>This is actually ends up getting rejected.</p>
+<p>24<br>00:02:59,000 –&gt; 00:03:05,000<br>And the question of course is, what happened?</p>
+<p>25<br>00:03:05,000 –&gt; 00:03:13,000<br>Why didn’t we succeed in parsing this input, which is clearly in the language of this grammar?</p>
+<p>26<br>00:03:13,000 –&gt; 00:03:16,000<br>Well the story here is actually a little bit interesting.</p>
+<p>27<br>00:03:16,000 –&gt; 00:03:27,000<br>What happened is down here, when we discovered that int matched the first production for T, we said that T was done.</p>
+<p>28<br>00:03:27,000 –&gt; 00:03:31,000<br>That T had succeeded and had matched its input.</p>
+<p>29<br>00:03:31,000 –&gt; 00:03:42,000<br>And then when E ultimately returns, and the whole parse fails because we haven’t consumed the input, we don’t have a way to backtrack and try another alternative for T.</p>
+<p>30<br>00:03:42,000 –&gt; 00:03:57,000<br>If we were going to succeed, we would have to say, oh, well even though we found a production for T that matched part of the input, since the overall parse failed, that must not have been the right production to choose for T.</p>
+<p>31<br>00:03:57,000 –&gt; 00:04:00,000<br>Maybe we should try some other productions for T.</p>
+<p>32<br>00:04:00,000 –&gt; 00:04:09,000<br>And in fact, if we had tried the second production for T, T2, we would have matched int times T, and then we probably would have succeeded.</p>
+<p>33<br>00:04:09,000 –&gt; 00:04:12,000<br>We would have been able to match int times int.</p>
+<p>34<br>00:04:12,000 –&gt; 00:04:21,000<br>And so the problem here is that even though there is backtracking within a production, while we’re trying to find a production that works for a given non-terminal.</p>
+<p>35<br>00:04:21,000 –&gt; 00:04:34,000<br>So while there is backtracking for a non-terminal during the time that we’re trying to find a production that works for that non-terminal, there is no backtracking once we have found a production that succeeds for a non-terminal.</p>
+<p>36<br>00:04:34,000 –&gt; 00:04:49,000<br>So once a non-terminal commits and returns and says I have found a way to parse part of the input using one of my productions, there is no way in this particular structure, this particular algorithm to go back and revisit that decision and try a different production.</p>
+<p>37<br>00:04:50,000 –&gt; 00:04:58,000<br>So the problem is that if a production for non-terminal exceeds, there is no way to backtrack to try a different production for X later.</p>
+<p>38<br>00:04:58,000 –&gt; 00:05:03,000<br>So once the function for X has returned, we’re really committed to that production.</p>
+<p>39<br>00:05:03,000 –&gt; 00:05:11,000<br>Now that means that the particular recursive descent algorithm that I showed in the last video is not completely general.</p>
+<p>40<br>00:05:12,000 –&gt; 00:05:31,000<br>And recursive descent is a general technique. There are algorithms for recursive descent parsing that can parse any grammar that can implement the full language of any grammar, and they have more sophisticated backtracking than what I showed in the algorithm that I presented last time.</p>
+<p>41<br>00:05:32,000 –&gt; 00:05:51,000<br>Now, the reason for showing this particular algorithm is that it’s easy to implement by hand. So this is actually an algorithm or an approach to recursive descent that while it has this limitation, as you can see, it’s very mechanical and very straightforward to design a parser for a given grammar.</p>
+<p>42<br>00:05:52,000 –&gt; 00:06:02,000<br>And it will work for a rather large class of grammar. So in particular, it will work for any grammar where for any non-terminal, at most, one production can succeed.</p>
+<p>43<br>00:06:02,000 –&gt; 00:06:20,000<br>So if you know from the way that you’ve built your grammar, that in any situation that that grammar can get into or the recursive descent algorithm can get into during parsing, that at most, one production can succeed, then this parsing strategy will be sufficient because they’ll never be, when you find a production that succeeds.</p>
+<p>44<br>00:06:21,000 –&gt; 00:06:29,000<br>There will never be a need to go back and revisit that decision because it must be the case that none of the other productions could have succeeded.</p>
+<p>45<br>00:06:29,000 –&gt; 00:06:39,000<br>And it turns out that the example grammar that we’re working with in the last couple of videos could actually be written to work with this algorithm.</p>
+<p>46<br>00:06:39,000 –&gt; 00:06:49,000<br>And we would have to left factor the grammar, but actually there’s more than one way to rewrite the grammar to work with this recursive descent algorithm, but one way to do it is to left factor it.</p>
+<p>47<br>00:06:49,000 –&gt; 00:06:56,000<br>I’m not going to say any more about left factoring in this video because that’s going to be a topic of a video that’s coming up shortly.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P32Week306 04 1 Recursive Descent Limitations 04 1</div>
+      <div>http://example.com/2025/10/25/CS143 P32Week306-04-1-recursive-descent-limitations-04-1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P36Week407-01-B+Predictive+Parsing/" title="CS143 P36Week407 01 B+Predictive+Parsing">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P36Week407 01 B+Predictive+Parsing</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P31Week306-04-recursive-descent-algorithm/" title="CS143 P31Week306 04 Recursive Descent Algorithm">
+                        <span class="hidden-mobile">CS143 P31Week306 04 Recursive Descent Algorithm</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

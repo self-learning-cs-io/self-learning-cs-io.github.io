@@ -1,0 +1,814 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,960In this video, we’re going to digress a little bit and talk about how compilers handle errors 200:00:07,960 –&gt; 00:00:16,199and in particular, what kind of error hand">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P28Week306 01 Error Handling">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P28Week306-01-error-handling/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,960In this video, we’re going to digress a little bit and talk about how compilers handle errors 200:00:07,960 –&gt; 00:00:16,199and in particular, what kind of error hand">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.394Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.220Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P28Week306 01 Error Handling - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P28Week306 01 Error Handling"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P28Week306 01 Error Handling</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,960<br>In this video, we’re going to digress a little bit and talk about how compilers handle errors</p>
+<p>2<br>00:00:07,960 –&gt; 00:00:16,199<br>and in particular, what kind of error handling functionality is available in parsers.</p>
+<p>3<br>00:00:16,199 –&gt; 00:00:19,679<br>Compiler has two relatively distinct jobs.</p>
+<p>4<br>00:00:19,679 –&gt; 00:00:22,280<br>The first is to translate valid programs.</p>
+<p>5<br>00:00:22,280 –&gt; 00:00:27,719<br>That is, if it gets a program from a programmer that is correct, is a valid program, it needs</p>
+<p>6<br>00:00:27,719 –&gt; 00:00:30,679<br>to produce correct code for that program.</p>
+<p>7<br>00:00:30,679 –&gt; 00:00:37,519<br>Now distinct from that task is the job of giving good feedback for erroneous programs and</p>
+<p>8<br>00:00:37,519 –&gt; 00:00:39,960<br>even just detecting the invalid programs.</p>
+<p>9<br>00:00:39,960 –&gt; 00:00:45,560<br>We don’t want to compile any program that isn’t a valid program in the programming language.</p>
+<p>10<br>00:00:45,560 –&gt; 00:00:48,399<br>Programming languages have many different kinds of errors.</p>
+<p>11<br>00:00:48,399 –&gt; 00:00:50,640<br>Here’s just a few.</p>
+<p>12<br>00:00:50,640 –&gt; 00:00:57,039<br>So for example, we might have lexical errors using characters that don’t even appear in any</p>
+<p>13<br>00:00:57,039 –&gt; 00:00:59,719<br>valid symbol in the language.</p>
+<p>14<br>00:00:59,719 –&gt; 00:01:03,159<br>These would be detected by the lexical analysis phase.</p>
+<p>15<br>00:01:03,159 –&gt; 00:01:08,120<br>We could have syntax errors and these would be the parsing errors when all the individual</p>
+<p>16<br>00:01:08,120 –&gt; 00:01:13,079<br>lexical units are correct, but they’re assembled in some way that doesn’t make sense.</p>
+<p>17<br>00:01:13,079 –&gt; 00:01:15,759<br>We don’t know how to compile it.</p>
+<p>18<br>00:01:15,759 –&gt; 00:01:19,920<br>There could be semantic errors, for example, when types mismatch, here I’ve declared X as</p>
+<p>19<br>00:01:19,920 –&gt; 00:01:23,719<br>an integer and used it as a function and that would be the job of the type checker to catch</p>
+<p>20<br>00:01:23,719 –&gt; 00:01:25,239<br>those.</p>
+<p>21<br>00:01:25,239 –&gt; 00:01:32,560<br>And then actually there may be many errors in your program that are not errors of the</p>
+<p>22<br>00:01:32,560 –&gt; 00:01:33,560<br>programming language.</p>
+<p>23<br>00:01:33,560 –&gt; 00:01:38,439<br>The program you wrote is actually a valid program, but it doesn’t do what you intended.</p>
+<p>24<br>00:01:38,439 –&gt; 00:01:40,280<br>You actually have a bug in your program.</p>
+<p>25<br>00:01:40,280 –&gt; 00:01:45,799<br>And so while the compiler can detect many kinds of errors, it doesn’t detect all of them.</p>
+<p>26<br>00:01:45,799 –&gt; 00:01:51,119<br>And once we get past what the compiler can do, then it’s up to testers and users to find</p>
+<p>27<br>00:01:51,119 –&gt; 00:01:54,799<br>the rest of the problems in the program.</p>
+<p>28<br>00:01:55,799 –&gt; 00:01:58,759<br>So, what are the requirements for good error handling?</p>
+<p>29<br>00:01:58,759 –&gt; 00:02:03,640<br>Well, we want the compiler to report errors accurately and clearly so that we can identify</p>
+<p>30<br>00:02:03,640 –&gt; 00:02:06,319<br>what the problem is quickly and fix it.</p>
+<p>31<br>00:02:06,319 –&gt; 00:02:10,359<br>The compiler itself should recover from the error quickly, so when it hits an error,</p>
+<p>32<br>00:02:10,359 –&gt; 00:02:15,879<br>it shouldn’t take a long time to make up its mind what to do before proceeding.</p>
+<p>33<br>00:02:15,879 –&gt; 00:02:20,439<br>And finally, we don’t want error handling to slow down the compilation of valid code.</p>
+<p>34<br>00:02:20,439 –&gt; 00:02:25,759<br>That is, we shouldn’t pay a price for the error handling if we’re not really using it.</p>
+<p>35<br>00:02:25,759 –&gt; 00:02:29,639<br>I’m going to talk about three different kinds of error handling.</p>
+<p>36<br>00:02:29,639 –&gt; 00:02:34,919<br>Panic mode and error productions are the two that are used in current compilers.</p>
+<p>37<br>00:02:34,919 –&gt; 00:02:39,319<br>So these are actually things that people use today.</p>
+<p>38<br>00:02:39,319 –&gt; 00:02:43,759<br>Automatic, local or global correction is an idea that was pursued extensively in the</p>
+<p>39<br>00:02:43,759 –&gt; 00:02:44,759<br>past.</p>
+<p>40<br>00:02:44,759 –&gt; 00:02:48,360<br>And I think it’s historically quite interesting, particularly as a contrast to what people</p>
+<p>41<br>00:02:48,360 –&gt; 00:02:53,240<br>do today and also why people try to do it a long ago.</p>
+<p>42<br>00:02:53,240 –&gt; 00:03:00,200<br>Panic mode is the simplest and most popular method of error recovery that’s widely used.</p>
+<p>43<br>00:03:00,200 –&gt; 00:03:04,920<br>And the basic idea is that when an error is detected, the parser is going to begin discarding</p>
+<p>44<br>00:03:04,920 –&gt; 00:03:10,000<br>tokens until one that has a clear role in the language is found and then is going to try</p>
+<p>45<br>00:03:10,000 –&gt; 00:03:13,560<br>to restart itself and continue from that point on.</p>
+<p>46<br>00:03:14,080 –&gt; 00:03:19,319<br>These tokens, the ones that it’s looking for, are called the synchronizing tokens.</p>
+<p>47<br>00:03:19,319 –&gt; 00:03:25,120<br>And these are just tokens that have a well-known role in the language so that we can reliably</p>
+<p>48<br>00:03:25,120 –&gt; 00:03:26,520<br>identify where we are.</p>
+<p>49<br>00:03:26,520 –&gt; 00:03:31,080<br>So a typical strategy might be to try to skip to the end of a statement or to the end of a</p>
+<p>50<br>00:03:31,080 –&gt; 00:03:36,360<br>function if an error is found in the statement or function and then begin parsing either the</p>
+<p>51<br>00:03:36,360 –&gt; 00:03:39,520<br>next statement or the next function.</p>
+<p>52<br>00:03:39,520 –&gt; 00:03:44,000<br>So let’s look at a simple hypothetical example of panic mode error recovery.</p>
+<p>53<br>00:03:44,000 –&gt; 00:03:45,240<br>So here’s an expression.</p>
+<p>54<br>00:03:45,240 –&gt; 00:03:46,800<br>Clearly it has a problem.</p>
+<p>55<br>00:03:46,800 –&gt; 00:03:49,160<br>We shouldn’t have two plus signs in a row.</p>
+<p>56<br>00:03:49,160 –&gt; 00:03:52,960<br>So something’s gone wrong here at the second plus.</p>
+<p>57<br>00:03:52,960 –&gt; 00:03:55,439<br>And what’s going to happen is the parser is going to come along.</p>
+<p>58<br>00:03:55,439 –&gt; 00:03:57,800<br>The parser is going to be proceeding from left to right.</p>
+<p>59<br>00:03:57,800 –&gt; 00:03:59,280<br>It’s going to see the open per end.</p>
+<p>60<br>00:03:59,280 –&gt; 00:04:00,280<br>It’s going to see the number one.</p>
+<p>61<br>00:04:00,280 –&gt; 00:04:01,600<br>It’s going to see the plus.</p>
+<p>62<br>00:04:01,600 –&gt; 00:04:02,600<br>Everything is good.</p>
+<p>63<br>00:04:02,600 –&gt; 00:04:05,719<br>And then it’s going to see this second plus and it’s not going to know what to do.</p>
+<p>64<br>00:04:05,719 –&gt; 00:04:10,680<br>It’s going to realize that it’s stuck and that there’s no expression in the language</p>
+<p>65<br>00:04:10,680 –&gt; 00:04:15,840<br>that has two plus signs in a row and it needs to do something to recover.</p>
+<p>66<br>00:04:15,840 –&gt; 00:04:21,439<br>It’s encountered a parsing error and it has to take some error action at this point.</p>
+<p>67<br>00:04:21,439 –&gt; 00:04:25,519<br>So in panic mode recovery what it’s going to do is it’s going to hit the panic button.</p>
+<p>68<br>00:04:25,519 –&gt; 00:04:28,279<br>So right at this point it’s going to say I give up.</p>
+<p>69<br>00:04:28,279 –&gt; 00:04:30,160<br>I’m not parsing normally anymore.</p>
+<p>70<br>00:04:30,160 –&gt; 00:04:36,920<br>It goes into a different mode where it is simply throwing away input until it finds something</p>
+<p>71<br>00:04:36,920 –&gt; 00:04:38,600<br>that it recognizes.</p>
+<p>72<br>00:04:38,600 –&gt; 00:04:44,240<br>And for example we could say that the policy for this particular kind of error is to skip</p>
+<p>73<br>00:04:44,240 –&gt; 00:04:47,280<br>ahead to the next integer and then try to continue.</p>
+<p>74<br>00:04:47,280 –&gt; 00:04:51,960<br>So it would just throw away the plus in this case and then it would restart here at the</p>
+<p>75<br>00:04:51,960 –&gt; 00:04:57,400<br>two, expecting to see another integer trying to finish off this expression.</p>
+<p>76<br>00:04:57,399 –&gt; 00:05:00,359<br>And it would treat that as one plus two and then the parentheses would match and the</p>
+<p>77<br>00:05:00,359 –&gt; 00:05:04,439<br>rest of the expression would parse just fine.</p>
+<p>78<br>00:05:04,439 –&gt; 00:05:09,079<br>Now in tools such as bison which is a widely used parser generator and one that you may</p>
+<p>79<br>00:05:09,079 –&gt; 00:05:11,519<br>use for the project.</p>
+<p>80<br>00:05:11,519 –&gt; 00:05:18,959<br>There’s a special terminal symbol called error to describe how much input to skip and the</p>
+<p>81<br>00:05:18,959 –&gt; 00:05:21,959<br>productions that are given in bison look like this.</p>
+<p>82<br>00:05:21,959 –&gt; 00:05:27,719<br>So you would say that the possibilities for e are that e could be an integer.</p>
+<p>83<br>00:05:27,719 –&gt; 00:05:32,519<br>It could be the sum of two e’s to expressions.</p>
+<p>84<br>00:05:32,519 –&gt; 00:05:38,399<br>It could be a parenthesized expression or if none of these work.</p>
+<p>85<br>00:05:38,399 –&gt; 00:05:43,079<br>So these are the normal productions.</p>
+<p>86<br>00:05:43,079 –&gt; 00:05:49,199<br>If none of those work then we could try some of these productions that have error in them.</p>
+<p>87<br>00:05:49,199 –&gt; 00:05:52,079<br>And error is the special symbol for bison.</p>
+<p>88<br>00:05:52,079 –&gt; 00:05:56,000<br>And it says well these are the alternatives to try if these things over here didn’t work.</p>
+<p>89<br>00:05:56,000 –&gt; 00:06:00,240<br>So if you find an error, let’s look focus on this one right here.</p>
+<p>90<br>00:06:00,240 –&gt; 00:06:07,319<br>So what this says is that if you find an error while you’re trying to parse an e, okay,</p>
+<p>91<br>00:06:07,319 –&gt; 00:06:08,959<br>we haven’t actually said how that works yet.</p>
+<p>92<br>00:06:08,959 –&gt; 00:06:11,000<br>We’ll see that in future videos.</p>
+<p>93<br>00:06:11,000 –&gt; 00:06:16,199<br>But conceptually the parser is trying to recognize one of these kinds of expressions here.</p>
+<p>94<br>00:06:16,199 –&gt; 00:06:21,000<br>It’s in a state where it thinks it wants to see an integer or a plus or a parenthesized</p>
+<p>95<br>00:06:21,000 –&gt; 00:06:22,000<br>expression.</p>
+<p>96<br>00:06:22,000 –&gt; 00:06:25,519<br>And if that isn’t working out, if it gets stuck, well then it could hit the panic button.</p>
+<p>97<br>00:06:25,519 –&gt; 00:06:29,879<br>It can declare that it’s in an error state and it can throw away all the input.</p>
+<p>98<br>00:06:29,879 –&gt; 00:06:34,079<br>This error will match all the input up to the next integer.</p>
+<p>99<br>00:06:34,079 –&gt; 00:06:38,919<br>And then this whole thing could be counted as an e as one of these things.</p>
+<p>100<br>00:06:38,919 –&gt; 00:06:41,480<br>And then we would try to continue the parsing.</p>
+<p>101<br>00:06:41,480 –&gt; 00:06:46,120<br>Similarly if we encounter an error somewhere inside a pair of matched parentheses, well</p>
+<p>102<br>00:06:46,199 –&gt; 00:06:53,240<br>we could just throw away the whole thing and just reset at the parentheses boundaries and then continue parsing.</p>
+<p>103<br>00:06:53,240 –&gt; 00:06:59,759<br>So these are two possible error recovery strategies if we find an error for this particular kind</p>
+<p>104<br>00:06:59,759 –&gt; 00:07:02,879<br>of symbol in the grammar.</p>
+<p>105<br>00:07:02,879 –&gt; 00:07:10,120<br>And you can have these error, these productions that involve the error token for as many different</p>
+<p>106<br>00:07:10,120 –&gt; 00:07:15,480<br>kinds of symbols in the language as you like.</p>
+<p>107<br>00:07:15,480 –&gt; 00:07:19,000<br>The common strategy is to use what are known as error productions.</p>
+<p>108<br>00:07:19,000 –&gt; 00:07:24,759<br>And these specify known common mistakes that programmers make just as alternative productions</p>
+<p>109<br>00:07:24,759 –&gt; 00:07:26,200<br>in the grammar.</p>
+<p>110<br>00:07:26,200 –&gt; 00:07:27,800<br>So here’s a simple example.</p>
+<p>111<br>00:07:27,800 –&gt; 00:07:32,160<br>Let’s say we were working on a programming language or a compiler for a programming language</p>
+<p>112<br>00:07:32,160 –&gt; 00:07:34,319<br>that was used by a lot of mathematicians.</p>
+<p>113<br>00:07:34,319 –&gt; 00:07:40,240<br>And instead of writing five times x, like computer scientists do, these guys always wanted</p>
+<p>114<br>00:07:40,240 –&gt; 00:07:46,280<br>to write five blank x to just juxtapose the five and the x to look more like normal mathematical</p>
+<p>115<br>00:07:46,280 –&gt; 00:07:47,400<br>notation.</p>
+<p>116<br>00:07:47,400 –&gt; 00:07:49,840<br>And they complain that this is always giving them pars errors.</p>
+<p>117<br>00:07:49,840 –&gt; 00:07:54,720<br>The parser is just complaining over and over again that this is not a well formed expression.</p>
+<p>118<br>00:07:54,720 –&gt; 00:07:59,360<br>Well we could just go into our grammar and add a production that made it well formed.</p>
+<p>119<br>00:07:59,360 –&gt; 00:08:04,439<br>We could just say, well now it’s legal if I have that one kind of expression is just</p>
+<p>120<br>00:08:04,439 –&gt; 00:08:09,800<br>to have two expressions that are juxtaposed next to each other with no intervening operator.</p>
+<p>121<br>00:08:10,800 –&gt; 00:08:15,639<br>And this has a disadvantage obviously of complicating the grammar.</p>
+<p>122<br>00:08:15,639 –&gt; 00:08:18,280<br>If we do this a lot, our grammar is going to get a lot harder to understand.</p>
+<p>123<br>00:08:18,280 –&gt; 00:08:21,400<br>It’s going to be a lot harder to maintain.</p>
+<p>124<br>00:08:21,400 –&gt; 00:08:27,240<br>And essentially all this is doing is promoting common mistakes to alternative syntax.</p>
+<p>125<br>00:08:27,240 –&gt; 00:08:28,720<br>But this is used in practice.</p>
+<p>126<br>00:08:28,720 –&gt; 00:08:30,160<br>People do this sort of thing.</p>
+<p>127<br>00:08:30,160 –&gt; 00:08:35,279<br>And you will see for example, when you use GCC and other production seek-em-pilers,</p>
+<p>128<br>00:08:35,279 –&gt; 00:08:39,720<br>they will often warn you about things you’re not supposed to do, but they’ll accept them</p>
+<p>129<br>00:08:39,720 –&gt; 00:08:40,720<br>anyway.</p>
+<p>130<br>00:08:40,720 –&gt; 00:08:45,759<br>And this is essentially the mechanism by which they do that.</p>
+<p>131<br>00:08:45,759 –&gt; 00:08:51,039<br>The last strategy I want to talk about a little bit is error correction.</p>
+<p>132<br>00:08:51,039 –&gt; 00:08:54,559<br>So so far we’ve just talked about strategies for detecting errors.</p>
+<p>133<br>00:08:54,559 –&gt; 00:08:56,439<br>But we could also try to fix errors.</p>
+<p>134<br>00:08:56,439 –&gt; 00:09:00,399<br>That is, if the program has mistakes and if the compiler could try to help the programmer</p>
+<p>135<br>00:09:00,399 –&gt; 00:09:04,000<br>out and say, oh, you obviously didn’t mean to write that.</p>
+<p>136<br>00:09:04,000 –&gt; 00:09:08,200<br>Let me try to find a program for you that works.</p>
+<p>137<br>00:09:08,200 –&gt; 00:09:13,039<br>And these kind of corrections in some sense we want to find programs that are nearby, programs</p>
+<p>138<br>00:09:13,039 –&gt; 00:09:18,759<br>that aren’t too different from the programs that the programmer supplied, but we couldn’t</p>
+<p>139<br>00:09:18,759 –&gt; 00:09:20,919<br>compile correctly.</p>
+<p>140<br>00:09:20,919 –&gt; 00:09:22,440<br>And there’s a few different things that you can do.</p>
+<p>141<br>00:09:22,440 –&gt; 00:09:27,159<br>Two of the things that people have tried are things like token insertions and deletions.</p>
+<p>142<br>00:09:27,159 –&gt; 00:09:31,000<br>So here you would like to minimize the edit distance.</p>
+<p>143<br>00:09:31,000 –&gt; 00:09:36,320<br>That would be the metric that you would use to determine whether a program was close</p>
+<p>144<br>00:09:36,320 –&gt; 00:09:39,480<br>to the original program that the programmer supplied.</p>
+<p>145<br>00:09:39,480 –&gt; 00:09:45,799<br>You could also do exhaustive search within some bounds to try all possible programs that</p>
+<p>146<br>00:09:45,799 –&gt; 00:09:49,840<br>are close to the program that was supplied.</p>
+<p>147<br>00:09:49,840 –&gt; 00:09:53,919<br>And there are a couple of disadvantages to this, actually a number of disadvantages.</p>
+<p>148<br>00:09:53,919 –&gt; 00:09:56,080<br>You can imagine that this is hard to implement.</p>
+<p>149<br>00:09:56,080 –&gt; 00:09:58,200<br>It’s actually quite complex.</p>
+<p>150<br>00:09:58,200 –&gt; 00:10:02,440<br>This will slow down the parsing of correct programs because we need to keep enough state</p>
+<p>151<br>00:10:02,440 –&gt; 00:10:08,560<br>around that we can manage this search or the editing in the case that we actually do</p>
+<p>152<br>00:10:08,560 –&gt; 00:10:10,280<br>encounter an error.</p>
+<p>153<br>00:10:10,280 –&gt; 00:10:15,440<br>And of course, nearby is not really, it’s not really all clear what that means.</p>
+<p>154<br>00:10:15,440 –&gt; 00:10:20,740<br>And various notions of nearby may or may not actually take us to a program that the</p>
+<p>155<br>00:10:20,740 –&gt; 00:10:23,800<br>programmer would actually be happy with.</p>
+<p>156<br>00:10:23,799 –&gt; 00:10:29,039<br>The best known example of error correction is the compiler PLC.</p>
+<p>157<br>00:10:29,039 –&gt; 00:10:31,759<br>This is a PL1 compiler, that’s the PL part.</p>
+<p>158<br>00:10:31,759 –&gt; 00:10:38,479<br>And the C stands for either correction or Cornell, which is where the compiler was built.</p>
+<p>159<br>00:10:38,479 –&gt; 00:10:42,599<br>And PLC is well known for being willing to compile absolutely anything.</p>
+<p>160<br>00:10:42,599 –&gt; 00:10:44,639<br>You could give it the phone book.</p>
+<p>161<br>00:10:44,639 –&gt; 00:10:49,479<br>You can and people did give it things like the speech from Hamlet soliloquy.</p>
+<p>162<br>00:10:49,480 –&gt; 00:10:52,039<br>And it would print out a lot of error messages.</p>
+<p>163<br>00:10:52,039 –&gt; 00:10:54,560<br>Sometimes these error messages would be very funny to read.</p>
+<p>164<br>00:10:54,560 –&gt; 00:11:02,480<br>And it would in the end do correction and produce always a valid running PL1 program.</p>
+<p>165<br>00:11:02,480 –&gt; 00:11:04,759<br>And you might ask why do people bother with that?</p>
+<p>166<br>00:11:04,759 –&gt; 00:11:09,840<br>That doesn’t seem, but that may not seem very compelling to us today.</p>
+<p>167<br>00:11:09,840 –&gt; 00:11:15,159<br>And you have to realize that when this work was done back in the 1970s, people lived in a</p>
+<p>168<br>00:11:15,159 –&gt; 00:11:16,159<br>very different world.</p>
+<p>169<br>00:11:16,159 –&gt; 00:11:18,840<br>There was a very slow recomplation cycle.</p>
+<p>170<br>00:11:18,840 –&gt; 00:11:23,600<br>You could take a whole day to get your program to compile and run.</p>
+<p>171<br>00:11:23,600 –&gt; 00:11:27,440<br>You would essentially submit your program in the morning and you might not get results</p>
+<p>172<br>00:11:27,440 –&gt; 00:11:29,399<br>back until the afternoon.</p>
+<p>173<br>00:11:29,399 –&gt; 00:11:34,720<br>And with that kind of turnaround cycle, even one syntax error in your program was devastated.</p>
+<p>174<br>00:11:34,720 –&gt; 00:11:38,200<br>You could lose a whole day because you mistyped a keyword.</p>
+<p>175<br>00:11:38,200 –&gt; 00:11:42,759<br>And having the compiler try to take a stab at finding a working program for you.</p>
+<p>176<br>00:11:42,759 –&gt; 00:11:47,040<br>If the correction was small and you saved an entire day, if it could fix that one small</p>
+<p>177<br>00:11:47,039 –&gt; 00:11:51,439<br>mistake you made and give you a valid run, that was actually a useful thing to do.</p>
+<p>178<br>00:11:51,439 –&gt; 00:11:55,519<br>And so the goal then was to find as many errors in one cycle as possible.</p>
+<p>179<br>00:11:55,519 –&gt; 00:12:00,799<br>They would try to find as many errors they try to recover, find as many errors as possible,</p>
+<p>180<br>00:12:00,799 –&gt; 00:12:04,839<br>give you as good feedback as possible so you could fix as many errors, avoid as many</p>
+<p>181<br>00:12:04,839 –&gt; 00:12:07,599<br>retry cycles as possible.</p>
+<p>182<br>00:12:07,599 –&gt; 00:12:12,839<br>And even possibly automatically correct the program so that you could see if the corrections</p>
+<p>183<br>00:12:12,840 –&gt; 00:12:18,360<br>were right and then possibly the results you got back were useful and able to do even</p>
+<p>184<br>00:12:18,360 –&gt; 00:12:21,080<br>more debugging before the next round.</p>
+<p>185<br>00:12:21,080 –&gt; 00:12:23,360<br>Now today we’re in a completely different situation.</p>
+<p>186<br>00:12:23,360 –&gt; 00:12:28,040<br>We have a very fast, almost interactive recompliation cycle for many projects.</p>
+<p>187<br>00:12:28,040 –&gt; 00:12:31,440<br>And as a result, users generally aren’t interested in finding many errors.</p>
+<p>188<br>00:12:31,440 –&gt; 00:12:34,879<br>They tend to correct only one error per cycle.</p>
+<p>189<br>00:12:34,879 –&gt; 00:12:36,480<br>Compiler still report many errors.</p>
+<p>190<br>00:12:36,480 –&gt; 00:12:38,080<br>They’ll give you lots and lots of errors.</p>
+<p>191<br>00:12:38,080 –&gt; 00:12:42,560<br>But my observation, certainly my habit personally and what I see many other people do is</p>
+<p>192<br>00:12:42,559 –&gt; 00:12:47,279<br>it only fix the first one because it’s the most reliable and the one that definitely</p>
+<p>193<br>00:12:47,279 –&gt; 00:12:50,519<br>needs to be fixed before you can try to compile again.</p>
+<p>194<br>00:12:50,519 –&gt; 00:12:55,359<br>If compilation is fast enough, that’s probably the most productive thing to do.</p>
+<p>195<br>00:12:55,359 –&gt; 00:13:00,000<br>And as a result, complex error recovery today is just less compelling than it was a few</p>
+<p>196<br>00:13:00,000 –&gt; 00:13:00,679<br>decades ago.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P28Week306 01 Error Handling</div>
+      <div>http://example.com/2025/10/25/CS143 P28Week306-01-error-handling/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P24Week305-03-B+Derivations/" title="CS143 P24Week305 03 B+Derivations">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P24Week305 03 B+Derivations</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P18Week204-04-nfa-to-dfa-quizupdate/" title="CS143 P18Week204 04 Nfa To Dfa Quizupdate">
+                        <span class="hidden-mobile">CS143 P18Week204 04 Nfa To Dfa Quizupdate</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

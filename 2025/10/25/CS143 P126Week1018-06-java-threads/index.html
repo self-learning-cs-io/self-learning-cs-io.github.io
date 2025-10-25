@@ -1,0 +1,891 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,600In this video, we’re going to talk a little bit about concurrency and programming languages, 200:00:07,600 –&gt; 00:00:11,519and in particular, Java’s use of threads. 3">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P126Week1018 06 Java Threads">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P126Week1018-06-java-threads/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,600In this video, we’re going to talk a little bit about concurrency and programming languages, 200:00:07,600 –&gt; 00:00:11,519and in particular, Java’s use of threads. 3">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.390Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.219Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P126Week1018 06 Java Threads - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P126Week1018 06 Java Threads"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          22 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P126Week1018 06 Java Threads</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,600<br>In this video, we’re going to talk a little bit about concurrency and programming languages,</p>
+<p>2<br>00:00:07,600 –&gt; 00:00:11,519<br>and in particular, Java’s use of threads.</p>
+<p>3<br>00:00:11,519 –&gt; 00:00:21,100<br>Java has concurrency built in through threads, and I’m not going to explain what a thread</p>
+<p>4<br>00:00:21,100 –&gt; 00:00:23,800<br>is from first principles in this video.</p>
+<p>5<br>00:00:23,800 –&gt; 00:00:27,719<br>So I’m going to assume a little bit of background, but we’ll say a few words here about what threads</p>
+<p>6<br>00:00:27,719 –&gt; 00:00:28,719<br>are.</p>
+<p>7<br>00:00:28,719 –&gt; 00:00:31,399<br>So a thread is like its own program.</p>
+<p>8<br>00:00:31,399 –&gt; 00:00:35,839<br>It has its own program counter, meaning it has an instruction that it’s executing, and</p>
+<p>9<br>00:00:35,839 –&gt; 00:00:39,239<br>it has its own set of local variables and activation records.</p>
+<p>10<br>00:00:39,239 –&gt; 00:00:44,679<br>And a Java program, or any program written in a language with threads, may have multiple</p>
+<p>11<br>00:00:44,679 –&gt; 00:00:46,079<br>threads at the same time.</p>
+<p>12<br>00:00:46,079 –&gt; 00:00:52,960<br>So abstractly, we can think of threads as being a series of statements that are executed.</p>
+<p>13<br>00:00:52,960 –&gt; 00:00:58,320<br>Each one of these threads, again, has its own set of local variables.</p>
+<p>14<br>00:00:58,320 –&gt; 00:01:02,960<br>But the threads may refer to common data in the heat, so they could refer to the same</p>
+<p>15<br>00:01:02,960 –&gt; 00:01:04,960<br>heap data structures.</p>
+<p>16<br>00:01:04,960 –&gt; 00:01:08,439<br>And each thread is executing a particular instruction.</p>
+<p>17<br>00:01:08,439 –&gt; 00:01:10,000<br>So let’s say that the threads are all here.</p>
+<p>18<br>00:01:10,000 –&gt; 00:01:17,359<br>We have three threads, one, two, and three, and they’re each at some instruction or some</p>
+<p>19<br>00:01:17,359 –&gt; 00:01:20,039<br>statement in the program.</p>
+<p>20<br>00:01:20,039 –&gt; 00:01:23,039<br>And then there is a scheduler.</p>
+<p>21<br>00:01:23,040 –&gt; 00:01:32,400<br>And at each step of execution, the scheduler will pick one thread to execute, and it’ll</p>
+<p>22<br>00:01:32,400 –&gt; 00:01:34,000<br>execute one statement.</p>
+<p>23<br>00:01:34,000 –&gt; 00:01:42,440<br>And this is conceptual, meaning this is an exactly the way it’s usually implemented.</p>
+<p>24<br>00:01:42,440 –&gt; 00:01:43,920<br>And then it will repeat this loop.</p>
+<p>25<br>00:01:43,920 –&gt; 00:01:46,920<br>So it’ll pick a thread, it’ll execute one statement of that thread, and it’ll just keep</p>
+<p>26<br>00:01:46,920 –&gt; 00:01:48,560<br>doing that over and over again.</p>
+<p>27<br>00:01:48,560 –&gt; 00:01:52,920<br>So we might, for example, the schedule might pick thread one and execute this first statement.</p>
+<p>28<br>00:01:52,920 –&gt; 00:01:56,840<br>And then it might pick thread two and execute this statement.</p>
+<p>29<br>00:01:56,840 –&gt; 00:01:59,439<br>And then it might pick thread three and execute that statement.</p>
+<p>30<br>00:01:59,439 –&gt; 00:02:02,400<br>And then it might decide, well, it’ll execute another statement of thread two.</p>
+<p>31<br>00:02:02,400 –&gt; 00:02:05,640<br>And then it might execute several statements of thread one.</p>
+<p>32<br>00:02:05,640 –&gt; 00:02:08,680<br>And then it might come back and execute a couple statements of thread three.</p>
+<p>33<br>00:02:08,680 –&gt; 00:02:12,639<br>And then thread two might get to go again for a while.</p>
+<p>34<br>00:02:12,639 –&gt; 00:02:13,639<br>And so on.</p>
+<p>35<br>00:02:13,639 –&gt; 00:02:18,039<br>All right, so the threads execute in some order.</p>
+<p>36<br>00:02:18,039 –&gt; 00:02:22,560<br>And it’s non-deterministic at each step of execution, which thread will execute?</p>
+<p>37<br>00:02:22,560 –&gt; 00:02:26,479<br>How many of its instructions will be executed?</p>
+<p>38<br>00:02:26,479 –&gt; 00:02:32,120<br>And thus the threads may interleave the instructions when the thread is made interleave in a relatively</p>
+<p>39<br>00:02:32,120 –&gt; 00:02:35,039<br>or in fact completely arbitrary order.</p>
+<p>40<br>00:02:35,039 –&gt; 00:02:36,039<br>All right.</p>
+<p>41<br>00:02:36,039 –&gt; 00:02:41,640<br>Now, coming back to how this is done in Java, thread objects in Java all have class threads.</p>
+<p>42<br>00:02:41,640 –&gt; 00:02:45,640<br>So there’s a special class that you have to inherit from an order to be a thread.</p>
+<p>43<br>00:02:45,640 –&gt; 00:02:51,199<br>And what you get when you inherit from a thread class is you will have start and stop methods</p>
+<p>44<br>00:02:51,199 –&gt; 00:02:53,679<br>for beginning and ending the thread.</p>
+<p>45<br>00:02:53,679 –&gt; 00:02:54,679<br>All right.</p>
+<p>46<br>00:02:54,679 –&gt; 00:02:57,639<br>And there’s some other special properties of threads.</p>
+<p>47<br>00:02:57,639 –&gt; 00:03:03,839<br>And in particular, one thing that threads can do is to synchronize on objects.</p>
+<p>48<br>00:03:03,839 –&gt; 00:03:11,719<br>So a thread can acquire a lock on object through the synchronized construct.</p>
+<p>49<br>00:03:11,719 –&gt; 00:03:19,879<br>And so if I say synchronized XE in Java, what that means is that the program will acquire</p>
+<p>50<br>00:03:19,879 –&gt; 00:03:23,359<br>a lock on X before it executes E.</p>
+<p>51<br>00:03:23,359 –&gt; 00:03:33,799<br>So the procedure here will be to lock X, then evaluate E, and then unlock X.</p>
+<p>52<br>00:03:33,799 –&gt; 00:03:34,799<br>All right.</p>
+<p>53<br>00:03:34,799 –&gt; 00:03:37,199<br>So it’s a structured synchronization construct.</p>
+<p>54<br>00:03:37,199 –&gt; 00:03:43,439<br>And within while it’s executing the expression E, it will hold a lock on X.</p>
+<p>55<br>00:03:43,439 –&gt; 00:03:51,280<br>And this is the primary way, really almost the only way in Java, to get synchronization between</p>
+<p>56<br>00:03:51,280 –&gt; 00:03:52,599<br>multiple threads.</p>
+<p>57<br>00:03:52,599 –&gt; 00:03:57,079<br>So this is how we, when we can control the set of innerleavings, because while one thread</p>
+<p>58<br>00:03:57,079 –&gt; 00:04:03,639<br>is executing this particular block of code, no other thread can execute this block of</p>
+<p>59<br>00:04:03,639 –&gt; 00:04:06,960<br>code and also hold a lock on the same object X.</p>
+<p>60<br>00:04:06,960 –&gt; 00:04:12,360<br>Now, two threads could execute this same syntactic construct if they were locking, if they’re</p>
+<p>61<br>00:04:12,360 –&gt; 00:04:14,840<br>local variables X, refer to different objects.</p>
+<p>62<br>00:04:14,840 –&gt; 00:04:19,319<br>But they’re guaranteed not to interfere with each other, not to interleave if they try</p>
+<p>63<br>00:04:19,319 –&gt; 00:04:21,360<br>to lock the same object X.</p>
+<p>64<br>00:04:21,360 –&gt; 00:04:22,360<br>All right.</p>
+<p>65<br>00:04:22,360 –&gt; 00:04:27,400<br>Now, and then there’s one shorthand in Java, which is used more commonly than this form</p>
+<p>66<br>00:04:27,400 –&gt; 00:04:28,560<br>of the synchronized construct.</p>
+<p>67<br>00:04:28,560 –&gt; 00:04:37,160<br>And as a synchronization can be put on methods, we can say synchronized F, where this is</p>
+<p>68<br>00:04:37,160 –&gt; 00:04:38,920<br>a method definition.</p>
+<p>69<br>00:04:38,920 –&gt; 00:04:40,680<br>All right.</p>
+<p>70<br>00:04:40,680 –&gt; 00:04:44,959<br>And what this means is that when this method is called, that this object will be locked.</p>
+<p>71<br>00:04:44,959 –&gt; 00:04:48,240<br>So here, the object that’s going to be locked is implicit.</p>
+<p>72<br>00:04:48,240 –&gt; 00:04:53,199<br>And when synchronized is attached to a method name or method declaration, that always means</p>
+<p>73<br>00:04:53,199 –&gt; 00:04:59,720<br>that this parameter will be the synchronized or locked object.</p>
+<p>74<br>00:04:59,720 –&gt; 00:05:04,120<br>Let’s take a look at a simple example and think about what happens if we have two methods,</p>
+<p>75<br>00:05:04,120 –&gt; 00:05:08,319<br>one of which calls the method two of the class simple and one of which calls the method</p>
+<p>76<br>00:05:08,319 –&gt; 00:05:09,319<br>fro.</p>
+<p>77<br>00:05:09,399 –&gt; 00:05:10,519<br>So let’s take a look at that.</p>
+<p>78<br>00:05:10,519 –&gt; 00:05:15,480<br>Let’s say we have thread one and we have thread two.</p>
+<p>79<br>00:05:15,480 –&gt; 00:05:21,680<br>And now thread one is going to invoke the method two and thread two is going to invoke</p>
+<p>80<br>00:05:21,680 –&gt; 00:05:22,680<br>the method fro.</p>
+<p>81<br>00:05:22,680 –&gt; 00:05:23,680<br>All right.</p>
+<p>82<br>00:05:23,680 –&gt; 00:05:29,360<br>So one possibility here, let’s say that two gets to run all the way to completion before</p>
+<p>83<br>00:05:29,360 –&gt; 00:05:31,039<br>throw, excuse anything.</p>
+<p>84<br>00:05:31,039 –&gt; 00:05:34,839<br>So then we’ll have a equals three and b equals four.</p>
+<p>85<br>00:05:34,839 –&gt; 00:05:35,839<br>Okay.</p>
+<p>86<br>00:05:35,839 –&gt; 00:05:45,279<br>And then fro will run and it will print out the string equals three, b equals four.</p>
+<p>87<br>00:05:45,279 –&gt; 00:05:47,479<br>Okay.</p>
+<p>88<br>00:05:47,479 –&gt; 00:05:50,839<br>So that’s a relatively simple straightforward case.</p>
+<p>89<br>00:05:50,839 –&gt; 00:05:57,599<br>You know, another possibility is that thread two gets to run before thread one ever does</p>
+<p>90<br>00:05:57,599 –&gt; 00:05:58,599<br>anything.</p>
+<p>91<br>00:05:58,599 –&gt; 00:06:02,959<br>So thread two, excuse all of its instructions before thread one, excuse anything at all,</p>
+<p>92<br>00:06:02,959 –&gt; 00:06:05,399<br>in which case what will be printed.</p>
+<p>93<br>00:06:05,399 –&gt; 00:06:12,199<br>Well, the fro will print out a equals one, b equals two.</p>
+<p>94<br>00:06:12,199 –&gt; 00:06:13,359<br>All right.</p>
+<p>95<br>00:06:13,359 –&gt; 00:06:18,359<br>And two will then run and it’ll set after this execute.</p>
+<p>96<br>00:06:18,359 –&gt; 00:06:23,879<br>So after this, after fro finishes executing, it will then set a equal to three and b equal</p>
+<p>97<br>00:06:23,879 –&gt; 00:06:24,879<br>to four.</p>
+<p>98<br>00:06:24,879 –&gt; 00:06:25,879<br>So that’s another possibility.</p>
+<p>99<br>00:06:25,879 –&gt; 00:06:26,879<br>And both of those are fine.</p>
+<p>100<br>00:06:26,879 –&gt; 00:06:27,879<br>All right.</p>
+<p>101<br>00:06:27,879 –&gt; 00:06:28,879<br>But then there’s some other odd possibilities.</p>
+<p>102<br>00:06:28,879 –&gt; 00:06:31,599<br>And let’s take a look at one of those.</p>
+<p>103<br>00:06:31,600 –&gt; 00:06:37,680<br>What happens if the threads actually interleave in a non-trivial way?</p>
+<p>104<br>00:06:37,680 –&gt; 00:06:39,520<br>So let’s consider the following possibility.</p>
+<p>105<br>00:06:39,520 –&gt; 00:06:45,000<br>Let’s say that two executes the assignment a is equal to three.</p>
+<p>106<br>00:06:45,000 –&gt; 00:06:50,320<br>And now fro executes the first part of the print.</p>
+<p>107<br>00:06:50,320 –&gt; 00:06:56,280<br>So it does the read of a and starts building up this output string.</p>
+<p>108<br>00:06:56,280 –&gt; 00:06:57,280<br>Okay.</p>
+<p>109<br>00:06:57,279 –&gt; 00:07:03,000<br>So it’s going to print out here a is equal to three.</p>
+<p>110<br>00:07:03,000 –&gt; 00:07:05,279<br>All right.</p>
+<p>111<br>00:07:05,279 –&gt; 00:07:09,479<br>And then now let’s say that fro actually goes ahead and gets to run some more and also</p>
+<p>112<br>00:07:09,479 –&gt; 00:07:12,599<br>goes ahead and prints out the rest of this.</p>
+<p>113<br>00:07:12,599 –&gt; 00:07:13,599<br>Okay.</p>
+<p>114<br>00:07:13,599 –&gt; 00:07:15,839<br>So it actually does the second read of b.</p>
+<p>115<br>00:07:15,839 –&gt; 00:07:19,519<br>So then it will print b is equal to two.</p>
+<p>116<br>00:07:19,519 –&gt; 00:07:22,559<br>All right.</p>
+<p>117<br>00:07:22,560 –&gt; 00:07:29,000<br>And then one will run the rest of the way through, excuse me, b is equal to four.</p>
+<p>118<br>00:07:29,000 –&gt; 00:07:32,680<br>And so here we got an output that doesn’t seem quite right.</p>
+<p>119<br>00:07:32,680 –&gt; 00:07:40,360<br>Here we got we were able to see an intermediate state where thread one had only executed partially.</p>
+<p>120<br>00:07:40,360 –&gt; 00:07:48,720<br>And so what came out over here in fro show you just a partial update of the variables a</p>
+<p>121<br>00:07:48,720 –&gt; 00:07:49,720<br>and b.</p>
+<p>122<br>00:07:49,720 –&gt; 00:07:52,000<br>So one had been written but not the other.</p>
+<p>123<br>00:07:52,000 –&gt; 00:07:56,879<br>And if we didn’t want to do that if we thought this was wrong, we would have to use synchronization</p>
+<p>124<br>00:07:56,879 –&gt; 00:07:58,519<br>in order to control that.</p>
+<p>125<br>00:07:58,519 –&gt; 00:08:04,199<br>So let’s take a look then at using synchronization to try to prevent this from happening.</p>
+<p>126<br>00:08:04,199 –&gt; 00:08:09,319<br>And I’ll tell you right up front that this piece of code or this attempt is incorrect.</p>
+<p>127<br>00:08:09,319 –&gt; 00:08:11,439<br>And actually doesn’t solve the problem at all.</p>
+<p>128<br>00:08:11,439 –&gt; 00:08:17,120<br>But it also illustrates probably the most common thread programming error that Java programmers</p>
+<p>129<br>00:08:17,120 –&gt; 00:08:18,120<br>make.</p>
+<p>130<br>00:08:18,120 –&gt; 00:08:23,120<br>People including professional programmers make this mistake and lots of production Java</p>
+<p>131<br>00:08:23,120 –&gt; 00:08:26,800<br>programs have this particular mistake in them.</p>
+<p>132<br>00:08:26,800 –&gt; 00:08:30,040<br>So it’s a very instructive example I think.</p>
+<p>133<br>00:08:30,040 –&gt; 00:08:31,040<br>So let’s take a look here.</p>
+<p>134<br>00:08:31,040 –&gt; 00:08:33,679<br>So we have the two threads again.</p>
+<p>135<br>00:08:33,679 –&gt; 00:08:38,519<br>The thread that’s going to call two and the thread that’s going to call fro.</p>
+<p>136<br>00:08:38,519 –&gt; 00:08:42,120<br>And let’s say that in our heap there is only one object simple.</p>
+<p>137<br>00:08:42,120 –&gt; 00:08:44,879<br>And let’s just call it s.</p>
+<p>138<br>00:08:44,879 –&gt; 00:08:51,559<br>So it’s globally in the entire heap just one object s of the simple class.</p>
+<p>139<br>00:08:51,559 –&gt; 00:08:55,639<br>So what is, let’s say that thread one is going to go first.</p>
+<p>140<br>00:08:55,639 –&gt; 00:09:01,120<br>And the first thing is going to do because it’s a synchronized method is it’s going to lock</p>
+<p>141<br>00:09:01,120 –&gt; 00:09:02,439<br>to this parameter of the call.</p>
+<p>142<br>00:09:02,439 –&gt; 00:09:07,679<br>Since there’s only one simple, only one object of the simple class that has to be the object</p>
+<p>143<br>00:09:07,679 –&gt; 00:09:08,679<br>s.</p>
+<p>144<br>00:09:08,679 –&gt; 00:09:10,440<br>So it’s going to lock s.</p>
+<p>145<br>00:09:10,440 –&gt; 00:09:16,220<br>And that will prevent any other thread from acquiring the lock on s while thread one</p>
+<p>146<br>00:09:16,220 –&gt; 00:09:18,240<br>holds that lock.</p>
+<p>147<br>00:09:18,240 –&gt; 00:09:22,720<br>So then thread one could go ahead and execute the statement equals three.</p>
+<p>148<br>00:09:22,720 –&gt; 00:09:26,640<br>And now though we could have an interruption and thread two could get to run.</p>
+<p>149<br>00:09:26,640 –&gt; 00:09:30,160<br>And notice here that thread two doesn’t check the lock.</p>
+<p>150<br>00:09:30,160 –&gt; 00:09:35,360<br>It goes ahead and executes this code over here in the fro method.</p>
+<p>151<br>00:09:35,360 –&gt; 00:09:36,560<br>But that’s not synchronized.</p>
+<p>152<br>00:09:36,560 –&gt; 00:09:38,560<br>There’s no synchronized keyword there.</p>
+<p>153<br>00:09:38,559 –&gt; 00:09:45,119<br>And so just the fact that somebody else holds the lock on a simple object doesn’t prevent</p>
+<p>154<br>00:09:45,119 –&gt; 00:09:50,919<br>another method from accessing the fields or the date of that object.</p>
+<p>155<br>00:09:50,919 –&gt; 00:09:54,439<br>If that other method doesn’t itself check the lock.</p>
+<p>156<br>00:09:54,439 –&gt; 00:10:01,359<br>So if the other method is not synchronized, it will just go ahead and execute ignoring</p>
+<p>157<br>00:10:01,359 –&gt; 00:10:06,159<br>the fact that another thread holds the lock on the object.</p>
+<p>158<br>00:10:06,159 –&gt; 00:10:13,439<br>So in this case, this will just run the completion and we’ll print out a equals three b equals</p>
+<p>159<br>00:10:13,439 –&gt; 00:10:14,439<br>two.</p>
+<p>160<br>00:10:14,439 –&gt; 00:10:18,679<br>Okay, so we only see one of the two updates.</p>
+<p>161<br>00:10:18,679 –&gt; 00:10:28,279<br>And then the scheduler could come back in, let the other thread run and we’ll run the completion</p>
+<p>162<br>00:10:28,279 –&gt; 00:10:32,720<br>and unlock the object at the end.</p>
+<p>163<br>00:10:32,720 –&gt; 00:10:37,879<br>And you can see here that this particular attempted fix has achieved nothing.</p>
+<p>164<br>00:10:37,879 –&gt; 00:10:44,759<br>Actually all the possible interleavings of the two methods that existed without any synchronization</p>
+<p>165<br>00:10:44,759 –&gt; 00:10:47,879<br>still exist if only one of the two methods is synchronized.</p>
+<p>166<br>00:10:47,879 –&gt; 00:10:54,440<br>And the reason this error is common is because frequently people think, well, reads are okay.</p>
+<p>167<br>00:10:54,440 –&gt; 00:10:59,080<br>I can always read from things in parallel and that won’t cause any problems because I’m</p>
+<p>168<br>00:10:59,080 –&gt; 00:11:00,320<br>not altering any data.</p>
+<p>169<br>00:11:00,320 –&gt; 00:11:02,800<br>That’s my rights that have to be synchronized.</p>
+<p>170<br>00:11:02,800 –&gt; 00:11:08,400<br>So if I’m going to write to fields of objects, well, that needs to be coordinated with other</p>
+<p>171<br>00:11:08,400 –&gt; 00:11:13,320<br>methods because rights are dangerous, but read somehow don’t interfere.</p>
+<p>172<br>00:11:13,320 –&gt; 00:11:19,480<br>And the point here is that if having only one method or only having one half of the accesses</p>
+<p>173<br>00:11:19,480 –&gt; 00:11:27,360<br>to the two accesses to shared data be synchronized doesn’t help because synchronization only works</p>
+<p>174<br>00:11:27,360 –&gt; 00:11:29,880<br>if everybody is checking the lock.</p>
+<p>175<br>00:11:29,879 –&gt; 00:11:35,320<br>So both the reader and the writer need to check the lock in order to restrict the set of</p>
+<p>176<br>00:11:35,320 –&gt; 00:11:38,360<br>possible interleavings of these two methods.</p>
+<p>177<br>00:11:38,360 –&gt; 00:11:39,720<br>So what would be a correct way to do it?</p>
+<p>178<br>00:11:39,720 –&gt; 00:11:43,600<br>Well, it’s to put the synchronized keyword on both methods.</p>
+<p>179<br>00:11:43,600 –&gt; 00:11:47,080<br>And now it’s not possible to have the interleaving we saw before.</p>
+<p>180<br>00:11:47,080 –&gt; 00:11:50,720<br>So now there’s only two possible outputs.</p>
+<p>181<br>00:11:50,720 –&gt; 00:11:54,720<br>One and only two possible strings that could be printed.</p>
+<p>182<br>00:11:54,720 –&gt; 00:11:58,759<br>One is that A is equal to one and B is equal to two.</p>
+<p>183<br>00:11:58,759 –&gt; 00:12:03,480<br>So in this case, the fro method executes before the two methods.</p>
+<p>184<br>00:12:03,480 –&gt; 00:12:06,519<br>So that’s a fro before two.</p>
+<p>185<br>00:12:06,519 –&gt; 00:12:11,319<br>Okay, I mean all of fro before all of the two methods.</p>
+<p>186<br>00:12:11,319 –&gt; 00:12:15,120<br>And the other possibility is A is equal to three.</p>
+<p>187<br>00:12:15,120 –&gt; 00:12:17,120<br>B is equal to four.</p>
+<p>188<br>00:12:17,120 –&gt; 00:12:25,000<br>All right, and that would be the two method executing an instantiard before the fro method.</p>
+<p>189<br>00:12:25,000 –&gt; 00:12:30,120<br>So those become the only two possible interleavings when both methods here are synchronized.</p>
+<p>190<br>00:12:30,120 –&gt; 00:12:37,120<br>I’m going to conclude this video by making a couple of other comments on Java’s threats.</p>
+<p>191<br>00:12:37,120 –&gt; 00:12:42,039<br>So one property we would like is that even if there is no synchronization, a variable should</p>
+<p>192<br>00:12:42,039 –&gt; 00:12:45,720<br>only hold values that were actually written by some threads.</p>
+<p>193<br>00:12:45,720 –&gt; 00:12:47,000<br>So what do I mean by that?</p>
+<p>194<br>00:12:47,000 –&gt; 00:12:50,759<br>Let’s say that we have two assignments.</p>
+<p>195<br>00:12:50,759 –&gt; 00:12:54,879<br>This is in thread one where we’re assigning A to the value of 3.14.</p>
+<p>196<br>00:12:54,879 –&gt; 00:13:00,279<br>And then in thread two, we’re assigning A to the value of 2.78.</p>
+<p>197<br>00:13:00,279 –&gt; 00:13:05,319<br>And so after these assignments are done, after they’ve executed in some order, what do we expect?</p>
+<p>198<br>00:13:05,319 –&gt; 00:13:11,240<br>Well, we expect that A ends up being equal either to 3.14 or 2.78.</p>
+<p>199<br>00:13:11,240 –&gt; 00:13:12,240<br>All right?</p>
+<p>200<br>00:13:12,240 –&gt; 00:13:16,840<br>Now what we don’t want is for A to wind up being some other value.</p>
+<p>201<br>00:13:16,840 –&gt; 00:13:17,840<br>Okay?</p>
+<p>202<br>00:13:17,840 –&gt; 00:13:22,320<br>A turned out to be 3.78, for example.</p>
+<p>203<br>00:13:22,320 –&gt; 00:13:23,320<br>Okay?</p>
+<p>204<br>00:13:23,320 –&gt; 00:13:24,320<br>This would be bad.</p>
+<p>205<br>00:13:24,320 –&gt; 00:13:26,720<br>We don’t want this, right?</p>
+<p>206<br>00:13:26,720 –&gt; 00:13:31,320<br>Because this value, 3.78, was never written by either thread.</p>
+<p>207<br>00:13:31,320 –&gt; 00:13:32,320<br>Okay?</p>
+<p>208<br>00:13:32,320 –&gt; 00:13:33,320<br>This value was somehow manufactured.</p>
+<p>209<br>00:13:33,320 –&gt; 00:13:38,560<br>And I chose 3.78 to kind of indicate what could potentially go wrong.</p>
+<p>210<br>00:13:38,560 –&gt; 00:13:44,040<br>If we somehow wound up with a mix of the bits or the pieces of the number from thread</p>
+<p>211<br>00:13:44,039 –&gt; 00:13:49,199<br>one and thread two, if they were recombined in some strange way, then we could create a</p>
+<p>212<br>00:13:49,199 –&gt; 00:13:54,559<br>number that was assigned to A that didn’t exist in either thread.</p>
+<p>213<br>00:13:54,559 –&gt; 00:13:55,559<br>Okay?</p>
+<p>214<br>00:13:55,559 –&gt; 00:13:58,079<br>It was never actually written in either thread.</p>
+<p>215<br>00:13:58,079 –&gt; 00:14:03,079<br>Now Java does guarantee that the rights of values are atomic, meaning if I write to</p>
+<p>216<br>00:14:03,079 –&gt; 00:14:07,959<br>a value, if I sign a primitive type to something, that is going to happen atomically and won’t</p>
+<p>217<br>00:14:07,959 –&gt; 00:14:13,679<br>be interfered with by another assignment to the same memory location, except for floating</p>
+<p>218<br>00:14:13,679 –&gt; 00:14:14,679<br>point doubles.</p>
+<p>219<br>00:14:14,679 –&gt; 00:14:19,599<br>So this does not hold, rights to doubles are not necessarily atomic.</p>
+<p>220<br>00:14:19,599 –&gt; 00:14:21,120<br>Now why would that be?</p>
+<p>221<br>00:14:21,120 –&gt; 00:14:26,599<br>Well, a double is a floating point number, but it consumes twice the memory.</p>
+<p>222<br>00:14:26,599 –&gt; 00:14:29,639<br>That’s why it’s called a double, it consumes two words.</p>
+<p>223<br>00:14:29,639 –&gt; 00:14:30,639<br>Okay?</p>
+<p>224<br>00:14:30,639 –&gt; 00:14:36,639<br>And what that means is that if A here is a double, so let’s assume that A is a double,</p>
+<p>225<br>00:14:36,639 –&gt; 00:14:42,319<br>that means if this right of 3.14 actually translates into two machine instructions, we</p>
+<p>226<br>00:14:42,320 –&gt; 00:14:50,000<br>have to write the high part of A equals something and then the low part of A. So it will be two</p>
+<p>227<br>00:14:50,000 –&gt; 00:14:55,940<br>machine instructions to write both of the words that represent A, have to write the high</p>
+<p>228<br>00:14:55,940 –&gt; 00:15:01,280<br>half and the low half, okay, because there isn’t a primitive double word right on most</p>
+<p>229<br>00:15:01,280 –&gt; 00:15:03,080<br>machines.</p>
+<p>230<br>00:15:03,080 –&gt; 00:15:07,040<br>And the same thing would happen in thread 2, this would get broken up into two assignments</p>
+<p>231<br>00:15:07,040 –&gt; 00:15:08,240<br>to the two halves of A.</p>
+<p>232<br>00:15:08,240 –&gt; 00:15:11,840<br>And then just from what we discussed before, you can see that these could interleave in some</p>
+<p>233<br>00:15:11,840 –&gt; 00:15:19,040<br>way and you might wind up with the unfortunate situation that the high half of the representation</p>
+<p>234<br>00:15:19,040 –&gt; 00:15:24,040<br>of A is written by thread 1 and the low half is written by thread 2 and then you could get</p>
+<p>235<br>00:15:24,040 –&gt; 00:15:30,280<br>a number like this, like something not exactly 3.78, but some mix of the bits from the</p>
+<p>236<br>00:15:30,280 –&gt; 00:15:34,360<br>right and thread 1 and there’s the right of thread 2 and you would create what’s called</p>
+<p>237<br>00:15:34,360 –&gt; 00:15:38,759<br>an out of thin air value.</p>
+<p>238<br>00:15:38,759 –&gt; 00:15:46,759<br>Okay, and clearly out of thin air values are bad, okay, you do not want those and Java</p>
+<p>239<br>00:15:46,759 –&gt; 00:15:50,639<br>guarantees again that the rights of almost all the primitive data types are going to be</p>
+<p>240<br>00:15:50,639 –&gt; 00:15:53,759<br>atomic, so you can’t get out of thin air values.</p>
+<p>241<br>00:15:53,759 –&gt; 00:16:00,000<br>But for performance reasons, this is not the case for doubles, all right, so folks, so</p>
+<p>242<br>00:16:00,000 –&gt; 00:16:05,200<br>as I, what this says in the manual is that as a concession to current hardware, they</p>
+<p>243<br>00:16:05,200 –&gt; 00:16:12,200<br>do not require that rights to doubles be atomic unless you, the programmer, go and mark</p>
+<p>244<br>00:16:12,200 –&gt; 00:16:18,800<br>the type as volatile, so you have to declare doubles to be volatile and if you do that, then</p>
+<p>245<br>00:16:18,800 –&gt; 00:16:23,720<br>they’re guaranteed to be atomic rights, okay, so if you were writing Java programs using</p>
+<p>246<br>00:16:23,720 –&gt; 00:16:30,920<br>Java threads and you’re programming threads that read and write doubles concurrently, then</p>
+<p>247<br>00:16:30,919 –&gt; 00:16:35,120<br>you need to be careful to declare those double values volatile at least currently and</p>
+<p>248<br>00:16:35,120 –&gt; 00:16:38,519<br>this may change in the future and I’m sure they would like to change it.</p>
+<p>249<br>00:16:38,519 –&gt; 00:16:42,519<br>But currently you have to declare the doubles volatile to guarantee that the rights will</p>
+<p>250<br>00:16:42,519 –&gt; 00:16:45,199<br>be atomic.</p>
+<p>251<br>00:16:45,199 –&gt; 00:16:50,360<br>More generally, there are actually so much separately, there’s a separate point here.</p>
+<p>252<br>00:16:50,360 –&gt; 00:16:54,360<br>Java concurrency semantics are actually kind of hard to understand in detail and this</p>
+<p>253<br>00:16:54,360 –&gt; 00:16:59,599<br>issue around out of thin air values is one aspect of this.</p>
+<p>254<br>00:16:59,600 –&gt; 00:17:07,839<br>There are several other aspects of it and this is really not Java’s fault.</p>
+<p>255<br>00:17:07,839 –&gt; 00:17:11,480<br>It turns out that concurrency semantics are hard and actually this is kind of at the</p>
+<p>256<br>00:17:11,480 –&gt; 00:17:12,880<br>frontier of research.</p>
+<p>257<br>00:17:12,880 –&gt; 00:17:20,039<br>We don’t really understand exactly what we want or what the right thing is to do to specify</p>
+<p>258<br>00:17:20,039 –&gt; 00:17:26,039<br>the behavior of languages in concurrent settings and that’s not to say that we don’t understand</p>
+<p>259<br>00:17:26,039 –&gt; 00:17:27,039<br>anything.</p>
+<p>260<br>00:17:27,039 –&gt; 00:17:30,240<br>We do have some languages with perfectly good concurrency semantics but in a language</p>
+<p>261<br>00:17:30,240 –&gt; 00:17:37,279<br>as full and rich features as Java, there are a number of things that are not completely</p>
+<p>262<br>00:17:37,279 –&gt; 00:17:42,039<br>clear how they should be implemented on certain machines and there’s been a huge amount</p>
+<p>263<br>00:17:42,039 –&gt; 00:17:47,399<br>of work done on this problem specifically for Java and actually Java was the first mainstream</p>
+<p>264<br>00:17:47,399 –&gt; 00:17:53,159<br>language to have first class threads in it and to try to integrate that with all the other</p>
+<p>265<br>00:17:53,160 –&gt; 00:17:56,840<br>language features that all the other modern language features that we like.</p>
+<p>266<br>00:17:56,840 –&gt; 00:18:02,600<br>It’s not surprising actually that we’ve run into some trouble understanding how they’re</p>
+<p>267<br>00:18:02,600 –&gt; 00:18:04,240<br>supposed to work in all situations.</p>
+<p>268<br>00:18:04,240 –&gt; 00:18:11,720<br>This is one area of Java that I would say is still under debate and while if you do relatively</p>
+<p>269<br>00:18:11,720 –&gt; 00:18:16,040<br>straightforward things with threads, everything will work fine.</p>
+<p>270<br>00:18:16,040 –&gt; 00:18:21,320<br>There are some areas of the language where if you try to use them with threads, you can</p>
+<p>271<br>00:18:21,319 –&gt; 00:18:23,919<br>get into a little bit of trouble.</p>
+<p>272<br>00:18:23,919 –&gt; 00:18:29,000<br>So it surely pays to try to understand Java concurrency and the threads if you’re writing</p>
+<p>273<br>00:18:29,000 –&gt; 00:18:53,279<br>significant concurrent Java programs.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P126Week1018 06 Java Threads</div>
+      <div>http://example.com/2025/10/25/CS143 P126Week1018-06-java-threads/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P123Week1018-03-java-exceptions/" title="CS143 P123Week1018 03 Java Exceptions">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P123Week1018 03 Java Exceptions</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P125Week1018-05-java-coercions/" title="CS143 P125Week1018 05 Java Coercions">
+                        <span class="hidden-mobile">CS143 P125Week1018 05 Java Coercions</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

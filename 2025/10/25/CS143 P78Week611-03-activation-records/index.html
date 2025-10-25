@@ -1,0 +1,812 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,599In the previous video, we talked about activations, but we never said what information we actually 200:00:08,599 –&gt; 00:00:10,400need to keep for an activation. 300:0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P78Week611 03 Activation Records">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P78Week611-03-activation-records/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,599In the previous video, we talked about activations, but we never said what information we actually 200:00:08,599 –&gt; 00:00:10,400need to keep for an activation. 300:0">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.411Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.226Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P78Week611 03 Activation Records - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P78Week611 03 Activation Records"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          16 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P78Week611 03 Activation Records</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,599<br>In the previous video, we talked about activations, but we never said what information we actually</p>
+<p>2<br>00:00:08,599 –&gt; 00:00:10,400<br>need to keep for an activation.</p>
+<p>3<br>00:00:10,400 –&gt; 00:00:15,880<br>That’s the topic of this video.</p>
+<p>4<br>00:00:15,880 –&gt; 00:00:22,080<br>An activation record is all the information that’s needed to manage the execution of one</p>
+<p>5<br>00:00:22,080 –&gt; 00:00:24,120<br>procedure activation.</p>
+<p>6<br>00:00:24,120 –&gt; 00:00:27,320<br>And often this is also called a frame.</p>
+<p>7<br>00:00:27,320 –&gt; 00:00:29,760<br>That means exactly the same thing as activation records.</p>
+<p>8<br>00:00:29,760 –&gt; 00:00:34,920<br>These are just two names for the same thing.</p>
+<p>9<br>00:00:34,920 –&gt; 00:00:40,439<br>Now one interesting fact about procedure activations is that they have more information in them</p>
+<p>10<br>00:00:40,439 –&gt; 00:00:41,439<br>than you might expect.</p>
+<p>11<br>00:00:41,439 –&gt; 00:00:47,359<br>So in particular, when a procedure F calls a procedure G, the activation record for G</p>
+<p>12<br>00:00:47,359 –&gt; 00:00:53,240<br>will actually have information not only about G, but very frequently also about the calling</p>
+<p>13<br>00:00:53,240 –&gt; 00:00:54,240<br>function F.</p>
+<p>14<br>00:00:54,240 –&gt; 00:00:59,120<br>So typically the activation record for a procedure will contain a mixture of information</p>
+<p>15<br>00:00:59,159 –&gt; 00:01:05,959<br>both about that procedure and about the procedure that called it.</p>
+<p>16<br>00:01:05,959 –&gt; 00:01:10,679<br>Now up to this point, we haven’t said why we need to keep information about activations</p>
+<p>17<br>00:01:10,679 –&gt; 00:01:11,920<br>at all.</p>
+<p>18<br>00:01:11,920 –&gt; 00:01:16,479<br>And the reason is that there is some state associated with each procedure activation that</p>
+<p>19<br>00:01:16,479 –&gt; 00:01:19,239<br>is needed in order to properly execute the procedure.</p>
+<p>20<br>00:01:19,239 –&gt; 00:01:21,039<br>And we have to track that somewhere.</p>
+<p>21<br>00:01:21,039 –&gt; 00:01:23,079<br>And that’s what the activation record is going to be for.</p>
+<p>22<br>00:01:23,079 –&gt; 00:01:27,680<br>It’s going to be to hold the information needed to properly execute the procedure.</p>
+<p>23<br>00:01:27,920 –&gt; 00:01:30,040<br>So let’s look at that in a little bit more detail.</p>
+<p>24<br>00:01:30,040 –&gt; 00:01:35,600<br>Let’s consider the situation where procedure F calls procedure G.</p>
+<p>25<br>00:01:35,600 –&gt; 00:01:36,920<br>And what is going to happen?</p>
+<p>26<br>00:01:36,920 –&gt; 00:01:41,120<br>So conceptually what happens when F calls G is that F is suspended.</p>
+<p>27<br>00:01:41,120 –&gt; 00:01:44,520<br>F is going to stop executing while G is running.</p>
+<p>28<br>00:01:44,520 –&gt; 00:01:49,440<br>So G is going to be using the processor and all the resources of the machine.</p>
+<p>29<br>00:01:49,440 –&gt; 00:01:52,480<br>But when G completes, we want to start executing F again.</p>
+<p>30<br>00:01:52,480 –&gt; 00:01:54,000<br>F is going to resume.</p>
+<p>31<br>00:01:54,000 –&gt; 00:01:59,920<br>And so in between while G is running, we have to save the state of the procedure activation</p>
+<p>32<br>00:01:59,920 –&gt; 00:02:03,319<br>of F somewhere so that we can resume it properly.</p>
+<p>33<br>00:02:03,319 –&gt; 00:02:06,519<br>And that’s again what the activation record is for.</p>
+<p>34<br>00:02:06,519 –&gt; 00:02:13,360<br>And so G’s activation record is going to have to have information in it that will help</p>
+<p>35<br>00:02:13,360 –&gt; 00:02:15,360<br>us to complete the execution of G.</p>
+<p>36<br>00:02:15,360 –&gt; 00:02:19,639<br>So there will be some information about G that we just need in order to run G.</p>
+<p>37<br>00:02:19,639 –&gt; 00:02:24,559<br>But also G’s activation record is going to have to store whatever we need to be able</p>
+<p>38<br>00:02:24,559 –&gt; 00:02:27,399<br>to resume the execution of procedure F.</p>
+<p>39<br>00:02:29,879 –&gt; 00:02:31,759<br>So let’s work through an example.</p>
+<p>40<br>00:02:31,759 –&gt; 00:02:36,159<br>Here’s one of the programs that we looked at in the last video.</p>
+<p>41<br>00:02:36,159 –&gt; 00:02:41,959<br>And here is a design for a concrete activation record for the procedure F.</p>
+<p>42<br>00:02:41,959 –&gt; 00:02:44,959<br>So we’ll have one position for the result of F.</p>
+<p>43<br>00:02:44,959 –&gt; 00:02:49,560<br>That will hold the return value after we’ve finished execution of F.</p>
+<p>44<br>00:02:49,560 –&gt; 00:02:52,599<br>So there will be a position here for the argument to F.</p>
+<p>45<br>00:02:52,599 –&gt; 00:02:54,400<br>So F only takes one parameter.</p>
+<p>46<br>00:02:54,400 –&gt; 00:02:59,879<br>So I only need one word here to hold the argument to the function.</p>
+<p>47<br>00:02:59,879 –&gt; 00:03:04,560<br>There will be a control link, so a pointer to the previous or the caller’s activation.</p>
+<p>48<br>00:03:04,560 –&gt; 00:03:08,319<br>And we’ll also have a slot for the return address.</p>
+<p>49<br>00:03:08,319 –&gt; 00:03:13,520<br>So the address in memory or the address of the instruction that we are supposed to jump</p>
+<p>50<br>00:03:13,520 –&gt; 00:03:17,480<br>to after the execution of F completes.</p>
+<p>51<br>00:03:17,479 –&gt; 00:03:26,039<br>So now let’s just execute this program by hand and work out what the activation records</p>
+<p>52<br>00:03:26,039 –&gt; 00:03:27,959<br>will look like on the stack.</p>
+<p>53<br>00:03:27,959 –&gt; 00:03:32,959<br>So when the program is first invoked, it will call main.</p>
+<p>54<br>00:03:32,959 –&gt; 00:03:36,000<br>There will be an activation record for main.</p>
+<p>55<br>00:03:36,000 –&gt; 00:03:38,759<br>Okay, but we’re not going to worry about that.</p>
+<p>56<br>00:03:38,759 –&gt; 00:03:39,959<br>We’re just going to focus on F.</p>
+<p>57<br>00:03:39,959 –&gt; 00:03:45,000<br>So there’s some stuff for main, but we’re not going to talk about that.</p>
+<p>58<br>00:03:45,000 –&gt; 00:03:48,240<br>And then main is going to call F.</p>
+<p>59<br>00:03:48,240 –&gt; 00:03:54,080<br>All right, and so when main calls F, an activation record will be pushed onto the stack.</p>
+<p>60<br>00:03:54,080 –&gt; 00:04:01,360<br>We’ll have four slots or four fields for values.</p>
+<p>61<br>00:04:01,360 –&gt; 00:04:04,080<br>And what will go in those while the first slot is for the result?</p>
+<p>62<br>00:04:04,080 –&gt; 00:04:05,879<br>Well, it’s just starting to run.</p>
+<p>63<br>00:04:05,879 –&gt; 00:04:07,120<br>F is just beginning execution.</p>
+<p>64<br>00:04:07,120 –&gt; 00:04:09,599<br>So there’s nothing to put there at the moment.</p>
+<p>65<br>00:04:09,599 –&gt; 00:04:12,319<br>That gets filled in when F returns.</p>
+<p>66<br>00:04:12,319 –&gt; 00:04:15,639<br>The second position will hold the argument to F.</p>
+<p>67<br>00:04:15,639 –&gt; 00:04:18,399<br>So that’ll be the number three.</p>
+<p>68<br>00:04:18,399 –&gt; 00:04:21,839<br>The third slot will hold the control links.</p>
+<p>69<br>00:04:21,839 –&gt; 00:04:26,079<br>That’s going to point back to the activation for main.</p>
+<p>70<br>00:04:26,079 –&gt; 00:04:29,000<br>And the fourth position will hold the return address.</p>
+<p>71<br>00:04:29,000 –&gt; 00:04:34,480<br>And this is actually not completely trivial because F is called in multiple places.</p>
+<p>72<br>00:04:34,480 –&gt; 00:04:38,000<br>So if you look at the program, there’s a call to F in main.</p>
+<p>73<br>00:04:38,000 –&gt; 00:04:42,639<br>And there’s a call to F inside of F itself.</p>
+<p>74<br>00:04:42,639 –&gt; 00:04:46,639<br>And so depending on where the function is called from,</p>
+<p>75<br>00:04:46,639 –&gt; 00:04:50,319<br>after that function completes, we want to return to a different address.</p>
+<p>76<br>00:04:50,319 –&gt; 00:04:55,360<br>In the case of main, when this called F completes, we want to return to the,</p>
+<p>77<br>00:04:55,360 –&gt; 00:04:58,160<br>whatever instruction comes after the call to F,</p>
+<p>78<br>00:04:58,160 –&gt; 00:05:01,399<br>which is just going to be something that wraps up the execution of the program.</p>
+<p>79<br>00:05:01,399 –&gt; 00:05:05,600<br>Since it’s the exit point of main, inside of F,</p>
+<p>80<br>00:05:05,600 –&gt; 00:05:08,760<br>it’s going to be the conclusion of the conditional.</p>
+<p>81<br>00:05:08,760 –&gt; 00:05:11,640<br>So this point double star here is going to be,</p>
+<p>82<br>00:05:11,640 –&gt; 00:05:15,200<br>you know, whatever is left of the conditional and then the return for math.</p>
+<p>83<br>00:05:15,200 –&gt; 00:05:20,640<br>So depending on where F is called from, we want to return to one of two different places.</p>
+<p>84<br>00:05:20,640 –&gt; 00:05:24,960<br>Okay. So in this case, F is being called from main.</p>
+<p>85<br>00:05:24,960 –&gt; 00:05:32,439<br>And so we’ll put the single star address in that position of the activation record.</p>
+<p>86<br>00:05:32,439 –&gt; 00:05:33,200<br>All right.</p>
+<p>87<br>00:05:33,199 –&gt; 00:05:35,800<br>So then F is called second time.</p>
+<p>88<br>00:05:35,800 –&gt; 00:05:40,399<br>The body of F executes the argument three is not zero.</p>
+<p>89<br>00:05:40,399 –&gt; 00:05:42,439<br>And so we wind up calling F again.</p>
+<p>90<br>00:05:42,439 –&gt; 00:05:47,319<br>What that means is another activation record will be pushed under the stack.</p>
+<p>91<br>00:05:47,319 –&gt; 00:05:49,360<br>This will also have four slots.</p>
+<p>92<br>00:05:49,360 –&gt; 00:05:51,959<br>It’s an activation record for F. I should label these.</p>
+<p>93<br>00:05:51,959 –&gt; 00:05:53,919<br>So that’s an activation of F.</p>
+<p>94<br>00:05:53,919 –&gt; 00:05:57,399<br>This is also an activation of F.</p>
+<p>95<br>00:05:57,399 –&gt; 00:06:03,079<br>And what goes in this one, well, again, the result doesn’t have anything initially in it.</p>
+<p>96<br>00:06:03,079 –&gt; 00:06:05,879<br>And the argument in this case would be two.</p>
+<p>97<br>00:06:05,879 –&gt; 00:06:10,719<br>The control link in this case will point back to the previous activation of F.</p>
+<p>98<br>00:06:10,719 –&gt; 00:06:14,839<br>And the return address in this case will be the point double star.</p>
+<p>99<br>00:06:14,839 –&gt; 00:06:15,839<br>All right.</p>
+<p>100<br>00:06:15,839 –&gt; 00:06:22,399<br>So after two calls to F, this is what the stack will look like with this particular activation</p>
+<p>101<br>00:06:22,399 –&gt; 00:06:25,680<br>record design.</p>
+<p>102<br>00:06:25,680 –&gt; 00:06:28,919<br>So here’s the same picture just drawn a bit more neatly.</p>
+<p>103<br>00:06:28,920 –&gt; 00:06:33,680<br>There’s one additional thing I’d like to point out, which is at this stack of activation</p>
+<p>104<br>00:06:33,680 –&gt; 00:06:34,680<br>records.</p>
+<p>105<br>00:06:34,680 –&gt; 00:06:41,840<br>And let me delineate the activation records here is not as abstract as the kinds of stacks</p>
+<p>106<br>00:06:41,840 –&gt; 00:06:47,200<br>you were probably taught about in a data structures class if you’ve had such a class.</p>
+<p>107<br>00:06:47,200 –&gt; 00:06:51,560<br>So here there are distinct activation records on the stack and we treat them as such and</p>
+<p>108<br>00:06:51,560 –&gt; 00:06:53,800<br>the runtime system will treat them as such.</p>
+<p>109<br>00:06:53,800 –&gt; 00:06:56,160<br>But this is also like one gigantic array.</p>
+<p>110<br>00:06:56,160 –&gt; 00:06:59,760<br>All of this data is just laid out in continuous memory.</p>
+<p>111<br>00:06:59,760 –&gt; 00:07:02,240<br>These are all contiguous addresses.</p>
+<p>112<br>00:07:02,240 –&gt; 00:07:09,160<br>And one is activation record here just follows on to the next address immediately after the</p>
+<p>113<br>00:07:09,160 –&gt; 00:07:11,440<br>previous activation record.</p>
+<p>114<br>00:07:11,440 –&gt; 00:07:18,720<br>And compiler writers will often play tricks to exploit the fact that these activations are</p>
+<p>115<br>00:07:18,720 –&gt; 00:07:20,360<br>adjacent to each other in memory.</p>
+<p>116<br>00:07:20,360 –&gt; 00:07:27,080<br>And we’ll see one such potential trick in just a moment.</p>
+<p>117<br>00:07:27,080 –&gt; 00:07:32,439<br>To summarize some of the highlights of this example so far, I want to repeat that main is</p>
+<p>118<br>00:07:32,439 –&gt; 00:07:33,439<br>not very interesting.</p>
+<p>119<br>00:07:33,439 –&gt; 00:07:37,639<br>So it has no arguments or local variables and as result is never used.</p>
+<p>120<br>00:07:37,639 –&gt; 00:07:41,879<br>And so while it does have an activation record, we’re just not focusing on that and we’re</p>
+<p>121<br>00:07:41,879 –&gt; 00:07:45,600<br>not concerning ourselves with what goes in that activation record.</p>
+<p>122<br>00:07:45,600 –&gt; 00:07:49,680<br>We’re just focusing on the activation record for F.</p>
+<p>123<br>00:07:50,680 –&gt; 00:07:56,240<br>Just to be sure this is clear, the star and double star that I use in the example, these</p>
+<p>124<br>00:07:56,240 –&gt; 00:07:57,600<br>are addresses in memory.</p>
+<p>125<br>00:07:57,600 –&gt; 00:08:01,840<br>These are actual memory addresses and they refer to addresses of code.</p>
+<p>126<br>00:08:01,840 –&gt; 00:08:07,879<br>Those are the addresses of the instructions that come after the call to F, it’s as a place</p>
+<p>127<br>00:08:07,879 –&gt; 00:08:10,960<br>where F would return to.</p>
+<p>128<br>00:08:10,960 –&gt; 00:08:17,040<br>And finally, I want to stress that this really is only one of many possible activation record</p>
+<p>129<br>00:08:17,040 –&gt; 00:08:18,040<br>designs.</p>
+<p>130<br>00:08:18,040 –&gt; 00:08:24,439<br>A different activation record for F that had different information in it that would work</p>
+<p>131<br>00:08:24,439 –&gt; 00:08:28,520<br>just fine depending on the structure of the rest of the code generator and the runtime</p>
+<p>132<br>00:08:28,520 –&gt; 00:08:29,720<br>system.</p>
+<p>133<br>00:08:29,720 –&gt; 00:08:35,519<br>So in particular, many compilers don’t use a control link because they don’t need an</p>
+<p>134<br>00:08:35,519 –&gt; 00:08:41,560<br>explicit link to be able to find the calling, the activation record of the calling procedure.</p>
+<p>135<br>00:08:41,560 –&gt; 00:08:47,800<br>And in fact, in your class project, the cool compiler, you won’t be using a control link.</p>
+<p>136<br>00:08:48,359 –&gt; 00:08:54,399<br>Most activation records won’t have the return value in the activation record because it</p>
+<p>137<br>00:08:54,399 –&gt; 00:08:58,279<br>would be more efficient and convenient to return it to in a register.</p>
+<p>138<br>00:08:58,279 –&gt; 00:09:04,879<br>All right, so this is just one possible design and you could design other activation records</p>
+<p>139<br>00:09:04,879 –&gt; 00:09:06,039<br>that would work just fine.</p>
+<p>140<br>00:09:06,039 –&gt; 00:09:11,000<br>The important point about an activation record is that it just has to have sufficient information</p>
+<p>141<br>00:09:11,000 –&gt; 00:09:19,480<br>in it to enable the generated code to properly execute the procedure that’s being called</p>
+<p>142<br>00:09:19,480 –&gt; 00:09:25,320<br>and also to resume execution of the calling procedure.</p>
+<p>143<br>00:09:25,320 –&gt; 00:09:28,679<br>So far, we’ve only looked at the procedure call for this activation record.</p>
+<p>144<br>00:09:28,679 –&gt; 00:09:33,759<br>We haven’t talked about what happens when activations return.</p>
+<p>145<br>00:09:33,759 –&gt; 00:09:38,720<br>So let’s consider what happens in our example after the second call to F that’s this one,</p>
+<p>146<br>00:09:38,720 –&gt; 00:09:41,120<br>this activation down here returns.</p>
+<p>147<br>00:09:41,120 –&gt; 00:09:45,440<br>So what’s going to happen is we’re going to make the caller, the current activation,</p>
+<p>148<br>00:09:45,440 –&gt; 00:09:47,320<br>so it will actually become the top of the stack.</p>
+<p>149<br>00:09:47,320 –&gt; 00:09:53,759<br>So I’ve got this big, fat green arrow here to indicate that this is now the current activation,</p>
+<p>150<br>00:09:53,759 –&gt; 00:09:56,000<br>this one up here.</p>
+<p>151<br>00:09:56,000 –&gt; 00:09:58,200<br>Okay, so this is the call.</p>
+<p>152<br>00:09:58,200 –&gt; 00:10:03,120<br>This is the, what was the caller and it’s not going to resume executing.</p>
+<p>153<br>00:10:03,120 –&gt; 00:10:08,680<br>And the interesting thing here is to note that like I said before, this isn’t as abstract</p>
+<p>154<br>00:10:08,719 –&gt; 00:10:11,399<br>as a stack in a data structures course.</p>
+<p>155<br>00:10:11,399 –&gt; 00:10:17,719<br>So while we have restored this as the active procedure, this data down here, this activation</p>
+<p>156<br>00:10:17,719 –&gt; 00:10:20,839<br>that was running is still there in memory.</p>
+<p>157<br>00:10:20,839 –&gt; 00:10:24,279<br>And in fact, we can go and look at it if we want to.</p>
+<p>158<br>00:10:24,279 –&gt; 00:10:30,239<br>And the way I set this example up, in fact, we need to because the result of the procedure</p>
+<p>159<br>00:10:30,239 –&gt; 00:10:36,839<br>that we called is now stored here in the first word of this activation.</p>
+<p>160<br>00:10:36,840 –&gt; 00:10:44,160<br>All right, so when F begins executing again, it’s going to have to look up that result</p>
+<p>161<br>00:10:44,160 –&gt; 00:10:48,639<br>in order to know what the result was of the procedure that was called.</p>
+<p>162<br>00:10:48,639 –&gt; 00:10:52,399<br>So the advantage of placing the return value in the first position in the frame is that</p>
+<p>163<br>00:10:52,399 –&gt; 00:10:55,879<br>the caller can find it at a fixed offset from its own frame.</p>
+<p>164<br>00:10:55,879 –&gt; 00:10:57,960<br>Let’s back up and just see that.</p>
+<p>165<br>00:10:57,960 –&gt; 00:11:06,480<br>So here when the second call to F has returned and the first call here has resumed executing,</p>
+<p>166<br>00:11:07,480 –&gt; 00:11:13,600<br>this call, the code for this call, will know that the size of this activation record is 4.</p>
+<p>167<br>00:11:13,600 –&gt; 00:11:16,840<br>And there are four words in this activation record.</p>
+<p>168<br>00:11:16,840 –&gt; 00:11:22,519<br>And so it can find the result of the procedure that it called in the 4 plus 1 position.</p>
+<p>169<br>00:11:22,519 –&gt; 00:11:25,279<br>And five words passed the top of the frame.</p>
+<p>170<br>00:11:25,279 –&gt; 00:11:29,080<br>So in particular, it will be able to find this word in memory.</p>
+<p>171<br>00:11:29,080 –&gt; 00:11:32,639<br>And even though this has been popped off the stack, as I said before, that data is still there,</p>
+<p>172<br>00:11:32,639 –&gt; 00:11:35,159<br>at least until another procedure is called.</p>
+<p>173<br>00:11:35,439 –&gt; 00:11:41,240<br>And so if we immediately read the result of the function call after we return from the function,</p>
+<p>174<br>00:11:41,240 –&gt; 00:11:47,120<br>we’ll be able to pick up that result and then use it in the continuation of the execution of the calling procedure.</p>
+<p>175<br>00:11:50,319 –&gt; 00:11:53,439<br>And once again, I just want to stress, I know I’ve said this a couple of times,</p>
+<p>176<br>00:11:53,439 –&gt; 00:11:57,360<br>but it’s very important that there’s absolutely nothing magic about this organization.</p>
+<p>177<br>00:11:57,360 –&gt; 00:12:00,360<br>We could rearrange the order of the elements in the frame.</p>
+<p>178<br>00:12:00,360 –&gt; 00:12:04,240<br>We could divide the responsibility between the caller and colleague differently.</p>
+<p>179<br>00:12:04,240 –&gt; 00:12:08,279<br>And really, the only metric here is that one organization is better than another</p>
+<p>180<br>00:12:08,279 –&gt; 00:12:12,000<br>if it results in faster code or in a simpler code generator.</p>
+<p>181<br>00:12:14,000 –&gt; 00:12:17,240<br>And I know I also mentioned this before, but it’s also an important point.</p>
+<p>182<br>00:12:17,240 –&gt; 00:12:22,519<br>In a production compiler, we would put as much of the frame contents as possible in registers.</p>
+<p>183<br>00:12:22,519 –&gt; 00:12:26,200<br>And in particular, there’d be a special effort to pass the method result</p>
+<p>184<br>00:12:26,200 –&gt; 00:12:30,080<br>and the method arguments in registers because those are accessed so frequently.</p>
+<p>185<br>00:12:31,080 –&gt; 00:12:36,080<br>Finally, to sum up our discussion of activations and activation records.</p>
+<p>186<br>00:12:36,080 –&gt; 00:12:40,080<br>The issue is that the compiler has to determine at compile time,</p>
+<p>187<br>00:12:40,080 –&gt; 00:12:44,080<br>so this happens statically, the layout of the activation record</p>
+<p>188<br>00:12:44,080 –&gt; 00:12:50,080<br>and also has to generate code that correctly accesses the locations in that activation record.</p>
+<p>189<br>00:12:50,080 –&gt; 00:12:55,080<br>And what does this mean? This means that the activation record layout and the code generator</p>
+<p>190<br>00:12:55,080 –&gt; 00:12:57,080<br>have to be designed together.</p>
+<p>191<br>00:12:58,080 –&gt; 00:13:01,080<br>So you can’t just design your code generator and then figure out later</p>
+<p>192<br>00:13:01,080 –&gt; 00:13:03,080<br>what your activation record layout is going to be.</p>
+<p>193<br>00:13:03,080 –&gt; 00:13:06,080<br>Or vice versa. These two things need to be designed together</p>
+<p>194<br>00:13:06,080 –&gt; 00:13:09,080<br>because they depend on each other.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P78Week611 03 Activation Records</div>
+      <div>http://example.com/2025/10/25/CS143 P78Week611-03-activation-records/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P77Week611-02-B+Activations/" title="CS143 P77Week611 02 B+Activations">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P77Week611 02 B+Activations</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P72Week610-05-A+Self+Type+Checking/" title="CS143 P72Week610 05 A+Self+Type+Checking">
+                        <span class="hidden-mobile">CS143 P72Week610 05 A+Self+Type+Checking</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

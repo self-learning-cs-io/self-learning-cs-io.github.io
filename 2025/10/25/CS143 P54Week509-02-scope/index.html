@@ -1,0 +1,728 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,480Welcome back. 200:00:04,480 –&gt; 00:00:13,740In this video, we’re going to begin our discussion of semantic analysis with the topic of scope. 300:00:13,740 –&gt; 00:00">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P54Week509 02 Scope">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P54Week509-02-scope/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,480Welcome back. 200:00:04,480 –&gt; 00:00:13,740In this video, we’re going to begin our discussion of semantic analysis with the topic of scope. 300:00:13,740 –&gt; 00:00">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.404Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.223Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P54Week509 02 Scope - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P54Week509 02 Scope"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P54Week509 02 Scope</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,480<br>Welcome back.</p>
+<p>2<br>00:00:04,480 –&gt; 00:00:13,740<br>In this video, we’re going to begin our discussion of semantic analysis with the topic of scope.</p>
+<p>3<br>00:00:13,740 –&gt; 00:00:18,039<br>The motivating problem for talking about scope is that we want to be able to match identifier</p>
+<p>4<br>00:00:18,039 –&gt; 00:00:21,400<br>declarations with the uses of those identifiers.</p>
+<p>5<br>00:00:21,400 –&gt; 00:00:26,440<br>We need to know which variable we’re talking about when we say variable x if variable x</p>
+<p>6<br>00:00:26,440 –&gt; 00:00:29,800<br>might have more than one definition in the program.</p>
+<p>7<br>00:00:29,800 –&gt; 00:00:34,359<br>This is an important static analysis step in most programming languages, including in</p>
+<p>8<br>00:00:34,359 –&gt; 00:00:36,480<br>cool.</p>
+<p>9<br>00:00:36,480 –&gt; 00:00:39,520<br>So here are a couple of examples taken from cool.</p>
+<p>10<br>00:00:39,520 –&gt; 00:00:43,880<br>This definition of y, this declaration of y that it’s a string, will be matched with</p>
+<p>11<br>00:00:43,880 –&gt; 00:00:44,880<br>this use.</p>
+<p>12<br>00:00:44,880 –&gt; 00:00:49,640<br>So we’ll know at this point here that y is supposed to be a string and you’ll get some kind</p>
+<p>13<br>00:00:49,640 –&gt; 00:00:54,400<br>of an error from the compiler because you’re trying to add a string and a number.</p>
+<p>14<br>00:00:54,399 –&gt; 00:01:01,719<br>In the second example, here’s a declaration of y and then in the body of the let, we don’t</p>
+<p>15<br>00:01:01,719 –&gt; 00:01:04,319<br>see any use of y and that by itself is not an error.</p>
+<p>16<br>00:01:04,319 –&gt; 00:01:08,239<br>It’s perfectly fine to declare a variable that you don’t use, although you can imagine</p>
+<p>17<br>00:01:08,239 –&gt; 00:01:12,759<br>generating a warning for that that doesn’t actually cause the program to behave badly.</p>
+<p>18<br>00:01:12,759 –&gt; 00:01:17,079<br>But instead, what we see here is a use of x and there’s no matching definition.</p>
+<p>19<br>00:01:17,079 –&gt; 00:01:20,280<br>So the question is where is the definition of x?</p>
+<p>20<br>00:01:20,280 –&gt; 00:01:24,200<br>We can’t see it and if there is no outer definition of x and we’ll get an undefined</p>
+<p>21<br>00:01:24,200 –&gt; 00:01:30,480<br>or undeclared variable error here at this point.</p>
+<p>22<br>00:01:30,480 –&gt; 00:01:32,879<br>So these two examples illustrate the idea of scope.</p>
+<p>23<br>00:01:32,879 –&gt; 00:01:39,040<br>The scope of an identifier is that portion of a program in which the identifier is accessible.</p>
+<p>24<br>00:01:39,040 –&gt; 00:01:42,840<br>And this knows that the same identifier may refer to different things in different parts</p>
+<p>25<br>00:01:42,840 –&gt; 00:01:47,079<br>of the program and different scopes for the same name can’t overlap.</p>
+<p>26<br>00:01:47,079 –&gt; 00:01:53,120<br>So whatever the variable x, for example, means it can only refer to one thing in any given</p>
+<p>27<br>00:01:53,120 –&gt; 00:01:54,719<br>part of the program.</p>
+<p>28<br>00:01:54,719 –&gt; 00:01:56,480<br>And identifiers can have restricted scope.</p>
+<p>29<br>00:01:56,480 –&gt; 00:02:00,240<br>There are lots of examples, and I’m sure you’re familiar with them, of identifiers whose</p>
+<p>30<br>00:02:00,240 –&gt; 00:02:05,040<br>scope is less than the entire program.</p>
+<p>31<br>00:02:05,040 –&gt; 00:02:09,680<br>Most programming languages today have what is called static scope and cool as an example</p>
+<p>32<br>00:02:09,680 –&gt; 00:02:11,599<br>of a statically-scoped language.</p>
+<p>33<br>00:02:11,599 –&gt; 00:02:15,520<br>The characteristic of static scoping is that the scope of a variable depends only on the</p>
+<p>34<br>00:02:15,520 –&gt; 00:02:18,920<br>program text, not on any kind of runtime behavior.</p>
+<p>35<br>00:02:18,920 –&gt; 00:02:22,080<br>So what the program actually does at runtime doesn’t matter.</p>
+<p>36<br>00:02:22,080 –&gt; 00:02:28,080<br>That scope is defined purely syntactically from the way you wrote the program.</p>
+<p>37<br>00:02:28,080 –&gt; 00:02:32,160<br>Now it may come as a surprise that there’s any alternative to static scoping.</p>
+<p>38<br>00:02:32,160 –&gt; 00:02:37,520<br>In fact, probably every language that you have used up to now has had static scoping.</p>
+<p>39<br>00:02:37,520 –&gt; 00:02:41,680<br>But there are a few languages that are what are called dynamically-scoped.</p>
+<p>40<br>00:02:41,680 –&gt; 00:02:45,320<br>And for a long time, actually, there was an argument about whether static scoping was</p>
+<p>41<br>00:02:45,320 –&gt; 00:02:47,360<br>better than dynamic scoping.</p>
+<p>42<br>00:02:47,360 –&gt; 00:02:54,240<br>Although today I think it’s pretty clear that the static scoping camp has won this discussion.</p>
+<p>43<br>00:02:54,240 –&gt; 00:03:00,080<br>But historically at least, Lisp was an example of a dynamically-scoped language.</p>
+<p>44<br>00:03:00,080 –&gt; 00:03:02,400<br>And it has switched in the meantime.</p>
+<p>45<br>00:03:02,400 –&gt; 00:03:07,320<br>This is actually a long time ago now that it changed to static scoping.</p>
+<p>46<br>00:03:07,320 –&gt; 00:03:11,360<br>Another language, which is now mostly of historical interests, isn’t it really used anymore,</p>
+<p>47<br>00:03:11,360 –&gt; 00:03:15,000<br>called snowball, also had dynamic scoping.</p>
+<p>48<br>00:03:15,000 –&gt; 00:03:19,400<br>And the characteristic of dynamic scoping is that the scope of a variable depends on the</p>
+<p>49<br>00:03:19,400 –&gt; 00:03:23,879<br>execution behavior of the program.</p>
+<p>50<br>00:03:23,879 –&gt; 00:03:26,039<br>So let’s take a look at an example of static scoping.</p>
+<p>51<br>00:03:26,039 –&gt; 00:03:32,319<br>So here we have some cool code and a couple of different declarations of x.</p>
+<p>52<br>00:03:32,319 –&gt; 00:03:35,599<br>And also some different uses of x.</p>
+<p>53<br>00:03:35,599 –&gt; 00:03:40,800<br>Let me erase these underlines so that I can use the colored indicate binding.</p>
+<p>54<br>00:03:40,800 –&gt; 00:03:43,280<br>So let’s take a look at this definition.</p>
+<p>55<br>00:03:43,280 –&gt; 00:03:45,319<br>The question is which of these uses of x?</p>
+<p>56<br>00:03:45,319 –&gt; 00:03:49,199<br>If you have three uses of x here actually refer to that definition.</p>
+<p>57<br>00:03:49,199 –&gt; 00:03:51,199<br>So it is in fact these two.</p>
+<p>58<br>00:03:51,199 –&gt; 00:03:55,800<br>The ones that are outside of the interlet, these actually refer to this definition.</p>
+<p>59<br>00:03:55,800 –&gt; 00:04:00,520<br>So here if you refer to x, you get the value zero.</p>
+<p>60<br>00:04:00,520 –&gt; 00:04:09,240<br>But this other definition here, the inter definition of x, is used by this use of x.</p>
+<p>61<br>00:04:09,240 –&gt; 00:04:14,920<br>So this use of x gets this meaning of x which in this case returns the value one.</p>
+<p>62<br>00:04:14,920 –&gt; 00:04:18,680<br>And what’s going on here is that what you use the most closely was called the most closely</p>
+<p>63<br>00:04:18,680 –&gt; 00:04:19,879<br>nested rule.</p>
+<p>64<br>00:04:19,879 –&gt; 00:04:26,600<br>So a variable binds to the definition that is most closely enclosing it of the same name.</p>
+<p>65<br>00:04:26,600 –&gt; 00:04:30,000<br>So this x, the closest and closing definition of x is this one.</p>
+<p>66<br>00:04:30,000 –&gt; 00:04:39,220<br>But for these two x’s, the closest and only enclosing definition of x is this outer one.</p>
+<p>67<br>00:04:39,220 –&gt; 00:04:44,980<br>So at an anemonescope language, a variable would refer to the closest binding in the execution</p>
+<p>68<br>00:04:44,980 –&gt; 00:04:48,660<br>of the program, meaning the most recent binding of the variable.</p>
+<p>69<br>00:04:48,660 –&gt; 00:04:49,940<br>So here’s an example.</p>
+<p>70<br>00:04:49,940 –&gt; 00:04:53,940<br>Let’s say we have a function g and g defines a variable a and here it’s initialized say</p>
+<p>71<br>00:04:53,940 –&gt; 00:04:54,940<br>to four.</p>
+<p>72<br>00:04:54,940 –&gt; 00:04:58,900<br>And then it calls another function, another function that isn’t in the same syntactic scope.</p>
+<p>73<br>00:04:58,900 –&gt; 00:05:02,780<br>So here I’ve written f right next to g, but actually f could be in some completely other</p>
+<p>74<br>00:05:02,780 –&gt; 00:05:06,340<br>part of the code and f refers to a.</p>
+<p>75<br>00:05:06,339 –&gt; 00:05:09,099<br>And the question is, what is the value of a here?</p>
+<p>76<br>00:05:09,099 –&gt; 00:05:13,500<br>Well, if it’s, if we’re dynamically scoped, then it’s going to be the value that was defined</p>
+<p>77<br>00:05:13,500 –&gt; 00:05:17,659<br>in g and here f of x will actually return four.</p>
+<p>78<br>00:05:17,659 –&gt; 00:05:23,259<br>That’ll be the result of this call because this reference to a will refer to this binding</p>
+<p>79<br>00:05:23,259 –&gt; 00:05:26,379<br>or this definition of a in g.</p>
+<p>80<br>00:05:26,379 –&gt; 00:05:30,419<br>And we can’t say much more about how dynamics scope works until we talk in a little more</p>
+<p>81<br>00:05:30,419 –&gt; 00:05:33,739<br>detail about how languages are implemented.</p>
+<p>82<br>00:05:33,740 –&gt; 00:05:41,139<br>So we’ll talk about dynamics scope again a little bit later on in the course.</p>
+<p>83<br>00:05:41,139 –&gt; 00:05:44,980<br>In cool, identifier bindings are introduced by a variety of mechanisms.</p>
+<p>84<br>00:05:44,980 –&gt; 00:05:49,540<br>There are class declarations, which introduce class names, method definitions, which introduce</p>
+<p>85<br>00:05:49,540 –&gt; 00:05:50,780<br>method names.</p>
+<p>86<br>00:05:50,780 –&gt; 00:05:55,500<br>And then there’s several different ways to introduce object identifiers.</p>
+<p>87<br>00:05:55,500 –&gt; 00:06:00,139<br>And these are the lead expressions, formal parameters of functions, attribute definitions</p>
+<p>88<br>00:06:00,139 –&gt; 00:06:04,939<br>in classes, and finally in the branches of case expressions.</p>
+<p>89<br>00:06:04,939 –&gt; 00:06:10,939<br>Now, it’s important to understand that not all identifiers follow the most closely nested</p>
+<p>90<br>00:06:10,939 –&gt; 00:06:13,379<br>rule that we outlined before.</p>
+<p>91<br>00:06:13,379 –&gt; 00:06:19,459<br>So for example, a rather large exception to this rule is class definitions in cool.</p>
+<p>92<br>00:06:19,459 –&gt; 00:06:22,060<br>So class definitions cannot be nested.</p>
+<p>93<br>00:06:22,060 –&gt; 00:06:25,379<br>And in fact, they are globally visible throughout the program.</p>
+<p>94<br>00:06:25,379 –&gt; 00:06:26,379<br>And what does that mean?</p>
+<p>95<br>00:06:26,379 –&gt; 00:06:28,539<br>That means that a class name is defined everywhere.</p>
+<p>96<br>00:06:28,540 –&gt; 00:06:32,780<br>If it’s defined anywhere in the program, that class name is available for use anywhere</p>
+<p>97<br>00:06:32,780 –&gt; 00:06:34,980<br>in the program or everywhere in the program.</p>
+<p>98<br>00:06:34,980 –&gt; 00:06:38,900<br>And in particular, a class name can be used before it is defined.</p>
+<p>99<br>00:06:38,900 –&gt; 00:06:42,860<br>So as an example, take a look at this fragment of cool code here.</p>
+<p>100<br>00:06:42,860 –&gt; 00:06:47,540<br>And here we see that in class foo, we declare y to be of type bar.</p>
+<p>101<br>00:06:47,540 –&gt; 00:06:49,820<br>And then later on, we declare class bar.</p>
+<p>102<br>00:06:49,820 –&gt; 00:06:51,860<br>And this is perfectly fine, cool code.</p>
+<p>103<br>00:06:51,860 –&gt; 00:06:58,100<br>The fact that bar is used before it is defined has no effect on whether the program is correct.</p>
+<p>104<br>00:06:58,100 –&gt; 00:07:02,820<br>This is a completely legal, cool code.</p>
+<p>105<br>00:07:02,820 –&gt; 00:07:06,740<br>Similarly, with attribute names, attribute names are global within the class in which they</p>
+<p>106<br>00:07:06,740 –&gt; 00:07:07,900<br>are defined.</p>
+<p>107<br>00:07:07,900 –&gt; 00:07:12,100<br>So that means they can be used again before they are defined.</p>
+<p>108<br>00:07:12,100 –&gt; 00:07:17,580<br>So for example, I can define a class foo, and I can define a method that uses attribute</p>
+<p>109<br>00:07:17,580 –&gt; 00:07:18,580<br>a.</p>
+<p>110<br>00:07:18,579 –&gt; 00:07:19,979<br>And then later on, only later.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P54Week509 02 Scope</div>
+      <div>http://example.com/2025/10/25/CS143 P54Week509-02-scope/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P56Week509-04-types/" title="CS143 P56Week509 04 Types">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P56Week509 04 Types</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P50Week408-06-slr-parsing-example/" title="CS143 P50Week408 06 Slr Parsing Example">
+                        <span class="hidden-mobile">CS143 P50Week408 06 Slr Parsing Example</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

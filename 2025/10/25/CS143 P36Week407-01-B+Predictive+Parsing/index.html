@@ -1,0 +1,798 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,000So here’s the left factor grammar now typed out neatly. 200:00:05,000 –&gt; 00:00:10,000And we use this grammar to construct a parsing table. 300:00:10,000 –&gt; 00:00:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P36Week407 01 B+Predictive+Parsing">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P36Week407-01-B+Predictive+Parsing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,000So here’s the left factor grammar now typed out neatly. 200:00:05,000 –&gt; 00:00:10,000And we use this grammar to construct a parsing table. 300:00:10,000 –&gt; 00:00:">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.397Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.221Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P36Week407 01 B+Predictive+Parsing - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P36Week407 01 B+Predictive+Parsing"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P36Week407 01 B+Predictive+Parsing</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,000<br>So here’s the left factor grammar now typed out neatly.</p>
+<p>2<br>00:00:05,000 –&gt; 00:00:10,000<br>And we use this grammar to construct a parsing table.</p>
+<p>3<br>00:00:10,000 –&gt; 00:00:14,000<br>And let’s not worry right now about how we got this table.</p>
+<p>4<br>00:00:14,000 –&gt; 00:00:18,000<br>I’m not going to give the algorithm right now.</p>
+<p>5<br>00:00:18,000 –&gt; 00:00:21,000<br>But let’s just say that we got it somehow.</p>
+<p>6<br>00:00:21,000 –&gt; 00:00:24,000<br>And what I’m going to explain is how we use the table.</p>
+<p>7<br>00:00:24,000 –&gt; 00:00:29,000<br>So one dimension of the table is the current left most non-terminal</p>
+<p>8<br>00:00:29,000 –&gt; 00:00:33,000<br>in the parse tree. So that’s on the rows.</p>
+<p>9<br>00:00:33,000 –&gt; 00:00:37,000<br>And then the columns represent the next input token.</p>
+<p>10<br>00:00:37,000 –&gt; 00:00:39,000<br>So the next token in the input stream.</p>
+<p>11<br>00:00:39,000 –&gt; 00:00:43,000<br>And then the entry is the right hand side of the production to use.</p>
+<p>12<br>00:00:43,000 –&gt; 00:00:46,000<br>So which production that we should use at that point in the parse.</p>
+<p>13<br>00:00:46,000 –&gt; 00:00:49,000<br>That’s the production that’s predicted.</p>
+<p>14<br>00:00:49,000 –&gt; 00:00:51,000<br>So let’s do an example.</p>
+<p>15<br>00:00:51,000 –&gt; 00:00:54,000<br>So let’s look at the e-int entry.</p>
+<p>16<br>00:00:54,000 –&gt; 00:00:56,000<br>So this entry right here.</p>
+<p>17<br>00:00:56,000 –&gt; 00:00:59,000<br>And what this says is that when the current non-terminal is e,</p>
+<p>18<br>00:00:59,000 –&gt; 00:01:02,000<br>meaning the left most non-terminal in the parse tree.</p>
+<p>19<br>00:01:02,000 –&gt; 00:01:03,000<br>And the next input is in.</p>
+<p>20<br>00:01:03,000 –&gt; 00:01:06,000<br>The thing that we see coming up in the input is an integer.</p>
+<p>21<br>00:01:06,000 –&gt; 00:01:08,000<br>Then we should use the production e-goes to tx.</p>
+<p>22<br>00:01:08,000 –&gt; 00:01:16,000<br>So we should expand e with the children tx.</p>
+<p>23<br>00:01:16,000 –&gt; 00:01:17,000<br>Let’s do another example.</p>
+<p>24<br>00:01:17,000 –&gt; 00:01:21,000<br>So when the current non-terminal is y,</p>
+<p>25<br>00:01:21,000 –&gt; 00:01:25,000<br>and the current token, the current input is plus,</p>
+<p>26<br>00:01:25,000 –&gt; 00:01:29,000<br>then we should use the production y goes to epsilon.</p>
+<p>27<br>00:01:29,000 –&gt; 00:01:32,000<br>Okay, what that says is it’s a little bit different situation.</p>
+<p>28<br>00:01:32,000 –&gt; 00:01:34,000<br>The previous one, it says look,</p>
+<p>29<br>00:01:34,000 –&gt; 00:01:39,000<br>when you see a plus in the input and your current left most non-terminal is y,</p>
+<p>30<br>00:01:39,000 –&gt; 00:01:43,000<br>the only way this parse is going to succeed is if the y doesn’t produce anything.</p>
+<p>31<br>00:01:43,000 –&gt; 00:01:47,000<br>You need to get rid of the y and move on to another non-terminal,</p>
+<p>32<br>00:01:47,000 –&gt; 00:01:50,000<br>whichever one is left most after you get rid of the y.</p>
+<p>33<br>00:01:51,000 –&gt; 00:01:56,000<br>If you want to have any hope of parsing this particular string.</p>
+<p>34<br>00:01:56,000 –&gt; 00:02:00,000<br>And finally, notice that a lot of the entries are blank.</p>
+<p>35<br>00:02:00,000 –&gt; 00:02:02,000<br>And those are error entries.</p>
+<p>36<br>00:02:02,000 –&gt; 00:02:05,000<br>So let’s take a look at the e-star entry.</p>
+<p>37<br>00:02:05,000 –&gt; 00:02:09,000<br>That says that if the left most non-terminal is e,</p>
+<p>38<br>00:02:09,000 –&gt; 00:02:13,000<br>and the next input token is a time symbol of star,</p>
+<p>39<br>00:02:13,000 –&gt; 00:02:16,000<br>well, then there is no moves that you can make.</p>
+<p>40<br>00:02:16,000 –&gt; 00:02:19,000<br>There is no production you can use for e.</p>
+<p>41<br>00:02:19,000 –&gt; 00:02:22,000<br>That’s going to successfully parse that input.</p>
+<p>42<br>00:02:22,000 –&gt; 00:02:28,000<br>And this is the point at which you would raise a parsing error.</p>
+<p>43<br>00:02:28,000 –&gt; 00:02:32,000<br>In the rest of this video, I’m going to give the algorithm for parsing using a parsing table.</p>
+<p>44<br>00:02:32,000 –&gt; 00:02:36,000<br>And then in future videos, we’ll explain how to construct a parsing table.</p>
+<p>45<br>00:02:36,000 –&gt; 00:02:41,000<br>So the method for parsing using a parsing table is similar to recursive descent.</p>
+<p>46<br>00:02:41,000 –&gt; 00:02:44,000<br>Except that for the left most non-terminal s in the tree,</p>
+<p>47<br>00:02:44,000 –&gt; 00:02:46,000<br>we look at the next input token a.</p>
+<p>48<br>00:02:46,000 –&gt; 00:02:49,000<br>And then as we just illustrated with the examples,</p>
+<p>49<br>00:02:49,000 –&gt; 00:02:58,000<br>we look up in the table the production to use at the entry s comma a.</p>
+<p>50<br>00:02:58,000 –&gt; 00:03:03,000<br>And instead of using recursive functions to trace out the parse tree,</p>
+<p>51<br>00:03:03,000 –&gt; 00:03:08,000<br>we’re going to have a stack of records that can record the frontier.</p>
+<p>52<br>00:03:08,000 –&gt; 00:03:11,000<br>And so at any point in the parse tree,</p>
+<p>53<br>00:03:11,000 –&gt; 00:03:14,000<br>we will have some non-terminals that have yet to be expanded.</p>
+<p>54<br>00:03:14,000 –&gt; 00:03:17,000<br>Those were always at the frontier, at the current leaves of the parse tree.</p>
+<p>55<br>00:03:17,000 –&gt; 00:03:20,000<br>And also there are some terminals that we have yet to match against.</p>
+<p>56<br>00:03:20,000 –&gt; 00:03:23,000<br>And those will all be recorded on a stack.</p>
+<p>57<br>00:03:23,000 –&gt; 00:03:28,000<br>And the important property of the stack is that the left most pending terminal or non-terminal</p>
+<p>58<br>00:03:28,000 –&gt; 00:03:30,000<br>is always at the top of the stack.</p>
+<p>59<br>00:03:30,000 –&gt; 00:03:35,000<br>So the either the terminal we’re trying to match or the non-terminal we’re trying to expand</p>
+<p>60<br>00:03:35,000 –&gt; 00:03:38,000<br>will always be on top of our stack.</p>
+<p>61<br>00:03:38,000 –&gt; 00:03:40,000<br>We’ll reject if we reach an error state.</p>
+<p>62<br>00:03:40,000 –&gt; 00:03:44,000<br>So if we look up one of those empty entries in the table, we will reject the string.</p>
+<p>63<br>00:03:44,000 –&gt; 00:03:48,000<br>And we’ll accept if we reach the end of the input and we have an empty stack,</p>
+<p>64<br>00:03:48,000 –&gt; 00:03:53,000<br>meaning we have no pending unmatched terminals or unexpanded non-terminals.</p>
+<p>65<br>00:03:55,000 –&gt; 00:03:57,000<br>So here’s the algorithm.</p>
+<p>66<br>00:03:57,000 –&gt; 00:04:03,000<br>We initialize the stack to just the start symbol s and the special symbol dollar sign.</p>
+<p>67<br>00:04:03,000 –&gt; 00:04:06,000<br>And dollar sign is not part of the alphabet.</p>
+<p>68<br>00:04:07,000 –&gt; 00:04:11,000<br>Or you can think of it we extend whatever our alphabet is with a new symbol called dollar sign.</p>
+<p>69<br>00:04:11,000 –&gt; 00:04:16,000<br>Dollar sign marks the bottom of the stack and you can think of it also is marking the end of input.</p>
+<p>70<br>00:04:16,000 –&gt; 00:04:21,000<br>So this is just a way of recording where the end of the input is going to be.</p>
+<p>71<br>00:04:21,000 –&gt; 00:04:28,000<br>Okay, so once we’ve matched something against s, then whatever is left had better be at the end of the input.</p>
+<p>72<br>00:04:28,000 –&gt; 00:04:31,000<br>That’s what that stack expresses.</p>
+<p>73<br>00:04:31,000 –&gt; 00:04:33,000<br>And now we’re in a loop.</p>
+<p>74<br>00:04:33,000 –&gt; 00:04:40,000<br>So we’re going to repeat the following moves until we can’t repeat them anymore until the stack is empty.</p>
+<p>75<br>00:04:40,000 –&gt; 00:04:43,000<br>Okay, and there’s two possible moves.</p>
+<p>76<br>00:04:43,000 –&gt; 00:04:45,000<br>Let’s do the terminals first.</p>
+<p>77<br>00:04:45,000 –&gt; 00:04:47,000<br>So let’s say the top of our stack is a terminal.</p>
+<p>78<br>00:04:47,000 –&gt; 00:04:51,000<br>So here we’re dividing the stack into the top of the stack and the rest of the stack.</p>
+<p>79<br>00:04:51,000 –&gt; 00:04:55,000<br>So what are we going to do if the top of the stack of the terminal?</p>
+<p>80<br>00:04:55,000 –&gt; 00:04:57,000<br>Well, we’re going to try to match the input.</p>
+<p>81<br>00:04:57,000 –&gt; 00:05:02,000<br>So we’re going to say, well, at the top of the stack, the terminal on top of the stack matches the next thing in the input.</p>
+<p>82<br>00:05:02,000 –&gt; 00:05:05,000<br>Then we advance the input.</p>
+<p>83<br>00:05:05,000 –&gt; 00:05:07,000<br>And we pop the stack.</p>
+<p>84<br>00:05:07,000 –&gt; 00:05:12,000<br>So we have successfully matched the input against the terminal.</p>
+<p>85<br>00:05:12,000 –&gt; 00:05:18,000<br>And so that terminal is done and we should progress into the stack and match the next thing that hasn’t been handled yet.</p>
+<p>86<br>00:05:18,000 –&gt; 00:05:24,000<br>And if they don’t match, if the terminal that we’re looking at doesn’t match the next thing in the input, well, that’s an error.</p>
+<p>87<br>00:05:24,000 –&gt; 00:05:26,000<br>We don’t have any backtracking here.</p>
+<p>88<br>00:05:26,000 –&gt; 00:05:28,000<br>There’s no way to parse the string.</p>
+<p>89<br>00:05:28,000 –&gt; 00:05:29,000<br>And so we’ll raise an error.</p>
+<p>90<br>00:05:29,000 –&gt; 00:05:34,000<br>Now the second class of moves is deals with the non-terminal.</p>
+<p>91<br>00:05:34,000 –&gt; 00:05:37,000<br>So let’s say that the top of the stack is a non-terminal X.</p>
+<p>92<br>00:05:37,000 –&gt; 00:05:43,000<br>And remember that the top of the stack will be a non-terminal exactly when that is the leftmost non-terminal.</p>
+<p>93<br>00:05:43,000 –&gt; 00:05:50,000<br>So now what we do is we look at our parsing table under the entry for X and the next input symbol.</p>
+<p>94<br>00:05:50,000 –&gt; 00:05:54,000<br>And that should give us the right hand side of a production.</p>
+<p>95<br>00:05:54,000 –&gt; 00:06:02,000<br>And now what we do is we pop X off the stack and we push the children of X in the parse tree onto the stack.</p>
+<p>96<br>00:06:02,000 –&gt; 00:06:04,000<br>So this is the way we expand X.</p>
+<p>97<br>00:06:04,000 –&gt; 00:06:10,000<br>So now the leftmost unhandle thing in the parse is going to be Y1 because that’s the first child of X.</p>
+<p>98<br>00:06:10,000 –&gt; 00:06:14,000<br>And then all the other children of X are next and then whatever else is in the stack.</p>
+<p>99<br>00:06:14,000 –&gt; 00:06:24,000<br>And if there’s no entry for the current non-terminal and input in the table, then that’s an error and the parsing stops.</p>
+<p>100<br>00:06:27,000 –&gt; 00:06:31,000<br>So let’s work through an example using our parsing table.</p>
+<p>101<br>00:06:31,000 –&gt; 00:06:34,000<br>And you might want to refer back to the parsing table.</p>
+<p>102<br>00:06:34,000 –&gt; 00:06:37,000<br>I have not included here because there isn’t space for it.</p>
+<p>103<br>00:06:37,000 –&gt; 00:06:44,000<br>But I’ll work through it and you can go back and look at it at some point and convince yourself that I made the right moves.</p>
+<p>104<br>00:06:44,000 –&gt; 00:06:48,000<br>So initially our stack is E $ sign.</p>
+<p>105<br>00:06:48,000 –&gt; 00:06:51,000<br>So E was our start symbol and $ is our end of input symbol.</p>
+<p>106<br>00:06:51,000 –&gt; 00:06:56,000<br>And our input, we’re going to try to parse the input in times int. That’s what we want to parse.</p>
+<p>107<br>00:06:56,000 –&gt; 00:06:58,000<br>And then of course we have our new symbol $ sign.</p>
+<p>108<br>00:06:58,000 –&gt; 00:07:00,000<br>We’ll tack that on to the end of the input.</p>
+<p>109<br>00:07:00,000 –&gt; 00:07:06,000<br>And if all goes well, the dollar sign on the stack will match up against the dollar sign at the end of the input.</p>
+<p>110<br>00:07:06,000 –&gt; 00:07:13,000<br>Again, dollar sign here is just a way of marking the end of the input and expressing that we need to parse the entire input.</p>
+<p>111<br>00:07:13,000 –&gt; 00:07:24,000<br>And so now if you look up the E int entry, so the first terminal and the next terminal in the input and the leftmost terminal in our parse,</p>
+<p>112<br>00:07:24,000 –&gt; 00:07:29,000<br>you will see that what the action we’re supposed to take is to use the production egos to tx.</p>
+<p>113<br>00:07:29,000 –&gt; 00:07:34,000<br>And let me over here at the same time instruct our parse tree.</p>
+<p>114<br>00:07:34,000 –&gt; 00:07:40,000<br>So initially our stack, again the stack is the frontier of the parse tree.</p>
+<p>115<br>00:07:40,000 –&gt; 00:07:43,000<br>Initially all we have is the root of the parse tree and that is its own frontier.</p>
+<p>116<br>00:07:43,000 –&gt; 00:07:46,000<br>It’s just one symbol. We haven’t processed it yet.</p>
+<p>117<br>00:07:46,000 –&gt; 00:07:49,000<br>And so E is on the stack.</p>
+<p>118<br>00:07:49,000 –&gt; 00:07:51,000<br>E is unexpended in the parse tree.</p>
+<p>119<br>00:07:51,000 –&gt; 00:07:54,000<br>And now we’re going to use the production egos to tx.</p>
+<p>120<br>00:07:54,000 –&gt; 00:07:58,000<br>So we’ll have t and x added as children.</p>
+<p>121<br>00:07:58,000 –&gt; 00:08:01,000<br>What happens next? Well, E is popped off the stack.</p>
+<p>122<br>00:08:01,000 –&gt; 00:08:04,000<br>t and x are pushed onto the stack.</p>
+<p>123<br>00:08:04,000 –&gt; 00:08:08,000<br>And now notice the frontier of the parse tree is tx.</p>
+<p>124<br>00:08:08,000 –&gt; 00:08:13,000<br>So these are the unprocessed leaves either unmatched input or unexpended non-terminals.</p>
+<p>125<br>00:08:13,000 –&gt; 00:08:18,000<br>And in fact the stack records exactly which one is leftmost.</p>
+<p>126<br>00:08:18,000 –&gt; 00:08:22,000<br>So t is at the top of the stack. X is below it on the stack.</p>
+<p>127<br>00:08:22,000 –&gt; 00:08:25,000<br>Okay, well we still haven’t consumed any input.</p>
+<p>128<br>00:08:25,000 –&gt; 00:08:30,000<br>And now if we look at the t int entry, it says to use t goes to int y.</p>
+<p>129<br>00:08:30,000 –&gt; 00:08:34,000<br>And so now we can expand t by int y.</p>
+<p>130<br>00:08:34,000 –&gt; 00:08:38,000<br>And now what’s going to happen is t is popped off the stack.</p>
+<p>131<br>00:08:38,000 –&gt; 00:08:41,000<br>Int and y are pushed onto the stack.</p>
+<p>132<br>00:08:41,000 –&gt; 00:08:44,000<br>And now notice the stack is int yx from top to bottom.</p>
+<p>133<br>00:08:44,000 –&gt; 00:08:49,000<br>The frontier of the parse tree is int yx.</p>
+<p>134<br>00:08:49,000 –&gt; 00:08:51,000<br>Okay.</p>
+<p>135<br>00:08:51,000 –&gt; 00:08:54,000<br>And now we have a case where we have a terminal on top of the stack.</p>
+<p>136<br>00:08:54,000 –&gt; 00:08:57,000<br>And so now we’re going to try to match it against the first terminal in the input.</p>
+<p>137<br>00:08:57,000 –&gt; 00:09:01,000<br>And indeed they match. And so what happens is int is popped off the stack.</p>
+<p>138<br>00:09:01,000 –&gt; 00:09:04,000<br>And the terminal, sorry the input pointer advances in the input.</p>
+<p>139<br>00:09:04,000 –&gt; 00:09:08,000<br>And here I’ve recorded that by just discarding the portion of the input that we’ve processed.</p>
+<p>140<br>00:09:08,000 –&gt; 00:09:10,000<br>So now we have times in int left to go.</p>
+<p>141<br>00:09:10,000 –&gt; 00:09:13,000<br>And the int has been removed from the stack.</p>
+<p>142<br>00:09:13,000 –&gt; 00:09:16,000<br>And so now what’s on top of the stack is y.</p>
+<p>143<br>00:09:16,000 –&gt; 00:09:20,000<br>Y is indeed the leftmost unprocessed thing on the frontier.</p>
+<p>144<br>00:09:20,000 –&gt; 00:09:25,000<br>And the table says that for non-terminal y,</p>
+<p>145<br>00:09:25,000 –&gt; 00:09:32,000<br>on input times we should use production y goes to times t.</p>
+<p>146<br>00:09:32,000 –&gt; 00:09:35,000<br>So let’s put that in here.</p>
+<p>147<br>00:09:35,000 –&gt; 00:09:39,000<br>And now what’s going to happen, y is going to be popped off the stack.</p>
+<p>148<br>00:09:39,000 –&gt; 00:09:41,000<br>Times t is going to be pushed onto the stack.</p>
+<p>149<br>00:09:41,000 –&gt; 00:09:51,000<br>And now notice our stack is times tx and the frontier, the unprocessed frontier of the parse tree is times tx.</p>
+<p>150<br>00:09:51,000 –&gt; 00:09:54,000<br>So now we have a terminal on top of the stack.</p>
+<p>151<br>00:09:54,000 –&gt; 00:09:56,000<br>It matches the next terminal in the input.</p>
+<p>152<br>00:09:56,000 –&gt; 00:10:00,000<br>So we pop the terminal off the stack. We advance the input pointer.</p>
+<p>153<br>00:10:00,000 –&gt; 00:10:03,000<br>Now we have t is our leftmost non-terminal.</p>
+<p>154<br>00:10:03,000 –&gt; 00:10:06,000<br>Int is the next thing in the input stream.</p>
+<p>155<br>00:10:06,000 –&gt; 00:10:18,000<br>And the table says, well in this situation we should use the production t goes to int y.</p>
+<p>156<br>00:10:18,000 –&gt; 00:10:21,000<br>What does that mean? That means t gets popped off the stack.</p>
+<p>157<br>00:10:21,000 –&gt; 00:10:23,000<br>Int and y get pushed onto the stack.</p>
+<p>158<br>00:10:23,000 –&gt; 00:10:31,000<br>Notice that the stack is in yx and the unprocessed frontier of the parse tree from left to right is int yx.</p>
+<p>159<br>00:10:31,000 –&gt; 00:10:33,000<br>Once again, we have a terminal on top of the stack.</p>
+<p>160<br>00:10:33,000 –&gt; 00:10:36,000<br>We match it against the next terminal in the input stream.</p>
+<p>161<br>00:10:36,000 –&gt; 00:10:38,000<br>They match.</p>
+<p>162<br>00:10:38,000 –&gt; 00:10:40,000<br>And now we have consumed all the input.</p>
+<p>163<br>00:10:40,000 –&gt; 00:10:43,000<br>Dollar sign is the only thing left to go in the input.</p>
+<p>164<br>00:10:43,000 –&gt; 00:10:45,000<br>But our stack is not empty.</p>
+<p>165<br>00:10:45,000 –&gt; 00:10:48,000<br>So at this point, what does that mean?</p>
+<p>166<br>00:10:48,000 –&gt; 00:10:55,000<br>Well, if the stack is not empty and we’re out of input, then everything that’s left on the stack had better generate the empty string.</p>
+<p>167<br>00:10:55,000 –&gt; 00:10:58,000<br>So we better be using only epsilon productions from here on out.</p>
+<p>168<br>00:10:58,000 –&gt; 00:11:05,000<br>And indeed, the table says that when y is our next non-terminal and dollar sign,</p>
+<p>169<br>00:11:05,000 –&gt; 00:11:10,000<br>we’re at the end of the input, we should use the production y goes to epsilon.</p>
+<p>170<br>00:11:10,000 –&gt; 00:11:14,000<br>So y goes to epsilon. That means y just gets popped off the stack.</p>
+<p>171<br>00:11:14,000 –&gt; 00:11:17,000<br>Epsilon gets pushed on the stack. Epsilon is the empty string.</p>
+<p>172<br>00:11:17,000 –&gt; 00:11:19,000<br>So nothing gets pushed on the stack.</p>
+<p>173<br>00:11:19,000 –&gt; 00:11:21,000<br>And now we’re down to x.</p>
+<p>174<br>00:11:21,000 –&gt; 00:11:28,000<br>And in the situation where x is the next non-terminal, dollar sign is where at the end of the input.</p>
+<p>175<br>00:11:28,000 –&gt; 00:11:31,000<br>So dollar sign is our next symbol.</p>
+<p>176<br>00:11:31,000 –&gt; 00:11:37,000<br>Then the table also says to use production x goes to epsilon.</p>
+<p>177<br>00:11:37,000 –&gt; 00:11:43,000<br>And then what happens? Well, x gets popped off the stack and nothing gets pushed on because the production was x goes to the empty string.</p>
+<p>178<br>00:11:43,000 –&gt; 00:11:48,000<br>And now we see we have dollar sign on top of the stack, dollar sign in the input.</p>
+<p>179<br>00:11:48,000 –&gt; 00:11:50,000<br>And so we have emptied the stack.</p>
+<p>180<br>00:11:50,000 –&gt; 00:11:56,000<br>We have reached the end of the input. And so we accept that is a successful parse.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P36Week407 01 B+Predictive+Parsing</div>
+      <div>http://example.com/2025/10/25/CS143 P36Week407-01-B+Predictive+Parsing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P37Week407-02-first-sets/" title="CS143 P37Week407 02 First Sets">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P37Week407 02 First Sets</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P32Week306-04-1-recursive-descent-limitations-04-1/" title="CS143 P32Week306 04 1 Recursive Descent Limitations 04 1">
+                        <span class="hidden-mobile">CS143 P32Week306 04 1 Recursive Descent Limitations 04 1</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,697 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,320We’re now ready to wrap up our discussion of automatic memory management. 200:00:04,320 –&gt; 00:00:07,360And so I just want to make a few high level points here. 300:0">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P120Week917 05 B+Reference+Counting">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P120Week917-05-B+Reference+Counting/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,320We’re now ready to wrap up our discussion of automatic memory management. 200:00:04,320 –&gt; 00:00:07,360And so I just want to make a few high level points here. 300:0">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.389Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.218Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P120Week917 05 B+Reference+Counting - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P120Week917 05 B+Reference+Counting"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          753 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          7 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P120Week917 05 B+Reference+Counting</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,320<br>We’re now ready to wrap up our discussion of automatic memory management.</p>
+<p>2<br>00:00:04,320 –&gt; 00:00:07,360<br>And so I just want to make a few high level points here.</p>
+<p>3<br>00:00:07,360 –&gt; 00:00:12,400<br>First of all, there’s no question that automatic memory management is a great thing.</p>
+<p>4<br>00:00:12,400 –&gt; 00:00:18,839<br>It prevents very serious storage bugs, some of the most difficult bugs in programming.</p>
+<p>5<br>00:00:18,839 –&gt; 00:00:24,920<br>And when you’re writing in a garbage collected language, you really have just a whole class</p>
+<p>6<br>00:00:24,920 –&gt; 00:00:26,760<br>of things you don’t have to worry about.</p>
+<p>7<br>00:00:26,760 –&gt; 00:00:30,240<br>And so it is certainly a more productive way to program.</p>
+<p>8<br>00:00:30,240 –&gt; 00:00:37,320<br>So if your problem, if your program is really a good fit for automatic memory management,</p>
+<p>9<br>00:00:37,320 –&gt; 00:00:42,280<br>then you’d be crazy not to use a system that provided that kind of support.</p>
+<p>10<br>00:00:42,280 –&gt; 00:00:46,960<br>Now, the disadvantage of a Mank-Mank Management is that it reduces program or control.</p>
+<p>11<br>00:00:46,960 –&gt; 00:00:51,320<br>So you don’t have control anymore over the layout of data and memory.</p>
+<p>12<br>00:00:51,320 –&gt; 00:00:54,680<br>And you don’t have control over when the memory is deallicated.</p>
+<p>13<br>00:00:54,679 –&gt; 00:00:57,920<br>So you neither have control over where the data is in memory.</p>
+<p>14<br>00:00:57,920 –&gt; 00:01:04,400<br>And you have only a very limited amount of control over how much memory your program is using.</p>
+<p>15<br>00:01:04,400 –&gt; 00:01:05,400<br>Okay?</p>
+<p>16<br>00:01:05,400 –&gt; 00:01:11,879<br>And so if these two things don’t matter, if your application is not extremely data intensive,</p>
+<p>17<br>00:01:11,879 –&gt; 00:01:17,560<br>where the precise layout of data in memory and how much data is residing in memory is important,</p>
+<p>18<br>00:01:17,560 –&gt; 00:01:19,760<br>then garbage selection will likely work very well.</p>
+<p>19<br>00:01:19,760 –&gt; 00:01:25,320<br>But there are applications, particularly high end data processing and scientific applications,</p>
+<p>20<br>00:01:25,320 –&gt; 00:01:30,240<br>which use a lot of data and need to make very, very efficient use of the memory,</p>
+<p>21<br>00:01:30,240 –&gt; 00:01:36,480<br>where garbage collection actually becomes too inefficient to do a good job.</p>
+<p>22<br>00:01:36,480 –&gt; 00:01:40,560<br>And people in those domains still use manual memory management.</p>
+<p>23<br>00:01:40,560 –&gt; 00:01:42,200<br>But there are some other issues.</p>
+<p>24<br>00:01:42,200 –&gt; 00:01:46,400<br>So in real time applications, the pauses can be problematic.</p>
+<p>25<br>00:01:46,400 –&gt; 00:01:50,400<br>So if you have a program that needs to meet guaranteed deadlines,</p>
+<p>26<br>00:01:50,400 –&gt; 00:01:53,880<br>many embedded systems that are interacting with the outside world,</p>
+<p>27<br>00:01:53,880 –&gt; 00:01:57,800<br>say controlling dangerous machinery and things like that,</p>
+<p>28<br>00:01:57,800 –&gt; 00:02:04,000<br>they have to have response times that are guaranteed to make sure that nothing terrible happens.</p>
+<p>29<br>00:02:04,000 –&gt; 00:02:11,680<br>And introducing a automatic memory management system that my pauses for arbitrary amounts of time</p>
+<p>30<br>00:02:11,680 –&gt; 00:02:14,200<br>makes that a very problematic thing to guarantee.</p>
+<p>31<br>00:02:14,199 –&gt; 00:02:18,519<br>So you don’t always see garbage collection used in real time applications,</p>
+<p>32<br>00:02:18,519 –&gt; 00:02:26,280<br>although there has been a lot of progress in the last several years on real time garbage collectors.</p>
+<p>33<br>00:02:26,280 –&gt; 00:02:29,879<br>Another issue that every programmer who uses automatic management,</p>
+<p>34<br>00:02:29,879 –&gt; 00:02:33,319<br>probably will have to face, is the problem of memory leaks.</p>
+<p>35<br>00:02:33,319 –&gt; 00:02:38,879<br>So while automatic memory management prevents you from corrupting your memory,</p>
+<p>36<br>00:02:38,879 –&gt; 00:02:43,120<br>it really doesn’t prevent you from hanging on to too much data</p>
+<p>37<br>00:02:43,120 –&gt; 00:02:47,680<br>and possibly affecting the performance of your program dramatically.</p>
+<p>38<br>00:02:47,680 –&gt; 00:02:50,840<br>So memory leaks are possible in garbage collected languages,</p>
+<p>39<br>00:02:50,840 –&gt; 00:02:52,799<br>and I would say they’re even likely.</p>
+<p>40<br>00:02:52,799 –&gt; 00:02:57,240<br>I’d say that the fact that you’re not as aware or not as forced to be as aware</p>
+<p>41<br>00:02:57,240 –&gt; 00:03:01,840<br>of how the memory is being used makes it easier to have memory leaks.</p>
+<p>42<br>00:03:01,840 –&gt; 00:03:06,240<br>And the kind of memory leak that you will have in say a Java program</p>
+<p>43<br>00:03:06,240 –&gt; 00:03:13,280<br>is that you’ll have some variable say x that points to some data structure</p>
+<p>44<br>00:03:13,280 –&gt; 00:03:15,439<br>and this data structure is gigantic.</p>
+<p>45<br>00:03:15,439 –&gt; 00:03:20,080<br>So let’s say that this is the abstract syntax tree in a compiler.</p>
+<p>46<br>00:03:20,080 –&gt; 00:03:21,120<br>All right.</p>
+<p>47<br>00:03:21,120 –&gt; 00:03:27,600<br>Now there may come a point in the computation where you don’t need the abstract syntax tree anymore.</p>
+<p>48<br>00:03:27,600 –&gt; 00:03:31,439<br>So let’s say that we have converted to an intermediate language</p>
+<p>49<br>00:03:31,439 –&gt; 00:03:35,360<br>and from the abstract syntax tree and now all of our processing</p>
+<p>50<br>00:03:35,360 –&gt; 00:03:39,440<br>for the rest of the compilation is going to be on the intermediate language representation</p>
+<p>51<br>00:03:39,440 –&gt; 00:03:40,560<br>and generating code from that.</p>
+<p>52<br>00:03:40,560 –&gt; 00:03:43,480<br>And we never go back and look at the abstract syntax tree again.</p>
+<p>53<br>00:03:43,480 –&gt; 00:03:48,080<br>Well, the compiler, I mean, excuse me, the garbage collector doesn’t know</p>
+<p>54<br>00:03:48,080 –&gt; 00:03:50,880<br>that you’re not going to use the abstract syntax tree again in the future.</p>
+<p>55<br>00:03:50,880 –&gt; 00:03:54,720<br>And if you have a variable that’s pointing to this gigantic data structure,</p>
+<p>56<br>00:03:54,720 –&gt; 00:04:00,000<br>and if you’re not using it, it’s going to hang around and it’s going to be using up memory.</p>
+<p>57<br>00:04:00,000 –&gt; 00:04:02,880<br>And so the right thing to do is when you reach a point in the program,</p>
+<p>58<br>00:04:02,879 –&gt; 00:04:07,680<br>we are not going to use this data structure anymore, is to assign x to null value.</p>
+<p>59<br>00:04:07,680 –&gt; 00:04:11,120<br>You want to assign x to null at that point.</p>
+<p>60<br>00:04:11,120 –&gt; 00:04:14,079<br>I mean, essentially dropping this pointer to the data structure.</p>
+<p>61<br>00:04:14,079 –&gt; 00:04:16,560<br>And now the garbage collector, whatever form it is,</p>
+<p>62<br>00:04:16,560 –&gt; 00:04:18,800<br>mark and sweep, stop and copy, reference counting,</p>
+<p>63<br>00:04:18,800 –&gt; 00:04:23,120<br>will be able to see that this is no longer reachable and will collect that big structure.</p>
+<p>64<br>00:04:23,120 –&gt; 00:04:29,199<br>And this is very, very common in production Java programs to have these kinds of memory leaks,</p>
+<p>65<br>00:04:29,199 –&gt; 00:04:34,800<br>where you just have pointers that you forgot about to data that you’re no longer going to use.</p>
+<p>66<br>00:04:38,319 –&gt; 00:04:40,159<br>So as I hope I have conveyed in the last few lectures,</p>
+<p>67<br>00:04:40,159 –&gt; 00:04:42,079<br>garbage collection is a very important technique.</p>
+<p>68<br>00:04:42,079 –&gt; 00:04:46,719<br>Every programmer should be aware of its benefits and costs.</p>
+<p>69<br>00:04:46,719 –&gt; 00:04:51,039<br>And it’s also a very interesting aspect of programming language implementation.</p>
+<p>70<br>00:04:51,759 –&gt; 00:04:55,759<br>There are much more advanced garbage collection algorithms than we’ve discussed in these lectures.</p>
+<p>71<br>00:04:56,480 –&gt; 00:05:00,240<br>Primary dimensions along which people have thought about improving garbage collection,</p>
+<p>72<br>00:05:00,240 –&gt; 00:05:01,839<br>or is making garbage collection concurrent.</p>
+<p>73<br>00:05:02,639 –&gt; 00:05:07,039<br>And that means allowing the program to continue to run while the collection is happening.</p>
+<p>74<br>00:05:07,039 –&gt; 00:05:11,599<br>So the collector is working in the background actively while the program is running.</p>
+<p>75<br>00:05:12,480 –&gt; 00:05:18,240<br>Another thing that’s very common actually in production collectors is to have what’s called a</p>
+<p>76<br>00:05:18,240 –&gt; 00:05:24,240<br>generational collector. And the basic idea here is that we don’t want to keep</p>
+<p>77<br>00:05:24,960 –&gt; 00:05:29,920<br>going over looking at objects that are very long lived on every collection.</p>
+<p>78<br>00:05:29,920 –&gt; 00:05:34,639<br>So collections happen very frequently and there will be some objects that just live for a very</p>
+<p>79<br>00:05:34,639 –&gt; 00:05:39,759<br>long time, the big data structures that hang around for most of the program. And once we’ve seen them…</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P120Week917 05 B+Reference+Counting</div>
+      <div>http://example.com/2025/10/25/CS143 P120Week917-05-B+Reference+Counting/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P125Week1018-05-java-coercions/" title="CS143 P125Week1018 05 Java Coercions">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P125Week1018 05 Java Coercions</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P122Week1018-02-java-arrays/" title="CS143 P122Week1018 02 Java Arrays">
+                        <span class="hidden-mobile">CS143 P122Week1018 02 Java Arrays</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

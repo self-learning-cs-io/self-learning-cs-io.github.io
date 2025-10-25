@@ -1,0 +1,853 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:11,720In this video, we’re going to look at a second garbage collection technique, stop and copy. 200:00:11,720 –&gt; 00:00:15,240In stop and copy garbage collection, memory">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P116Week917 03 A+Stop+and+Copy">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P116Week917-03-A+Stop+and+Copy/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:11,720In this video, we’re going to look at a second garbage collection technique, stop and copy. 200:00:11,720 –&gt; 00:00:15,240In stop and copy garbage collection, memory">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.387Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.217Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P116Week917 03 A+Stop+and+Copy - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P116Week917 03 A+Stop+and+Copy"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P116Week917 03 A+Stop+and+Copy</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:11,720<br>In this video, we’re going to look at a second garbage collection technique, stop and copy.</p>
+<p>2<br>00:00:11,720 –&gt; 00:00:15,240<br>In stop and copy garbage collection, memory is organized into two areas.</p>
+<p>3<br>00:00:15,240 –&gt; 00:00:19,940<br>We have an old space that’s used for allocation, and so all of the data that the program is</p>
+<p>4<br>00:00:19,940 –&gt; 00:00:23,039<br>currently using lives in this area called the old space.</p>
+<p>5<br>00:00:23,039 –&gt; 00:00:26,800<br>And then there’s a new space, which is reserved for the garbage collector.</p>
+<p>6<br>00:00:26,800 –&gt; 00:00:31,600<br>And so this is not used by the programs, this is just for the GC.</p>
+<p>7<br>00:00:31,600 –&gt; 00:00:36,000<br>And so the first decision in stop and copy garbage collection is that the program can only</p>
+<p>8<br>00:00:36,000 –&gt; 00:00:38,719<br>use half the space.</p>
+<p>9<br>00:00:38,719 –&gt; 00:00:43,000<br>And there are some techniques, more advanced techniques for stop and copy garbage collection</p>
+<p>10<br>00:00:43,000 –&gt; 00:00:48,280<br>that allow the program to use more than half the space, so this isn’t as bad as it sounds,</p>
+<p>11<br>00:00:48,280 –&gt; 00:00:52,679<br>but fundamentally, the fairly significant fraction of the space has to be reserved for</p>
+<p>12<br>00:00:52,679 –&gt; 00:00:54,320<br>the garbage collector.</p>
+<p>13<br>00:00:54,320 –&gt; 00:01:00,560<br>Now, the way allocation works is that there’s a heat pointer here in the old space, and</p>
+<p>14<br>00:01:00,560 –&gt; 00:01:04,000<br>everything to the left of the heat pointer is currently in use.</p>
+<p>15<br>00:01:04,000 –&gt; 00:01:07,799<br>This is where all the objects have already been allocated in this area that I just shaded</p>
+<p>16<br>00:01:07,799 –&gt; 00:01:09,920<br>here in red.</p>
+<p>17<br>00:01:09,920 –&gt; 00:01:14,900<br>And then when it comes time to allocate a new object, we simply allocate it at the heat</p>
+<p>18<br>00:01:14,900 –&gt; 00:01:15,900<br>pointer.</p>
+<p>19<br>00:01:15,900 –&gt; 00:01:22,120<br>So the heat pointer will simply bump up and some block of space will be allocated to the</p>
+<p>20<br>00:01:22,120 –&gt; 00:01:23,400<br>next object that we want to do.</p>
+<p>21<br>00:01:23,400 –&gt; 00:01:29,880<br>And it’ll just keep marching through the old space allocating as you allocate more objects.</p>
+<p>22<br>00:01:29,880 –&gt; 00:01:32,040<br>Okay, so allocation just advances the heat pointer.</p>
+<p>23<br>00:01:32,040 –&gt; 00:01:39,600<br>So one of the advantages actually of stopping copy is a very simple and fast allocation strategy.</p>
+<p>24<br>00:01:39,600 –&gt; 00:01:43,439<br>Now eventually, of course, if we allocate over and over again, we’re going to fill up the</p>
+<p>25<br>00:01:43,439 –&gt; 00:01:44,439<br>old space.</p>
+<p>26<br>00:01:44,439 –&gt; 00:01:50,840<br>And so a garbage collection will start GC, we’ll start when the old space is full.</p>
+<p>27<br>00:01:50,840 –&gt; 00:01:54,600<br>And what’s it going to do is going to copy all the reachable objects, all of the reachable</p>
+<p>28<br>00:01:54,600 –&gt; 00:01:57,960<br>objects from the old space into the new space.</p>
+<p>29<br>00:01:57,960 –&gt; 00:02:01,340<br>And the beauty of this idea is that when you copy the reachable objects, the garbage is</p>
+<p>30<br>00:02:01,340 –&gt; 00:02:02,340<br>left behind.</p>
+<p>31<br>00:02:02,340 –&gt; 00:02:07,240<br>So you simply pick up all the data that you’re using and move it over to the new space and</p>
+<p>32<br>00:02:07,240 –&gt; 00:02:12,920<br>all the junk that you didn’t need anymore is left behind in the old space.</p>
+<p>33<br>00:02:12,920 –&gt; 00:02:18,400<br>And then after you’ve copied stuff to the new space, first of all, since you left the</p>
+<p>34<br>00:02:18,480 –&gt; 00:02:21,760<br>garbage behind, you’re using less space than you did before the collection.</p>
+<p>35<br>00:02:21,760 –&gt; 00:02:25,640<br>So there’s some space available now in the new space for allocating new objects.</p>
+<p>36<br>00:02:25,640 –&gt; 00:02:29,480<br>And then you simply swap the roles of the old and new space.</p>
+<p>37<br>00:02:29,480 –&gt; 00:02:31,840<br>So the old new spaces are reversed.</p>
+<p>38<br>00:02:31,840 –&gt; 00:02:39,439<br>What was old becomes the new and what was new becomes the old and then the program resumes.</p>
+<p>39<br>00:02:39,439 –&gt; 00:02:43,000<br>So let’s take a look at a quick example here just to get the idea of how this works.</p>
+<p>40<br>00:02:43,000 –&gt; 00:02:45,879<br>Now let’s say we have our old space over here.</p>
+<p>41<br>00:02:45,879 –&gt; 00:02:52,280<br>This is the old space and we have one root which is this object A. And so what are we going</p>
+<p>42<br>00:02:52,280 –&gt; 00:02:53,280<br>to do?</p>
+<p>43<br>00:02:53,280 –&gt; 00:02:56,199<br>Well we’re going to make a copy of all the objects reachable from A and we’re going to</p>
+<p>44<br>00:02:56,199 –&gt; 00:02:58,240<br>move them over to the new space.</p>
+<p>45<br>00:02:58,240 –&gt; 00:02:59,400<br>And what’s that going to look like?</p>
+<p>46<br>00:02:59,400 –&gt; 00:03:02,080<br>Well here it is afterwards, but let’s trace it out.</p>
+<p>47<br>00:03:02,080 –&gt; 00:03:06,479<br>So we started A and we follow pointers from A and we can see there’s a pointer to C.</p>
+<p>48<br>00:03:06,479 –&gt; 00:03:11,639<br>Okay, so C is going to be reachable and then there’s a pointer to F. Okay, and then F points</p>
+<p>49<br>00:03:11,639 –&gt; 00:03:15,439<br>back to A and that’s all the reachable objects.</p>
+<p>50<br>00:03:15,439 –&gt; 00:03:20,519<br>So we copy them and notice when we copy them we also copy their pointers and now the pointers</p>
+<p>51<br>00:03:20,519 –&gt; 00:03:22,199<br>have all been changed.</p>
+<p>52<br>00:03:22,199 –&gt; 00:03:28,879<br>So in the copy of A it now points to the copy of C. Okay, and of course C will point to</p>
+<p>53<br>00:03:28,879 –&gt; 00:03:32,319<br>the copy of F and there’s a little issue here.</p>
+<p>54<br>00:03:32,319 –&gt; 00:03:34,159<br>This line is not in the right place.</p>
+<p>55<br>00:03:34,159 –&gt; 00:03:36,560<br>So it should look like that.</p>
+<p>56<br>00:03:36,560 –&gt; 00:03:40,639<br>And then F points back to the copy of A.</p>
+<p>57<br>00:03:40,639 –&gt; 00:03:44,119<br>So we now only move the object, we move their pointers and we adjust them so that we</p>
+<p>58<br>00:03:44,119 –&gt; 00:03:47,839<br>have really copied the whole graph of objects over to the new space.</p>
+<p>59<br>00:03:47,839 –&gt; 00:03:50,799<br>Now we’re using less space and so there’s some free space here.</p>
+<p>60<br>00:03:50,799 –&gt; 00:03:53,599<br>Okay, and now this will become the old space.</p>
+<p>61<br>00:03:53,599 –&gt; 00:04:00,479<br>This is now our old space and this is now the new space which we will use for the next</p>
+<p>62<br>00:04:00,479 –&gt; 00:04:01,639<br>garbage collection.</p>
+<p>63<br>00:04:01,639 –&gt; 00:04:05,639<br>So somewhere I have to the discussion so far.</p>
+<p>64<br>00:04:05,639 –&gt; 00:04:10,119<br>One of the essential problems in stopping copy is to make sure that we find all the reachable</p>
+<p>65<br>00:04:10,120 –&gt; 00:04:14,719<br>objects and we saw this same problem with Mark and sweep garbage collection.</p>
+<p>66<br>00:04:14,719 –&gt; 00:04:18,920<br>Now the thing that really distinguishes stopping copy is that we’re going to copy these</p>
+<p>67<br>00:04:18,920 –&gt; 00:04:19,920<br>objects.</p>
+<p>68<br>00:04:19,920 –&gt; 00:04:23,240<br>So when we find a reachable object we copy it into the new space.</p>
+<p>69<br>00:04:23,240 –&gt; 00:04:28,600<br>And that means that we have to find and fix all the pointers that point to that object.</p>
+<p>70<br>00:04:28,600 –&gt; 00:04:31,519<br>And this is actually not obvious how to do.</p>
+<p>71<br>00:04:31,519 –&gt; 00:04:36,879<br>Okay, because when you find an object of course you can’t see all the pointers that point</p>
+<p>72<br>00:04:36,879 –&gt; 00:04:38,199<br>into that object.</p>
+<p>73<br>00:04:38,199 –&gt; 00:04:39,199<br>So how are we going to do that?</p>
+<p>74<br>00:04:39,199 –&gt; 00:04:41,199<br>Well here is an idea.</p>
+<p>75<br>00:04:41,199 –&gt; 00:04:45,000<br>When we copied the object we’re going to store in the old version of it.</p>
+<p>76<br>00:04:45,000 –&gt; 00:04:48,800<br>It was called a forwarding pointer to the new copy.</p>
+<p>77<br>00:04:48,800 –&gt; 00:04:52,519<br>So let’s take a look at what that would, how that looks like.</p>
+<p>78<br>00:04:52,519 –&gt; 00:04:54,959<br>So we have our old space, we have our new space.</p>
+<p>79<br>00:04:54,959 –&gt; 00:05:01,039<br>And let’s say we’ve discovered some reachable object A in the old space.</p>
+<p>80<br>00:05:01,039 –&gt; 00:05:04,159<br>So what we’re going to do is we’re going to make a copy of it over here in the new space</p>
+<p>81<br>00:05:04,159 –&gt; 00:05:06,839<br>and that’s easy enough to do.</p>
+<p>82<br>00:05:06,839 –&gt; 00:05:11,079<br>But now what we’re going to do is we’re going to take A and we’re going to reuse its space</p>
+<p>83<br>00:05:11,079 –&gt; 00:05:14,159<br>and we’re going to store what’s called a forwarding pointer in it.</p>
+<p>84<br>00:05:14,159 –&gt; 00:05:18,959<br>So we’re going to, first of all we’re going to mark somehow that this has been copied.</p>
+<p>85<br>00:05:18,959 –&gt; 00:05:22,719<br>So this will have some special mark on it which I’ll just you know indicate here with</p>
+<p>86<br>00:05:22,719 –&gt; 00:05:25,479<br>a little purple bar or something.</p>
+<p>87<br>00:05:25,479 –&gt; 00:05:27,439<br>This is where I’m marking in some way.</p>
+<p>88<br>00:05:27,439 –&gt; 00:05:30,479<br>So we can tell that this object has already been copied.</p>
+<p>89<br>00:05:30,479 –&gt; 00:05:33,879<br>And then at an distinguished location in the object we’re going to store the forwarding</p>
+<p>90<br>00:05:33,879 –&gt; 00:05:34,879<br>pointer.</p>
+<p>91<br>00:05:34,879 –&gt; 00:05:36,879<br>And this is like a forwarding address.</p>
+<p>92<br>00:05:36,879 –&gt; 00:05:42,040<br>So if you know where somebody lives you can go to their house and if they have moved you</p>
+<p>93<br>00:05:42,040 –&gt; 00:05:46,319<br>can ask for the forwarding address and that’s exactly and then you can go off to their new</p>
+<p>94<br>00:05:46,319 –&gt; 00:05:50,279<br>house wherever they’ve been going to and presently find them.</p>
+<p>95<br>00:05:50,279 –&gt; 00:05:51,839<br>And so that’s what’s going to happen here.</p>
+<p>96<br>00:05:51,839 –&gt; 00:05:58,240<br>If we have a pointer that points into this object later on and maybe much later on in</p>
+<p>97<br>00:05:58,240 –&gt; 00:06:00,719<br>the garbage collection we may discover this pointer.</p>
+<p>98<br>00:06:00,720 –&gt; 00:06:05,000<br>You may follow this pointer, find out the points of this object, realize that this object</p>
+<p>99<br>00:06:05,000 –&gt; 00:06:10,160<br>has moved because we’ve marked it and then we can use the forwarding pointer to find out</p>
+<p>100<br>00:06:10,160 –&gt; 00:06:16,400<br>where the new object is and then update this pointer wherever it is to point to the new</p>
+<p>101<br>00:06:16,400 –&gt; 00:06:19,720<br>object.</p>
+<p>102<br>00:06:19,720 –&gt; 00:06:25,640<br>Now just like with Mark and sweep we still have the issue of how to implement the traversal</p>
+<p>103<br>00:06:25,640 –&gt; 00:06:28,760<br>of the object graph without using any extra space.</p>
+<p>104<br>00:06:28,759 –&gt; 00:06:34,399<br>Again, when you use garbage like algorithms they only get used, they only get run in low</p>
+<p>105<br>00:06:34,399 –&gt; 00:06:40,399<br>memory situations and you can’t assume that you can build unbounded data structures to</p>
+<p>106<br>00:06:40,399 –&gt; 00:06:41,719<br>use with the garbage collectors.</p>
+<p>107<br>00:06:41,719 –&gt; 00:06:46,480<br>The garbage collector really needs to work in constant space.</p>
+<p>108<br>00:06:46,480 –&gt; 00:06:51,719<br>And now here is the idea that will, that is used in stopping copy algorithms to solve</p>
+<p>109<br>00:06:51,719 –&gt; 00:06:52,719<br>the problem.</p>
+<p>110<br>00:06:52,719 –&gt; 00:06:57,159<br>So we’re going to partition the new space and this is just the new space here into three</p>
+<p>111<br>00:06:57,160 –&gt; 00:06:59,520<br>contiguous regions.</p>
+<p>112<br>00:06:59,520 –&gt; 00:07:03,200<br>We’re going to have, let’s fire with the one at the far right, we’re going to have the</p>
+<p>113<br>00:07:03,200 –&gt; 00:07:08,480<br>empty region where we’re allocating a new object and there’s an allocation pointer that</p>
+<p>114<br>00:07:08,480 –&gt; 00:07:09,960<br>points to the beginning of that region.</p>
+<p>115<br>00:07:09,960 –&gt; 00:07:13,800<br>So this is the region that we’re filling up with objects that we’re copying over and</p>
+<p>116<br>00:07:13,800 –&gt; 00:07:16,240<br>this is just empty on new space.</p>
+<p>117<br>00:07:16,240 –&gt; 00:07:22,800<br>Now immediately to the left of that region are the objects that have already been copied</p>
+<p>118<br>00:07:22,800 –&gt; 00:07:24,840<br>but not scanned.</p>
+<p>119<br>00:07:24,879 –&gt; 00:07:28,759<br>Okay, this is copied and not scanned.</p>
+<p>120<br>00:07:28,759 –&gt; 00:07:32,719<br>And what does that mean?</p>
+<p>121<br>00:07:32,719 –&gt; 00:07:37,319<br>Well that means the object has been copied over and so we’ve actually made a copy of the</p>
+<p>122<br>00:07:37,319 –&gt; 00:07:40,599<br>object into the new space but we haven’t yet looked at its pointers.</p>
+<p>123<br>00:07:40,599 –&gt; 00:07:44,120<br>We haven’t looked at the pointers inside the object to see where they go.</p>
+<p>124<br>00:07:44,120 –&gt; 00:07:48,039<br>And then to the left of that are the objects that have been copied and scanned.</p>
+<p>125<br>00:07:48,039 –&gt; 00:07:51,559<br>These are objects that have been copied over and we’ve also processed all the pointers</p>
+<p>126<br>00:07:51,559 –&gt; 00:07:53,479<br>inside of those objects.</p>
+<p>127<br>00:07:53,480 –&gt; 00:07:57,960<br>So you can think of this area here between the scan pointer and the allocation pointer,</p>
+<p>128<br>00:07:57,960 –&gt; 00:08:00,560<br>this is the work list.</p>
+<p>129<br>00:08:00,560 –&gt; 00:08:04,280<br>So these are the objects that still need to be processed.</p>
+<p>130<br>00:08:04,280 –&gt; 00:08:08,720<br>These are the objects that have been copied over but might yet still point to objects that</p>
+<p>131<br>00:08:08,720 –&gt; 00:08:09,720<br>haven’t been copied.</p>
+<p>132<br>00:08:09,720 –&gt; 00:08:12,800<br>And so these are the objects where we have to look at their pointers to see whether they</p>
+<p>133<br>00:08:12,800 –&gt; 00:08:20,800<br>point to something that still needs to be copied over to finish the garbage collection.</p>
+<p>134<br>00:08:20,800 –&gt; 00:08:24,920<br>Starting to our little example, I’m now going to walk through how a stopping copy garbage</p>
+<p>135<br>00:08:24,920 –&gt; 00:08:28,800<br>collector would collect this particular heap step by step.</p>
+<p>136<br>00:08:28,800 –&gt; 00:08:33,360<br>So notice that we only have one root object and it’s A. Okay, and I just want to point</p>
+<p>137<br>00:08:33,360 –&gt; 00:08:39,799<br>out that A has one pointer which points to object C. All right, so the very first step</p>
+<p>138<br>00:08:39,799 –&gt; 00:08:46,840<br>what we’re going to do is we’re going to copy the A object over to the new space.</p>
+<p>139<br>00:08:46,840 –&gt; 00:08:49,399<br>And this is literally a bit for bit copy.</p>
+<p>140<br>00:08:49,399 –&gt; 00:08:56,240<br>So we just take the bits of A and we do a copy without doing any inspection of the interior</p>
+<p>141<br>00:08:56,240 –&gt; 00:08:59,759<br>of the object over to the new space.</p>
+<p>142<br>00:08:59,759 –&gt; 00:09:00,759<br>And how’s that work?</p>
+<p>143<br>00:09:00,759 –&gt; 00:09:07,079<br>Of course our allocation pointer is initially right here at the beginning of the new space</p>
+<p>144<br>00:09:07,079 –&gt; 00:09:11,799<br>and then we copy this one object over and that means allocating an object because not</p>
+<p>145<br>00:09:11,799 –&gt; 00:09:17,079<br>the allocation pointer points to the first word of memory beyond the object we disallocated.</p>
+<p>146<br>00:09:17,079 –&gt; 00:09:18,079<br>Okay.</p>
+<p>147<br>00:09:18,080 –&gt; 00:09:22,360<br>Now what happens when we copy it over because this is just a bit for bit copy.</p>
+<p>148<br>00:09:22,360 –&gt; 00:09:25,800<br>All the pointers and A still point to the objects that they pointed to before which are the</p>
+<p>149<br>00:09:25,800 –&gt; 00:09:27,080<br>objects in the old space.</p>
+<p>150<br>00:09:27,080 –&gt; 00:09:33,280<br>So notice now that this copy of A points to the object C in the old space.</p>
+<p>151<br>00:09:33,280 –&gt; 00:09:37,960<br>The other thing we do is we leave a forwarding pointer in the old copy of A. So we mark A</p>
+<p>152<br>00:09:37,960 –&gt; 00:09:38,960<br>as having been copied.</p>
+<p>153<br>00:09:38,960 –&gt; 00:09:39,960<br>That’s why it’s grayed out.</p>
+<p>154<br>00:09:39,960 –&gt; 00:09:42,680<br>In the case that this object has already been moved.</p>
+<p>155<br>00:09:42,679 –&gt; 00:09:48,120<br>And in this dotted line here indicates that somewhere in A we’ve stored a pointer to</p>
+<p>156<br>00:09:48,120 –&gt; 00:09:49,799<br>the new copy of A.</p>
+<p>157<br>00:09:49,799 –&gt; 00:09:52,079<br>And now we’re ready to begin the algorithm.</p>
+<p>158<br>00:09:52,079 –&gt; 00:09:59,479<br>So notice that we have some objects here that have been copied but not scanned.</p>
+<p>159<br>00:09:59,479 –&gt; 00:10:00,879<br>So this is our work list.</p>
+<p>160<br>00:10:00,879 –&gt; 00:10:04,399<br>So now we’re just going to repeatedly work off of those objects.</p>
+<p>161<br>00:10:04,399 –&gt; 00:10:06,479<br>And how do we know there are objects in there?</p>
+<p>162<br>00:10:06,479 –&gt; 00:10:09,719<br>Well, we just compare the scan and the allocation pointers.</p>
+<p>163<br>00:10:09,720 –&gt; 00:10:14,879<br>So if they are different, if there’s an object in between the scan and the allocation pointers</p>
+<p>164<br>00:10:14,879 –&gt; 00:10:17,840<br>at least one object in between the two, then there’s work to do.</p>
+<p>165<br>00:10:17,840 –&gt; 00:10:23,519<br>There’s an object that needs to be scanned and possibly resulting in more objects being</p>
+<p>166<br>00:10:23,519 –&gt; 00:10:26,960<br>moved and allocated.</p>
+<p>167<br>00:10:26,960 –&gt; 00:10:27,960<br>So what happens next?</p>
+<p>168<br>00:10:27,960 –&gt; 00:10:36,600<br>So we process A. So we walk over A and find all the pointers in A. And we copy any objects</p>
+<p>169<br>00:10:36,600 –&gt; 00:10:39,279<br>that A points to that haven’t already been moved.</p>
+<p>170<br>00:10:39,279 –&gt; 00:10:46,600<br>And so before we said, this copy of A pointed to the old copy of C. So now when we discover</p>
+<p>171<br>00:10:46,600 –&gt; 00:10:50,279<br>the C object, it hasn’t been moved, it’s still in the old space.</p>
+<p>172<br>00:10:50,279 –&gt; 00:10:56,879<br>So we copy it over and we update the pointer in A to point to the new copy of C.</p>
+<p>173<br>00:10:56,879 –&gt; 00:11:00,920<br>Now of course, and then the scan pointer moves over A. We’ve scanned all the pointers in</p>
+<p>174<br>00:11:00,920 –&gt; 00:11:06,519<br>A. And the allocation pointer also moves because we had to allocate space for C.</p>
+<p>175<br>00:11:07,519 –&gt; 00:11:11,000<br>And of course, C is just a bit for a bit copy of what was in the old space.</p>
+<p>176<br>00:11:11,000 –&gt; 00:11:15,879<br>And so any pointers that it has, the point to objects that haven’t been moved yet,</p>
+<p>177<br>00:11:15,879 –&gt; 00:11:18,039<br>just point back into the old space.</p>
+<p>178<br>00:11:18,039 –&gt; 00:11:22,879<br>So in this case, the object C points to the object F in the old space.</p>
+<p>179<br>00:11:22,879 –&gt; 00:11:26,679<br>And I probably should indicate here, here’s the original dividing line.</p>
+<p>180<br>00:11:26,679 –&gt; 00:11:31,240<br>This is the old space over here and this is the new space over there.</p>
+<p>181<br>00:11:31,240 –&gt; 00:11:36,720<br>And then finally, we mark C as having been copied, as having been moved to the new space.</p>
+<p>182<br>00:11:36,720 –&gt; 00:11:41,560<br>And we left a forwarding pointer to it in case we can fix any pointers at point to C</p>
+<p>183<br>00:11:41,560 –&gt; 00:11:43,560<br>that we come across in the future.</p>
+<p>184<br>00:11:43,560 –&gt; 00:11:50,480<br>And now we have to continue scanning objects that have been copied but not scanned.</p>
+<p>185<br>00:11:50,480 –&gt; 00:11:54,120<br>And we can see that there is an object between the scan and the allocation pointer, namely</p>
+<p>186<br>00:11:54,120 –&gt; 00:11:59,399<br>C. And so when I’ll process all the pointers in C.</p>
+<p>187<br>00:11:59,399 –&gt; 00:12:05,240<br>Next we scan C and we discover that it points to F, which hasn’t been moved yet.</p>
+<p>188<br>00:12:05,240 –&gt; 00:12:10,279<br>And so we copy F over into the new space and we update the pointer in C.</p>
+<p>189<br>00:12:10,279 –&gt; 00:12:13,279<br>And now C has been copied and scanned.</p>
+<p>190<br>00:12:13,279 –&gt; 00:12:19,639<br>Okay, so the scan pointer moves past C. And of course, F again is a bit for a bit copy.</p>
+<p>191<br>00:12:19,639 –&gt; 00:12:25,039<br>And so all its pointers into old space are still pointing to old space in particular F points</p>
+<p>192<br>00:12:25,039 –&gt; 00:12:29,159<br>to A. And the allocation pointer is moved again because we moved F.</p>
+<p>193<br>00:12:29,159 –&gt; 00:12:35,879<br>All right, and now we have to process F. And this will be the last object that we move.</p>
+<p>194<br>00:12:35,879 –&gt; 00:12:36,679<br>And what happens?</p>
+<p>195<br>00:12:36,679 –&gt; 00:12:44,240<br>Well, we discover that F points to A. Okay, and A is already marked as having been moved.</p>
+<p>196<br>00:12:44,240 –&gt; 00:12:45,959<br>And it has a forwarding pointer.</p>
+<p>197<br>00:12:45,959 –&gt; 00:12:52,199<br>So instead of copying A again, we simply update the pointer in F that pointed to the old</p>
+<p>198<br>00:12:52,200 –&gt; 00:12:58,560<br>version of A to point to the copy of A. Okay, and so now F is completely scanned.</p>
+<p>199<br>00:12:58,560 –&gt; 00:13:00,600<br>All the pointers in F have been processed.</p>
+<p>200<br>00:13:00,600 –&gt; 00:13:02,560<br>We didn’t allocate any new objects.</p>
+<p>201<br>00:13:02,560 –&gt; 00:13:04,120<br>So the allocation pointer didn’t move.</p>
+<p>202<br>00:13:04,120 –&gt; 00:13:07,480<br>And now the scan pointer and the allocation pointer are equal.</p>
+<p>203<br>00:13:07,480 –&gt; 00:13:09,440<br>There are no objects in between them.</p>
+<p>204<br>00:13:09,440 –&gt; 00:13:14,360<br>And so our work list is empty and this is the garbage collected heat.</p>
+<p>205<br>00:13:14,360 –&gt; 00:13:20,640<br>This is a complete copy, I should say, of the graph of reachable objects from the old</p>
+<p>206<br>00:13:20,640 –&gt; 00:13:21,640<br>space.</p>
+<p>207<br>00:13:22,600 –&gt; 00:13:28,120<br>So now we’re done and we simply swap the role of the new and old space and we resume</p>
+<p>208<br>00:13:28,120 –&gt; 00:13:29,120<br>the program.</p>
+<p>209<br>00:13:29,120 –&gt; 00:13:34,600<br>So when the program starts running again, it will allocate out of this area and beyond</p>
+<p>210<br>00:13:34,600 –&gt; 00:13:39,399<br>the allocation pointer until it fills up what is now the old space.</p>
+<p>211<br>00:13:39,399 –&gt; 00:13:44,679<br>And then this will be the new space that we use for the next garbage collection.</p>
+<p>212<br>00:13:44,679 –&gt; 00:13:51,600<br>Here’s a pseudo code algorithm outlining how stopping copy garbage collections</p>
+<p>213<br>00:13:51,600 –&gt; 00:13:52,600<br>should work.</p>
+<p>214<br>00:13:52,600 –&gt; 00:13:55,720<br>So while the scan and allocation pointers are different, remember we keep running until</p>
+<p>215<br>00:13:55,720 –&gt; 00:14:00,080<br>the scan pointer catches up with the allocation pointer and they’re equal, what we’re going</p>
+<p>216<br>00:14:00,080 –&gt; 00:14:03,960<br>to do is we’re going to look at the object that is at the scan pointer that we call that</p>
+<p>217<br>00:14:03,960 –&gt; 00:14:07,639<br>object O. And then for every pointer, we’re going to do the following.</p>
+<p>218<br>00:14:07,639 –&gt; 00:14:11,480<br>We’re going to find the object O prime that that pointer points to.</p>
+<p>219<br>00:14:11,480 –&gt; 00:14:13,399<br>And then there are two cases.</p>
+<p>220<br>00:14:13,399 –&gt; 00:14:15,879<br>One is that there is no forwarding pointer.</p>
+<p>221<br>00:14:15,879 –&gt; 00:14:20,759<br>And if there’s no forwarding pointer, then we have to copy that object to new space and</p>
+<p>222<br>00:14:20,759 –&gt; 00:14:25,200<br>they’ll involve allocating a new object and updating the allocation pointer.</p>
+<p>223<br>00:14:25,200 –&gt; 00:14:28,960<br>Then we’re going to set, here it says the first word, it really shouldn’t emphasize the</p>
+<p>224<br>00:14:28,960 –&gt; 00:14:30,600<br>first word, set a word.</p>
+<p>225<br>00:14:30,600 –&gt; 00:14:31,799<br>So it’s a distinguished word.</p>
+<p>226<br>00:14:31,799 –&gt; 00:14:32,799<br>That’s what’s important.</p>
+<p>227<br>00:14:32,799 –&gt; 00:14:35,519<br>We have to know which word we’re going to use and will always be the same word.</p>
+<p>228<br>00:14:35,519 –&gt; 00:14:40,360<br>Anyway, we set a word of the old object to point to the new copy.</p>
+<p>229<br>00:14:40,360 –&gt; 00:14:48,799<br>We mark the old object as copied, mark old object as copied.</p>
+<p>230<br>00:14:48,799 –&gt; 00:14:53,359<br>So that’s so we can tell, if we ever come to a pointer to it again, we know it’s already</p>
+<p>231<br>00:14:53,359 –&gt; 00:14:54,679<br>been moved.</p>
+<p>232<br>00:14:54,679 –&gt; 00:15:00,120<br>And then we change the pointer to point to the new copy of O prime.</p>
+<p>233<br>00:15:00,120 –&gt; 00:15:04,399<br>So if that’s what we do, if there’s no forwarding pointer, and if there is a forwarding pointer,</p>
+<p>234<br>00:15:04,399 –&gt; 00:15:10,479<br>then we simply update the pointer to point to the same place as the forwarding pointer.</p>
+<p>235<br>00:15:10,479 –&gt; 00:15:17,799<br>And we just repeat this loop over and over again until we’ve scanned all the copied objects.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P116Week917 03 A+Stop+and+Copy</div>
+      <div>http://example.com/2025/10/25/CS143 P116Week917-03-A+Stop+and+Copy/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P115Week917-02-B+Mark+and+Sweep/" title="CS143 P115Week917 02 B+Mark+and+Sweep">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P115Week917 02 B+Mark+and+Sweep</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P112Week916-04-managing-caches/" title="CS143 P112Week916 04 Managing Caches">
+                        <span class="hidden-mobile">CS143 P112Week916 04 Managing Caches</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

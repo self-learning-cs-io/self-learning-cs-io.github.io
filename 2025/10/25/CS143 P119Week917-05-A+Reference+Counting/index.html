@@ -1,0 +1,760 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,199In this video, we’re going to conclude our discussion about a memory management with the 200:00:08,199 –&gt; 00:00:12,919third and last technique we’re going to talk ab">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P119Week917 05 A+Reference+Counting">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P119Week917-05-A+Reference+Counting/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,199In this video, we’re going to conclude our discussion about a memory management with the 200:00:08,199 –&gt; 00:00:12,919third and last technique we’re going to talk ab">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.388Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.218Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P119Week917 05 A+Reference+Counting - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P119Week917 05 A+Reference+Counting"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P119Week917 05 A+Reference+Counting</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,199<br>In this video, we’re going to conclude our discussion about a memory management with the</p>
+<p>2<br>00:00:08,199 –&gt; 00:00:12,919<br>third and last technique we’re going to talk about for garbage collection called reference</p>
+<p>3<br>00:00:12,919 –&gt; 00:00:16,839<br>counting.</p>
+<p>4<br>00:00:16,839 –&gt; 00:00:20,480<br>So the basic idea behind reference counting is that rather than waiting for memory to be</p>
+<p>5<br>00:00:20,480 –&gt; 00:00:24,620<br>completely exhausted, we’re going to try to collect an object as soon as there are no more</p>
+<p>6<br>00:00:24,620 –&gt; 00:00:25,620<br>pointers to it.</p>
+<p>7<br>00:00:25,620 –&gt; 00:00:29,879<br>So as soon as we discard the last pointer to an object and it becomes unreachable, we</p>
+<p>8<br>00:00:29,879 –&gt; 00:00:32,420<br>will try to collect it at that point in time.</p>
+<p>9<br>00:00:32,420 –&gt; 00:00:33,740<br>And how can we do this?</p>
+<p>10<br>00:00:33,740 –&gt; 00:00:38,920<br>Well, as the name suggests, we’re going to count the number of references to each object.</p>
+<p>11<br>00:00:38,920 –&gt; 00:00:43,320<br>So in each object, we’re going to store the number of pointers to that object.</p>
+<p>12<br>00:00:43,320 –&gt; 00:00:51,120<br>So if I have an object in memory and it has say three pointers to it from other objects</p>
+<p>13<br>00:00:51,120 –&gt; 00:00:56,359<br>than somewhere in this object that’s going to be a dedicated field that contains the</p>
+<p>14<br>00:00:56,359 –&gt; 00:00:57,759<br>number three.</p>
+<p>15<br>00:00:57,759 –&gt; 00:01:03,479<br>And if this number ever drops to zero, if we discard these pointers and this number becomes</p>
+<p>16<br>00:01:03,479 –&gt; 00:01:08,879<br>a zero, then we know that nobody’s pointing to this object and it can be free.</p>
+<p>17<br>00:01:08,879 –&gt; 00:01:13,920<br>And what this means is that every assignment has to manipulate the reference count in order</p>
+<p>18<br>00:01:13,920 –&gt; 00:01:20,000<br>to maintain an accurate count of the number of pointers pointing to an object.</p>
+<p>19<br>00:01:20,000 –&gt; 00:01:24,400<br>So allocating a new object returns an object with a reference count of one.</p>
+<p>20<br>00:01:24,400 –&gt; 00:01:26,840<br>So an object is created by new.</p>
+<p>21<br>00:01:26,840 –&gt; 00:01:28,359<br>It will already have a reference count of one.</p>
+<p>22<br>00:01:28,359 –&gt; 00:01:32,880<br>The pointer that is returned is the only reference to the object.</p>
+<p>23<br>00:01:32,880 –&gt; 00:01:37,360<br>And so we’re going to write the reference count of an object X is R, C, of X.</p>
+<p>24<br>00:01:37,360 –&gt; 00:01:41,760<br>And now when we have an assignment, X gets assigned Y.</p>
+<p>25<br>00:01:41,760 –&gt; 00:01:46,560<br>We’re going to have to update the reference counts of both the object that X points to and</p>
+<p>26<br>00:01:46,560 –&gt; 00:01:50,120<br>the object that Y points to before the assignment.</p>
+<p>27<br>00:01:50,120 –&gt; 00:01:51,120<br>So what happens here?</p>
+<p>28<br>00:01:51,120 –&gt; 00:01:54,040<br>So if Y points to P, so let’s draw our objects here.</p>
+<p>29<br>00:01:54,040 –&gt; 00:01:59,360<br>So Y is a local variable and it points to some object P in memory.</p>
+<p>30<br>00:01:59,360 –&gt; 00:02:04,200<br>And X is also a local variable and it points to some object O.</p>
+<p>31<br>00:02:04,200 –&gt; 00:02:05,200<br>Okay.</p>
+<p>32<br>00:02:05,200 –&gt; 00:02:07,640<br>So now X is getting the value of Y.</p>
+<p>33<br>00:02:07,640 –&gt; 00:02:14,120<br>And so that’s going to move this pointer from where point and before to point to the</p>
+<p>34<br>00:02:14,120 –&gt; 00:02:15,120<br>same thing as Y.</p>
+<p>35<br>00:02:15,120 –&gt; 00:02:16,120<br>So what’s going to happen?</p>
+<p>36<br>00:02:16,120 –&gt; 00:02:20,840<br>Well, P’s reference count is going to go up by one and O’s reference count is going</p>
+<p>37<br>00:02:20,840 –&gt; 00:02:22,400<br>to go down by one.</p>
+<p>38<br>00:02:22,400 –&gt; 00:02:26,840<br>And since we decremented O’s reference counts as we dropped this pointer to the object</p>
+<p>39<br>00:02:26,840 –&gt; 00:02:31,439<br>O, we need to do a check to see if reference count has become zero.</p>
+<p>40<br>00:02:31,439 –&gt; 00:02:35,360<br>And if the reference count has dropped to zero, then we can free the memory for O.</p>
+<p>41<br>00:02:35,360 –&gt; 00:02:40,159<br>And then in addition to updating the reference counts and checking whether the reference count</p>
+<p>42<br>00:02:40,159 –&gt; 00:02:44,599<br>of O became zero, we actually need to do the assignment itself.</p>
+<p>43<br>00:02:44,599 –&gt; 00:02:45,599<br>All right.</p>
+<p>44<br>00:02:45,599 –&gt; 00:02:49,599<br>So every assignment, I want to stress that every single assignment in the program gets</p>
+<p>45<br>00:02:49,599 –&gt; 00:02:55,519<br>now translated into these four operations that need to be done to maintain the reference</p>
+<p>46<br>00:02:55,519 –&gt; 00:02:58,599<br>counts.</p>
+<p>47<br>00:02:58,599 –&gt; 00:03:02,560<br>Third trade-offs in reference counting, it has advantages and disadvantages.</p>
+<p>48<br>00:03:02,560 –&gt; 00:03:07,680<br>One of the big advantages is that it collects garbage incrementally without large pauses</p>
+<p>49<br>00:03:07,680 –&gt; 00:03:08,680<br>in the execution.</p>
+<p>50<br>00:03:08,680 –&gt; 00:03:14,879<br>So for applications where large pauses would be problematic, say real-time applications</p>
+<p>51<br>00:03:14,879 –&gt; 00:03:19,560<br>or interactive applications, reference counting can really help because it minimizes</p>
+<p>52<br>00:03:20,319 –&gt; 00:03:22,360<br>the length of the longest possible pause.</p>
+<p>53<br>00:03:22,360 –&gt; 00:03:23,360<br>Okay.</p>
+<p>54<br>00:03:23,360 –&gt; 00:03:26,920<br>So your program will never go to sleep and it just appeared to stop running for some period</p>
+<p>55<br>00:03:26,920 –&gt; 00:03:29,640<br>of time because it’s off collecting garbage.</p>
+<p>56<br>00:03:29,640 –&gt; 00:03:32,680<br>It always collects the garbage in small incremental amounts.</p>
+<p>57<br>00:03:32,680 –&gt; 00:03:35,759<br>And so you never see a long pause.</p>
+<p>58<br>00:03:35,759 –&gt; 00:03:40,480<br>Reference counting, or at least a basic implementation of reference counting, is also quite easy to implement.</p>
+<p>59<br>00:03:40,480 –&gt; 00:03:45,439<br>It’s very straightforward to go through and modify the code to add reference counts.</p>
+<p>60<br>00:03:45,439 –&gt; 00:03:51,400<br>And you can easily imagine a code generator that would simply generate different code for</p>
+<p>61<br>00:03:51,400 –&gt; 00:03:55,800<br>the assignment operation than it normally did if you were adding reference counting to</p>
+<p>62<br>00:03:55,800 –&gt; 00:03:56,800<br>an implementation.</p>
+<p>63<br>00:03:56,800 –&gt; 00:04:01,359<br>So really the changes that are needed for a simple implementation of reference counting</p>
+<p>64<br>00:04:01,359 –&gt; 00:04:05,240<br>to a compiler are not that pervasive.</p>
+<p>65<br>00:04:05,240 –&gt; 00:04:08,479<br>Now there are some disadvantages to reference counting.</p>
+<p>66<br>00:04:08,479 –&gt; 00:04:14,240<br>One is that manipulating the reference counts at each assignment is really quite slow.</p>
+<p>67<br>00:04:14,240 –&gt; 00:04:18,800<br>So if you remember what happens, we have a couple of updates to reference counts.</p>
+<p>68<br>00:04:18,800 –&gt; 00:04:24,079<br>So we have to update, you know, reference count of two objects to do this.</p>
+<p>69<br>00:04:24,079 –&gt; 00:04:26,000<br>This is the code to do an assignment.</p>
+<p>70<br>00:04:26,000 –&gt; 00:04:27,840<br>And then we have an if statement.</p>
+<p>71<br>00:04:27,840 –&gt; 00:04:30,439<br>And then we actually do the assignment itself.</p>
+<p>72<br>00:04:30,439 –&gt; 00:04:32,280<br>So there’s two reference count updates.</p>
+<p>73<br>00:04:32,280 –&gt; 00:04:34,360<br>A test to see if a reference count became zero.</p>
+<p>74<br>00:04:34,360 –&gt; 00:04:35,519<br>And then we actually do the assignment.</p>
+<p>75<br>00:04:35,519 –&gt; 00:04:38,319<br>So the overhead here is substantial.</p>
+<p>76<br>00:04:38,319 –&gt; 00:04:43,000<br>You’re taking every single assignment in the program and blowing up its cost by at least</p>
+<p>77<br>00:04:43,000 –&gt; 00:04:45,160<br>four or five times.</p>
+<p>78<br>00:04:45,160 –&gt; 00:04:49,839<br>And that will have a very noticeable impact on the performance of many programs.</p>
+<p>79<br>00:04:49,839 –&gt; 00:04:52,920<br>Now it is possible to optimize reference counting.</p>
+<p>80<br>00:04:52,920 –&gt; 00:04:59,639<br>So for example, if we had two updates to the same object, say within a basic block or even</p>
+<p>81<br>00:04:59,639 –&gt; 00:05:05,480<br>within a control flow graph, a compiler, a smart optimizing compiler, could frequently combine</p>
+<p>82<br>00:05:05,480 –&gt; 00:05:07,439<br>those reference count operations together.</p>
+<p>83<br>00:05:07,439 –&gt; 00:05:11,759<br>So instead of updating the reference count to the object two times, it could just update</p>
+<p>84<br>00:05:11,759 –&gt; 00:05:12,879<br>it one time.</p>
+<p>85<br>00:05:12,879 –&gt; 00:05:17,040<br>And similarly, if there were even more reference count updates to the same object, potentially</p>
+<p>86<br>00:05:17,040 –&gt; 00:05:22,959<br>all of those could be coalesced within some region of the program.</p>
+<p>87<br>00:05:22,959 –&gt; 00:05:26,920<br>The problem with that is that it becomes very tricky to get that right.</p>
+<p>88<br>00:05:26,920 –&gt; 00:05:36,199<br>So a simple implementation of reference counting is quite slow, but easy to get right.</p>
+<p>89<br>00:05:36,199 –&gt; 00:05:41,040<br>A very sophisticated implementation of reference counting or highly optimized implementation</p>
+<p>90<br>00:05:41,040 –&gt; 00:05:42,439<br>of reference counting.</p>
+<p>91<br>00:05:42,439 –&gt; 00:05:47,360<br>This somewhat faster still has a noticeable performance impact if you reference counting</p>
+<p>92<br>00:05:47,360 –&gt; 00:05:50,199<br>all objects, but it is substantially faster.</p>
+<p>93<br>00:05:50,199 –&gt; 00:05:54,680<br>However, it’s quite tricky to get it correct.</p>
+<p>94<br>00:05:54,680 –&gt; 00:06:00,399<br>The other problem with reference counting is that it cannot directly collect circular</p>
+<p>95<br>00:06:00,399 –&gt; 00:06:01,399<br>structures.</p>
+<p>96<br>00:06:01,399 –&gt; 00:06:06,000<br>So to see this, let’s draw a little heap with a circular structure.</p>
+<p>97<br>00:06:06,000 –&gt; 00:06:12,399<br>And so let’s say we have a local variable X and it points to some object in the heap.</p>
+<p>98<br>00:06:12,399 –&gt; 00:06:19,159<br>And that object has a pointer to another object.</p>
+<p>99<br>00:06:19,159 –&gt; 00:06:23,599<br>And that object, that second object, then has a pointer back to the first object.</p>
+<p>100<br>00:06:23,599 –&gt; 00:06:29,039<br>So here X is pointing to say a circularly linked list of length two.</p>
+<p>101<br>00:06:29,039 –&gt; 00:06:31,959<br>And if we add in the reference counts here, what would those look like?</p>
+<p>102<br>00:06:31,959 –&gt; 00:06:36,639<br>Well, this object down here, the second object here has only one reference to it.</p>
+<p>103<br>00:06:36,639 –&gt; 00:06:38,719<br>So his reference count would be one.</p>
+<p>104<br>00:06:38,720 –&gt; 00:06:42,960<br>And this first object has two pointers to it, one from X and one from the other object.</p>
+<p>105<br>00:06:42,960 –&gt; 00:06:45,040<br>And so his reference count is two.</p>
+<p>106<br>00:06:45,040 –&gt; 00:06:48,480<br>OK, so here is our little heap.</p>
+<p>107<br>00:06:48,480 –&gt; 00:06:55,640<br>And we can see that there’s no garbage here because all the objects are reachable from a local</p>
+<p>108<br>00:06:55,640 –&gt; 00:06:57,280<br>variable or a variable of the program.</p>
+<p>109<br>00:06:57,280 –&gt; 00:07:02,080<br>Now, if we were to assign a new value to X, let’s say that we had the assignment X gets</p>
+<p>110<br>00:07:02,080 –&gt; 00:07:03,080<br>null.</p>
+<p>111<br>00:07:03,080 –&gt; 00:07:06,120<br>All right, so this pointer goes away.</p>
+<p>112<br>00:07:06,120 –&gt; 00:07:08,000<br>Well, what’s going to happen?</p>
+<p>113<br>00:07:08,000 –&gt; 00:07:13,240<br>Well, when we do that assignment, we’re going to change the reference count here of this</p>
+<p>114<br>00:07:13,240 –&gt; 00:07:14,240<br>object.</p>
+<p>115<br>00:07:14,240 –&gt; 00:07:16,120<br>It’s now going to be one.</p>
+<p>116<br>00:07:16,120 –&gt; 00:07:22,079<br>And if we look at this heap, we now see that these two objects are unreachable.</p>
+<p>117<br>00:07:22,079 –&gt; 00:07:26,439<br>OK, so these are unreachable.</p>
+<p>118<br>00:07:26,439 –&gt; 00:07:29,079<br>But notice that their reference counts are not zero.</p>
+<p>119<br>00:07:29,079 –&gt; 00:07:30,319<br>So we can’t collect them.</p>
+<p>120<br>00:07:30,319 –&gt; 00:07:33,920<br>The garbage collector or the reference counting implementation will check the reference</p>
+<p>121<br>00:07:33,920 –&gt; 00:07:35,920<br>counts and see, oh, these are one.</p>
+<p>122<br>00:07:35,920 –&gt; 00:07:37,199<br>And so we can’t delete them.</p>
+<p>123<br>00:07:37,199 –&gt; 00:07:43,680<br>And what you can’t see is that the only references to these objects are from other unreachable</p>
+<p>124<br>00:07:43,680 –&gt; 00:07:44,920<br>objects.</p>
+<p>125<br>00:07:44,920 –&gt; 00:07:51,439<br>So the bottom line is that reference counting can’t collect circular structures.</p>
+<p>126<br>00:07:51,439 –&gt; 00:07:54,080<br>And there’s only really two ways to deal with that.</p>
+<p>127<br>00:07:54,080 –&gt; 00:08:01,200<br>One is that the programmer remembers whenever a circular structure is going to become unreachable</p>
+<p>128<br>00:08:01,200 –&gt; 00:08:03,439<br>to somehow break the circularity.</p>
+<p>129<br>00:08:03,439 –&gt; 00:08:08,600<br>So for example, if before we clobbered the pointer to x here, we remembered to go in and</p>
+<p>130<br>00:08:08,600 –&gt; 00:08:12,480<br>say, set this pointer here to null.</p>
+<p>131<br>00:08:12,480 –&gt; 00:08:17,720<br>If we nulled out one of the pointers in this cycle, so that there was no longer a cycle,</p>
+<p>132<br>00:08:17,720 –&gt; 00:08:21,319<br>then the reference counting would work correctly because then the reference count of this</p>
+<p>133<br>00:08:21,319 –&gt; 00:08:25,079<br>object would go to zero when this pointer was dropped from x.</p>
+<p>134<br>00:08:25,079 –&gt; 00:08:29,000<br>And that would cause the reference count of this object to also go to zero after this</p>
+<p>135<br>00:08:29,000 –&gt; 00:08:30,639<br>object was deleted.</p>
+<p>136<br>00:08:30,639 –&gt; 00:08:31,639<br>OK.</p>
+<p>137<br>00:08:31,639 –&gt; 00:08:39,399<br>Now, the other possibility is to back reference counting by some other garbage collection technique</p>
+<p>138<br>00:08:39,399 –&gt; 00:08:40,480<br>that can collect cycles.</p>
+<p>139<br>00:08:40,480 –&gt; 00:08:45,679<br>And so in some reference count systems, for example, most of the garbage collection is done</p>
+<p>140<br>00:08:45,679 –&gt; 00:08:47,519<br>by reference counting.</p>
+<p>141<br>00:08:47,519 –&gt; 00:08:52,000<br>But every now and again, once in a very great while, you might run a market sweep collector</p>
+<p>142<br>00:08:52,000 –&gt; 00:08:56,120<br>to go through and clean out any circular but unreachable data structures.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P119Week917 05 A+Reference+Counting</div>
+      <div>http://example.com/2025/10/25/CS143 P119Week917-05-A+Reference+Counting/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P118Week917-04-conservative-collection/" title="CS143 P118Week917 04 Conservative Collection">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P118Week917 04 Conservative Collection</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P11Week203-03-B+Regular+Languages/" title="CS143 P11Week203 03 B+Regular+Languages">
+                        <span class="hidden-mobile">CS143 P11Week203 03 B+Regular+Languages</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,701 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,600In the next two videos, we’re going to be looking at code generation for a language that’s 200:00:07,600 –&gt; 00:00:17,000higher level than the simple stack machine la">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P83Week712 02 A+Code+Generation+I">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P83Week712-02-A+Code+Generation+I/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,600In the next two videos, we’re going to be looking at code generation for a language that’s 200:00:07,600 –&gt; 00:00:17,000higher level than the simple stack machine la">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.413Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.226Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P83Week712 02 A+Code+Generation+I - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P83Week712 02 A+Code+Generation+I"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          815 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          7 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P83Week712 02 A+Code+Generation+I</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,600<br>In the next two videos, we’re going to be looking at code generation for a language that’s</p>
+<p>2<br>00:00:07,600 –&gt; 00:00:17,000<br>higher level than the simple stack machine language we’ve been talking about so far.</p>
+<p>3<br>00:00:17,000 –&gt; 00:00:22,240<br>So here’s a language with integers and integer operations, and this is the grammar.</p>
+<p>4<br>00:00:22,240 –&gt; 00:00:26,080<br>So a program consists of a list of declarations.</p>
+<p>5<br>00:00:26,079 –&gt; 00:00:27,079<br>And what’s a declaration?</p>
+<p>6<br>00:00:27,079 –&gt; 00:00:29,879<br>A declaration is a function definition, so it has a function name.</p>
+<p>7<br>00:00:29,879 –&gt; 00:00:34,960<br>The function takes a list of arguments, which are just identifiers, and the function has</p>
+<p>8<br>00:00:34,960 –&gt; 00:00:38,000<br>an expression, which is the body of the function.</p>
+<p>9<br>00:00:38,000 –&gt; 00:00:40,000<br>And what can function bodies look like?</p>
+<p>10<br>00:00:40,000 –&gt; 00:00:46,159<br>Well, like the expressions can be integers, identifiers, if then else, and the only predicate</p>
+<p>11<br>00:00:46,159 –&gt; 00:00:51,719<br>that we’re going to allow is an equality test between integers, and then sums of expressions,</p>
+<p>12<br>00:00:51,719 –&gt; 00:00:56,000<br>differences of expressions, and function calls.</p>
+<p>13<br>00:00:57,000 –&gt; 00:01:01,039<br>Now, we’ll just say that the first function definition in the list is the entry point.</p>
+<p>14<br>00:01:01,039 –&gt; 00:01:05,120<br>This will be the main routine or the function that gets run when the program starts.</p>
+<p>15<br>00:01:05,120 –&gt; 00:01:10,239<br>And this language is expressive enough to write a Fibonacci function, and here it is.</p>
+<p>16<br>00:01:10,239 –&gt; 00:01:14,920<br>And it’s just a standard definition, if x is 1, then the result is 0, if x is 2, the result</p>
+<p>17<br>00:01:14,920 –&gt; 00:01:15,920<br>is 1.</p>
+<p>18<br>00:01:15,920 –&gt; 00:01:22,760<br>Otherwise, it’s the sum of fib of x minus 1, and fib of x minus 2.</p>
+<p>19<br>00:01:22,760 –&gt; 00:01:27,840<br>Now, to do code generation for this language, we need to generate code for each expression</p>
+<p>20<br>00:01:27,840 –&gt; 00:01:33,080<br>e. We need to produce MIPS code for each expression e that accomplishes two things.</p>
+<p>21<br>00:01:33,080 –&gt; 00:01:37,520<br>First of all, that code is going to compute the value of e and leave it in the accumulator</p>
+<p>22<br>00:01:37,520 –&gt; 00:01:38,520<br>a0.</p>
+<p>23<br>00:01:38,520 –&gt; 00:01:39,520<br>Right?</p>
+<p>24<br>00:01:39,520 –&gt; 00:01:45,480<br>So when the code for e is done, the value of e will be stored in the accumulator.</p>
+<p>25<br>00:01:45,480 –&gt; 00:01:49,160<br>And furthermore, e is going to be code for e.</p>
+<p>26<br>00:01:49,159 –&gt; 00:01:54,319<br>It’s going to preserve the stack pointer and the contents of the stack.</p>
+<p>27<br>00:01:54,319 –&gt; 00:02:00,399<br>That means whatever the stack is when we started executing e or the code for e, the stack</p>
+<p>28<br>00:02:00,399 –&gt; 00:02:06,079<br>will be exactly the same after we’re done executing the code for e.</p>
+<p>29<br>00:02:06,079 –&gt; 00:02:11,599<br>And we’re going to write a code generation function, CGen of e that produces code.</p>
+<p>30<br>00:02:11,599 –&gt; 00:02:16,680<br>So CGen of e is something that produces a program, it produces code that will accomplish</p>
+<p>31<br>00:02:16,680 –&gt; 00:02:17,680<br>these two things.</p>
+<p>32<br>00:02:18,680 –&gt; 00:02:23,760<br>Now, our code generation function, now you have e1 back into a temporary register.</p>
+<p>33<br>00:02:23,760 –&gt; 00:02:25,480<br>Now we can do the add, okay?</p>
+<p>34<br>00:02:25,480 –&gt; 00:02:31,040<br>So we add t1 and a0 together and store that back in the accumulator.</p>
+<p>35<br>00:02:31,040 –&gt; 00:02:33,360<br>And now we have to pop the stack.</p>
+<p>36<br>00:02:33,360 –&gt; 00:02:37,719<br>And now notice that this is all the code here for e1 plus e2.</p>
+<p>37<br>00:02:37,719 –&gt; 00:02:40,960<br>And when we’re done, we’ve established our two invariants.</p>
+<p>38<br>00:02:40,960 –&gt; 00:02:44,319<br>The value of e1 plus e2 is in the accumulator.</p>
+<p>39<br>00:02:44,319 –&gt; 00:02:46,560<br>That was established by this instruction.</p>
+<p>40<br>00:02:46,560 –&gt; 00:02:49,159<br>And this pop here, restores the state of the stacks.</p>
+<p>41<br>00:02:49,159 –&gt; 00:02:54,599<br>Now the state of the stack here is exactly what it was when we entered this block of code</p>
+<p>42<br>00:02:54,599 –&gt; 00:02:58,719<br>up here.</p>
+<p>43<br>00:02:58,719 –&gt; 00:03:03,680<br>Now to be completely precise, I really should write this code generation function out a slightly</p>
+<p>44<br>00:03:03,680 –&gt; 00:03:05,599<br>different way.</p>
+<p>45<br>00:03:05,599 –&gt; 00:03:07,840<br>And that would be like this.</p>
+<p>46<br>00:03:07,840 –&gt; 00:03:11,719<br>So what we’re really doing here is we’re generating code for e1 and then we’re printing</p>
+<p>47<br>00:03:11,719 –&gt; 00:03:19,759<br>out into a file or something like that, the code to do the push, okay?</p>
+<p>48<br>00:03:19,759 –&gt; 00:03:22,520<br>And then we generate the code for e2.</p>
+<p>49<br>00:03:22,520 –&gt; 00:03:27,120<br>And now these calls to code generation are also printing into the same file, okay?</p>
+<p>50<br>00:03:27,120 –&gt; 00:03:30,800<br>So here, you know, this have printed out the instructions, whatever the instructions are</p>
+<p>51<br>00:03:30,800 –&gt; 00:03:32,199<br>at execute e1.</p>
+<p>52<br>00:03:32,199 –&gt; 00:03:35,479<br>This is printing out the code to do the push.</p>
+<p>53<br>00:03:35,479 –&gt; 00:03:37,560<br>We print out the code to do e2.</p>
+<p>54<br>00:03:37,560 –&gt; 00:03:41,680<br>And then we print out the code to do the add and the pop.</p>
+<p>55<br>00:03:41,680 –&gt; 00:03:45,319<br>Yes, the add and the pop.</p>
+<p>56<br>00:03:45,319 –&gt; 00:03:48,840<br>And this is just, you know, this is much more verbose over here.</p>
+<p>57<br>00:03:48,840 –&gt; 00:03:53,000<br>And so I’m trying to go into leave out the prints and just indicate in blue the instructions</p>
+<p>58<br>00:03:53,000 –&gt; 00:03:54,000<br>that are deferred.</p>
+<p>59<br>00:03:54,000 –&gt; 00:03:55,520<br>But I hope you understand what this means.</p>
+<p>60<br>00:03:55,520 –&gt; 00:03:58,240<br>Everything in red here, of course, is being done in compile time.</p>
+<p>61<br>00:03:58,240 –&gt; 00:04:01,439<br>So we’re calling these code generation functions in compile time.</p>
+<p>62<br>00:04:01,439 –&gt; 00:04:04,719<br>The print statements are being executed in compile time.</p>
+<p>63<br>00:04:04,719 –&gt; 00:04:09,240<br>And then we’re accumulating somewhere in some data structure or in a file.</p>
+<p>64<br>00:04:09,240 –&gt; 00:04:15,439<br>And we’re calling all the instructions that will be executed at runtime.</p>
+<p>65<br>00:04:15,439 –&gt; 00:04:19,360<br>So let’s think about a possible optimization to this code.</p>
+<p>66<br>00:04:19,360 –&gt; 00:04:23,920<br>Instead of pushing the result of e1 on the stack, what if we stored the result of e1 in</p>
+<p>67<br>00:04:23,920 –&gt; 00:04:26,000<br>a temporary register, t1?</p>
+<p>68<br>00:04:26,000 –&gt; 00:04:28,319<br>What would the code for that look like?</p>
+<p>69<br>00:04:28,319 –&gt; 00:04:34,120<br>Well, in that world, the generate code for e1 plus e2, what would we do?</p>
+<p>70<br>00:04:34,120 –&gt; 00:04:36,400<br>We generate code for e1.</p>
+<p>71<br>00:04:36,399 –&gt; 00:04:40,399<br>And that would be followed now by instead of pushing the result on the stack, we would</p>
+<p>72<br>00:04:40,399 –&gt; 00:04:45,239<br>take the result of e1, which of course is in the accumulator a0 and we would store it in</p>
+<p>73<br>00:04:45,239 –&gt; 00:04:48,120<br>a temporary register.</p>
+<p>74<br>00:04:48,120 –&gt; 00:04:53,479<br>And then we would generate code for e2, and then we followed by the code for e2.</p>
+<p>75<br>00:04:53,479 –&gt; 00:04:54,759<br>And then we could just do the add.</p>
+<p>76<br>00:04:54,759 –&gt; 00:05:00,399<br>We would take the result of e2, which is in the accumulator a0, add it to the contents of</p>
+<p>77<br>00:05:00,399 –&gt; 00:05:04,079<br>t1 and store that into the accumulator a0.</p>
+<p>78<br>00:05:04,079 –&gt; 00:05:07,560<br>And of course, there’s no pushing a popping from the stack here, so this code preserves the</p>
+<p>79<br>00:05:07,560 –&gt; 00:05:08,560<br>stack.</p>
+<p>80<br>00:05:08,560 –&gt; 00:05:15,279<br>And it looks like anyway that it actually puts the value of e1 plus e2 into the accumulator.</p>
+<p>81<br>00:05:15,279 –&gt; 00:05:19,199<br>Unfortunately, this code is incorrect, so this is actually wrong.</p>
+<p>82<br>00:05:19,199 –&gt; 00:05:22,039<br>And you don’t want it to do this.</p>
+<p>83<br>00:05:22,040 –&gt; 00:05:29,040<br>So, we’re going to do a subtraction right here where we do a subtraction instead of an add.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P83Week712 02 A+Code+Generation+I</div>
+      <div>http://example.com/2025/10/25/CS143 P83Week712-02-A+Code+Generation+I/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P80Week611-05-alignment/" title="CS143 P80Week611 05 Alignment">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P80Week611 05 Alignment</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P81Week611-06-stack-machines/" title="CS143 P81Week611 06 Stack Machines">
+                        <span class="hidden-mobile">CS143 P81Week611 06 Stack Machines</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

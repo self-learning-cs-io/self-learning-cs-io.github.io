@@ -1,0 +1,885 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,500In this video, we’re going to move beyond our discussion of runtime organization and begin 200:00:08,500 –&gt; 00:00:11,080talking about code generation. 300:00:11,080">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P81Week611 06 Stack Machines">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P81Week611-06-stack-machines/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,500In this video, we’re going to move beyond our discussion of runtime organization and begin 200:00:08,500 –&gt; 00:00:11,080talking about code generation. 300:00:11,080">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.413Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.226Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P81Week611 06 Stack Machines - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P81Week611 06 Stack Machines"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          21 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P81Week611 06 Stack Machines</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,500<br>In this video, we’re going to move beyond our discussion of runtime organization and begin</p>
+<p>2<br>00:00:08,500 –&gt; 00:00:11,080<br>talking about code generation.</p>
+<p>3<br>00:00:11,080 –&gt; 00:00:15,839<br>And in this first, you know, it will be quite a long series of videos on code generation.</p>
+<p>4<br>00:00:15,839 –&gt; 00:00:20,179<br>We’re going to talk about the simplest model for code generation, which is called a stack</p>
+<p>5<br>00:00:20,179 –&gt; 00:00:25,660<br>machine.</p>
+<p>6<br>00:00:25,660 –&gt; 00:00:30,179<br>So in a stack machine, you might guess that the primary storage is some kind of a stack,</p>
+<p>7<br>00:00:30,179 –&gt; 00:00:31,179<br>and you would be right.</p>
+<p>8<br>00:00:31,179 –&gt; 00:00:35,740<br>In fact, the only storage that a stack machine has is a stack.</p>
+<p>9<br>00:00:35,740 –&gt; 00:00:40,780<br>And the way a stack machine works is that it executes an instruction.</p>
+<p>10<br>00:00:40,780 –&gt; 00:00:42,740<br>All instructions have the form.</p>
+<p>11<br>00:00:42,740 –&gt; 00:00:49,060<br>There’s some function of some arguments, and they produce one result.</p>
+<p>12<br>00:00:49,060 –&gt; 00:00:52,620<br>And what that does is it’ll pop in operands from the stack.</p>
+<p>13<br>00:00:52,619 –&gt; 00:00:57,179<br>So the arguments A1 through AN are stored at the top of the stack.</p>
+<p>14<br>00:00:57,179 –&gt; 00:01:03,379<br>It will then compute the function F using those operands, and it will push the result</p>
+<p>15<br>00:01:03,379 –&gt; 00:01:05,859<br>R back on top of the stack.</p>
+<p>16<br>00:01:05,859 –&gt; 00:01:09,420<br>Okay, so let’s take a look at a simple example.</p>
+<p>17<br>00:01:09,420 –&gt; 00:01:14,859<br>Let’s see how we would compute 7 plus 5 using a stack machine.</p>
+<p>18<br>00:01:14,859 –&gt; 00:01:18,259<br>So we would have our stack.</p>
+<p>19<br>00:01:18,260 –&gt; 00:01:23,500<br>And initially the stack might have already have some stuff on it, but we don’t care what</p>
+<p>20<br>00:01:23,500 –&gt; 00:01:24,500<br>that stuff is.</p>
+<p>21<br>00:01:24,500 –&gt; 00:01:27,540<br>And so it executes 7 plus 5.</p>
+<p>22<br>00:01:27,540 –&gt; 00:01:31,820<br>What we would do, well, first we will have to get the 7 and the 5 onto the stack.</p>
+<p>23<br>00:01:31,820 –&gt; 00:01:35,780<br>So as we get pushed onto the stack, and we’ll say more about how that happens in a minute.</p>
+<p>24<br>00:01:35,780 –&gt; 00:01:39,100<br>Let’s say that 7 and 5 are both on the stack.</p>
+<p>25<br>00:01:39,100 –&gt; 00:01:41,580<br>And so now we want to compute the addition of 7 and 5.</p>
+<p>26<br>00:01:41,580 –&gt; 00:01:44,260<br>So addition takes two arguments.</p>
+<p>27<br>00:01:44,260 –&gt; 00:01:48,500<br>So we would pop the two arguments off the stack.</p>
+<p>28<br>00:01:48,500 –&gt; 00:01:51,180<br>And we wind up with the 5 and the 7.</p>
+<p>29<br>00:01:51,180 –&gt; 00:01:52,260<br>Popped off the stack.</p>
+<p>30<br>00:01:52,260 –&gt; 00:01:55,460<br>We would perform the operation plus.</p>
+<p>31<br>00:01:55,460 –&gt; 00:01:58,700<br>And then the result would get pushed back onto the stack.</p>
+<p>32<br>00:01:58,700 –&gt; 00:02:00,900<br>So this would be equal to 12.</p>
+<p>33<br>00:02:00,900 –&gt; 00:02:05,100<br>And then 12 would get pushed back onto our stack.</p>
+<p>34<br>00:02:07,340 –&gt; 00:02:12,939<br>Okay, and now notice that I did indicate that there might be some other stuff on the stack</p>
+<p>35<br>00:02:12,939 –&gt; 00:02:13,439<br>already.</p>
+<p>36<br>00:02:13,439 –&gt; 00:02:15,719<br>Let me just give that stuff a name.</p>
+<p>37<br>00:02:15,719 –&gt; 00:02:18,960<br>And let me talk about one very important property of the stack machine.</p>
+<p>38<br>00:02:18,960 –&gt; 00:02:25,120<br>So notice that when we evaluated 7 plus 5, we wound up in a situation where the result</p>
+<p>39<br>00:02:25,120 –&gt; 00:02:27,759<br>of that operation was on top of the stack.</p>
+<p>40<br>00:02:27,759 –&gt; 00:02:30,520<br>Okay, and the initial stack contents was unchanged.</p>
+<p>41<br>00:02:30,520 –&gt; 00:02:34,840<br>This stack, the stuff that was below the arguments that we were interested in, didn’t</p>
+<p>42<br>00:02:34,840 –&gt; 00:02:35,840<br>get modified.</p>
+<p>43<br>00:02:35,840 –&gt; 00:02:41,520<br>Okay, so it survived through all the operations unchanged.</p>
+<p>44<br>00:02:41,520 –&gt; 00:02:46,480<br>And this is an important property of a stack machine that we will exploit.</p>
+<p>45<br>00:02:46,480 –&gt; 00:02:52,520<br>And the general, and just to say what the general property is, when you evaluate an expression,</p>
+<p>46<br>00:02:52,520 –&gt; 00:02:55,280<br>the result of the expression will be on top of the stack.</p>
+<p>47<br>00:02:55,280 –&gt; 00:03:01,280<br>And the contents of the stack prior to beginning evaluation of the expression will be preserved.</p>
+<p>48<br>00:03:01,280 –&gt; 00:03:07,360<br>So now let’s think about how we could program a stack machine.</p>
+<p>49<br>00:03:07,360 –&gt; 00:03:11,720<br>So let’s have a language with just two instructions in it.</p>
+<p>50<br>00:03:11,720 –&gt; 00:03:16,760<br>We can push an integer onto the stack, and then we have the operation add, which will add</p>
+<p>51<br>00:03:16,760 –&gt; 00:03:19,000<br>the two integers at the top of the stack.</p>
+<p>52<br>00:03:19,000 –&gt; 00:03:24,200<br>And now let’s take a look at this program, which pushes 7 and then pushes 5 and then doesn’t</p>
+<p>53<br>00:03:24,200 –&gt; 00:03:25,200<br>add.</p>
+<p>54<br>00:03:25,200 –&gt; 00:03:27,840<br>And so let’s think about how this program would work.</p>
+<p>55<br>00:03:27,840 –&gt; 00:03:30,720<br>Okay, so we have our stack contents.</p>
+<p>56<br>00:03:30,720 –&gt; 00:03:34,160<br>And now the first instruction is to push 7.</p>
+<p>57<br>00:03:34,159 –&gt; 00:03:38,400<br>So we wind up with a 7 on the stack, added to the stack.</p>
+<p>58<br>00:03:38,400 –&gt; 00:03:40,359<br>And now we push 5.</p>
+<p>59<br>00:03:40,359 –&gt; 00:03:48,199<br>Okay, so in the next step, we’ll have 5 and 7 on top of the stack.</p>
+<p>60<br>00:03:48,199 –&gt; 00:03:52,840<br>Then we’ll perform the add, and that will pop these two elements off the stack and add</p>
+<p>61<br>00:03:52,840 –&gt; 00:03:57,199<br>them and push the result back on.</p>
+<p>62<br>00:03:57,199 –&gt; 00:04:01,000<br>And we’ll wind up with 12 on the stack.</p>
+<p>63<br>00:04:01,000 –&gt; 00:04:07,639<br>And again, the original stack contents are preserved.</p>
+<p>64<br>00:04:07,639 –&gt; 00:04:12,240<br>Now one interesting property of stack machine code is that the location of the operands and</p>
+<p>65<br>00:04:12,240 –&gt; 00:04:16,240<br>result is not explicitly stated in the instruction.</p>
+<p>66<br>00:04:16,240 –&gt; 00:04:20,879<br>And that’s because these instructions always refer to the top of the stack.</p>
+<p>67<br>00:04:20,879 –&gt; 00:04:25,720<br>And this is in contrast to a register machine or register instructions that explicitly</p>
+<p>68<br>00:04:25,720 –&gt; 00:04:30,560<br>name where they take their operands from and where they put their results.</p>
+<p>69<br>00:04:30,560 –&gt; 00:04:35,600<br>So for example, you might be familiar from seeing some machine code or assembly code in</p>
+<p>70<br>00:04:35,600 –&gt; 00:04:41,199<br>the past that an add instruction might typically take three registers, two for the arguments</p>
+<p>71<br>00:04:41,199 –&gt; 00:04:48,000<br>that are going to be added together and one for the destination for the result.</p>
+<p>72<br>00:04:48,000 –&gt; 00:04:54,480<br>Whereas in the stack machine, we just have a single word add and no explicit naming of</p>
+<p>73<br>00:04:54,480 –&gt; 00:04:57,879<br>the arguments because it’s fixed where the arguments will come from.</p>
+<p>74<br>00:04:57,879 –&gt; 00:05:01,759<br>The arguments will always be popped from the stack and the result will always be placed</p>
+<p>75<br>00:05:01,759 –&gt; 00:05:03,759<br>back on top of the stack.</p>
+<p>76<br>00:05:03,759 –&gt; 00:05:08,480<br>And the interesting property here is that this leads to more compact programs because you</p>
+<p>77<br>00:05:08,480 –&gt; 00:05:14,079<br>have to say less in the instructions, the programs themselves are actually quite a bit smaller</p>
+<p>78<br>00:05:14,079 –&gt; 00:05:16,959<br>than register machine programs.</p>
+<p>79<br>00:05:16,959 –&gt; 00:05:22,959<br>And this is one of the reasons that Java bytecode uses a stack evaluation model because</p>
+<p>80<br>00:05:23,039 –&gt; 00:05:29,560<br>it leads to more compact programs and especially in the early days of Java when it was fairly</p>
+<p>81<br>00:05:29,560 –&gt; 00:05:35,560<br>expensive to ship these programs around the internet to download them having very small</p>
+<p>82<br>00:05:35,560 –&gt; 00:05:37,519<br>compact code was a good property.</p>
+<p>83<br>00:05:37,519 –&gt; 00:05:42,599<br>Now you might wonder why would we prefer a register machine?</p>
+<p>84<br>00:05:42,599 –&gt; 00:05:46,399<br>And the answer is that register machine code is generally faster because we can place</p>
+<p>85<br>00:05:46,399 –&gt; 00:05:49,959<br>the data exactly where we wanted it to be.</p>
+<p>86<br>00:05:49,959 –&gt; 00:05:55,359<br>We will generally have fewer intermediate operations and less manipulation of the stack,</p>
+<p>87<br>00:05:55,359 –&gt; 00:05:58,639<br>pushing and popping stuff to get to the data that we want.</p>
+<p>88<br>00:05:58,639 –&gt; 00:06:02,599<br>And it turns out that there is an intermediate point between a pure stack machine and a pure</p>
+<p>89<br>00:06:02,599 –&gt; 00:06:04,599<br>register machine that’s interesting.</p>
+<p>90<br>00:06:04,599 –&gt; 00:06:07,560<br>This is called an N register stack machine.</p>
+<p>91<br>00:06:07,560 –&gt; 00:06:12,560<br>And conceptually the idea behind an N register stack machine is just to keep the top and locations</p>
+<p>92<br>00:06:12,560 –&gt; 00:06:15,479<br>of the stack in registers.</p>
+<p>93<br>00:06:15,480 –&gt; 00:06:20,000<br>And the particular variant of the N register stack machine that we will be particularly</p>
+<p>94<br>00:06:20,000 –&gt; 00:06:23,759<br>interested in is the one register stack machine because it turns out that you get quite a</p>
+<p>95<br>00:06:23,759 –&gt; 00:06:30,600<br>bit of benefit by even having a single register that’s dedicated to the top of the stack.</p>
+<p>96<br>00:06:30,600 –&gt; 00:06:33,120<br>This register is called the accumulator.</p>
+<p>97<br>00:06:33,120 –&gt; 00:06:36,200<br>So the dedicated register here is called the accumulator.</p>
+<p>98<br>00:06:36,200 –&gt; 00:06:41,720<br>It’s called that because intuitively it accumulates the results of operations and then all the</p>
+<p>99<br>00:06:41,720 –&gt; 00:06:44,759<br>other data lives on the stack.</p>
+<p>100<br>00:06:45,759 –&gt; 00:06:48,759<br>So what is the advantage of a one register stack machine?</p>
+<p>101<br>00:06:48,759 –&gt; 00:06:54,039<br>Well, let’s think about the add instruction and how it works in the pure stack machine.</p>
+<p>102<br>00:06:54,039 –&gt; 00:06:57,079<br>So in the pure stack machine, what is the add instruction going to do?</p>
+<p>103<br>00:06:57,079 –&gt; 00:07:04,240<br>Well, it’s going to pop two arguments from the stack, say five and seven.</p>
+<p>104<br>00:07:04,240 –&gt; 00:07:06,439<br>And it’s going to add them.</p>
+<p>105<br>00:07:06,439 –&gt; 00:07:11,079<br>And then it’s going to put the result back onto the stack.</p>
+<p>106<br>00:07:12,079 –&gt; 00:07:15,159<br>Let’s just name the rest of the stack contents there.</p>
+<p>107<br>00:07:15,159 –&gt; 00:07:17,680<br>And that requires three memory operations.</p>
+<p>108<br>00:07:17,680 –&gt; 00:07:23,120<br>Have to load two arguments and then store one result.</p>
+<p>109<br>00:07:23,120 –&gt; 00:07:27,199<br>But in the one register stack machine, the add operation actually does a lot of its work</p>
+<p>110<br>00:07:27,199 –&gt; 00:07:29,599<br>out of the one register.</p>
+<p>111<br>00:07:29,599 –&gt; 00:07:34,680<br>So one of the arguments is already stored in the register because that’s the conceptually</p>
+<p>112<br>00:07:34,680 –&gt; 00:07:37,079<br>the top of the stack.</p>
+<p>113<br>00:07:37,079 –&gt; 00:07:40,620<br>And the result will be pushed back onto the top of the stack, which again is just the</p>
+<p>114<br>00:07:40,620 –&gt; 00:07:41,620<br>accumulator register.</p>
+<p>115<br>00:07:41,620 –&gt; 00:07:45,800<br>So here one of the arguments and the right are both taken from registers.</p>
+<p>116<br>00:07:45,800 –&gt; 00:07:50,759<br>And there’s only one memory reference to get the second argument from the portion of</p>
+<p>117<br>00:07:50,759 –&gt; 00:07:55,439<br>the stack that’s stored in memory.</p>
+<p>118<br>00:07:55,439 –&gt; 00:08:00,639<br>So in general, let’s think about how we would evaluate an arbitrary expression using a</p>
+<p>119<br>00:08:00,639 –&gt; 00:08:01,639<br>stack machine.</p>
+<p>120<br>00:08:01,639 –&gt; 00:08:04,839<br>So now this isn’t, I should say, you know, just stack machine code like we were looking</p>
+<p>121<br>00:08:04,839 –&gt; 00:08:05,839<br>before.</p>
+<p>122<br>00:08:05,839 –&gt; 00:08:08,959<br>This is not just a sequence of byte code level operations.</p>
+<p>123<br>00:08:08,959 –&gt; 00:08:12,519<br>This is actually a full expression as you might find in cool.</p>
+<p>124<br>00:08:12,519 –&gt; 00:08:17,560<br>So there are other complex expressions nested inside of some operation.</p>
+<p>125<br>00:08:17,560 –&gt; 00:08:18,560<br>All right.</p>
+<p>126<br>00:08:18,560 –&gt; 00:08:22,559<br>And so if we have an operation that takes n arguments and those arguments are expressions</p>
+<p>127<br>00:08:22,559 –&gt; 00:08:27,399<br>that themselves need to be evaluated, here’s a general strategy for doing that with a stack</p>
+<p>128<br>00:08:27,399 –&gt; 00:08:28,399<br>machine.</p>
+<p>129<br>00:08:28,399 –&gt; 00:08:34,240<br>So for each of the sub-expressions, each of the arguments in order, we’re going to evaluate</p>
+<p>130<br>00:08:34,240 –&gt; 00:08:38,279<br>it recursively using the same stack machine strategy.</p>
+<p>131<br>00:08:38,279 –&gt; 00:08:44,279<br>And that will end up putting the result when we evaluate EI recursively, the result will</p>
+<p>132<br>00:08:44,279 –&gt; 00:08:45,879<br>be in the accumulator.</p>
+<p>133<br>00:08:45,879 –&gt; 00:08:46,879<br>Okay.</p>
+<p>134<br>00:08:46,879 –&gt; 00:08:49,240<br>So the result is in the accumulator.</p>
+<p>135<br>00:08:49,240 –&gt; 00:08:51,240<br>All right.</p>
+<p>136<br>00:08:51,240 –&gt; 00:08:53,919<br>And then we’re going to push that result onto the memory stack.</p>
+<p>137<br>00:08:53,919 –&gt; 00:08:57,120<br>So we’re going to take that result and we’re going to free up the accumulator and save</p>
+<p>138<br>00:08:57,120 –&gt; 00:09:01,919<br>it on the stack, the portion of the stack that’s in memory.</p>
+<p>139<br>00:09:01,919 –&gt; 00:09:02,919<br>Okay.</p>
+<p>140<br>00:09:02,919 –&gt; 00:09:08,240<br>Now we do this evaluating the sub-expressions for the first n minus one argument.</p>
+<p>141<br>00:09:08,240 –&gt; 00:09:10,399<br>So everything except the last one.</p>
+<p>142<br>00:09:10,399 –&gt; 00:09:11,399<br>Okay.</p>
+<p>143<br>00:09:11,399 –&gt; 00:09:12,919<br>We’re going to use this same strategy.</p>
+<p>144<br>00:09:12,919 –&gt; 00:09:18,599<br>For the last one, for EN, we just evaluate.</p>
+<p>145<br>00:09:18,599 –&gt; 00:09:20,639<br>We don’t push the result on the stack.</p>
+<p>146<br>00:09:20,639 –&gt; 00:09:23,360<br>That just means that the result is left in the accumulator.</p>
+<p>147<br>00:09:23,360 –&gt; 00:09:24,360<br>Okay.</p>
+<p>148<br>00:09:24,360 –&gt; 00:09:29,480<br>So now we have one of the arguments of op in the accumulator, the last one we evaluated,</p>
+<p>149<br>00:09:29,480 –&gt; 00:09:33,879<br>and the other n minus one are on the top of the portion of the stack that’s in memory.</p>
+<p>150<br>00:09:33,879 –&gt; 00:09:39,920<br>So then what we have to do is we pop n minus one values from the stack and then compute</p>
+<p>151<br>00:09:39,920 –&gt; 00:09:44,879<br>op using those n minus one values plus the value in the accumulator and we store the result</p>
+<p>152<br>00:09:44,879 –&gt; 00:09:46,240<br>back into the accumulator.</p>
+<p>153<br>00:09:46,240 –&gt; 00:09:47,240<br>Okay.</p>
+<p>154<br>00:09:47,240 –&gt; 00:09:53,480<br>So that’s the general strategy for evaluating an expression using a stack machine.</p>
+<p>155<br>00:09:53,480 –&gt; 00:09:56,159<br>So let’s do this now for a simple example.</p>
+<p>156<br>00:09:56,159 –&gt; 00:10:01,519<br>Let’s take our same example that we’ve been using and let’s evaluate the expression 7</p>
+<p>157<br>00:10:01,519 –&gt; 00:10:03,079<br>plus 5.</p>
+<p>158<br>00:10:03,079 –&gt; 00:10:04,079<br>So how would we do that?</p>
+<p>159<br>00:10:04,079 –&gt; 00:10:08,120<br>Well, we’re evaluating a plus expression and that takes two arguments, two expressions</p>
+<p>160<br>00:10:08,120 –&gt; 00:10:10,319<br>and so we had to evaluate each of those.</p>
+<p>161<br>00:10:10,319 –&gt; 00:10:12,360<br>So first we evaluate the expression 7.</p>
+<p>162<br>00:10:12,360 –&gt; 00:10:16,639<br>Let me actually draw our stack here.</p>
+<p>163<br>00:10:16,639 –&gt; 00:10:17,639<br>Okay.</p>
+<p>164<br>00:10:17,639 –&gt; 00:10:20,039<br>So we have our initial contents of the stack.</p>
+<p>165<br>00:10:20,039 –&gt; 00:10:22,240<br>We have our initial accumulator.</p>
+<p>166<br>00:10:22,960 –&gt; 00:10:25,159<br>So now we’re evaluating 7.</p>
+<p>167<br>00:10:25,159 –&gt; 00:10:26,159<br>Okay.</p>
+<p>168<br>00:10:26,159 –&gt; 00:10:29,440<br>And of course a constant will just evaluate to itself and the result is stored in the</p>
+<p>169<br>00:10:29,440 –&gt; 00:10:30,440<br>accumulator.</p>
+<p>170<br>00:10:30,440 –&gt; 00:10:31,440<br>Okay.</p>
+<p>171<br>00:10:31,440 –&gt; 00:10:33,639<br>So that’s the first step after evaluating 7.</p>
+<p>172<br>00:10:33,639 –&gt; 00:10:38,399<br>And now because that’s the first argument to plus it has to get pushed on to the stack,</p>
+<p>173<br>00:10:38,399 –&gt; 00:10:40,039<br>the portion of the stack in main memory.</p>
+<p>174<br>00:10:40,039 –&gt; 00:10:46,080<br>So now we have a situation that looks like this.</p>
+<p>175<br>00:10:46,080 –&gt; 00:10:47,080<br>All right.</p>
+<p>176<br>00:10:47,080 –&gt; 00:10:50,879<br>And of course the 7 is still in the accumulator but we’re now about to overwrite.</p>
+<p>177<br>00:10:50,879 –&gt; 00:10:53,600<br>We’re not going to use that value again.</p>
+<p>178<br>00:10:53,600 –&gt; 00:10:57,039<br>Because the next thing we’re going to do is evaluate the second argument, two plus</p>
+<p>179<br>00:10:57,039 –&gt; 00:11:01,240<br>and that happens to be in this case also a constant expression 5.</p>
+<p>180<br>00:11:01,240 –&gt; 00:11:04,240<br>And so that will get evaluated and then stored in the accumulator.</p>
+<p>181<br>00:11:04,240 –&gt; 00:11:05,240<br>Okay.</p>
+<p>182<br>00:11:05,240 –&gt; 00:11:06,240<br>So I will overwrite the 7.</p>
+<p>183<br>00:11:06,240 –&gt; 00:11:07,240<br>Okay.</p>
+<p>184<br>00:11:07,240 –&gt; 00:11:09,240<br>So it’ll be a 5 there.</p>
+<p>185<br>00:11:09,240 –&gt; 00:11:10,240<br>All right.</p>
+<p>186<br>00:11:10,240 –&gt; 00:11:13,080<br>And now we’ve evaluated both arguments.</p>
+<p>187<br>00:11:13,080 –&gt; 00:11:14,080<br>Okay.</p>
+<p>188<br>00:11:14,080 –&gt; 00:11:18,120<br>And remember, in the case of just having two arguments, the first argument gets evaluated</p>
+<p>189<br>00:11:18,120 –&gt; 00:11:19,120<br>and saved on the stack.</p>
+<p>190<br>00:11:19,120 –&gt; 00:11:22,399<br>So we don’t lose the value when we evaluate the second argument.</p>
+<p>191<br>00:11:22,399 –&gt; 00:11:27,000<br>And the second argument since it’s the last one we can just leave in the accumulator.</p>
+<p>192<br>00:11:27,000 –&gt; 00:11:29,279<br>And now we actually evaluate the plus.</p>
+<p>193<br>00:11:29,279 –&gt; 00:11:30,279<br>Okay.</p>
+<p>194<br>00:11:30,279 –&gt; 00:11:41,639<br>So we do the accumulator gets the accumulator plus the top of the memory stack.</p>
+<p>195<br>00:11:41,639 –&gt; 00:11:47,080<br>So in this case that results in adding 7 and 5.</p>
+<p>196<br>00:11:47,080 –&gt; 00:11:51,480<br>And we wind up and we of course we pop the argument from the memory stack.</p>
+<p>197<br>00:11:51,480 –&gt; 00:11:52,480<br>All right.</p>
+<p>198<br>00:11:52,480 –&gt; 00:11:56,040<br>So we have just the original contents there.</p>
+<p>199<br>00:11:56,040 –&gt; 00:11:57,720<br>And now the value 12.</p>
+<p>200<br>00:11:57,720 –&gt; 00:12:02,960<br>In the accumulator.</p>
+<p>201<br>00:12:02,960 –&gt; 00:12:09,759<br>So as I think you can see from the example, the invariant that we’re going to maintain</p>
+<p>202<br>00:12:09,759 –&gt; 00:12:15,360<br>with a stack machine is that after we evaluate an expression E, the accumulator holds the</p>
+<p>203<br>00:12:15,360 –&gt; 00:12:19,800<br>value of E. So the result of evaluating E winds up in the accumulator and the stack is</p>
+<p>204<br>00:12:19,800 –&gt; 00:12:20,800<br>unchanged.</p>
+<p>205<br>00:12:20,800 –&gt; 00:12:21,800<br>Okay.</p>
+<p>206<br>00:12:21,800 –&gt; 00:12:27,560<br>So the stack, the memory portion of the stack is whatever it was before we started evaluating</p>
+<p>207<br>00:12:27,560 –&gt; 00:12:31,960<br>E. And this is a very, very important property.</p>
+<p>208<br>00:12:31,960 –&gt; 00:12:39,759<br>Expression evaluation preserves the stack.</p>
+<p>209<br>00:12:39,759 –&gt; 00:12:43,799<br>So now let’s look at a more elaborate example, just slightly more elaborate.</p>
+<p>210<br>00:12:43,799 –&gt; 00:12:47,960<br>Three plus seven plus five.</p>
+<p>211<br>00:12:47,960 –&gt; 00:12:52,840<br>And the interesting thing about this example is that now one of the arguments to the outer</p>
+<p>212<br>00:12:52,840 –&gt; 00:12:56,399<br>plus is itself a compound expression.</p>
+<p>213<br>00:12:56,399 –&gt; 00:13:01,319<br>So we’ll have to be that will have to be evaluated recursively as part of evaluating the entire</p>
+<p>214<br>00:13:01,319 –&gt; 00:13:02,319<br>expression.</p>
+<p>215<br>00:13:02,319 –&gt; 00:13:04,039<br>So let’s see how this works.</p>
+<p>216<br>00:13:04,039 –&gt; 00:13:07,439<br>So the first thing is going to happen where we’re evaluating the outer plus.</p>
+<p>217<br>00:13:07,440 –&gt; 00:13:09,960<br>We’re going to evaluate the first argument to that plus.</p>
+<p>218<br>00:13:09,960 –&gt; 00:13:11,480<br>That’s just the constant three.</p>
+<p>219<br>00:13:11,480 –&gt; 00:13:13,800<br>So that will get loaded into the accumulator.</p>
+<p>220<br>00:13:13,800 –&gt; 00:13:14,800<br>Okay.</p>
+<p>221<br>00:13:14,800 –&gt; 00:13:17,160<br>And that’s the result of evaluating three.</p>
+<p>222<br>00:13:17,160 –&gt; 00:13:21,160<br>And now because it’s the first argument to the plus, we have to save it for when we</p>
+<p>223<br>00:13:21,160 –&gt; 00:13:24,120<br>get around to evaluating the addition itself.</p>
+<p>224<br>00:13:24,120 –&gt; 00:13:30,880<br>So that result gets pushed onto the stack.</p>
+<p>225<br>00:13:30,880 –&gt; 00:13:34,960<br>And now we’re going to evaluate the second argument to the outer plus.</p>
+<p>226<br>00:13:34,960 –&gt; 00:13:36,759<br>And that itself has two arguments.</p>
+<p>227<br>00:13:36,759 –&gt; 00:13:41,160<br>And the first argument to that to the inner plus is seven.</p>
+<p>228<br>00:13:41,160 –&gt; 00:13:43,200<br>And so that winds up getting stored in the accumulator.</p>
+<p>229<br>00:13:43,200 –&gt; 00:13:45,519<br>That’s the result of evaluating seven.</p>
+<p>230<br>00:13:45,519 –&gt; 00:13:49,920<br>And then because the inner plus has two arguments and we have to evaluate the second</p>
+<p>231<br>00:13:49,920 –&gt; 00:13:53,560<br>argument to the inner plus, the seven has to get saved on the stack.</p>
+<p>232<br>00:13:53,560 –&gt; 00:14:01,040<br>So now the stack has seven, three, and whatever it had before we started.</p>
+<p>233<br>00:14:01,039 –&gt; 00:14:05,559<br>Next we’re going to evaluate the second argument to the inner plus.</p>
+<p>234<br>00:14:05,559 –&gt; 00:14:10,959<br>And so evaluating the constant five will result in five being loaded into the accumulator.</p>
+<p>235<br>00:14:10,959 –&gt; 00:14:14,559<br>And now we’ve evaluated all the arguments to the inner plus.</p>
+<p>236<br>00:14:14,559 –&gt; 00:14:19,959<br>And so we know from our stack discipline that the last argument is in the accumulator</p>
+<p>237<br>00:14:19,959 –&gt; 00:14:23,399<br>and the first argument will be on top of the stack.</p>
+<p>238<br>00:14:23,399 –&gt; 00:14:27,120<br>So the next thing that will happen is that we’ll pop that second argument from the stack</p>
+<p>239<br>00:14:27,120 –&gt; 00:14:30,559<br>added to the accumulator and store it back into the accumulator.</p>
+<p>240<br>00:14:30,559 –&gt; 00:14:36,639<br>So now we have the result of the inner plus in the accumulator.</p>
+<p>241<br>00:14:36,639 –&gt; 00:14:42,399<br>We also have to pop the seven from the stack.</p>
+<p>242<br>00:14:42,399 –&gt; 00:14:48,359<br>And finally, now we’ve evaluated the second argument to the outer plus.</p>
+<p>243<br>00:14:48,359 –&gt; 00:14:51,799<br>So now we can perform the outer addition.</p>
+<p>244<br>00:14:51,799 –&gt; 00:14:55,919<br>And what does that involve that takes the stack contents and adds it to the value that’s currently</p>
+<p>245<br>00:14:55,919 –&gt; 00:15:00,319<br>on the top of the stack, which is the value three, which is what we saved a long time ago</p>
+<p>246<br>00:15:00,320 –&gt; 00:15:05,160<br>to remember it from what we wanted to do the outer addition.</p>
+<p>247<br>00:15:05,160 –&gt; 00:15:12,160<br>And we wind up after we pop the stack with 15 in the accumulator, that’s the result of</p>
+<p>248<br>00:15:12,160 –&gt; 00:15:13,520<br>the entire expression.</p>
+<p>249<br>00:15:13,520 –&gt; 00:15:17,600<br>And notice it’s the same stack that we started with.</p>
+<p>250<br>00:15:17,600 –&gt; 00:15:22,760<br>So evaluating this entire expression resulted in the result being in the accumulator and</p>
+<p>251<br>00:15:22,760 –&gt; 00:15:26,200<br>the stack being unchanged.</p>
+<p>252<br>00:15:26,200 –&gt; 00:15:29,800<br>And if you look at the sub-expressions, you can see that the same thing happened.</p>
+<p>253<br>00:15:29,799 –&gt; 00:15:34,519<br>So let’s take a look at the evaluation of seven plus five.</p>
+<p>254<br>00:15:34,519 –&gt; 00:15:35,519<br>So where did that take place?</p>
+<p>255<br>00:15:35,519 –&gt; 00:15:41,679<br>Well, that started here, okay, started at this instruction.</p>
+<p>256<br>00:15:41,679 –&gt; 00:15:45,679<br>And it lasted down to here.</p>
+<p>257<br>00:15:45,679 –&gt; 00:15:50,639<br>And you can see that the evaluation of seven plus five, which encompasses these five expressions,</p>
+<p>258<br>00:15:50,639 –&gt; 00:15:52,839<br>resulted in 12 being put on top of the stack.</p>
+<p>259<br>00:15:52,839 –&gt; 00:15:54,639<br>That’s the result of seven plus five.</p>
+<p>260<br>00:15:54,639 –&gt; 00:15:59,759<br>And it didn’t affect the contents, I’m sorry, it resulted in 12 being placed in the</p>
+<p>261<br>00:15:59,799 –&gt; 00:16:01,120<br>accumulator.</p>
+<p>262<br>00:16:01,120 –&gt; 00:16:05,399<br>And it left the stack unchanged from where it was when the evaluation of seven plus five</p>
+<p>263<br>00:16:05,399 –&gt; 00:16:06,399<br>began.</p>
+<p>264<br>00:16:06,399 –&gt; 00:16:07,639<br>So here’s where it began.</p>
+<p>265<br>00:16:07,639 –&gt; 00:16:10,000<br>And the value we had saved, three was on the top of the stack.</p>
+<p>266<br>00:16:10,000 –&gt; 00:16:14,759<br>And when we’re done evaluating seven plus five, indeed again the value three and all the</p>
+<p>267<br>00:16:14,759 –&gt; 00:16:19,759<br>other stuff that was there before, are still on the stack.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P81Week611 06 Stack Machines</div>
+      <div>http://example.com/2025/10/25/CS143 P81Week611-06-stack-machines/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P83Week712-02-A+Code+Generation+I/" title="CS143 P83Week712 02 A+Code+Generation+I">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P83Week712 02 A+Code+Generation+I</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P85Week712-03-A+Code+Generation+II/" title="CS143 P85Week712 03 A+Code+Generation+II">
+                        <span class="hidden-mobile">CS143 P85Week712 03 A+Code+Generation+II</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

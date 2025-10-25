@@ -1,0 +1,759 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,600In this video, we’re going to begin a discussion of red-estral location, which is one of the 200:00:07,600 –&gt; 00:00:12,439most sophisticated things that compilers do">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P107Week916 01 Register Allocation">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P107Week916-01-register-allocation/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,600In this video, we’re going to begin a discussion of red-estral location, which is one of the 200:00:07,600 –&gt; 00:00:12,439most sophisticated things that compilers do">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.382Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.216Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P107Week916 01 Register Allocation - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P107Week916 01 Register Allocation"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P107Week916 01 Register Allocation</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,600<br>In this video, we’re going to begin a discussion of red-estral location, which is one of the</p>
+<p>2<br>00:00:07,600 –&gt; 00:00:12,439<br>most sophisticated things that compilers do to optimize performance, and also involves</p>
+<p>3<br>00:00:12,439 –&gt; 00:00:18,440<br>many of the concepts that we’ve been discussing in global flow analysis.</p>
+<p>4<br>00:00:18,440 –&gt; 00:00:23,519<br>Recall that intermediate code can use unlimited numbers of temporaries, and this simplifies</p>
+<p>5<br>00:00:23,519 –&gt; 00:00:27,560<br>a number of things, in particular it simplifies optimization because we don’t have to worry</p>
+<p>6<br>00:00:27,559 –&gt; 00:00:33,119<br>about preserving the right number of registers in the code, but it does complicate the final</p>
+<p>7<br>00:00:33,119 –&gt; 00:00:37,799<br>translation into a assembly code because we might be using too many temporaries.</p>
+<p>8<br>00:00:37,799 –&gt; 00:00:43,320<br>And this is actually a problem in practice, so it’s not uncommon at all for intermediate</p>
+<p>9<br>00:00:43,320 –&gt; 00:00:49,560<br>code to use more temporaries and there are registers on the target machine.</p>
+<p>10<br>00:00:49,560 –&gt; 00:00:55,519<br>The problem then is to rewrite the intermediate code to use no more temporaries than there</p>
+<p>11<br>00:00:55,520 –&gt; 00:00:57,480<br>are machine registers.</p>
+<p>12<br>00:00:57,480 –&gt; 00:01:01,120<br>And the way we’re going to do that is we’re going to assign multiple temporaries to each</p>
+<p>13<br>00:01:01,120 –&gt; 00:01:08,719<br>register, so we’re going to have a many one mapping, many to one mapping from temporaries</p>
+<p>14<br>00:01:08,719 –&gt; 00:01:12,359<br>to registers.</p>
+<p>15<br>00:01:12,359 –&gt; 00:01:18,280<br>And clearly there’s a little bit of an issue here, if we really are using many temporaries,</p>
+<p>16<br>00:01:18,280 –&gt; 00:01:21,680<br>we will not be able to fit them all into a single register.</p>
+<p>17<br>00:01:21,680 –&gt; 00:01:25,840<br>So there needs to be some kind of a trick and we’ll say what that trick is in a few minutes,</p>
+<p>18<br>00:01:25,840 –&gt; 00:01:28,600<br>and there’ll be situations actually when this will fail and we’ll have to have some kind</p>
+<p>19<br>00:01:28,600 –&gt; 00:01:30,080<br>of backup plan.</p>
+<p>20<br>00:01:30,080 –&gt; 00:01:36,880<br>But our default plan is to try to put as many temporaries as possible into the same machine</p>
+<p>21<br>00:01:36,880 –&gt; 00:01:45,200<br>register and doing all this without changing the behavior of the program.</p>
+<p>22<br>00:01:45,200 –&gt; 00:01:46,520<br>So how can we do this?</p>
+<p>23<br>00:01:46,520 –&gt; 00:01:47,520<br>Magic thing.</p>
+<p>24<br>00:01:47,520 –&gt; 00:01:50,800<br>How can we actually make a single register hold multiple values?</p>
+<p>25<br>00:01:50,799 –&gt; 00:01:55,640<br>Well the trick is that it’s fine for a register to have multiple values as long as it only</p>
+<p>26<br>00:01:55,640 –&gt; 00:01:58,239<br>has one value at a time.</p>
+<p>27<br>00:01:58,239 –&gt; 00:02:01,239<br>So let’s consider this program, and I’m going to switch colors here.</p>
+<p>28<br>00:02:01,239 –&gt; 00:02:03,920<br>It’s a simple three statement program.</p>
+<p>29<br>00:02:03,920 –&gt; 00:02:09,000<br>And notice here that A is used in the first two statements, so it’s written in the first</p>
+<p>30<br>00:02:09,000 –&gt; 00:02:14,400<br>statement, red in the second statement, E is written in the second statement and red</p>
+<p>31<br>00:02:14,400 –&gt; 00:02:17,319<br>in the third statement, and F is only written in the third statement.</p>
+<p>32<br>00:02:17,319 –&gt; 00:02:22,039<br>And actually these three values, A, E, and F, they don’t ever really coexist at the</p>
+<p>33<br>00:02:22,039 –&gt; 00:02:23,039<br>same time.</p>
+<p>34<br>00:02:23,039 –&gt; 00:02:26,120<br>By the time we’ve read A, we’re really done with it.</p>
+<p>35<br>00:02:26,120 –&gt; 00:02:28,919<br>We’ve had all the uses of A we’re going to have in this little code fragment.</p>
+<p>36<br>00:02:28,919 –&gt; 00:02:32,079<br>Here I’m assuming that A, E, and F are not used anywhere else.</p>
+<p>37<br>00:02:32,079 –&gt; 00:02:36,759<br>And so it turns out that A, E, and F could all actually live in the same register.</p>
+<p>38<br>00:02:36,759 –&gt; 00:02:42,280<br>All right, and that’s assuming that A and E are dead after their uses.</p>
+<p>39<br>00:02:42,280 –&gt; 00:02:43,280<br>And what would that look like?</p>
+<p>40<br>00:02:43,280 –&gt; 00:02:48,719<br>Well let’s allocate them all to a particular register R1, and let’s assign CD and B to</p>
+<p>41<br>00:02:48,719 –&gt; 00:02:50,680<br>their own individual registers.</p>
+<p>42<br>00:02:50,680 –&gt; 00:02:52,000<br>Then the code would look like this.</p>
+<p>43<br>00:02:52,000 –&gt; 00:02:58,680<br>R1 would be R2 plus R3, and then R1 would be R1 plus R4, and R1 would be R1 minus 1.</p>
+<p>44<br>00:02:58,680 –&gt; 00:03:05,080<br>All right, so now notice how this is just a transliteration of the code over here, inter-registers,</p>
+<p>45<br>00:03:05,080 –&gt; 00:03:12,840<br>but there is a many one mapping of names on the left to register names on the right.</p>
+<p>46<br>00:03:13,840 –&gt; 00:03:17,080<br>A register allocation is an old problem.</p>
+<p>47<br>00:03:17,080 –&gt; 00:03:23,520<br>In fact, it was first recognized way back in the 1950s in the original Fortran project.</p>
+<p>48<br>00:03:23,520 –&gt; 00:03:27,960<br>But originally, a register allocation was done with fairly crude algorithms.</p>
+<p>49<br>00:03:27,960 –&gt; 00:03:33,879<br>And it was rapidly or very quickly noticed that this was actually a bottleneck in the quality</p>
+<p>50<br>00:03:33,879 –&gt; 00:03:35,560<br>of code generation.</p>
+<p>51<br>00:03:35,560 –&gt; 00:03:39,719<br>That actually limitations on the ability of register allocation to do a good job had a really</p>
+<p>52<br>00:03:39,719 –&gt; 00:03:44,120<br>significant effect on the overall quality, overall quality of the code that compiler</p>
+<p>53<br>00:03:44,120 –&gt; 00:03:45,560<br>is good to produce.</p>
+<p>54<br>00:03:45,560 –&gt; 00:03:51,639<br>And then about 30 years later, in 1980, a breakthrough occurred where people discovered</p>
+<p>55<br>00:03:51,639 –&gt; 00:03:56,280<br>or the group of researchers at IBM discovered a register allocation scheme based on graph</p>
+<p>56<br>00:03:56,280 –&gt; 00:03:57,479<br>coloring.</p>
+<p>57<br>00:03:57,479 –&gt; 00:03:59,879<br>And the great thing about this scheme is that it’s pretty simple.</p>
+<p>58<br>00:03:59,879 –&gt; 00:04:01,800<br>It’s easy to explain.</p>
+<p>59<br>00:04:01,800 –&gt; 00:04:06,120<br>It’s global, meaning it takes advantage of information from the entire control flow graph</p>
+<p>60<br>00:04:06,120 –&gt; 00:04:07,439<br>at the same time.</p>
+<p>61<br>00:04:07,439 –&gt; 00:04:11,439<br>It also happens to work well in practice.</p>
+<p>62<br>00:04:11,439 –&gt; 00:04:20,160<br>And here’s the basic principle that underlies the modern register allocation algorithms.</p>
+<p>63<br>00:04:20,160 –&gt; 00:04:25,519<br>So if I have two temporaries, T1 and T2, I want to know when they can share a register.</p>
+<p>64<br>00:04:25,519 –&gt; 00:04:27,920<br>So they’re allowed to share a register.</p>
+<p>65<br>00:04:27,920 –&gt; 00:04:33,560<br>They’re allowed to be in the same register if they are not live at the same time.</p>
+<p>66<br>00:04:33,560 –&gt; 00:04:38,439<br>So if at any point in the program, it most one of T1 or T2 is live.</p>
+<p>67<br>00:04:38,439 –&gt; 00:04:44,639<br>And the more concise way, which I already said, at least partially, is that if T1 and T2</p>
+<p>68<br>00:04:44,639 –&gt; 00:04:50,560<br>are live at the same time, meaning that there’s some program point where both are live,</p>
+<p>69<br>00:04:50,560 –&gt; 00:04:53,519<br>then they cannot share a register.</p>
+<p>70<br>00:04:53,519 –&gt; 00:04:56,480<br>So this is the negative form of the statement.</p>
+<p>71<br>00:04:56,480 –&gt; 00:05:00,680<br>And it just tells you that if you need to values at the same moment in time, then they have</p>
+<p>72<br>00:05:00,680 –&gt; 00:05:05,040<br>to be in separate registers.</p>
+<p>73<br>00:05:05,040 –&gt; 00:05:07,600<br>Let’s take a look at a control flow graph.</p>
+<p>74<br>00:05:07,600 –&gt; 00:05:11,519<br>And now we know that in order to do the register allocation, to solve the register allocation</p>
+<p>75<br>00:05:11,519 –&gt; 00:05:15,199<br>at least in this way, we’re going to need live-ness information.</p>
+<p>76<br>00:05:15,199 –&gt; 00:05:20,360<br>So let’s compute the live variables for each point of this program.</p>
+<p>77<br>00:05:20,360 –&gt; 00:05:22,360<br>So here it is.</p>
+<p>78<br>00:05:22,360 –&gt; 00:05:24,840<br>And I’ll just walk through it very quickly.</p>
+<p>79<br>00:05:24,840 –&gt; 00:05:29,439<br>Let’s assume that on exit from this loop, it only be as live.</p>
+<p>80<br>00:05:29,439 –&gt; 00:05:34,040<br>So B is the output of this piece of the code, and it’s used elsewhere, but none of the other</p>
+<p>81<br>00:05:34,040 –&gt; 00:05:35,040<br>variables are live.</p>
+<p>82<br>00:05:35,040 –&gt; 00:05:41,000<br>So now if we work backwards, remember that that line is a backwards analysis.</p>
+<p>83<br>00:05:41,000 –&gt; 00:05:43,120<br>We’ll see here that B is written.</p>
+<p>84<br>00:05:43,120 –&gt; 00:05:46,000<br>And so it’s not live before this statement, but F and C are read.</p>
+<p>85<br>00:05:46,000 –&gt; 00:05:50,399<br>So both C and F are live before this basic block.</p>
+<p>86<br>00:05:50,399 –&gt; 00:05:56,120<br>And similarly, if we go up another level here, here we see that E is now live, and F is</p>
+<p>87<br>00:05:56,120 –&gt; 00:05:59,680<br>dead because F was written here, and E was read.</p>
+<p>88<br>00:05:59,680 –&gt; 00:06:04,639<br>And over on this path, here we have another exit where B is live.</p>
+<p>89<br>00:06:04,639 –&gt; 00:06:10,280<br>And now at this point here, right after this basic block, the set of variables that are</p>
+<p>90<br>00:06:10,280 –&gt; 00:06:16,180<br>live is B, C, and F, because B is live on one path, and C and F are live on the other</p>
+<p>91<br>00:06:16,180 –&gt; 00:06:17,180<br>path.</p>
+<p>92<br>00:06:17,180 –&gt; 00:06:22,759<br>Remember, for something to be live, it only has to be live on some, in some future possible</p>
+<p>93<br>00:06:22,759 –&gt; 00:06:24,160<br>evolution of the execution.</p>
+<p>94<br>00:06:24,160 –&gt; 00:06:29,320<br>So on some path out of this node, if a variable is live, then it’s live at the exit from</p>
+<p>95<br>00:06:29,320 –&gt; 00:06:30,320<br>this node.</p>
+<p>96<br>00:06:30,320 –&gt; 00:06:38,600<br>All right, working backwards here, B, C, and F are live here, because E is read, and B,</p>
+<p>97<br>00:06:38,600 –&gt; 00:06:41,400<br>C, and F are not referred to in this statement.</p>
+<p>98<br>00:06:41,400 –&gt; 00:06:44,360<br>And so they just propagate upwards.</p>
+<p>99<br>00:06:44,360 –&gt; 00:06:49,920<br>Here B is removed from the life step because it’s written, but D is added in this set here,</p>
+<p>100<br>00:06:49,920 –&gt; 00:06:52,879<br>and similarly for the other edges in this graph.</p>
+<p>101<br>00:06:52,879 –&gt; 00:06:57,980<br>If you go and check all the other edges, you will see that the life set is correct, and</p>
+<p>102<br>00:06:57,980 –&gt; 00:07:04,040<br>it just follows from the simple rules we gave in the previous video.</p>
+<p>103<br>00:07:04,040 –&gt; 00:07:07,360<br>Now how are we going to use the liveness information to do red-estralication?</p>
+<p>104<br>00:07:07,360 –&gt; 00:07:12,680<br>Well, we’re going to construct an undirected graph, and in this graph there will be a node</p>
+<p>105<br>00:07:12,680 –&gt; 00:07:17,060<br>for each temporary, so each variable will have a node in the graph, and there’ll be an</p>
+<p>106<br>00:07:17,060 –&gt; 00:07:22,620<br>edge between two temporaries if they are live simultaneously at some point in the</p>
+<p>107<br>00:07:22,620 –&gt; 00:07:23,620<br>program.</p>
+<p>108<br>00:07:23,620 –&gt; 00:07:30,259<br>All right, so backing up, and looking at our little example here, we can see, for example,</p>
+<p>109<br>00:07:30,259 –&gt; 00:07:35,100<br>at this point in the program C and E are both live, they’re both in the live set after</p>
+<p>110<br>00:07:35,100 –&gt; 00:07:41,259<br>this basic blocks executes, so C and E cannot be in the same register.</p>
+<p>111<br>00:07:41,259 –&gt; 00:07:47,740<br>All right, continuing on, this is called this data structure, this graph is called the</p>
+<p>112<br>00:07:47,740 –&gt; 00:07:54,980<br>register interference graph or rig for short, and again, the basic idea is that two temporaries</p>
+<p>113<br>00:07:54,980 –&gt; 00:07:59,540<br>can be allocated in the same register if there is no edge connecting them in the register</p>
+<p>114<br>00:07:59,540 –&gt; 00:08:00,900<br>interference graph.</p>
+<p>115<br>00:08:00,900 –&gt; 00:08:05,780<br>So here’s the register interference graph for our example.</p>
+<p>116<br>00:08:05,780 –&gt; 00:08:12,860<br>This is the graph constructed from the code and the liveness analysis that were given a</p>
+<p>117<br>00:08:12,860 –&gt; 00:08:17,579<br>few slides ago, and it’s easy to read off from the graph what the constraints are.</p>
+<p>118<br>00:08:17,579 –&gt; 00:08:23,060<br>So for example, B and C cannot be in the same register because B and C are connected by</p>
+<p>119<br>00:08:23,060 –&gt; 00:08:28,459<br>an edge, saying that they’re live simultaneously at some point in the program, and so they have</p>
+<p>120<br>00:08:28,459 –&gt; 00:08:30,099<br>to live in different registers.</p>
+<p>121<br>00:08:30,099 –&gt; 00:08:35,939<br>On the other hand, notice that there is no edge between B and D, okay, so this edge is missing,</p>
+<p>122<br>00:08:35,939 –&gt; 00:08:40,379<br>and therefore it’s possible that B and D could be allocated in the same register.</p>
+<p>123<br>00:08:40,379 –&gt; 00:08:47,659<br>Their live ranges or the times at which they are live do not overlap.</p>
+<p>124<br>00:08:47,659 –&gt; 00:08:52,419<br>So the great thing about the register interference graph is that it extracts exactly the information</p>
+<p>125<br>00:08:52,419 –&gt; 00:08:54,980<br>needed to characterize the legal register assignment.</p>
+<p>126<br>00:08:54,980 –&gt; 00:08:59,460<br>So it gives us a representation of all the possible legal register assignments.</p>
+<p>127<br>00:08:59,460 –&gt; 00:09:02,899<br>Now I haven’t said how we actually get a register assignment out of the register interference</p>
+<p>128<br>00:09:02,899 –&gt; 00:09:07,860<br>graph, but the first step is to characterize the problem in some kind of precise way, and</p>
+<p>129<br>00:09:08,419 –&gt; 00:09:13,740<br>the graph of cannot live in the same register constraints does that for us.</p>
+<p>130<br>00:09:13,740 –&gt; 00:09:19,180<br>The other thing that’s good about is it gives a global view of the register requirements,</p>
+<p>131<br>00:09:19,180 –&gt; 00:09:21,300<br>meaning it’s over the entire control flow graph.</p>
+<p>132<br>00:09:21,300 –&gt; 00:09:25,220<br>So it takes into account information from every part of the control flow graph, which will</p>
+<p>133<br>00:09:25,220 –&gt; 00:09:30,060<br>help us to make good global decisions about what values are important to live in registers.</p>
+<p>134<br>00:09:30,060 –&gt; 00:09:35,940<br>And finally, the other thing to notice is that after reconstruction, the register allocation</p>
+<p>135<br>00:09:35,940 –&gt; 00:09:39,060<br>algorithm is going is architecture independent.</p>
+<p>136<br>00:09:39,060 –&gt; 00:09:42,220<br>Now I haven’t shown you the algorithm, so you just have to believe this statement for the</p>
+<p>137<br>00:09:42,220 –&gt; 00:09:43,220<br>moment.</p>
+<p>138<br>00:09:43,220 –&gt; 00:09:46,740<br>But it’s going to turn out that we’re not going to depend on any property of the machine,</p>
+<p>139<br>00:09:46,740 –&gt; 00:09:48,580<br>except for the number of registers.</p>
+<p>140<br>00:09:48,580 –&gt; 00:09:53,060<br>That’s the only thing we’ll need to know about the machine in order to take a rig and do</p>
+<p>141<br>00:09:53,060 –&gt; 00:09:54,540<br>register allocation using it.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P107Week916 01 Register Allocation</div>
+      <div>http://example.com/2025/10/25/CS143 P107Week916-01-register-allocation/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P109Week916-02-B+Graph+Coloring/" title="CS143 P109Week916 02 B+Graph+Coloring">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P109Week916 02 B+Graph+Coloring</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P108Week916-02-A+Graph+Coloring/" title="CS143 P108Week916 02 A+Graph+Coloring">
+                        <span class="hidden-mobile">CS143 P108Week916 02 A+Graph+Coloring</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

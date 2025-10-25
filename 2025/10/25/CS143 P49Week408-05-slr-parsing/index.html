@@ -1,0 +1,757 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,160In this video, we’re finally going to give an actual bottom-up parsing algorithm. 200:00:08,160 –&gt; 00:00:13,759In particular, we’ll talk about SLR or simple LR parsi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P49Week408 05 Slr Parsing">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P49Week408-05-slr-parsing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,160In this video, we’re finally going to give an actual bottom-up parsing algorithm. 200:00:08,160 –&gt; 00:00:13,759In particular, we’ll talk about SLR or simple LR parsi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.402Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.223Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P49Week408 05 Slr Parsing - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P49Week408 05 Slr Parsing"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P49Week408 05 Slr Parsing</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,160<br>In this video, we’re finally going to give an actual bottom-up parsing algorithm.</p>
+<p>2<br>00:00:08,160 –&gt; 00:00:13,759<br>In particular, we’ll talk about SLR or simple LR parsing, which will build on the ideas of</p>
+<p>3<br>00:00:13,759 –&gt; 00:00:23,440<br>valid items and viable prefixes that we’ve been discussing in our recent videos.</p>
+<p>4<br>00:00:23,440 –&gt; 00:00:27,679<br>The first thing we’re going to do is to define a very weak bottom-up parsing algorithm called</p>
+<p>5<br>00:00:27,679 –&gt; 00:00:29,679<br>LR zero parsing.</p>
+<p>6<br>00:00:29,679 –&gt; 00:00:35,039<br>The basic idea here is that we’re going to assume a stack contains a contents alpha, and</p>
+<p>7<br>00:00:35,039 –&gt; 00:00:41,759<br>that the next input is token T. That the DFA, this is the DFA that recognizes the viable</p>
+<p>8<br>00:00:41,759 –&gt; 00:00:47,439<br>prefixes, on input alpha, that is when it reads the stack contents, it terminates in some</p>
+<p>9<br>00:00:47,439 –&gt; 00:00:55,920<br>state S. There’s only going to be two things that this parsing algorithm needs to do.</p>
+<p>10<br>00:00:55,920 –&gt; 00:01:02,480<br>If the final state of the DFA contains the item x goes to beta dot, what does that say?</p>
+<p>11<br>00:01:02,480 –&gt; 00:01:08,719<br>That says we’ve seen the complete right-hand side of x goes to beta on the top of the stack.</p>
+<p>12<br>00:01:08,719 –&gt; 00:01:15,280<br>Furthermore, everything that’s below the stack still says that x goes to beta dot is a valid</p>
+<p>13<br>00:01:15,280 –&gt; 00:01:21,520<br>or a viable, sorry, is a valid item for this state. I mean, it’s okay to reduce by x goes to beta.</p>
+<p>14<br>00:01:21,519 –&gt; 00:01:27,199<br>So if we see a complete production dot all the way in the right-hand side in the final state</p>
+<p>15<br>00:01:27,199 –&gt; 00:01:33,759<br>of the DFA, then we’re just going to reduce by that production. The other possible move is a shift.</p>
+<p>16<br>00:01:33,759 –&gt; 00:01:41,759<br>If we wind up in a state where x goes to beta dot T, and then some other stuff is a valid item,</p>
+<p>17<br>00:01:41,759 –&gt; 00:01:46,560<br>what does that say? That says it would be okay at this point to add a T to the stack,</p>
+<p>18<br>00:01:46,560 –&gt; 00:01:49,680<br>and if T is our input, well then we should do a shift move.</p>
+<p>19<br>00:01:53,760 –&gt; 00:01:59,040<br>When does LR0 parsing get into trouble? Well, there are two possible problems it could have.</p>
+<p>20<br>00:01:59,040 –&gt; 00:02:05,359<br>It might not be able to decide between two possible reduced moves. So if any state of the DFA</p>
+<p>21<br>00:02:05,359 –&gt; 00:02:10,000<br>has two possible reductions, meaning it’s seen two complete productions, and it could reduce by</p>
+<p>22<br>00:02:10,000 –&gt; 00:02:15,439<br>either one, then there’s not enough information to decide which reduction to perform, and the pars</p>
+<p>23<br>00:02:15,439 –&gt; 00:02:21,120<br>won’t be completely deterministic. And this is called a reduced reduced conflict. So again,</p>
+<p>24<br>00:02:21,120 –&gt; 00:02:26,719<br>this happens if a particular state has two separate items indicating two separate reductions.</p>
+<p>25<br>00:02:27,439 –&gt; 00:02:32,560<br>The other possibility is that the final state of the DFA after reading the stack contents</p>
+<p>26<br>00:02:32,560 –&gt; 00:02:40,079<br>might have a item that says to reduce, and another item that says to shift, and this is called a</p>
+<p>27<br>00:02:40,080 –&gt; 00:02:46,720<br>shift reduced conflict. So in this case, there would only be a conflict in a state where T was the</p>
+<p>28<br>00:02:46,720 –&gt; 00:02:51,200<br>next item in the input, but in that situation we wouldn’t know whether to shift T onto the stack</p>
+<p>29<br>00:02:51,200 –&gt; 00:02:59,680<br>or to reduce by x goes to beta. Let’s take a look at the DFA for recognizing viable</p>
+<p>30<br>00:02:59,680 –&gt; 00:03:04,960<br>prefixes that we’ve been using for the last couple of videos, and in fact this particular DFA</p>
+<p>31<br>00:03:05,040 –&gt; 00:03:10,320<br>does have some conflicts. So let’s take a look at this state right here. Here we could either reduce</p>
+<p>32<br>00:03:11,120 –&gt; 00:03:17,200<br>by egos to T if we were in this state, or if the next input is a plus we could do a shift.</p>
+<p>33<br>00:03:18,000 –&gt; 00:03:23,520<br>And so in this particular situation, if the next input is plus we could either shift and use</p>
+<p>34<br>00:03:23,520 –&gt; 00:03:30,240<br>this item, or we could reduce and use that item. So this particular state has a shift reduced conflict.</p>
+<p>35<br>00:03:30,320 –&gt; 00:03:41,520<br>Now that’s not the only conflict in this grammar though. In this state here we have a very</p>
+<p>36<br>00:03:41,520 –&gt; 00:03:48,320<br>similar problem. Here we could shift if the next input is a times, or we could reduce by T goes to</p>
+<p>37<br>00:03:48,320 –&gt; 00:03:57,760<br>int. And so this state also has a shift reduced conflict. It turns out that it’s not difficult to</p>
+<p>38<br>00:03:57,759 –&gt; 00:04:04,719<br>improve on LR0 parsing, and will present one such improvement in this video called SLR or simple</p>
+<p>39<br>00:04:04,719 –&gt; 00:04:11,759<br>LR parsing. And this is going to improve on LR0 by adding some heuristics that will refine when</p>
+<p>40<br>00:04:11,759 –&gt; 00:04:20,879<br>we shift and when we reduce so that fewer states have conflicts. The modification to LR0 parsing</p>
+<p>41<br>00:04:20,879 –&gt; 00:04:27,439<br>that gives us SLR parsing is really quite small. We just add one new condition to the reduction case.</p>
+<p>42<br>00:04:28,079 –&gt; 00:04:35,120<br>So before, if we saw x goes to beta dot in the final state of our DFA, recall what that means,</p>
+<p>43<br>00:04:35,120 –&gt; 00:04:41,120<br>that means beta is on the top of the stack and is viable. And so it’s fine to reduce. Now</p>
+<p>44<br>00:04:42,159 –&gt; 00:04:48,079<br>we do have a little bit more information. So notice that the automaton here doesn’t take any</p>
+<p>45<br>00:04:48,079 –&gt; 00:04:52,800<br>advantage of what’s coming up in the input. This is based entirely, this decision here,</p>
+<p>46<br>00:04:52,800 –&gt; 00:04:58,800<br>is based entirely on the stack contents. But it might be that it doesn’t make sense to reduce</p>
+<p>47<br>00:04:58,800 –&gt; 00:05:03,280<br>based on what the next input symbol is. And how can we take advantage of that? Well, if you think</p>
+<p>48<br>00:05:03,280 –&gt; 00:05:10,080<br>about it, what’s going to happen? We have our stack contents and it ends in a beta. And now we’re</p>
+<p>49<br>00:05:10,080 –&gt; 00:05:17,519<br>going to make a move where we’re going to replace that by x. Okay? And if the next input symbol is T,</p>
+<p>50<br>00:05:17,519 –&gt; 00:05:22,240<br>so remember there’d be a vertical bar here and a T following. What does that mean? Well, that means</p>
+<p>51<br>00:05:22,480 –&gt; 00:05:28,720<br>that x has to come before T in the derivation. Or in other words, T is going to follow x.</p>
+<p>52<br>00:05:28,720 –&gt; 00:05:33,759<br>And if T can’t follow x, if T is a terminal symbol that can’t come after the non-terminal x,</p>
+<p>53<br>00:05:33,759 –&gt; 00:05:39,600<br>then it makes no sense to do this reduction. So we only do the reduction if T is in the</p>
+<p>54<br>00:05:39,600 –&gt; 00:05:44,960<br>follow of x. We just add that restriction and that is the only change to the parsing algorithm.</p>
+<p>55<br>00:05:47,600 –&gt; 00:05:51,600<br>So if there are any conflicts under these rules, either shift, reduce, or reduce, reduce,</p>
+<p>56<br>00:05:51,600 –&gt; 00:05:56,480<br>then the grammar is not an SLR grammar. And just notice that these rules amount to a</p>
+<p>57<br>00:05:56,480 –&gt; 00:06:01,760<br>heuristic for detecting the handles. So we take into account two pieces of information, the</p>
+<p>58<br>00:06:01,760 –&gt; 00:06:07,760<br>contents of the stack. That’s what the DFA does for us. And it tells us what items are possible</p>
+<p>59<br>00:06:07,760 –&gt; 00:06:12,480<br>when we get to the top of the stack. And also what’s coming up in the input. And we can use that</p>
+<p>60<br>00:06:12,480 –&gt; 00:06:18,080<br>to refine our reduction decisions. And for those grammars where there are no conflicts, meaning there’s</p>
+<p>61<br>00:06:18,079 –&gt; 00:06:25,279<br>a unique move in every possible state under those rules, then this heuristic is exact, you know,</p>
+<p>62<br>00:06:25,279 –&gt; 00:06:29,839<br>for those grammars. And we just define those grammars to be the SLR grammars.</p>
+<p>63<br>00:06:31,680 –&gt; 00:06:35,680<br>Let’s consider how things have changed for our running example, the deterministic</p>
+<p>64<br>00:06:35,680 –&gt; 00:06:40,000<br>automaton for recognizing the viable prefixes of the grammar we’ve been looking at for several</p>
+<p>65<br>00:06:40,000 –&gt; 00:06:44,799<br>videos now. Recall that we had shift-reduced conflicts under LR-0 rules in two states.</p>
+<p>66<br>00:06:45,360 –&gt; 00:06:50,720<br>Let’s look at the state first, the upper state. So here we’re going to shift if there’s a plus</p>
+<p>67<br>00:06:50,720 –&gt; 00:06:55,280<br>in the input. That’s what this item tells us to do. It tells us if there’s a plus, then the right</p>
+<p>68<br>00:06:55,280 –&gt; 00:07:00,400<br>move is to shift. And so now the question is when are we going to reduce? Well, we’re only going to</p>
+<p>69<br>00:07:00,400 –&gt; 00:07:06,480<br>reduce if the input is in the follow-of-e. And what is the follow-of-e? We computed it a long time</p>
+<p>70<br>00:07:06,480 –&gt; 00:07:12,879<br>ago. But just to remind you, remember that E here is the original start symbol of the grammar.</p>
+<p>71<br>00:07:12,879 –&gt; 00:07:19,360<br>So certainly, dollar sign will wind up in the follow-of-e. And the other possibility for the follow-of-e</p>
+<p>72<br>00:07:19,360 –&gt; 00:07:24,480<br>is a closed-paren because here at this point in the grammar, a closed-paren comes right after E.</p>
+<p>73<br>00:07:25,279 –&gt; 00:07:31,120<br>And that’s the only two possibilities. So what that says now, what that means is that in this</p>
+<p>74<br>00:07:31,120 –&gt; 00:07:39,120<br>particular state, we are going to reduce, if either we’re out of input, or if the next token in</p>
+<p>75<br>00:07:39,120 –&gt; 00:07:44,959<br>the input is a closed-paren, and we’ll shift if the next token in the input is a plus, and in any</p>
+<p>76<br>00:07:44,959 –&gt; 00:07:50,399<br>other situation, we will report a parsing error. And so there’s no longer any shift-reduced conflict</p>
+<p>77<br>00:07:50,399 –&gt; 00:07:56,560<br>in this state, and there’s always a unique move for every possible input. The situation is similarly</p>
+<p>78<br>00:07:56,560 –&gt; 00:08:02,399<br>similarly improved for the other state. So here we’re going to shift if there’s a times in the input,</p>
+<p>79<br>00:08:02,399 –&gt; 00:08:07,920<br>and we’re going to reduce if the input is in the follow-of-e. And what is the follow-of-e?</p>
+<p>80<br>00:08:09,519 –&gt; 00:08:16,000<br>We’ll recall, we computed this again, the long time ago, and I just happen to know what it is.</p>
+<p>81<br>00:08:16,000 –&gt; 00:08:19,120<br>And so I’ll just tell you, well, it included everything in the follow-of-e.</p>
+<p>82<br>00:08:21,199 –&gt; 00:08:25,040<br>So dollar sign and closed-paren are in the follow-of-t, but also</p>
+<p>83<br>00:08:25,759 –&gt; 00:08:30,639<br>pluses in the follow-of-t because of this usage over here in the grammar, where plus appears</p>
+<p>84<br>00:08:30,639 –&gt; 00:08:36,480<br>immediately after t. But those are the only things in the follow-of-t. And so now we’re going to</p>
+<p>85<br>00:08:36,480 –&gt; 00:08:41,440<br>reduce only if we’re out of input, or if the next input item is a closed-paren or a plus,</p>
+<p>86<br>00:08:41,440 –&gt; 00:08:50,080<br>and there’s also no shift-reduced conflict in this state. And so this grammar is an SLR1 grammar.</p>
+<p>87<br>00:08:53,200 –&gt; 00:08:59,519<br>Now many grammars are not SLR, to emphasize that SLR is an improvement on the LR0, but it’s still</p>
+<p>88<br>00:08:59,519 –&gt; 00:09:06,480<br>not a really very general class of grammars. All ambiguous grammars, for example, are not SLR.</p>
+<p>89<br>00:09:07,360 –&gt; 00:09:12,559<br>But we can improve a little bit on the SLR situation. We can make SLR parts even more grammars</p>
+<p>90<br>00:09:12,559 –&gt; 00:09:17,199<br>by using precedence declarations to tell it how to resolve conflicts.</p>
+<p>91<br>00:09:18,480 –&gt; 00:09:23,039<br>So let’s revert to the most natural and also most ambiguous grammar for plus and times over</p>
+<p>92<br>00:09:23,039 –&gt; 00:09:28,319<br>the integers. And we’ve looked at this grammar before. If you build the DFA for this grammar,</p>
+<p>93<br>00:09:28,320 –&gt; 00:09:32,560<br>if you go through and build the DFA for the viable prefix of this grammar, you will discover</p>
+<p>94<br>00:09:32,560 –&gt; 00:09:39,440<br>that there is a state that has the following two items in it. One says that if we see E times E,</p>
+<p>95<br>00:09:40,480 –&gt; 00:09:46,160<br>that we have seen E times E on the stack, and that we can now reduce by E goes to E times E.</p>
+<p>96<br>00:09:46,160 –&gt; 00:09:52,400<br>The other one will say that if there’s a plus coming up in the input, we should shift. And</p>
+<p>97<br>00:09:52,400 –&gt; 00:09:58,240<br>notice that this is exactly the question of whether times has higher precedence than plus. When you</p>
+<p>98<br>00:09:58,240 –&gt; 00:10:05,759<br>are in this situation, should you reduce, thereby grouping the two E’s together here, grouping the</p>
+<p>99<br>00:10:05,759 –&gt; 00:10:13,680<br>multiplication operation first, or should you shift the plus, and which case you’ll be working on</p>
+<p>100<br>00:10:13,680 –&gt; 00:10:20,560<br>that first, since it’s at the top of the stack. So in this situation, the declaration times as higher</p>
+<p>101<br>00:10:20,560 –&gt; 00:10:26,639<br>precedence than plus resolves the conflict in favor of the reduction. So we would not do the shift,</p>
+<p>102<br>00:10:26,639 –&gt; 00:10:29,199<br>and we would wind up with no shift-reduced conflict.</p>
+<p>103<br>00:10:32,319 –&gt; 00:10:37,360<br>Note that the term precedence declaration is actually quite misleading. These declarations don’t</p>
+<p>104<br>00:10:37,360 –&gt; 00:10:42,000<br>define precedence. They don’t do that directly at all. What they really define are conflict</p>
+<p>105<br>00:10:42,000 –&gt; 00:10:47,919<br>resolution. They say make this move instead of that move. It happens that in this particular case,</p>
+<p>106<br>00:10:47,919 –&gt; 00:10:54,319<br>because we’re dealing with a natural grammar, a simple grammar for plus and times, that the conflict</p>
+<p>107<br>00:10:54,320 –&gt; 00:11:00,879<br>resolution has exactly the effect of enforcing the precedence declaration that we want. But in</p>
+<p>108<br>00:11:00,879 –&gt; 00:11:05,920<br>more complicated grammars, where there are more interactions between the various pieces of the grammar,</p>
+<p>109<br>00:11:06,800 –&gt; 00:11:11,280<br>these declarations might not do what you expect in terms of enforcing precedence.</p>
+<p>110<br>00:11:11,280 –&gt; 00:11:16,560<br>Fortunately, you can always print out the automaton. The tools provide usually a way for you to</p>
+<p>111<br>00:11:16,560 –&gt; 00:11:23,600<br>inspect the parsing of automaton. And then you can see exactly how the conflicts are being resolved,</p>
+<p>112<br>00:11:23,600 –&gt; 00:11:28,879<br>and whether those are the resolutions that you had intended. And I recommend when you’re building</p>
+<p>113<br>00:11:28,879 –&gt; 00:11:33,840<br>parsers, especially if it’s a fairly complex parser, that you do examine the parsing of automaton,</p>
+<p>114<br>00:11:33,840 –&gt; 00:11:41,279<br>to make sure that it’s doing what you expect. So now we’re ready to give the algorithm for SLR</p>
+<p>115<br>00:11:41,279 –&gt; 00:11:46,480<br>parsing. So M is our automaton, our parsing automaton that recognizes viable prefixes.</p>
+<p>116<br>00:11:47,600 –&gt; 00:11:52,320<br>The initial configuration is going to be with the vertical bar all the way to the left, so the stack</p>
+<p>117<br>00:11:52,320 –&gt; 00:11:57,680<br>is empty. This is our full input, and we append $indicate the end of the input. And now we’re going</p>
+<p>118<br>00:11:57,680 –&gt; 00:12:04,320<br>to repeat until the configuration has just the start symbol on the stack and $ in the input,</p>
+<p>119<br>00:12:04,320 –&gt; 00:12:11,360<br>meaning all the input is gone, and we reduce the entire input to the start symbol. So an intermediate</p>
+<p>120<br>00:12:11,360 –&gt; 00:12:17,280<br>configuration will be written as alpha omega, where alpha is the contents of the stack, and omega is</p>
+<p>121<br>00:12:17,279 –&gt; 00:12:22,079<br>the remaining input. And what we’re going to do is we’re going to run M, run the machine on the</p>
+<p>122<br>00:12:22,079 –&gt; 00:12:29,279<br>current stack alpha. And if M rejects alpha, if M says that alpha is not a viable prefix, then we’re</p>
+<p>123<br>00:12:29,279 –&gt; 00:12:35,919<br>going to report a parsing error. We’re going to stop right there. Now if M accepts alpha, and it accepts</p>
+<p>124<br>00:12:35,919 –&gt; 00:12:40,399<br>it in a state, if it ends in a state with items I, then we’re going to look at the next input,</p>
+<p>125<br>00:12:40,399 –&gt; 00:12:48,879<br>call that A, and what are we going to do? We’re going to shift if there is an item in I that says,</p>
+<p>126<br>00:12:48,879 –&gt; 00:12:54,480<br>it would be okay to see the terminal A next. So that’s just our shift move, and then we’re going</p>
+<p>127<br>00:12:54,480 –&gt; 00:13:03,199<br>to reduce if there’s a reduction item in the set of valid items, and the next input can follow</p>
+<p>128<br>00:13:03,199 –&gt; 00:13:07,519<br>the non-terminal on the left-hand side. So these are just the two rules that we discussed before,</p>
+<p>129<br>00:13:07,519 –&gt; 00:13:13,600<br>and then we’ll report a parsing error if neither of these applies. Okay? Now one interesting thing</p>
+<p>130<br>00:13:13,600 –&gt; 00:13:18,399<br>about this algorithm, if you read it carefully and you think about it for a while, you’ll realize</p>
+<p>131<br>00:13:18,399 –&gt; 00:13:26,799<br>that this step is actually not needed, that we don’t need to check here for whether M accepts the</p>
+<p>132<br>00:13:26,799 –&gt; 00:13:33,439<br>stack or not. Because this step down here, where we report a parsing error, if neither of these</p>
+<p>133<br>00:13:33,440 –&gt; 00:13:39,360<br>steps applies, this already implies that we will never form an invalid stack, that our stacks will</p>
+<p>134<br>00:13:39,360 –&gt; 00:13:45,520<br>always be viable. The parsing errors will be called at this line, and we won’t pollute the stack</p>
+<p>135<br>00:13:45,520 –&gt; 00:13:51,920<br>with symbols that can’t possibly result in viable prefixes. So in fact, this error check here</p>
+<p>136<br>00:13:51,920 –&gt; 00:13:59,440<br>is not needed, M is always going to accept the stack. Now if there are any conflicts in the last step,</p>
+<p>137<br>00:13:59,440 –&gt; 00:14:04,640<br>meaning it’s not clear whether to shift or reduce in some state for some input symbol,</p>
+<p>138<br>00:14:04,640 –&gt; 00:14:11,200<br>then the grammar is not SLRK. And K again is the amount of look ahead and practice we just use one</p>
+<p>139<br>00:14:11,200 –&gt; 00:14:24,320<br>token of look ahead. So typically just looking at the next token in the input stream.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P49Week408 05 Slr Parsing</div>
+      <div>http://example.com/2025/10/25/CS143 P49Week408-05-slr-parsing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P48Week408-04-valid-items/" title="CS143 P48Week408 04 Valid Items">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P48Week408 04 Valid Items</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P47Week408-03-recognizing-viable-prefixes/" title="CS143 P47Week408 03 Recognizing Viable Prefixes">
+                        <span class="hidden-mobile">CS143 P47Week408 03 Recognizing Viable Prefixes</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

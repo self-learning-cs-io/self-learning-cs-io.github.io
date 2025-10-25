@@ -1,0 +1,791 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,600Welcome back. 200:00:05,600 –&gt; 00:00:09,720In this video, we’re going to talk about finite automata, which we’ll see in future videos 300:00:09,720 –&gt; 00:00:17,60">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P15Week204+02+finite+automata+part+1">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P15Week204+02+finite+automata+part+1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,600Welcome back. 200:00:05,600 –&gt; 00:00:09,720In this video, we’re going to talk about finite automata, which we’ll see in future videos 300:00:09,720 –&gt; 00:00:17,60">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.392Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.219Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P15Week204+02+finite+automata+part+1 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P15Week204+02+finite+automata+part+1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P15Week204+02+finite+automata+part+1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,600<br>Welcome back.</p>
+<p>2<br>00:00:05,600 –&gt; 00:00:09,720<br>In this video, we’re going to talk about finite automata, which we’ll see in future videos</p>
+<p>3<br>00:00:09,720 –&gt; 00:00:17,600<br>are a good implementation model for regular expressions.</p>
+<p>4<br>00:00:17,600 –&gt; 00:00:21,519<br>So in the last few videos, we’ve been talking about regular expressions, which we use as</p>
+<p>5<br>00:00:21,519 –&gt; 00:00:24,879<br>the specification language for lexical analysis.</p>
+<p>6<br>00:00:24,879 –&gt; 00:00:27,240<br>And in this video, we’re going to start something new.</p>
+<p>7<br>00:00:27,239 –&gt; 00:00:34,159<br>We’re going to talk about finite automata, which are the very convenience as an implementation</p>
+<p>8<br>00:00:34,159 –&gt; 00:00:37,679<br>mechanism for regular expressions.</p>
+<p>9<br>00:00:37,679 –&gt; 00:00:40,479<br>And so, regular expressions in finite automata are very closely related.</p>
+<p>10<br>00:00:40,479 –&gt; 00:00:46,599<br>It turns out that they can specify exactly the same languages called the regular languages.</p>
+<p>11<br>00:00:46,599 –&gt; 00:00:50,679<br>We won’t prove that in this course, but we’ll certainly make use of that fact.</p>
+<p>12<br>00:00:50,679 –&gt; 00:00:53,200<br>So moving right along, what is a finite automata?</p>
+<p>13<br>00:00:53,200 –&gt; 00:00:59,080<br>Well, here is a typical definition, as you might see it in a automata theory textbook.</p>
+<p>14<br>00:00:59,080 –&gt; 00:01:01,640<br>Finite automaton consists of an input alphabet.</p>
+<p>15<br>00:01:01,640 –&gt; 00:01:06,400<br>So these are the set of characters that it can read.</p>
+<p>16<br>00:01:06,400 –&gt; 00:01:10,520<br>It has a finite set of states, should probably emphasize that.</p>
+<p>17<br>00:01:10,520 –&gt; 00:01:16,079<br>This is what makes it a finite automaton, that has some set of states that it can be in.</p>
+<p>18<br>00:01:16,079 –&gt; 00:01:20,000<br>One of those states is special and is designated as the start state.</p>
+<p>19<br>00:01:20,000 –&gt; 00:01:22,520<br>Some subset of the states are accepting states.</p>
+<p>20<br>00:01:22,519 –&gt; 00:01:28,840<br>So these are the states that, well, we’ll just find them more in a minute, but intuitively,</p>
+<p>21<br>00:01:28,840 –&gt; 00:01:34,039<br>if the automaton terminates after reading some input in one of these states, then it accepts</p>
+<p>22<br>00:01:34,039 –&gt; 00:01:36,599<br>the input, otherwise it rejects the input.</p>
+<p>23<br>00:01:36,599 –&gt; 00:01:39,759<br>And finally, the automaton has some set of state transitions.</p>
+<p>24<br>00:01:39,759 –&gt; 00:01:45,359<br>That is, if it’s in one state, it can read some input and go to another state.</p>
+<p>25<br>00:01:45,359 –&gt; 00:01:48,199<br>So let’s look at that in a little more detail.</p>
+<p>26<br>00:01:48,199 –&gt; 00:01:52,479<br>So a transition in a finite automaton, if I’m in this case, I’ve written out,</p>
+<p>27<br>00:01:52,480 –&gt; 00:01:58,040<br>one particular transition here, with we’re in state one, and we read the input A,</p>
+<p>28<br>00:01:58,040 –&gt; 00:02:01,480<br>then the automaton can move to state two.</p>
+<p>29<br>00:02:01,480 –&gt; 00:02:06,960<br>And there could be lots of different transitions for the automaton from different states and different inputs.</p>
+<p>30<br>00:02:06,960 –&gt; 00:02:08,599<br>And it’s read the following way.</p>
+<p>31<br>00:02:08,599 –&gt; 00:02:14,240<br>If we’re in state one, on input A, we will go to state two.</p>
+<p>32<br>00:02:14,240 –&gt; 00:02:19,680<br>And if the automaton ends in an accepting state, when it gets to the end of the input,</p>
+<p>33<br>00:02:19,680 –&gt; 00:02:23,599<br>then it’s going to do what’s called accepting the string, meaning that it will say yes,</p>
+<p>34<br>00:02:23,599 –&gt; 00:02:27,439<br>that string was in the language of this machine.</p>
+<p>35<br>00:02:27,439 –&gt; 00:02:34,280<br>So intuitively, the automaton starts in the start state, and it repeatedly reads inputs.</p>
+<p>36<br>00:02:34,280 –&gt; 00:02:37,080<br>One input character at time makes a transition.</p>
+<p>37<br>00:02:37,080 –&gt; 00:02:40,680<br>So it’ll see what kind of transition it can make out of its current state,</p>
+<p>38<br>00:02:40,680 –&gt; 00:02:42,640<br>based on that input to another state.</p>
+<p>39<br>00:02:42,640 –&gt; 00:02:49,480<br>And if one is done reading the input, is in one of the final states, then it will accept.</p>
+<p>40<br>00:02:49,479 –&gt; 00:02:52,039<br>Otherwise, it’s going to reject the input.</p>
+<p>41<br>00:02:52,039 –&gt; 00:02:54,879<br>Now, what are the situations in which it rejects?</p>
+<p>42<br>00:02:54,879 –&gt; 00:03:07,239<br>Well, if it terminates in a state S, that’s not one of the final or accepting states.</p>
+<p>43<br>00:03:07,239 –&gt; 00:03:12,439<br>Okay, so if it ends in any other state besides one of the accepting states, then it’s going to reject.</p>
+<p>44<br>00:03:12,439 –&gt; 00:03:19,079<br>If the machine gets stuck, meaning it finds itself in a state,</p>
+<p>45<br>00:03:19,080 –&gt; 00:03:21,840<br>and there’s no transition out of that state on the input.</p>
+<p>46<br>00:03:21,840 –&gt; 00:03:27,400<br>So in particular, let’s say that it’s in some state S, and the input is A, and there’s no transition.</p>
+<p>47<br>00:03:27,400 –&gt; 00:03:32,840<br>There’s no transition specified for state S on input A, so the machine can’t move anywhere and it gets stuck.</p>
+<p>48<br>00:03:32,840 –&gt; 00:03:36,040<br>And that’s also a rejecting state.</p>
+<p>49<br>00:03:36,040 –&gt; 00:03:41,439<br>And so in these two situations, if either it gets to the end of the input and is not in a final state,</p>
+<p>50<br>00:03:41,439 –&gt; 00:03:45,560<br>or if it never reaches the end of the input because it gets stuck,</p>
+<p>51<br>00:03:45,560 –&gt; 00:03:47,640<br>in both of those cases, it rejects the string.</p>
+<p>52<br>00:03:47,639 –&gt; 00:03:55,119<br>That string is not in the language of the finite automaton.</p>
+<p>53<br>00:03:55,119 –&gt; 00:03:57,879<br>Now, there’s an alternative notation for finite automaton.</p>
+<p>54<br>00:03:57,879 –&gt; 00:04:00,279<br>I think is more intuitive, for example.</p>
+<p>55<br>00:04:00,279 –&gt; 00:04:04,879<br>And so we’re going to emphasize that way of writing them out.</p>
+<p>56<br>00:04:04,879 –&gt; 00:04:10,679<br>In this notation, a state is represented as a node in a graph, which we just draw as a big circle.</p>
+<p>57<br>00:04:10,719 –&gt; 00:04:18,240<br>The start state is represented as a node that has an edge or an arrow into it with no source.</p>
+<p>58<br>00:04:18,240 –&gt; 00:04:24,199<br>So this is a transition into the node, but no source node that it comes from,</p>
+<p>59<br>00:04:24,199 –&gt; 00:04:26,840<br>and that indicates the unique start state.</p>
+<p>60<br>00:04:26,840 –&gt; 00:04:31,720<br>An accepting state is drawn as a node with just double circles like this.</p>
+<p>61<br>00:04:31,720 –&gt; 00:04:35,600<br>And finally, a transition is drawn as an edge between two nodes of the graph.</p>
+<p>62<br>00:04:35,600 –&gt; 00:04:40,160<br>So what this says is if I’m in this state that I’m circling in blue,</p>
+<p>63<br>00:04:40,160 –&gt; 00:04:50,480<br>and I read the input A, well, then I can move to this state at the tail of the arrow.</p>
+<p>64<br>00:04:50,480 –&gt; 00:04:52,000<br>So now let’s do a simple example.</p>
+<p>65<br>00:04:52,000 –&gt; 00:04:57,480<br>Let’s try to write out the automaton that accepts only the single digit one.</p>
+<p>66<br>00:04:57,480 –&gt; 00:05:05,720<br>So we’ll need to start state, and we’ll probably want an accepting state as well.</p>
+<p>67<br>00:05:05,720 –&gt; 00:05:08,320<br>And now the question is, what do we put in between the two?</p>
+<p>68<br>00:05:08,319 –&gt; 00:05:13,399<br>Well, there’ll be some kind of a transition here, and it’s a good guess that we should take that transition</p>
+<p>69<br>00:05:13,399 –&gt; 00:05:16,000<br>if the machine reads a one.</p>
+<p>70<br>00:05:16,000 –&gt; 00:05:21,040<br>And now let me take a moment here to talk about how the machines execute.</p>
+<p>71<br>00:05:21,040 –&gt; 00:05:22,360<br>So let’s label these states.</p>
+<p>72<br>00:05:22,360 –&gt; 00:05:28,360<br>Let’s call this state A, and let’s call this state B.</p>
+<p>73<br>00:05:28,360 –&gt; 00:05:36,079<br>So the machine will have some input, and we can write that input out over here.</p>
+<p>74<br>00:05:36,079 –&gt; 00:05:40,800<br>So let’s just say we have the single character one, and it begins in some state, namely the start state.</p>
+<p>75<br>00:05:40,800 –&gt; 00:05:49,039<br>And so one configuration of the machine is the state it is in, and the input.</p>
+<p>76<br>00:05:49,039 –&gt; 00:05:54,759<br>And typically we would indicate where it is in the input by just a pointer saying what position it is in the input.</p>
+<p>77<br>00:05:54,759 –&gt; 00:06:01,159<br>And the important thing to know about input in, for finite time, it’s us that the input pointer always advances.</p>
+<p>78<br>00:06:01,159 –&gt; 00:06:03,680<br>So when we, or it only advances.</p>
+<p>79<br>00:06:03,680 –&gt; 00:06:09,800<br>So when we read a character of input, the input pointer moves to the right, and it never moves back.</p>
+<p>80<br>00:06:09,800 –&gt; 00:06:12,600<br>Alright, so from state A, we have a rule.</p>
+<p>81<br>00:06:12,600 –&gt; 00:06:14,600<br>We can see that we’re in state A.</p>
+<p>82<br>00:06:14,600 –&gt; 00:06:19,000<br>The next input character is a one, and that allows us to take a transition to state B.</p>
+<p>83<br>00:06:19,000 –&gt; 00:06:23,480<br>And so now we’re being state B, and where’s our input pointer?</p>
+<p>84<br>00:06:23,480 –&gt; 00:06:27,160<br>Well, it’s beyond the end of the input, indicating we are at the end of the input.</p>
+<p>85<br>00:06:27,160 –&gt; 00:06:33,319<br>And so now this is, we are in an accepting state, and we’re past the end of the input.</p>
+<p>86<br>00:06:33,319 –&gt; 00:06:34,639<br>And so we accept.</p>
+<p>87<br>00:06:36,719 –&gt; 00:06:39,800<br>Okay, so let’s do another execution.</p>
+<p>88<br>00:06:39,800 –&gt; 00:06:48,959<br>So we start in state A, and let’s take as our input the string zero.</p>
+<p>89<br>00:06:48,959 –&gt; 00:06:54,000<br>Okay, and I’d like to draw the pointer, actually I should have drawn it before the input.</p>
+<p>90<br>00:06:54,000 –&gt; 00:06:58,519<br>So we’ll always put the pointer between two input elements.</p>
+<p>91<br>00:06:58,519 –&gt; 00:07:02,079<br>In this case, and it’s immediately to the left of the one we’re about to read.</p>
+<p>92<br>00:07:02,079 –&gt; 00:07:03,560<br>So in this case, we’re about to read zero.</p>
+<p>93<br>00:07:03,560 –&gt; 00:07:06,199<br>So we’re in state A, our input is zero.</p>
+<p>94<br>00:07:06,199 –&gt; 00:07:07,959<br>We look at our machine.</p>
+<p>95<br>00:07:07,959 –&gt; 00:07:11,680<br>We see that there is no transition on zero.</p>
+<p>96<br>00:07:11,680 –&gt; 00:07:14,159<br>Alright, and so the machine stays stuck.</p>
+<p>97<br>00:07:14,159 –&gt; 00:07:19,079<br>It doesn’t make any move at all, and this is our final configuration.</p>
+<p>98<br>00:07:19,079 –&gt; 00:07:24,079<br>And we can see that we’re not at the end of the input, and so this is a reject.</p>
+<p>99<br>00:07:26,919 –&gt; 00:07:32,039<br>Okay, so in this case, the machine rejects that string as not being in the language of the machine.</p>
+<p>100<br>00:07:33,040 –&gt; 00:07:35,040<br>Let’s do one more example.</p>
+<p>101<br>00:07:35,040 –&gt; 00:07:40,840<br>Let’s say that we’re in state, while we’re always beginning in state A in the start state.</p>
+<p>102<br>00:07:40,840 –&gt; 00:07:46,400<br>And let’s say our input this time is the string one zero.</p>
+<p>103<br>00:07:46,400 –&gt; 00:07:49,920<br>Okay, and our input pointer is there.</p>
+<p>104<br>00:07:49,920 –&gt; 00:07:57,840<br>Alright, so again, we’re in state A, the input is a one, and so we’ll move to state B.</p>
+<p>105<br>00:07:57,879 –&gt; 00:08:03,679<br>And now the input doesn’t change just the input pointer changes, but I’ll just copy the input over to show the difference.</p>
+<p>106<br>00:08:03,679 –&gt; 00:08:10,319<br>So now the input pointer has advanced because we’ve read one character of input, and now we’re in another state.</p>
+<p>107<br>00:08:10,319 –&gt; 00:08:13,759<br>And now we can see that we’re in state B.</p>
+<p>108<br>00:08:13,759 –&gt; 00:08:19,959<br>Our next input is zero, and there is no transition on zero from state B.</p>
+<p>109<br>00:08:19,959 –&gt; 00:08:25,799<br>And so even though we’re in an accepting state, B is a final state is one of the accept states.</p>
+<p>110<br>00:08:25,799 –&gt; 00:08:27,519<br>We haven’t consumed the entire input.</p>
+<p>111<br>00:08:27,519 –&gt; 00:08:31,279<br>And so this, the machine also rejects this string.</p>
+<p>112<br>00:08:31,279 –&gt; 00:08:33,519<br>So this is also a reject.</p>
+<p>113<br>00:08:33,519 –&gt; 00:08:55,519<br>And in general, we can talk about the language of a finite automata that is equal to the set of accepted strings.</p>
+<p>114<br>00:08:55,519 –&gt; 00:09:04,960<br>So the language of a finite automaton, when I talk about the language of a finite automaton, I mean the set of strings that the automaton accepts.</p>
+<p>115<br>00:09:04,960 –&gt; 00:09:06,759<br>So now let’s do a more complex example.</p>
+<p>116<br>00:09:06,759 –&gt; 00:09:13,919<br>Let’s try to write out an automaton that accepts any number of ones followed by a single zero.</p>
+<p>117<br>00:09:13,919 –&gt; 00:09:20,439<br>So once again, we’ll need a start state, and we’ll also need a final state.</p>
+<p>118<br>00:09:20,440 –&gt; 00:09:28,120<br>And now let’s start by thinking about what the shortest string is that’s in the language of this machine.</p>
+<p>119<br>00:09:28,120 –&gt; 00:09:32,040<br>So in this case, we know it has to end in a single zero.</p>
+<p>120<br>00:09:32,040 –&gt; 00:09:36,480<br>So a zero definitely has to be a zero transition has to be the last move.</p>
+<p>121<br>00:09:36,480 –&gt; 00:09:40,560<br>And before that zero can come any number of ones.</p>
+<p>122<br>00:09:40,560 –&gt; 00:09:42,640<br>And in particular, there could be no ones.</p>
+<p>123<br>00:09:42,640 –&gt; 00:09:48,640<br>So one transition in this machine is that from the start state, on input zero,</p>
+<p>124<br>00:09:48,639 –&gt; 00:09:55,439<br>we can definitely go to the final state because the string consisting of a single zero is in the language of this machine.</p>
+<p>125<br>00:09:55,439 –&gt; 00:10:01,159<br>And now the only question is how do we encode the fact that any number of ones can proceed this zero?</p>
+<p>126<br>00:10:01,159 –&gt; 00:10:03,199<br>Well, there’s an easy way to do that.</p>
+<p>127<br>00:10:03,199 –&gt; 00:10:05,240<br>We can just add a self loop on the start state.</p>
+<p>128<br>00:10:07,240 –&gt; 00:10:09,759<br>And take that transition if we read a one.</p>
+<p>129<br>00:10:09,759 –&gt; 00:10:10,759<br>And what does this mean?</p>
+<p>130<br>00:10:10,759 –&gt; 00:10:13,879<br>This means that we’ll stay in the start state as long as we’re reading one.</p>
+<p>131<br>00:10:13,879 –&gt; 00:10:20,320<br>And then as soon as we read a zero, I will move to the final state because that has to be the end of the string.</p>
+<p>132<br>00:10:20,320 –&gt; 00:10:23,799<br>If this if the machine is going to accept it.</p>
+<p>133<br>00:10:23,799 –&gt; 00:10:27,519<br>So let’s do a couple of examples to convince ourselves that this works.</p>
+<p>134<br>00:10:27,519 –&gt; 00:10:28,879<br>Let me label these states again.</p>
+<p>135<br>00:10:28,879 –&gt; 00:10:33,000<br>So this is state a and that state B.</p>
+<p>136<br>00:10:33,000 –&gt; 00:10:33,759<br>So.</p>
+<p>137<br>00:10:37,039 –&gt; 00:10:39,480<br>Let’s write out here state and input.</p>
+<p>138<br>00:10:40,480 –&gt; 00:10:46,320<br>So we’ll begin in state a and let’s take as input 1 1 0.</p>
+<p>139<br>00:10:46,320 –&gt; 00:10:50,480<br>Okay, so let’s do an accepting case first.</p>
+<p>140<br>00:10:50,480 –&gt; 00:10:55,320<br>Alright, so our input pointer begins to the left of the first character.</p>
+<p>141<br>00:10:55,320 –&gt; 00:10:58,600<br>So we’re in state a start state, we’re reading a one.</p>
+<p>142<br>00:10:58,600 –&gt; 00:11:02,279<br>And that says we should take a transition to put us back in state a.</p>
+<p>143<br>00:11:02,279 –&gt; 00:11:04,960<br>And so we advance the input pointer.</p>
+<p>144<br>00:11:04,960 –&gt; 00:11:07,280<br>Okay, now we’ve consumed the first one.</p>
+<p>145<br>00:11:07,280 –&gt; 00:11:10,400<br>And and again, we’re in state a and the next input is a one.</p>
+<p>146<br>00:11:10,400 –&gt; 00:11:17,480<br>So we’ll make another transition to state a and the input pointer will advance.</p>
+<p>147<br>00:11:17,480 –&gt; 00:11:21,000<br>Okay, so now we’re in state a and the next input is a zero.</p>
+<p>148<br>00:11:21,000 –&gt; 00:11:24,519<br>And so we’ll take the transition to be.</p>
+<p>149<br>00:11:24,519 –&gt; 00:11:26,400<br>And now we’re in this configuration.</p>
+<p>150<br>00:11:26,400 –&gt; 00:11:29,560<br>So the input pointer has reached the end of the input.</p>
+<p>151<br>00:11:29,560 –&gt; 00:11:31,440<br>We’re in an accepting state.</p>
+<p>152<br>00:11:31,560 –&gt; 00:11:37,360<br>And so the machine accepts 1 1 0 is in the language of this machine.</p>
+<p>153<br>00:11:39,040 –&gt; 00:11:42,600<br>So now let’s do an example where we will reject the input.</p>
+<p>154<br>00:11:45,400 –&gt; 00:11:50,880<br>And what configuration do we begin in and again, a configuration for a finite automaton.</p>
+<p>155<br>00:11:50,880 –&gt; 00:11:55,360<br>That just means that you know, I point in the execution and it always consists of a state.</p>
+<p>156<br>00:11:55,360 –&gt; 00:11:58,520<br>And a position of the input pointer.</p>
+<p>157<br>00:11:58,519 –&gt; 00:12:03,519<br>So our initial state is a and now let’s just choose the string.</p>
+<p>158<br>00:12:03,519 –&gt; 00:12:04,120<br>Oh, I don’t know.</p>
+<p>159<br>00:12:04,120 –&gt; 00:12:07,799<br>Let’s take 1 0 0.</p>
+<p>160<br>00:12:07,799 –&gt; 00:12:10,519<br>And let’s confirm that this is not in the language of the machine.</p>
+<p>161<br>00:12:11,639 –&gt; 00:12:15,759<br>All right, so we begin in state a and our input pointer is there.</p>
+<p>162<br>00:12:15,759 –&gt; 00:12:20,759<br>Now we read a one and that means we’ll, you know, so it’s from state a transition of one.</p>
+<p>163<br>00:12:20,759 –&gt; 00:12:25,399<br>We stay in state a and the input pointer advances.</p>
+<p>164<br>00:12:25,399 –&gt; 00:12:26,399<br>And now we see a zero.</p>
+<p>165<br>00:12:26,399 –&gt; 00:12:29,639<br>So from state a and input zero, we make a transition to state b.</p>
+<p>166<br>00:12:31,600 –&gt; 00:12:32,840<br>Now the input pointer is here.</p>
+<p>167<br>00:12:32,840 –&gt; 00:12:41,360<br>So now we’re in state b and we have an input of zero, but there is no transition out of b on zero.</p>
+<p>168<br>00:12:41,360 –&gt; 00:12:44,279<br>There are no transitions out of b at all.</p>
+<p>169<br>00:12:44,279 –&gt; 00:12:45,600<br>And so the machine gets stuck.</p>
+<p>170<br>00:12:45,600 –&gt; 00:12:47,439<br>It can’t get to the end of the input.</p>
+<p>171<br>00:12:47,439 –&gt; 00:12:51,759<br>And again, even though we’re in an accepting state, we haven’t read the entire input yet.</p>
+<p>172<br>00:12:51,759 –&gt; 00:12:54,240<br>And so that means the machine will reject.</p>
+<p>173<br>00:12:54,240 –&gt; 00:12:58,480<br>And so 1 0 0 is not in the language of this machine.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P15Week204+02+finite+automata+part+1</div>
+      <div>http://example.com/2025/10/25/CS143 P15Week204+02+finite+automata+part+1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P17Week204-03-regular-expressions-to-nfas-final-quizupdate-correction/" title="CS143 P17Week204 03 Regular Expressions To Nfas Final Quizupdate Correction">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P17Week204 03 Regular Expressions To Nfas Final Quizupdate Correction</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P16Week204+02+finite+automata+part+2/" title="CS143 P16Week204+02+finite+automata+part+2">
+                        <span class="hidden-mobile">CS143 P16Week204+02+finite+automata+part+2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

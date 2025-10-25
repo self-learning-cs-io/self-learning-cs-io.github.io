@@ -1,0 +1,747 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:11,720Up to this point, a finite automaton consumes a character of input every time it makes a move. 200:00:11,720 –&gt; 00:00:15,480So if you can make any move at all, the i">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P16Week204+02+finite+automata+part+2">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P16Week204+02+finite+automata+part+2/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:11,720Up to this point, a finite automaton consumes a character of input every time it makes a move. 200:00:11,720 –&gt; 00:00:15,480So if you can make any move at all, the i">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.392Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.219Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P16Week204+02+finite+automata+part+2 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P16Week204+02+finite+automata+part+2"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P16Week204+02+finite+automata+part+2</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:11,720<br>Up to this point, a finite automaton consumes a character of input every time it makes a move.</p>
+<p>2<br>00:00:11,720 –&gt; 00:00:15,480<br>So if you can make any move at all, the input pointer advances.</p>
+<p>3<br>00:00:15,480 –&gt; 00:00:19,559<br>Now we’re going to talk about a new kind of move, the epsilon move.</p>
+<p>4<br>00:00:19,559 –&gt; 00:00:24,320<br>And the idea behind epsilon moves is that the machine can make a state transition without</p>
+<p>5<br>00:00:24,320 –&gt; 00:00:26,240<br>consuming input.</p>
+<p>6<br>00:00:26,239 –&gt; 00:00:37,159<br>So for example, if I have my state, and I’m in state A and my input, and let’s just</p>
+<p>7<br>00:00:37,159 –&gt; 00:00:48,000<br>say that we have x1, x2, x3, and for some reason we’re about to read x2, when we make an epsilon</p>
+<p>8<br>00:00:48,000 –&gt; 00:00:55,079<br>move, the machine changes state, but the input pointer stays in exactly the same place.</p>
+<p>9<br>00:00:55,079 –&gt; 00:00:58,759<br>So the new configuration of the machine would be that we’re in state B, but our input</p>
+<p>10<br>00:00:58,759 –&gt; 00:01:01,119<br>pointer is still waiting to read x2.</p>
+<p>11<br>00:01:01,119 –&gt; 00:01:04,640<br>So you can think of an epsilon move as a kind of free move for the machine.</p>
+<p>12<br>00:01:04,640 –&gt; 00:01:09,280<br>It can move to a different state without consuming any input.</p>
+<p>13<br>00:01:09,280 –&gt; 00:01:12,959<br>And just to be clear here, the machine does not have to make the epsilon move.</p>
+<p>14<br>00:01:12,959 –&gt; 00:01:13,959<br>It’s a choice.</p>
+<p>15<br>00:01:13,959 –&gt; 00:01:22,159<br>So we can decide whether to make the epsilon move or not.</p>
+<p>16<br>00:01:22,159 –&gt; 00:01:26,200<br>Now epsilon moves are the first time we’ve mentioned the possibility that a finite automaton</p>
+<p>17<br>00:01:26,200 –&gt; 00:01:28,840<br>might have a choice in what moves it makes.</p>
+<p>18<br>00:01:28,840 –&gt; 00:01:32,959<br>And there’s actually an important distinction between a automaton that have choices in those</p>
+<p>19<br>00:01:32,959 –&gt; 00:01:33,959<br>that don’t.</p>
+<p>20<br>00:01:33,959 –&gt; 00:01:37,439<br>So deterministic finite automaton have two properties.</p>
+<p>21<br>00:01:37,439 –&gt; 00:01:43,959<br>First of all, they have no epsilon moves, so they must always consume input.</p>
+<p>22<br>00:01:43,959 –&gt; 00:01:48,280<br>And second, they only have one transition per input per state.</p>
+<p>23<br>00:01:48,280 –&gt; 00:01:49,920<br>What do I mean by that?</p>
+<p>24<br>00:01:49,920 –&gt; 00:01:55,200<br>That means that if I look at any state in a deterministic automaton, they can never have</p>
+<p>25<br>00:01:55,200 –&gt; 00:02:00,560<br>something like this where they have two possible moves for the same input.</p>
+<p>26<br>00:02:00,560 –&gt; 00:02:08,599<br>All the outgoing edges in a deterministic automaton must have different input labels.</p>
+<p>27<br>00:02:08,599 –&gt; 00:02:12,960<br>And then non-deterministic finite automaton are just those that are not deterministic.</p>
+<p>28<br>00:02:12,960 –&gt; 00:02:18,480<br>So in particular, a non-deterministic automaton can have epsilon moves, so it can choose to move</p>
+<p>29<br>00:02:18,479 –&gt; 00:02:20,719<br>to another state without consuming input.</p>
+<p>30<br>00:02:20,719 –&gt; 00:02:24,560<br>And they can also have multiple transitions for one input in a given state.</p>
+<p>31<br>00:02:24,560 –&gt; 00:02:31,639<br>So something like this is okay for a non-deterministic automaton.</p>
+<p>32<br>00:02:31,639 –&gt; 00:02:37,079<br>Now let me just point out that really epsilon moves are enough to create non-deterministic</p>
+<p>33<br>00:02:37,079 –&gt; 00:02:38,079<br>automaton.</p>
+<p>34<br>00:02:38,079 –&gt; 00:02:43,239<br>And at this second case where you have multiple transitions on the same input can be simulated</p>
+<p>35<br>00:02:43,239 –&gt; 00:02:46,679<br>just by a slightly more complicated machine with epsilon moves.</p>
+<p>36<br>00:02:46,680 –&gt; 00:02:51,080<br>So for example, I can draw this machine in the following way.</p>
+<p>37<br>00:02:51,080 –&gt; 00:02:55,920<br>I can have or I can simulate the machine that circled there in the following way.</p>
+<p>38<br>00:02:55,920 –&gt; 00:03:03,920<br>I can have a state with two epsilon moves and then each of those states has a move on</p>
+<p>39<br>00:03:03,920 –&gt; 00:03:09,480<br>A. So if I were to label these states one, two, and three, then this would be the state</p>
+<p>40<br>00:03:09,480 –&gt; 00:03:13,480<br>that corresponds to one and this would be the state that corresponds to two and this</p>
+<p>41<br>00:03:13,480 –&gt; 00:03:16,280<br>would be the state that corresponds to three.</p>
+<p>42<br>00:03:16,280 –&gt; 00:03:21,319<br>So anytime that we have multiple moves out of a state on a single input, we could always</p>
+<p>43<br>00:03:21,319 –&gt; 00:03:26,280<br>replace that by a few more states with epsilon moves and have every state in the machine</p>
+<p>44<br>00:03:26,280 –&gt; 00:03:30,039<br>only have a single transition for every possible input.</p>
+<p>45<br>00:03:30,039 –&gt; 00:03:35,520<br>So really the only fundamental difference between deterministic automaton and non-deterministic</p>
+<p>46<br>00:03:35,520 –&gt; 00:03:41,400<br>automaton is whether they have epsilon moves or not.</p>
+<p>47<br>00:03:41,400 –&gt; 00:03:45,759<br>A key property of a deterministic automaton is that it can only take one path through the</p>
+<p>48<br>00:03:45,759 –&gt; 00:03:48,039<br>state graph per input.</p>
+<p>49<br>00:03:48,039 –&gt; 00:03:51,599<br>So this is per input.</p>
+<p>50<br>00:03:51,599 –&gt; 00:03:52,599<br>What do I mean by that?</p>
+<p>51<br>00:03:52,599 –&gt; 00:03:56,439<br>Well, the automaton always begins in the start state and let’s take a very simple input</p>
+<p>52<br>00:03:56,439 –&gt; 00:03:57,759<br>string like ABC.</p>
+<p>53<br>00:03:57,759 –&gt; 00:04:06,359<br>And if we look at the sequence of states that the deterministic automaton will take for</p>
+<p>54<br>00:04:06,359 –&gt; 00:04:11,919<br>that input, this path through the state graph is completely determined by the input because</p>
+<p>55<br>00:04:11,919 –&gt; 00:04:13,079<br>again it has no choice.</p>
+<p>56<br>00:04:13,480 –&gt; 00:04:16,800<br>In a given state there’s only going to be one transition label day and it’s going to</p>
+<p>57<br>00:04:16,800 –&gt; 00:04:20,280<br>take you to a state that only has one transition label B and that goes to another state that</p>
+<p>58<br>00:04:20,280 –&gt; 00:04:22,840<br>only has one transition label to C.</p>
+<p>59<br>00:04:22,840 –&gt; 00:04:28,480<br>And so every input determines the path through the state graph that the automaton will take.</p>
+<p>60<br>00:04:28,480 –&gt; 00:04:32,040<br>And this is not true for non-deterministic automaton.</p>
+<p>61<br>00:04:32,040 –&gt; 00:04:39,360<br>So it might be for example that beginning in the start state and on input A that there</p>
+<p>62<br>00:04:39,360 –&gt; 00:04:47,840<br>is some state I can go to on that input A but there may be another transition label</p>
+<p>63<br>00:04:47,840 –&gt; 00:04:49,800<br>A that would take me to a different state.</p>
+<p>64<br>00:04:49,800 –&gt; 00:04:53,639<br>So the automaton might be able to go to one of two different states and again there might</p>
+<p>65<br>00:04:53,639 –&gt; 00:04:55,639<br>also be epsilon transitions.</p>
+<p>66<br>00:04:55,639 –&gt; 00:05:02,400<br>And so what happens with non-deterministic automaton is that in general as they proceed through</p>
+<p>67<br>00:05:02,400 –&gt; 00:05:07,199<br>the state graph is they execute on the input they could wind up in any number of different</p>
+<p>68<br>00:05:07,199 –&gt; 00:05:08,199<br>states.</p>
+<p>69<br>00:05:09,199 –&gt; 00:05:10,199<br>Okay.</p>
+<p>70<br>00:05:10,199 –&gt; 00:05:16,240<br>And the rule with a non-deterministic automaton about when it accepts is that it accepts if</p>
+<p>71<br>00:05:16,240 –&gt; 00:05:18,279<br>any path accepts.</p>
+<p>72<br>00:05:18,279 –&gt; 00:05:37,759<br>So an NFA accepts if some choices lead to an accepting state at the end of the input.</p>
+<p>73<br>00:05:38,759 –&gt; 00:05:44,480<br>That is the non-deterministic automaton can choose what move to make and as long as there</p>
+<p>74<br>00:05:44,480 –&gt; 00:05:47,599<br>is some choice it could make that we get it to an accepting state.</p>
+<p>75<br>00:05:47,599 –&gt; 00:05:52,360<br>So let’s say switching colors here that you know this was an accepting state down here</p>
+<p>76<br>00:05:52,360 –&gt; 00:05:56,800<br>and it took this path then it would accept.</p>
+<p>77<br>00:05:56,800 –&gt; 00:06:00,680<br>And maybe all these other paths are rejecting paths that doesn’t matter as long as there</p>
+<p>78<br>00:06:00,680 –&gt; 00:06:06,319<br>is one path, one set of choices the NFA could make to get it to an accepting state at</p>
+<p>79<br>00:06:06,319 –&gt; 00:06:14,519<br>the end of the input then we say that that string is in the language of the NFA.</p>
+<p>80<br>00:06:14,519 –&gt; 00:06:18,240<br>The fact that NFAs can get into multiple different states depending on the choices they</p>
+<p>81<br>00:06:18,240 –&gt; 00:06:24,560<br>make during a run is important and will actually play a central role in a future video.</p>
+<p>82<br>00:06:24,560 –&gt; 00:06:29,000<br>So we’re going to do a quick example here to just make sure that this is clear.</p>
+<p>83<br>00:06:29,000 –&gt; 00:06:34,120<br>So here’s a little automaton and note that it is non-deterministic from the start state</p>
+<p>84<br>00:06:34,120 –&gt; 00:06:40,160<br>there are two possible moves on input zero and what we’re going to do is just walk through</p>
+<p>85<br>00:06:40,160 –&gt; 00:06:45,720<br>an execution of this machine on a sample input and see what different states it can get</p>
+<p>86<br>00:06:45,720 –&gt; 00:06:47,120<br>into.</p>
+<p>87<br>00:06:47,120 –&gt; 00:06:51,840<br>So we begin to the start state and we should probably label our states actually so that</p>
+<p>88<br>00:06:51,840 –&gt; 00:06:53,519<br>we can refer to them.</p>
+<p>89<br>00:06:53,519 –&gt; 00:07:00,680<br>Let’s call them A, B and C. And let’s say the first input is one and so what does that</p>
+<p>90<br>00:07:00,680 –&gt; 00:07:01,680<br>mean?</p>
+<p>91<br>00:07:01,680 –&gt; 00:07:05,639<br>That means we’ll take this transition, we’ll just go from the start state and come back</p>
+<p>92<br>00:07:05,639 –&gt; 00:07:10,439<br>to the start state and so the set of states that the machine could be in after the first</p>
+<p>93<br>00:07:10,439 –&gt; 00:07:15,560<br>transition is just the set A. So it’s guaranteed to still be in the start state.</p>
+<p>94<br>00:07:15,560 –&gt; 00:07:19,480<br>So there’s no choices with the first move.</p>
+<p>95<br>00:07:19,480 –&gt; 00:07:23,199<br>Now let’s say the second input character is a zero and now we do have a choice.</p>
+<p>96<br>00:07:23,199 –&gt; 00:07:27,920<br>We could either go to state B or we could go to state A.</p>
+<p>97<br>00:07:28,439 –&gt; 00:07:37,080<br>We could think of this as a set of possibilities that after we execute this move, this transition,</p>
+<p>98<br>00:07:37,080 –&gt; 00:07:40,280<br>the machine could be in any one of a set of states.</p>
+<p>99<br>00:07:40,280 –&gt; 00:07:44,360<br>And actually this completely characterizes the possibilities for the machine.</p>
+<p>100<br>00:07:44,360 –&gt; 00:07:49,840<br>We’ve know we’ve read the second input character and now we could be in a set of states.</p>
+<p>101<br>00:07:49,840 –&gt; 00:07:54,480<br>We could be either in state A or in state B.</p>
+<p>102<br>00:07:54,480 –&gt; 00:08:00,520<br>And so now let’s say we read another zero and where could we go then?</p>
+<p>103<br>00:08:00,520 –&gt; 00:08:07,520<br>Well, if we’re in state B, we could make the transition to state C, but if we’re in state A,</p>
+<p>104<br>00:08:07,520 –&gt; 00:08:13,920<br>then we’ll make the transition either to state B or again to state A.</p>
+<p>105<br>00:08:13,920 –&gt; 00:08:18,360<br>So in fact, we could be in any one of the three states if we read another zero.</p>
+<p>106<br>00:08:18,360 –&gt; 00:08:25,560<br>And now I think you can see what the rule is.</p>
+<p>107<br>00:08:25,560 –&gt; 00:08:32,680<br>So at every step, a non-deterministic atauenton is in a set of states of the machine.</p>
+<p>108<br>00:08:32,680 –&gt; 00:08:38,159<br>And when it reads another input, we consider all the possible moves it could make to compute the complete set of states</p>
+<p>109<br>00:08:38,159 –&gt; 00:08:41,399<br>it could be in at the next step of the machine.</p>
+<p>110<br>00:08:42,120 –&gt; 00:08:46,279<br>And then finally, how does we decide whether the machine accepts?</p>
+<p>111<br>00:08:46,279 –&gt; 00:08:50,199<br>Well, we look at the final state after the last bit of input is read.</p>
+<p>112<br>00:08:50,199 –&gt; 00:08:56,559<br>And if there’s any, sorry, we look at the last set of states after the last input character is read.</p>
+<p>113<br>00:08:56,559 –&gt; 00:08:59,799<br>And if there’s any final state in that set, then the machine accepts.</p>
+<p>114<br>00:08:59,799 –&gt; 00:09:07,840<br>And in this case, after we read zero, we see that an accepting state C is in this set of possible states.</p>
+<p>115<br>00:09:07,840 –&gt; 00:09:13,639<br>And what that means is that there was some set of choices that the machine could make that we get it into a final state at the end of the input.</p>
+<p>116<br>00:09:13,639 –&gt; 00:09:17,040<br>And so the machine accepts this input.</p>
+<p>117<br>00:09:17,040 –&gt; 00:09:23,720<br>Okay, so if there is a final state in the final set of possible states, then the non-deterministic machine accepts.</p>
+<p>118<br>00:09:25,879 –&gt; 00:09:32,160<br>It turns out that NFAs and DFA’s are recognized exactly the same languages, in particular the regular languages.</p>
+<p>119<br>00:09:32,159 –&gt; 00:09:36,679<br>So NFAs, DFA’s, and regular expressions all have equivalent power.</p>
+<p>120<br>00:09:36,679 –&gt; 00:09:39,399<br>They can only specify regular languages.</p>
+<p>121<br>00:09:39,399 –&gt; 00:09:45,360<br>DFA’s are definitely faster to execute primarily or entirely because there are no choices to consider.</p>
+<p>122<br>00:09:45,360 –&gt; 00:09:49,360<br>So a DFA can just follow a single path through the state graph.</p>
+<p>123<br>00:09:49,360 –&gt; 00:09:55,360<br>Whereas with an NFA, we have to keep track potentially of the set of choices in the NFA and we might be in a set of states.</p>
+<p>124<br>00:09:56,360 –&gt; 00:09:58,560<br>However, there are some advantages to NFAs.</p>
+<p>125<br>00:09:58,560 –&gt; 00:10:02,399<br>They are in general much smaller than DFA’s.</p>
+<p>126<br>00:10:02,399 –&gt; 00:10:05,519<br>In fact, they can be exponentially smaller.</p>
+<p>127<br>00:10:05,519 –&gt; 00:10:18,680<br>So the smallest NFA may be much, much smaller than the smallest equivalent DFA for the same language.</p>
+<p>128<br>00:10:18,680 –&gt; 00:10:23,960<br>And there’s, so essentially there’s a space time trade off between NFAs and DFA’s.</p>
+<p>129<br>00:10:23,960 –&gt; 00:10:28,759<br>NFAs might be more compact, but DFA’s will be faster to execute.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P16Week204+02+finite+automata+part+2</div>
+      <div>http://example.com/2025/10/25/CS143 P16Week204+02+finite+automata+part+2/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P15Week204+02+finite+automata+part+1/" title="CS143 P15Week204+02+finite+automata+part+1">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P15Week204+02+finite+automata+part+1</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P12Week203-04-formal-languages/" title="CS143 P12Week203 04 Formal Languages">
+                        <span class="hidden-mobile">CS143 P12Week203 04 Formal Languages</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

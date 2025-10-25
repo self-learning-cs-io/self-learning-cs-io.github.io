@@ -1,0 +1,708 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,560This is the first of a series of videos on programming language semantics, and in particular, 200:00:08,560 –&gt; 00:00:10,400on the semantics of cool. 300:00:10,400 –&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P92Week713 01 Semantics Overview">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P92Week713-01-semantics-overview/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,560This is the first of a series of videos on programming language semantics, and in particular, 200:00:08,560 –&gt; 00:00:10,400on the semantics of cool. 300:00:10,400 –&amp;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.416Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.227Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P92Week713 01 Semantics Overview - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P92Week713 01 Semantics Overview"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          831 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          7 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P92Week713 01 Semantics Overview</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,560<br>This is the first of a series of videos on programming language semantics, and in particular,</p>
+<p>2<br>00:00:08,560 –&gt; 00:00:10,400<br>on the semantics of cool.</p>
+<p>3<br>00:00:10,400 –&gt; 00:00:14,519<br>Before we dive into the technical details, though, I want to spend a few minutes talking</p>
+<p>4<br>00:00:14,519 –&gt; 00:00:21,960<br>about what programming language semantics are and why we need them.</p>
+<p>5<br>00:00:21,960 –&gt; 00:00:27,839<br>The problem we have to address is that we need some way to say what behavior we expect</p>
+<p>6<br>00:00:27,839 –&gt; 00:00:29,640<br>when we run a cool program.</p>
+<p>7<br>00:00:29,640 –&gt; 00:00:35,560<br>So for every kind of cool expression for everyone, we have to say what happens when it’s</p>
+<p>8<br>00:00:35,560 –&gt; 00:00:36,960<br>evaluated.</p>
+<p>9<br>00:00:36,960 –&gt; 00:00:39,640<br>And we can regard this as the meaning of the expression.</p>
+<p>10<br>00:00:39,640 –&gt; 00:00:44,799<br>We somehow give rules that specify what a particular, what kind of computation a particular</p>
+<p>11<br>00:00:44,799 –&gt; 00:00:46,840<br>expression does.</p>
+<p>12<br>00:00:46,840 –&gt; 00:00:54,760<br>And I think it’s useful to look back and see how we dealt with this with similar problems</p>
+<p>13<br>00:00:54,759 –&gt; 00:01:01,640<br>in defining other parts of cool, the earlier things that we looked at in this course.</p>
+<p>14<br>00:01:01,640 –&gt; 00:01:09,640<br>So for example, for lexical analysis, we defined a family of tokens using regular expressions.</p>
+<p>15<br>00:01:09,640 –&gt; 00:01:17,039<br>And for the syntax of the language, we use context-free grammars to specify the structure</p>
+<p>16<br>00:01:17,039 –&gt; 00:01:23,959<br>of the how words could be strung together to form valid senses in cool.</p>
+<p>17<br>00:01:23,959 –&gt; 00:01:30,280<br>And then for the semantic analysis, we gave formal typing rules.</p>
+<p>18<br>00:01:30,280 –&gt; 00:01:34,439<br>And now we’re to the point where we have to talk about how the program is actually run.</p>
+<p>19<br>00:01:34,439 –&gt; 00:01:37,679<br>So we have to give some evaluation rules.</p>
+<p>20<br>00:01:37,679 –&gt; 00:01:41,639<br>And these are going to guide how we do code generation and optimization.</p>
+<p>21<br>00:01:41,639 –&gt; 00:01:45,439<br>They’re going to determine what the program should do and what kinds of transformations</p>
+<p>22<br>00:01:45,439 –&gt; 00:01:52,599<br>we can do on programs to make them run faster or use less space or any other kind of optimization</p>
+<p>23<br>00:01:52,599 –&gt; 00:01:55,599<br>that we would like to perform.</p>
+<p>24<br>00:01:55,599 –&gt; 00:01:59,319<br>So so far we’ve been specifying the evaluation rules somewhat indirectly.</p>
+<p>25<br>00:01:59,319 –&gt; 00:02:05,359<br>We’ve been doing it by giving a complete compilation strategy down to stack machine code.</p>
+<p>26<br>00:02:05,359 –&gt; 00:02:10,759<br>And then we’ve been talking about the evaluation rules for the stack machine or actually translating</p>
+<p>27<br>00:02:10,759 –&gt; 00:02:13,719<br>the stack machine code into assembly code.</p>
+<p>28<br>00:02:13,719 –&gt; 00:02:15,719<br>And that is certainly a complete description.</p>
+<p>29<br>00:02:15,719 –&gt; 00:02:21,359<br>You can take the generated assembly code and go and run it on the machine and see what</p>
+<p>30<br>00:02:21,360 –&gt; 00:02:22,360<br>the program does.</p>
+<p>31<br>00:02:22,360 –&gt; 00:02:29,320<br>And that would be a legitimate description of the behavior of the program.</p>
+<p>32<br>00:02:29,320 –&gt; 00:02:32,040<br>And the question then is, you know, why isn’t that good enough?</p>
+<p>33<br>00:02:32,040 –&gt; 00:02:35,800<br>Why isn’t just having a code generator for the language?</p>
+<p>34<br>00:02:35,800 –&gt; 00:02:42,360<br>Why isn’t that already a good enough description of what how the code is supposed to be executed?</p>
+<p>35<br>00:02:42,360 –&gt; 00:02:48,560<br>And the answer to that is maybe a little hard to appreciate without having written a few</p>
+<p>36<br>00:02:48,560 –&gt; 00:02:49,560<br>compilers.</p>
+<p>37<br>00:02:49,560 –&gt; 00:02:55,199<br>But in a nutshell, people have learned through hard experience that assembly language descriptions</p>
+<p>38<br>00:02:55,199 –&gt; 00:03:01,560<br>of language implementations have a lot of irrelevant detail.</p>
+<p>39<br>00:03:01,560 –&gt; 00:03:06,800<br>And there’s a lot of things that you have to say when you give such a complete executable</p>
+<p>40<br>00:03:06,800 –&gt; 00:03:13,680<br>description that was not necessary to say about how the program executes.</p>
+<p>41<br>00:03:13,680 –&gt; 00:03:19,520<br>So for example, the fact that we use a stack machine, that’s not intrinsic to the</p>
+<p>42<br>00:03:19,520 –&gt; 00:03:22,800<br>implementation of any particular program in language.</p>
+<p>43<br>00:03:22,800 –&gt; 00:03:25,400<br>There are other code generation strategies that we could have used.</p>
+<p>44<br>00:03:25,400 –&gt; 00:03:29,040<br>So, you know, the fact you don’t have to use a stack machine to implement the language,</p>
+<p>45<br>00:03:29,040 –&gt; 00:03:32,760<br>which way the stack grows, whether it grows towards high addresses or low addresses, you</p>
+<p>46<br>00:03:32,760 –&gt; 00:03:35,719<br>could implement it either way.</p>
+<p>47<br>00:03:35,719 –&gt; 00:03:41,800<br>How the exact representation of integers, the particular instructions that you use to execute</p>
+<p>48<br>00:03:41,800 –&gt; 00:03:44,560<br>or to implement certain language constructs.</p>
+<p>49<br>00:03:44,560 –&gt; 00:03:52,120<br>All of these things are one way, or one particular way to implement the language, but we don’t</p>
+<p>50<br>00:03:52,120 –&gt; 00:03:58,680<br>want them to be taken as the only way that the language could be implemented.</p>
+<p>51<br>00:03:58,680 –&gt; 00:04:03,640<br>So what we really want then is a complete description, but one that is not overly restrictive,</p>
+<p>52<br>00:04:03,640 –&gt; 00:04:08,159<br>one that would allow a variety of different implementations.</p>
+<p>53<br>00:04:08,159 –&gt; 00:04:14,960<br>And when people have not done this, when people have not tried to find some relatively</p>
+<p>54<br>00:04:14,960 –&gt; 00:04:20,079<br>high level way of describing the behavior of languages, they have inevitably gotten into</p>
+<p>55<br>00:04:20,079 –&gt; 00:04:27,560<br>the situation where people just have to go and run the program on a reference implementation</p>
+<p>56<br>00:04:27,560 –&gt; 00:04:29,680<br>in order to decide what it does.</p>
+<p>57<br>00:04:29,680 –&gt; 00:04:36,360<br>And so on, this is not a very satisfying situation because often the reference implementation</p>
+<p>58<br>00:04:36,360 –&gt; 00:04:38,199<br>is not completely correct itself.</p>
+<p>59<br>00:04:38,199 –&gt; 00:04:42,439<br>It will have bugs and there will be artifacts of the particular way it was implemented,</p>
+<p>60<br>00:04:42,439 –&gt; 00:04:46,879<br>that you didn’t mean to be part of the language, but because there is no better definition,</p>
+<p>61<br>00:04:46,879 –&gt; 00:04:53,480<br>wind up becoming fixed and sort of accidents of the way the language was implemented the</p>
+<p>62<br>00:04:53,480 –&gt; 00:04:56,639<br>first time.</p>
+<p>63<br>00:04:56,639 –&gt; 00:05:02,120<br>So there are many ways to actually specify semantics that it would be suitable for our task, and</p>
+<p>64<br>00:05:02,120 –&gt; 00:05:08,000<br>it turns out that these are all equally powerful, but some of them are more suited to various</p>
+<p>65<br>00:05:08,000 –&gt; 00:05:10,160<br>tasks than others.</p>
+<p>66<br>00:05:10,160 –&gt; 00:05:14,519<br>So the one that we’re going to be using is called operational semantics.</p>
+<p>67<br>00:05:14,519 –&gt; 00:05:19,000<br>So operational semantics describes program evaluation by execution rules on an abstract</p>
+<p>68<br>00:05:19,000 –&gt; 00:05:20,000<br>machine.</p>
+<p>69<br>00:05:20,000 –&gt; 00:05:24,600<br>We just give a bunch of rules that say, you know, for particular expression, how it should</p>
+<p>70<br>00:05:24,600 –&gt; 00:05:25,600<br>be executed.</p>
+<p>71<br>00:05:25,600 –&gt; 00:05:30,000<br>You can think of this as a very, very high level kind of code generation.</p>
+<p>72<br>00:05:30,000 –&gt; 00:05:35,800<br>And this is most useful for specifying implementations and it’s what we’re going to use to describe</p>
+<p>73<br>00:05:35,800 –&gt; 00:05:38,120<br>the semantics of cool.</p>
+<p>74<br>00:05:38,120 –&gt; 00:05:44,920<br>I want to mention two other ways of specifying programming language semantics because they’re</p>
+<p>75<br>00:05:44,920 –&gt; 00:05:50,480<br>important and you may come across them at some point outside of this class.</p>
+<p>76<br>00:05:50,480 –&gt; 00:05:55,879<br>One is denotational semantics and here the program’s meaning is actually given as a mathematical</p>
+<p>77<br>00:05:55,879 –&gt; 00:05:56,879<br>function.</p>
+<p>78<br>00:05:56,879 –&gt; 00:06:05,759<br>So the program text is mapped to a function that goes from inputs to outputs and this</p>
+<p>79<br>00:06:05,759 –&gt; 00:06:10,959<br>function is an actual function that exists in the mathematical sense.</p>
+<p>80<br>00:06:10,959 –&gt; 00:06:17,839<br>And this is a very elegant approach, but it introduces complexities in defining an appropriate</p>
+<p>81<br>00:06:17,839 –&gt; 00:06:23,560<br>class of functions that we don’t really need to consider for the purposes of just describing</p>
+<p>82<br>00:06:23,560 –&gt; 00:06:26,600<br>an implementation.</p>
+<p>83<br>00:06:26,600 –&gt; 00:06:32,080<br>And another important approach is axiomatic semantics and here program behaviors described</p>
+<p>84<br>00:06:32,080 –&gt; 00:06:34,320<br>in some kind of logic.</p>
+<p>85<br>00:06:34,320 –&gt; 00:06:39,840<br>And the basic kinds of statements that you write in this language or in an axiomatic</p>
+<p>86<br>00:06:39,840 –&gt; 00:06:45,920<br>semantics is that if execution begins in a state satisfying x, then it ends in a state</p>
+<p>87<br>00:06:45,920 –&gt; 00:06:51,480<br>satisfying y where x and y are formulas in some logic.</p>
+<p>88<br>00:06:51,480 –&gt; 00:06:56,400<br>And this is a very common foundation for systems that analyze programs automatically that</p>
+<p>89<br>00:06:56,399 –&gt; 00:07:02,279<br>try to prove facts about programs either to prove that they’re correct or to discover bugs</p>
+<p>90<br>00:07:02,279 –&gt; 00:07:03,199<br>in programs.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P92Week713 01 Semantics Overview</div>
+      <div>http://example.com/2025/10/25/CS143 P92Week713-01-semantics-overview/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P98Week814-02-optimization-overview/" title="CS143 P98Week814 02 Optimization Overview">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P98Week814 02 Optimization Overview</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P93Week713-02-operational-semantics/" title="CS143 P93Week713 02 Operational Semantics">
+                        <span class="hidden-mobile">CS143 P93Week713 02 Operational Semantics</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

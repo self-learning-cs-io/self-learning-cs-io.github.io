@@ -1,0 +1,726 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:12,939In this video, we’re going to talk about our first parsing algorithm, recursive descent parsing. 200:00:12,939 –&gt; 00:00:18,059So recursive descent is what is called">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P30Week306 03 Recursive Descent Parsing">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P30Week306-03-recursive-descent-parsing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:12,939In this video, we’re going to talk about our first parsing algorithm, recursive descent parsing. 200:00:12,939 –&gt; 00:00:18,059So recursive descent is what is called">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.395Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.220Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P30Week306 03 Recursive Descent Parsing - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P30Week306 03 Recursive Descent Parsing"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          9 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P30Week306 03 Recursive Descent Parsing</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:12,939<br>In this video, we’re going to talk about our first parsing algorithm, recursive descent parsing.</p>
+<p>2<br>00:00:12,939 –&gt; 00:00:18,059<br>So recursive descent is what is called a top down parsing algorithm.</p>
+<p>3<br>00:00:18,059 –&gt; 00:00:21,699<br>And you might suspect that there are also bottom up parsing algorithms and there are indeed</p>
+<p>4<br>00:00:21,699 –&gt; 00:00:24,339<br>such things and we’ll be talking about them later.</p>
+<p>5<br>00:00:24,339 –&gt; 00:00:28,699<br>But in a top down parsing algorithm, the parse tree is constructed from the top.</p>
+<p>6<br>00:00:28,699 –&gt; 00:00:32,939<br>So starting with the root node and from left to right.</p>
+<p>7<br>00:00:32,939 –&gt; 00:00:38,340<br>And so the terminals then will be seen in the order that they appear in the token stream.</p>
+<p>8<br>00:00:38,340 –&gt; 00:00:43,780<br>So for example, if I have this token stream here, this is a hypothetical parse tree that</p>
+<p>9<br>00:00:43,780 –&gt; 00:00:49,340<br>I could construct and the numbers here correspond to the order in which the nodes of this parse</p>
+<p>10<br>00:00:49,340 –&gt; 00:00:50,340<br>tree are constructed.</p>
+<p>11<br>00:00:50,340 –&gt; 00:00:52,100<br>So we have to begin with the roots.</p>
+<p>12<br>00:00:52,100 –&gt; 00:00:53,939<br>That’s the first thing that happens.</p>
+<p>13<br>00:00:53,939 –&gt; 00:00:59,500<br>And then if t2 is belongs here in the parse tree, that will be the next thing that happens.</p>
+<p>14<br>00:00:59,500 –&gt; 00:01:04,859<br>But then if we have a non-terminal in the next position, that will be number three.</p>
+<p>15<br>00:01:04,859 –&gt; 00:01:08,819<br>And then if that has children, while the leftmost one, because we’re going left to right, will</p>
+<p>16<br>00:01:08,819 –&gt; 00:01:10,780<br>be the fourth thing to be generated.</p>
+<p>17<br>00:01:10,780 –&gt; 00:01:14,180<br>And then let’s say that the two children of number four are both terminals.</p>
+<p>18<br>00:01:14,180 –&gt; 00:01:16,939<br>So that will be the next two terminals in the input.</p>
+<p>19<br>00:01:16,939 –&gt; 00:01:17,939<br>And so on.</p>
+<p>20<br>00:01:17,939 –&gt; 00:01:20,939<br>The next thing will happen is the second child of number three.</p>
+<p>21<br>00:01:20,939 –&gt; 00:01:27,060<br>And then the last two terminals appearing in left to right order.</p>
+<p>22<br>00:01:27,060 –&gt; 00:01:31,299<br>So let’s consider this grammar for integer expressions.</p>
+<p>23<br>00:01:31,299 –&gt; 00:01:36,259<br>And let’s look at a particular input, a very simple one, just open per end five, close</p>
+<p>24<br>00:01:36,259 –&gt; 00:01:38,539<br>per end.</p>
+<p>25<br>00:01:38,539 –&gt; 00:01:42,259<br>And now what we’re going to do is we’re going to parse this using a recursive descent strategy.</p>
+<p>26<br>00:01:42,259 –&gt; 00:01:45,539<br>I’m not going to actually show you any pseudo code or anything like that.</p>
+<p>27<br>00:01:45,540 –&gt; 00:01:51,900<br>I’m just going to walk through how this input string would be parsed by using this grammar</p>
+<p>28<br>00:01:51,900 –&gt; 00:01:54,700<br>and the recursive descent algorithm.</p>
+<p>29<br>00:01:54,700 –&gt; 00:01:59,340<br>And the basic idea is that we begin with a non-terminal, we begin with the root node,</p>
+<p>30<br>00:01:59,340 –&gt; 00:02:02,900<br>and we always try the rules for a non-terminal in order.</p>
+<p>31<br>00:02:02,900 –&gt; 00:02:06,020<br>So we will begin by starting with egos to t.</p>
+<p>32<br>00:02:06,020 –&gt; 00:02:09,620<br>And if that doesn’t work, we’ll try egos to t plus e.</p>
+<p>33<br>00:02:09,620 –&gt; 00:02:12,700<br>So this is going to be a top-down algorithm beginning at the root.</p>
+<p>34<br>00:02:12,699 –&gt; 00:02:17,579<br>We’re going to work from left to right, we try the productions in order, and when the</p>
+<p>35<br>00:02:17,579 –&gt; 00:02:24,139<br>productions fail, we may have to do some backtracking in order to try alternative productions.</p>
+<p>36<br>00:02:24,139 –&gt; 00:02:25,379<br>There are three parts.</p>
+<p>37<br>00:02:25,379 –&gt; 00:02:27,579<br>There’s the grammar that we’re using.</p>
+<p>38<br>00:02:27,579 –&gt; 00:02:31,620<br>There’s the parse tree that we’re building, and initially that’s just the root of the parse</p>
+<p>39<br>00:02:31,620 –&gt; 00:02:32,620<br>tree e.</p>
+<p>40<br>00:02:32,620 –&gt; 00:02:35,899<br>And finally, there’s the input that we’re processing.</p>
+<p>41<br>00:02:35,899 –&gt; 00:02:37,699<br>And we’ll indicate our position in the input.</p>
+<p>42<br>00:02:37,699 –&gt; 00:02:40,939<br>How much of the input we have read by this big fat red arrow?</p>
+<p>43<br>00:02:40,939 –&gt; 00:02:45,979<br>And it always points to the next terminal symbol to be red, the next token to be red.</p>
+<p>44<br>00:02:45,979 –&gt; 00:02:50,900<br>So in this case, we’re starting with an open parent.</p>
+<p>45<br>00:02:50,900 –&gt; 00:02:55,060<br>And also in the grammar, you can see the highlighting here, the brighter red color indicates</p>
+<p>46<br>00:02:55,060 –&gt; 00:02:57,060<br>which production we’re going to try.</p>
+<p>47<br>00:02:57,060 –&gt; 00:03:02,419<br>So we’re going to begin to build our parse tree by trying to production egos to t.</p>
+<p>48<br>00:03:02,419 –&gt; 00:03:03,539<br>And what does that mean?</p>
+<p>49<br>00:03:03,539 –&gt; 00:03:09,139<br>Well, that means we make t the child of e, and then we can check whether we’re making</p>
+<p>50<br>00:03:09,139 –&gt; 00:03:10,139<br>progress.</p>
+<p>51<br>00:03:10,979 –&gt; 00:03:16,099<br>So observe that as long as we’re generating non-terminals, we don’t really know whether</p>
+<p>52<br>00:03:16,099 –&gt; 00:03:18,979<br>we’re on the right track or not.</p>
+<p>53<br>00:03:18,979 –&gt; 00:03:23,739<br>We have no way to check whether the non-terminals that we’re generating are going to produce</p>
+<p>54<br>00:03:23,739 –&gt; 00:03:25,339<br>the input string.</p>
+<p>55<br>00:03:25,339 –&gt; 00:03:30,419<br>But once we generate a terminal symbol, then we can compare that with the next input</p>
+<p>56<br>00:03:30,419 –&gt; 00:03:33,019<br>token to see if they’re the same.</p>
+<p>57<br>00:03:33,019 –&gt; 00:03:35,259<br>And in this case, unfortunately, they’re not.</p>
+<p>58<br>00:03:35,259 –&gt; 00:03:40,099<br>So the int that we generated here doesn’t match the open parent and the input.</p>
+<p>59<br>00:03:40,099 –&gt; 00:03:46,019<br>And so clearly, this parsing strategy or this parse tree that we’re building isn’t going</p>
+<p>60<br>00:03:46,019 –&gt; 00:03:47,019<br>to work out.</p>
+<p>61<br>00:03:47,019 –&gt; 00:03:49,739<br>So what we’re going to have to do is we’re going to have to backtrack.</p>
+<p>62<br>00:03:49,739 –&gt; 00:03:53,939<br>That means we’re going to undo one or more of our decisions.</p>
+<p>63<br>00:03:53,939 –&gt; 00:03:57,180<br>We’re going to go back to our last decision point and see if there’s another alternative</p>
+<p>64<br>00:03:57,180 –&gt; 00:03:58,180<br>to try.</p>
+<p>65<br>00:03:58,180 –&gt; 00:03:59,859<br>So what was the last decision we made?</p>
+<p>66<br>00:03:59,859 –&gt; 00:04:02,459<br>Well, we decided to use t goes to int.</p>
+<p>67<br>00:04:02,460 –&gt; 00:04:07,500<br>So we can undo that and then we can try the next production for t.</p>
+<p>68<br>00:04:07,500 –&gt; 00:04:10,180<br>And that happens to be t goes to int times t.</p>
+<p>69<br>00:04:10,180 –&gt; 00:04:13,740<br>So we’ll expand t using that production.</p>
+<p>70<br>00:04:13,740 –&gt; 00:04:18,819<br>And now once again, we’ve generated a terminal in the leftmost position.</p>
+<p>71<br>00:04:18,819 –&gt; 00:04:21,220<br>And so now we’re able to compare that with the input.</p>
+<p>72<br>00:04:21,220 –&gt; 00:04:26,660<br>And once again, unfortunately, the int token does not match the open parent.</p>
+<p>73<br>00:04:26,660 –&gt; 00:04:27,939<br>So we have to backtrack again.</p>
+<p>74<br>00:04:27,939 –&gt; 00:04:30,900<br>So we undo that decision.</p>
+<p>75<br>00:04:30,899 –&gt; 00:04:34,659<br>This takes us back to a trying alternative for t.</p>
+<p>76<br>00:04:34,659 –&gt; 00:04:36,859<br>There’s one more possibility.</p>
+<p>77<br>00:04:36,859 –&gt; 00:04:39,500<br>And that’s a t goes to open parent e closed parent.</p>
+<p>78<br>00:04:39,500 –&gt; 00:04:43,659<br>So we expand t using that production.</p>
+<p>79<br>00:04:43,659 –&gt; 00:04:51,299<br>And now we can compare the token open parent with this open parent with the open parent</p>
+<p>80<br>00:04:51,299 –&gt; 00:04:53,699<br>and the input and they match.</p>
+<p>81<br>00:04:53,699 –&gt; 00:04:55,099<br>And so that’s good.</p>
+<p>82<br>00:04:55,099 –&gt; 00:04:58,060<br>That means that where we might be on the right track.</p>
+<p>83<br>00:04:58,060 –&gt; 00:05:04,180<br>And since they match, anything that we do in the future is going to have to match the</p>
+<p>84<br>00:05:04,180 –&gt; 00:05:05,339<br>different input.</p>
+<p>85<br>00:05:05,339 –&gt; 00:05:08,100<br>And so we’ll advance the input pointer.</p>
+<p>86<br>00:05:08,100 –&gt; 00:05:10,500<br>So now what are we going to work on next?</p>
+<p>87<br>00:05:10,500 –&gt; 00:05:14,100<br>Well, we have to expand this non-terminal e.</p>
+<p>88<br>00:05:14,100 –&gt; 00:05:15,620<br>And we’re going to do the same thing we did before.</p>
+<p>89<br>00:05:15,620 –&gt; 00:05:19,579<br>We’re just going to start with the first production.</p>
+<p>90<br>00:05:19,579 –&gt; 00:05:22,420<br>So we have e goes to t.</p>
+<p>91<br>00:05:22,420 –&gt; 00:05:24,180<br>And then we have to work on t.</p>
+<p>92<br>00:05:24,180 –&gt; 00:05:26,420<br>So we’re going to pick the first production for t.</p>
+<p>93<br>00:05:26,420 –&gt; 00:05:27,620<br>And we have t goes to int.</p>
+<p>94<br>00:05:27,620 –&gt; 00:05:32,340<br>And now we can compare it is int matching int in the input.</p>
+<p>95<br>00:05:32,340 –&gt; 00:05:33,340<br>And indeed it does.</p>
+<p>96<br>00:05:33,340 –&gt; 00:05:36,540<br>And so we advance the input pointer again.</p>
+<p>97<br>00:05:36,540 –&gt; 00:05:37,540<br>And now we’re here.</p>
+<p>98<br>00:05:37,540 –&gt; 00:05:38,540<br>And what’s left?</p>
+<p>99<br>00:05:38,540 –&gt; 00:05:40,300<br>Well, we’ve progressed to this point.</p>
+<p>100<br>00:05:40,300 –&gt; 00:05:42,620<br>We’re looking at that open parent.</p>
+<p>101<br>00:05:42,620 –&gt; 00:05:44,220<br>And that also matches.</p>
+<p>102<br>00:05:44,220 –&gt; 00:05:45,540<br>So that matches the input.</p>
+<p>103<br>00:05:45,540 –&gt; 00:05:49,259<br>And now we’ve matched everything in the parse tree.</p>
+<p>104<br>00:05:49,259 –&gt; 00:05:51,939<br>And our input pointer is at the end of the string.</p>
+<p>105<br>00:05:51,939 –&gt; 00:05:55,139<br>And so this is actually a successful parse</p>
+<p>106<br>00:05:55,139 –&gt; 00:06:00,019<br>of the input string.</p>
+<p>107<br>00:06:00,019 –&gt; 00:06:02,019<br>And so that means that we accept.</p>
+<p>108<br>00:06:02,019 –&gt; 00:06:04,620<br>And the parser terminates successfully.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P30Week306 03 Recursive Descent Parsing</div>
+      <div>http://example.com/2025/10/25/CS143 P30Week306-03-recursive-descent-parsing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P29Week306-02-abstract-syntax-trees/" title="CS143 P29Week306 02 Abstract Syntax Trees">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P29Week306 02 Abstract Syntax Trees</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P24Week305-03-B+Derivations/" title="CS143 P24Week305 03 B+Derivations">
+                        <span class="hidden-mobile">CS143 P24Week305 03 B+Derivations</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

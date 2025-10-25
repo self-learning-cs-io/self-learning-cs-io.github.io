@@ -1,0 +1,1002 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,359Now we’re ready to begin talking about actual program optimizations and we’ll begin with local 200:00:09,359 –&gt; 00:00:13,560optimizations. 300:00:13,560 –&gt; 00:00:">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P99Week814 03 Local Optimization">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P99Week814-03-local-optimization/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,359Now we’re ready to begin talking about actual program optimizations and we’ll begin with local 200:00:09,359 –&gt; 00:00:13,560optimizations. 300:00:13,560 –&gt; 00:00:">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.418Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:49.228Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P99Week814 03 Local Optimization - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P99Week814 03 Local Optimization"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          31 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P99Week814 03 Local Optimization</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,359<br>Now we’re ready to begin talking about actual program optimizations and we’ll begin with local</p>
+<p>2<br>00:00:09,359 –&gt; 00:00:13,560<br>optimizations.</p>
+<p>3<br>00:00:13,560 –&gt; 00:00:18,679<br>Local optimization is the simplest form of program optimization because it focuses on optimizing</p>
+<p>4<br>00:00:18,679 –&gt; 00:00:22,800<br>just a single basic block, so just one basic block.</p>
+<p>5<br>00:00:22,800 –&gt; 00:00:26,560<br>And in particular, there’s no need to worry about complicated control flow.</p>
+<p>6<br>00:00:26,559 –&gt; 00:00:32,039<br>We’re not going to be looking at the entire method or procedure body.</p>
+<p>7<br>00:00:32,039 –&gt; 00:00:36,359<br>Let’s dive right in and take a look at a couple of simple local optimizations.</p>
+<p>8<br>00:00:36,359 –&gt; 00:00:40,879<br>If x is an integer valued variable and from here on, we’ll assume that x has type in.</p>
+<p>9<br>00:00:40,879 –&gt; 00:00:41,879<br>So we’ll just write that down.</p>
+<p>10<br>00:00:41,879 –&gt; 00:00:46,879<br>We’re going to assume that x has type in in all of our examples on this slide.</p>
+<p>11<br>00:00:46,879 –&gt; 00:00:51,239<br>Then the statement x equals x plus zero, well, that doesn’t change the value of x.</p>
+<p>12<br>00:00:51,239 –&gt; 00:00:54,039<br>Zero is the additive identity for plus.</p>
+<p>13<br>00:00:54,039 –&gt; 00:00:56,359<br>We’re just going to assign x to value it currently has.</p>
+<p>14<br>00:00:56,359 –&gt; 00:01:00,759<br>And so this statement is actually useless and can just be deleted from the program.</p>
+<p>15<br>00:01:00,759 –&gt; 00:01:06,319<br>Similarly for x equals x times one, multiplying by one will not change the value of x.</p>
+<p>16<br>00:01:06,319 –&gt; 00:01:08,079<br>And so that statement can also be removed.</p>
+<p>17<br>00:01:08,079 –&gt; 00:01:15,280<br>In this case, these are great optimizations because we actually save an entire instruction.</p>
+<p>18<br>00:01:15,280 –&gt; 00:01:19,159<br>Now some statements can’t be deleted, but they can be simplified.</p>
+<p>19<br>00:01:19,159 –&gt; 00:01:24,039<br>The simple example of that is if we have x equals x times zero, so that can be replaced</p>
+<p>20<br>00:01:24,039 –&gt; 00:01:26,000<br>by the assignment x equals zero.</p>
+<p>21<br>00:01:26,000 –&gt; 00:01:28,000<br>And again, we still have a statement here.</p>
+<p>22<br>00:01:28,000 –&gt; 00:01:33,239<br>We still have to execute a statement, but this statement may execute more quickly because</p>
+<p>23<br>00:01:33,239 –&gt; 00:01:39,239<br>it doesn’t involve actually running the time’s operator.</p>
+<p>24<br>00:01:39,239 –&gt; 00:01:44,000<br>It doesn’t involve referencing the value of x, presumably x is registered.</p>
+<p>25<br>00:01:44,000 –&gt; 00:01:45,719<br>That doesn’t really cost anything.</p>
+<p>26<br>00:01:45,719 –&gt; 00:01:50,560<br>But it’s possible that this instruction over here will execute faster than this instruction</p>
+<p>27<br>00:01:50,560 –&gt; 00:01:51,560<br>over here.</p>
+<p>28<br>00:01:51,560 –&gt; 00:01:53,319<br>Now on many machines, that’s not the case.</p>
+<p>29<br>00:01:53,319 –&gt; 00:01:59,560<br>In fact, this assignment on the right will take the same amount of time as the multiplication</p>
+<p>30<br>00:01:59,560 –&gt; 00:02:00,560<br>on the left.</p>
+<p>31<br>00:02:00,560 –&gt; 00:02:06,280<br>But as we will see, having an assignment of a constant to a variable will actually enable</p>
+<p>32<br>00:02:06,280 –&gt; 00:02:07,560<br>other optimizations.</p>
+<p>33<br>00:02:07,560 –&gt; 00:02:12,719<br>So this is still a very worthwhile transformation to do.</p>
+<p>34<br>00:02:12,719 –&gt; 00:02:19,599<br>An example that’s almost certainly an optimization is replacing the exponentiation operator, raising</p>
+<p>35<br>00:02:19,599 –&gt; 00:02:23,800<br>a value to the power of two by an explicit multiply.</p>
+<p>36<br>00:02:23,800 –&gt; 00:02:25,560<br>So here we’re computing y squared.</p>
+<p>37<br>00:02:25,560 –&gt; 00:02:29,039<br>And over here we just replaced that by y times y.</p>
+<p>38<br>00:02:29,039 –&gt; 00:02:30,479<br>Why is this a good idea?</p>
+<p>39<br>00:02:30,479 –&gt; 00:02:37,960<br>Well, this exponentiation operator here is almost certainly not a built-in machine instruction.</p>
+<p>40<br>00:02:37,960 –&gt; 00:02:42,479<br>Probably that’s going to wind up in our generated code being a call to some built-in math</p>
+<p>41<br>00:02:42,479 –&gt; 00:02:43,599<br>library.</p>
+<p>42<br>00:02:43,599 –&gt; 00:02:45,919<br>And then we’ll involve a function call overhead.</p>
+<p>43<br>00:02:45,919 –&gt; 00:02:51,120<br>And then there’ll be some kind of general loop in there to do the right number of multiplies,</p>
+<p>44<br>00:02:51,120 –&gt; 00:02:53,039<br>depending on what the exponent is.</p>
+<p>45<br>00:02:53,039 –&gt; 00:02:56,719<br>So in the special case where we know that the exponent is too, it’s much, much more efficient</p>
+<p>46<br>00:02:56,719 –&gt; 00:03:03,000<br>to just replace that call to exponentiation by an explicit multiply.</p>
+<p>47<br>00:03:03,000 –&gt; 00:03:08,120<br>Another example of supposing one kind of operation for another in a special situation is if</p>
+<p>48<br>00:03:08,120 –&gt; 00:03:14,319<br>we have a multiplication by a power of two, we can replace that by a left bit shift.</p>
+<p>49<br>00:03:14,319 –&gt; 00:03:16,439<br>So here we’re multiplying by eight.</p>
+<p>50<br>00:03:16,439 –&gt; 00:03:23,360<br>That’s the same as shifting the binary representation of x over by three bits.</p>
+<p>51<br>00:03:23,360 –&gt; 00:03:27,599<br>And that will in fact compute the same thing.</p>
+<p>52<br>00:03:27,599 –&gt; 00:03:30,879<br>And it doesn’t even have to be a power of two.</p>
+<p>53<br>00:03:30,879 –&gt; 00:03:35,960<br>If we have a multiplication by some other number that’s not a power of two, that can be replaced</p>
+<p>54<br>00:03:35,960 –&gt; 00:03:40,280<br>by some combination of shifting and subtractions.</p>
+<p>55<br>00:03:40,280 –&gt; 00:03:46,280<br>As we can replace the multiply by some combination of shifts and arithmetic operations, simpler</p>
+<p>56<br>00:03:46,280 –&gt; 00:03:48,240<br>arithmetic operations.</p>
+<p>57<br>00:03:48,240 –&gt; 00:03:52,719<br>Now these last two here, I should point out, these are interesting transformations on modern</p>
+<p>58<br>00:03:52,719 –&gt; 00:03:53,719<br>machines.</p>
+<p>59<br>00:03:53,719 –&gt; 00:03:58,879<br>Generally, this will not result in any kind of speed up because on modern machines, the integer</p>
+<p>60<br>00:03:58,879 –&gt; 00:04:03,000<br>multiply operation is just as fast as any other single instruction.</p>
+<p>61<br>00:04:03,000 –&gt; 00:04:07,439<br>And historical machines, these were actually significant optimizations.</p>
+<p>62<br>00:04:07,439 –&gt; 00:04:13,639<br>So all of these instructions together are examples of algebraic simplifications.</p>
+<p>63<br>00:04:13,639 –&gt; 00:04:21,439<br>So that just means exploiting properties of the mathematical operators to replace more</p>
+<p>64<br>00:04:21,439 –&gt; 00:04:28,040<br>complex instructions or more complex operations by simpler ones.</p>
+<p>65<br>00:04:28,040 –&gt; 00:04:33,760<br>One of the most important and useful local optimizations is to compute the results of</p>
+<p>66<br>00:04:33,760 –&gt; 00:04:39,600<br>operations at compile time rather than at runtime if the arguments are known at compile time.</p>
+<p>67<br>00:04:39,600 –&gt; 00:04:44,000<br>So for example, let’s say we have a three address instruction, x equals y up z.</p>
+<p>68<br>00:04:44,000 –&gt; 00:04:46,560<br>And it happens that y and z are both constants.</p>
+<p>69<br>00:04:46,560 –&gt; 00:04:48,120<br>These are both immediate values.</p>
+<p>70<br>00:04:48,120 –&gt; 00:04:51,080<br>These are, you know, literals in the instruction.</p>
+<p>71<br>00:04:51,080 –&gt; 00:04:56,160<br>Then we can actually compute the result of the right hand side at compile time and replace</p>
+<p>72<br>00:04:56,320 –&gt; 00:04:58,880<br>this by assignment to a constant.</p>
+<p>73<br>00:04:58,880 –&gt; 00:05:03,880<br>So for example, if we have the instruction x equals 2 plus 2, that can be replaced by</p>
+<p>74<br>00:05:03,880 –&gt; 00:05:07,040<br>the assignment x equals 4.</p>
+<p>75<br>00:05:07,040 –&gt; 00:05:11,880<br>And another example, which is very common and important one, is if the predicate of a</p>
+<p>76<br>00:05:11,880 –&gt; 00:05:17,680<br>conditional consists only of immediate values, then we can pre-compute the result of that</p>
+<p>77<br>00:05:17,680 –&gt; 00:05:22,960<br>conditional and decide what the target of the conditional will be, what the next instruction</p>
+<p>78<br>00:05:22,960 –&gt; 00:05:24,560<br>will be at compile time.</p>
+<p>79<br>00:05:24,560 –&gt; 00:05:29,199<br>So in this case, we have a predicate, which is going to be false because 2 is not less</p>
+<p>80<br>00:05:29,199 –&gt; 00:05:30,199<br>than 0.</p>
+<p>81<br>00:05:30,199 –&gt; 00:05:32,160<br>And so we will not take the jump.</p>
+<p>82<br>00:05:32,160 –&gt; 00:05:35,639<br>And so this instruction can just be deleted from the program.</p>
+<p>83<br>00:05:35,639 –&gt; 00:05:40,920<br>If we had the other case, if 2 was greater than 0, it’s just, so this was some predicate</p>
+<p>84<br>00:05:40,920 –&gt; 00:05:47,920<br>that was guaranteed to evaluate true, then we would replace this conditional by the jump.</p>
+<p>85<br>00:05:47,920 –&gt; 00:05:50,720<br>Okay, this would become an unconditional jump.</p>
+<p>86<br>00:05:51,560 –&gt; 00:05:54,760<br>And this class of optimizations is called constant folding.</p>
+<p>87<br>00:05:54,760 –&gt; 00:06:02,880<br>And as I said, this is one of the most common and most important optimizations that compilers</p>
+<p>88<br>00:06:02,880 –&gt; 00:06:05,680<br>perform.</p>
+<p>89<br>00:06:05,680 –&gt; 00:06:10,080<br>Now there is one situation that you should be aware of in which constant folding can be</p>
+<p>90<br>00:06:10,080 –&gt; 00:06:11,080<br>very dangerous.</p>
+<p>91<br>00:06:11,080 –&gt; 00:06:14,480<br>And this situation is actually very instructive as well.</p>
+<p>92<br>00:06:14,480 –&gt; 00:06:20,000<br>And so while it isn’t that common, I want to mention it because it’s something that really</p>
+<p>93<br>00:06:20,000 –&gt; 00:06:26,160<br>illustrates some of the subtleties of program optimization and programming language semantics.</p>
+<p>94<br>00:06:26,160 –&gt; 00:06:30,000<br>So what is this dangerous situation?</p>
+<p>95<br>00:06:30,000 –&gt; 00:06:34,240<br>So let’s consider the scenario where we have two machines.</p>
+<p>96<br>00:06:34,240 –&gt; 00:06:38,639<br>We have a machine X and we have a machine Y.</p>
+<p>97<br>00:06:38,639 –&gt; 00:06:41,360<br>Okay.</p>
+<p>98<br>00:06:41,360 –&gt; 00:06:48,120<br>And now the compiler is being run on machine X.</p>
+<p>99<br>00:06:48,120 –&gt; 00:06:52,759<br>And the compiler is producing code generated code.</p>
+<p>100<br>00:06:52,759 –&gt; 00:06:57,000<br>This is the generated code produced to the output of the compiler over here.</p>
+<p>101<br>00:06:57,000 –&gt; 00:06:58,920<br>That’s going to be run on machine Y.</p>
+<p>102<br>00:06:58,920 –&gt; 00:07:01,519<br>So this is a cross compiler.</p>
+<p>103<br>00:07:01,519 –&gt; 00:07:03,040<br>Okay.</p>
+<p>104<br>00:07:03,040 –&gt; 00:07:08,600<br>So you are running the compiler on one machine, but you’re generating code for a different</p>
+<p>105<br>00:07:08,600 –&gt; 00:07:09,680<br>machine.</p>
+<p>106<br>00:07:09,680 –&gt; 00:07:11,199<br>And why would you want to do that?</p>
+<p>107<br>00:07:11,199 –&gt; 00:07:16,319<br>Well, the common situation in which you want to do this is that this machine Y over here</p>
+<p>108<br>00:07:16,319 –&gt; 00:07:19,079<br>is a very weak machine.</p>
+<p>109<br>00:07:19,079 –&gt; 00:07:23,920<br>So weak in the sense that it’s very slow, has very limited memory, maybe very limited</p>
+<p>110<br>00:07:23,920 –&gt; 00:07:30,319<br>power, that it’s beneficial to develop your program and even compile it on a much more</p>
+<p>111<br>00:07:30,319 –&gt; 00:07:31,680<br>powerful machine.</p>
+<p>112<br>00:07:31,680 –&gt; 00:07:36,519<br>So many embedded systems codes are developed in exactly this way.</p>
+<p>113<br>00:07:36,519 –&gt; 00:07:42,079<br>The code is developed on some powerful workstation, but you’re actually compiling it for some small</p>
+<p>114<br>00:07:42,079 –&gt; 00:07:45,920<br>embedded device that will actually execute the code.</p>
+<p>115<br>00:07:45,920 –&gt; 00:07:50,000<br>Now the problem comes if X and Y are different.</p>
+<p>116<br>00:07:50,000 –&gt; 00:07:55,240<br>So consider the situation where X and Y are different machines, different architectures.</p>
+<p>117<br>00:07:55,240 –&gt; 00:07:56,240<br>All right.</p>
+<p>118<br>00:07:56,240 –&gt; 00:07:58,840<br>And I’ve been implying that they are, but they don’t have to be.</p>
+<p>119<br>00:07:58,840 –&gt; 00:08:03,600<br>I mean, you could compile on one kind of architecture and run the same code on the same</p>
+<p>120<br>00:08:03,600 –&gt; 00:08:04,600<br>architecture.</p>
+<p>121<br>00:08:04,600 –&gt; 00:08:08,960<br>But the interesting situation is when X and Y are different architectures.</p>
+<p>122<br>00:08:08,960 –&gt; 00:08:12,319<br>And so let’s consider something like going in machine X.</p>
+<p>123<br>00:08:12,319 –&gt; 00:08:21,319<br>Let’s say we have the instruction A equals 1.5 plus 3.7.</p>
+<p>124<br>00:08:21,319 –&gt; 00:08:28,439<br>And you would like to constant fold that down to A equals 5.2.</p>
+<p>125<br>00:08:28,439 –&gt; 00:08:35,439<br>Now the problem is that if you simply execute this as a floating point operation on architecture</p>
+<p>126<br>00:08:35,439 –&gt; 00:08:42,279<br>X, the round off and the floating point semantics on architecture X may be slightly different.</p>
+<p>127<br>00:08:42,279 –&gt; 00:08:49,279<br>From the semantics on architecture Y, it could be that if you did an architecture Y directly</p>
+<p>128<br>00:08:49,279 –&gt; 00:08:53,279<br>that you get something like A equals 5.19.</p>
+<p>129<br>00:08:53,279 –&gt; 00:08:58,279<br>It might be a small difference in the floating point result depending on whether you execute</p>
+<p>130<br>00:08:58,279 –&gt; 00:09:01,360<br>the instruction here or here.</p>
+<p>131<br>00:09:01,360 –&gt; 00:09:06,559<br>And this becomes significant in the case of constant folding and cross compilation because</p>
+<p>132<br>00:09:06,559 –&gt; 00:09:11,679<br>some algorithms really depend on the floating point numbers being treated very, very consistently.</p>
+<p>133<br>00:09:11,679 –&gt; 00:09:15,479<br>So if you’re going to round off in what the operation in one way, you need to do it that way</p>
+<p>134<br>00:09:15,479 –&gt; 00:09:18,919<br>for every time you do that particular operation.</p>
+<p>135<br>00:09:18,919 –&gt; 00:09:24,919<br>And by shifting the computation from runtime, when it would have executed an architecture Y,</p>
+<p>136<br>00:09:24,919 –&gt; 00:09:29,199<br>back into the compiler, when it ends up executing an architecture X, you can change the results</p>
+<p>137<br>00:09:29,199 –&gt; 00:09:30,559<br>of the program.</p>
+<p>138<br>00:09:30,559 –&gt; 00:09:32,679<br>So how to cross compilers actually deal with this.</p>
+<p>139<br>00:09:32,679 –&gt; 00:09:36,719<br>So compilers that want to be careful about this kind of thing, what they will do is they</p>
+<p>140<br>00:09:36,720 –&gt; 00:09:41,920<br>will represent the floating point numbers as strings inside the compiler and they will</p>
+<p>141<br>00:09:41,920 –&gt; 00:09:47,560<br>do the obvious long form addition and multiplication division operations, all the floating point</p>
+<p>142<br>00:09:47,560 –&gt; 00:09:53,320<br>operations directly on the strings, keep the full precision inside the compiler and then</p>
+<p>143<br>00:09:53,320 –&gt; 00:09:58,960<br>in the generated code produce the literal, that is, the full precision floating point number</p>
+<p>144<br>00:09:58,960 –&gt; 00:10:04,519<br>and then let the architecture, the architecture Y decide how it wants to round that off.</p>
+<p>145<br>00:10:04,519 –&gt; 00:10:08,679<br>So that’s the really careful way to do constant folding on floating point numbers if you’re</p>
+<p>146<br>00:10:08,679 –&gt; 00:10:12,799<br>worried about cross compilation.</p>
+<p>147<br>00:10:12,799 –&gt; 00:10:17,360<br>Continuing on with local optimizations, another important one is to eliminate unreachable</p>
+<p>148<br>00:10:17,360 –&gt; 00:10:18,360<br>basic blocks.</p>
+<p>149<br>00:10:18,360 –&gt; 00:10:20,159<br>So what’s an unreachable basic block?</p>
+<p>150<br>00:10:20,159 –&gt; 00:10:23,840<br>That is one that is not the target of any jump or fall through.</p>
+<p>151<br>00:10:23,840 –&gt; 00:10:28,360<br>So if I have a piece of code that can never execute and it might never execute because there’s</p>
+<p>152<br>00:10:28,360 –&gt; 00:10:34,039<br>no jump that jumps to the beginning of that piece of code and it doesn’t follow after</p>
+<p>153<br>00:10:34,039 –&gt; 00:10:37,399<br>another instruction that can fall through to it, well, in that piece of code that basic</p>
+<p>154<br>00:10:37,399 –&gt; 00:10:41,240<br>block is just not going to be used.</p>
+<p>155<br>00:10:41,240 –&gt; 00:10:44,959<br>It’s unreachable and it can be deleted from the program.</p>
+<p>156<br>00:10:44,959 –&gt; 00:10:47,719<br>This has the advantage of making the code smaller.</p>
+<p>157<br>00:10:47,719 –&gt; 00:10:53,439<br>So obviously since the basic block is unreachable, it’s not contributing to the execution cost</p>
+<p>158<br>00:10:53,439 –&gt; 00:10:55,559<br>of the program in terms of the instruction count.</p>
+<p>159<br>00:10:55,559 –&gt; 00:10:57,319<br>So the code is never executed.</p>
+<p>160<br>00:10:57,319 –&gt; 00:11:02,799<br>So it’s not really slowing down the code because extra instructions are being executed.</p>
+<p>161<br>00:11:02,799 –&gt; 00:11:07,919<br>But making the program smaller can actually make it run faster because of cache effects.</p>
+<p>162<br>00:11:07,919 –&gt; 00:11:12,919<br>So the instructions have to fit into memory just like the data.</p>
+<p>163<br>00:11:12,919 –&gt; 00:11:16,479<br>And if you make the program smaller, it makes it easier to fit the program in memory.</p>
+<p>164<br>00:11:16,479 –&gt; 00:11:19,759<br>You may increase the spatial locality of the program.</p>
+<p>165<br>00:11:19,759 –&gt; 00:11:23,519<br>Instructions that are used together may now be closer to each other and that can make the</p>
+<p>166<br>00:11:23,519 –&gt; 00:11:28,599<br>program run more quickly.</p>
+<p>167<br>00:11:28,600 –&gt; 00:11:33,200<br>Before continuing on, I want to say a word or two about why unreachable basic blocks occur.</p>
+<p>168<br>00:11:33,200 –&gt; 00:11:38,240<br>So why would a programmer in their right mind ever write a program that had code in it that</p>
+<p>169<br>00:11:38,240 –&gt; 00:11:40,560<br>wasn’t going to be executed?</p>
+<p>170<br>00:11:40,560 –&gt; 00:11:43,879<br>And there’s several actually ways in which unreachable code can arise.</p>
+<p>171<br>00:11:43,879 –&gt; 00:11:45,240<br>And it’s actually quite common.</p>
+<p>172<br>00:11:45,240 –&gt; 00:11:49,440<br>So this is an important optimization, getting rid of the unreachable code is actually fairly</p>
+<p>173<br>00:11:49,440 –&gt; 00:11:50,639<br>important.</p>
+<p>174<br>00:11:50,639 –&gt; 00:11:56,639<br>Perhaps the most common situation is that the code is actually parameterized with code that</p>
+<p>175<br>00:11:56,639 –&gt; 00:12:00,039<br>is only compiled and used in certain situations.</p>
+<p>176<br>00:12:00,039 –&gt; 00:12:06,240<br>So for example, in C, it would be sort of typical to see some code that looks like this.</p>
+<p>177<br>00:12:06,240 –&gt; 00:12:12,879<br>If debug then execute something where debug is a pound defined constant.</p>
+<p>178<br>00:12:12,879 –&gt; 00:12:15,879<br>So in C, you can define names for literals.</p>
+<p>179<br>00:12:15,879 –&gt; 00:12:18,199<br>So you say something like this.</p>
+<p>180<br>00:12:18,199 –&gt; 00:12:23,399<br>You might define debug to be zero.</p>
+<p>181<br>00:12:23,399 –&gt; 00:12:27,279<br>And so you might see a program that had this piece of code in it.</p>
+<p>182<br>00:12:27,279 –&gt; 00:12:33,559<br>And what this literally means is that this piece of code is equivalent to if zero then blah,</p>
+<p>183<br>00:12:33,559 –&gt; 00:12:34,559<br>blah, blah.</p>
+<p>184<br>00:12:34,559 –&gt; 00:12:38,840<br>So when you’re compiling without debugging, you have debug defined to zero.</p>
+<p>185<br>00:12:38,840 –&gt; 00:12:43,319<br>When you’re compiling with debugging, you would change this line to define debug to be</p>
+<p>186<br>00:12:43,319 –&gt; 00:12:45,639<br>some non-zero constant.</p>
+<p>187<br>00:12:45,639 –&gt; 00:12:49,360<br>So in this case, when you’re compiling without debugging, what will happen?</p>
+<p>188<br>00:12:49,360 –&gt; 00:12:52,600<br>Well, we’ll see that this predicate is guaranteed to be zero.</p>
+<p>189<br>00:12:52,600 –&gt; 00:12:54,800<br>Constant folding will take care of that.</p>
+<p>190<br>00:12:54,800 –&gt; 00:12:58,120<br>And that will result in an unreachable basic block on the then branch.</p>
+<p>191<br>00:12:58,120 –&gt; 00:12:59,960<br>And then that code can be deleted.</p>
+<p>192<br>00:12:59,960 –&gt; 00:13:04,200<br>And so essentially the compiler is able to go through using the optimizer and strip out</p>
+<p>193<br>00:13:04,200 –&gt; 00:13:09,200<br>all of the debugging code that isn’t going to be used since you’re compiling without debugging.</p>
+<p>194<br>00:13:09,200 –&gt; 00:13:13,840<br>Another case where unreachable code comes up is with libraries.</p>
+<p>195<br>00:13:13,840 –&gt; 00:13:18,680<br>So very frequently programs are written to use generic libraries.</p>
+<p>196<br>00:13:18,679 –&gt; 00:13:22,039<br>But the program might only use a very small part of the interface.</p>
+<p>197<br>00:13:22,039 –&gt; 00:13:27,759<br>So the library might supply 100 methods to cover all the situations that various programmers</p>
+<p>198<br>00:13:27,759 –&gt; 00:13:28,759<br>are interested in.</p>
+<p>199<br>00:13:28,759 –&gt; 00:13:31,719<br>But for your program, you might only be using three of those methods.</p>
+<p>200<br>00:13:31,719 –&gt; 00:13:36,239<br>And the rest of those methods could potentially be removed from the final binary to make the</p>
+<p>201<br>00:13:36,239 –&gt; 00:13:37,919<br>code smaller.</p>
+<p>202<br>00:13:37,919 –&gt; 00:13:41,839<br>And finally, another way that unreachable basic blocks occur is as the result of other</p>
+<p>203<br>00:13:41,839 –&gt; 00:13:44,439<br>optimizations.</p>
+<p>204<br>00:13:44,440 –&gt; 00:13:50,720<br>So as we will see, optimizations frequently lead to more optimizations.</p>
+<p>205<br>00:13:50,720 –&gt; 00:13:56,480<br>And it could be that just through other rearrangements of the code that the compiler makes some</p>
+<p>206<br>00:13:56,480 –&gt; 00:14:03,880<br>basic block redundant and able to be deleted.</p>
+<p>207<br>00:14:03,880 –&gt; 00:14:09,560<br>Now some optimizations are simpler to express if each register occurs only once on the left</p>
+<p>208<br>00:14:09,560 –&gt; 00:14:11,200<br>hand side of an assignment.</p>
+<p>209<br>00:14:11,200 –&gt; 00:14:15,840<br>So that means if each register is assigned at most once, then some of these optimizations</p>
+<p>210<br>00:14:15,840 –&gt; 00:14:17,320<br>are easier to talk about.</p>
+<p>211<br>00:14:17,320 –&gt; 00:14:23,240<br>So we’re going to rewrite our intermediate code always so that it’s in single assignment</p>
+<p>212<br>00:14:23,240 –&gt; 00:14:24,240<br>form.</p>
+<p>213<br>00:14:24,240 –&gt; 00:14:26,000<br>So it’s called single assignment form.</p>
+<p>214<br>00:14:26,000 –&gt; 00:14:31,400<br>And all that means is that if we see a register being reused like over here, we have two</p>
+<p>215<br>00:14:31,400 –&gt; 00:14:34,920<br>assignments to the register x.</p>
+<p>216<br>00:14:34,920 –&gt; 00:14:39,879<br>We’re just going to introduce another register name for one of those assignments.</p>
+<p>217<br>00:14:39,879 –&gt; 00:14:44,960<br>So in this case, I’m just going to rename the first use of x here, definition of x here</p>
+<p>218<br>00:14:44,960 –&gt; 00:14:47,039<br>to be some new register b.</p>
+<p>219<br>00:14:47,039 –&gt; 00:14:51,439<br>I’ll replace the uses of that x by the name b.</p>
+<p>220<br>00:14:51,439 –&gt; 00:14:56,399<br>And now I have an equivalent piece of code that satisfies single assignment form.</p>
+<p>221<br>00:14:56,399 –&gt; 00:15:02,519<br>Every register is assigned at most once.</p>
+<p>222<br>00:15:02,519 –&gt; 00:15:06,399<br>Let’s take a look at an optimization that depends on single assignment form.</p>
+<p>223<br>00:15:06,399 –&gt; 00:15:09,240<br>So we’re going to assume that basic blocks are in single assignment form.</p>
+<p>224<br>00:15:09,240 –&gt; 00:15:15,120<br>If they are, then we’re going to know that a definition of a register is the first use</p>
+<p>225<br>00:15:15,120 –&gt; 00:15:17,360<br>of that register in the block.</p>
+<p>226<br>00:15:17,360 –&gt; 00:15:20,440<br>And so in particular, we’re also ruling out things like this.</p>
+<p>227<br>00:15:20,440 –&gt; 00:15:26,000<br>So there could be something like this where x is red and then later on x is used.</p>
+<p>228<br>00:15:26,000 –&gt; 00:15:28,720<br>Okay, sorry, x is red and then later on x is defined.</p>
+<p>229<br>00:15:28,720 –&gt; 00:15:31,240<br>So we’re not going to allow this.</p>
+<p>230<br>00:15:31,240 –&gt; 00:15:35,720<br>This register here would have to be renamed to something else say y and then the uses of</p>
+<p>231<br>00:15:35,720 –&gt; 00:15:38,080<br>x later on here renamed to y.</p>
+<p>232<br>00:15:38,360 –&gt; 00:15:43,360<br>All right, so we’re going to insist that whenever we have a definition of a register in a basic block</p>
+<p>233<br>00:15:43,360 –&gt; 00:15:47,200<br>that is the first use of that register in the block.</p>
+<p>234<br>00:15:47,200 –&gt; 00:15:52,080<br>All right, and if that’s true, if we put things in that form and that’s easy to do as we’ve seen,</p>
+<p>235<br>00:15:52,080 –&gt; 00:15:54,480<br>then when two assignments have the same right hand side,</p>
+<p>236<br>00:15:54,480 –&gt; 00:15:56,960<br>they’re guaranteed to compute the same value.</p>
+<p>237<br>00:15:56,960 –&gt; 00:15:59,440<br>So take a look here at this example.</p>
+<p>238<br>00:15:59,440 –&gt; 00:16:02,600<br>So let’s say we have an assignment x equals y plus z.</p>
+<p>239<br>00:16:02,600 –&gt; 00:16:05,920<br>And then later on we have another assignment w equals y plus z.</p>
+<p>240<br>00:16:05,919 –&gt; 00:16:11,319<br>And we said that there could only be one assignment to x in any basic block.</p>
+<p>241<br>00:16:11,319 –&gt; 00:16:16,319<br>So all of these instructions that are elided here, they can’t be assigning to x.</p>
+<p>242<br>00:16:16,319 –&gt; 00:16:19,360<br>And they also can’t be assigning to y and z.</p>
+<p>243<br>00:16:19,360 –&gt; 00:16:21,519<br>Y and z already have their definitions.</p>
+<p>244<br>00:16:21,519 –&gt; 00:16:23,439<br>So y and z can’t be changed.</p>
+<p>245<br>00:16:23,439 –&gt; 00:16:27,879<br>And that means that x and w here actually compute the same value.</p>
+<p>246<br>00:16:27,879 –&gt; 00:16:35,559<br>And so we can replace the second computation y plus z by just the name that we already have for it x.</p>
+<p>247<br>00:16:35,559 –&gt; 00:16:39,559<br>And this saves us having to recompute values.</p>
+<p>248<br>00:16:39,559 –&gt; 00:16:42,799<br>All right, so this is called common sub expression elimination.</p>
+<p>249<br>00:16:42,799 –&gt; 00:16:55,000<br>Common, this is rather a long name, sub expression elimination.</p>
+<p>250<br>00:16:55,000 –&gt; 00:16:59,359<br>And this is another one of the more important compiler optimization.</p>
+<p>251<br>00:16:59,359 –&gt; 00:17:01,839<br>This is actually something that comes up surprisingly often.</p>
+<p>252<br>00:17:01,840 –&gt; 00:17:09,480<br>And saves quite a bit of work if you perform this optimization.</p>
+<p>253<br>00:17:09,480 –&gt; 00:17:15,960<br>So another use of single assignment form is that if we see the assignment w equals x in a block.</p>
+<p>254<br>00:17:15,960 –&gt; 00:17:21,240<br>So here the register w is being just copied from the register x.</p>
+<p>255<br>00:17:21,240 –&gt; 00:17:26,039<br>Then all subsequent uses of w can be replaced by uses of x.</p>
+<p>256<br>00:17:26,039 –&gt; 00:17:30,880<br>So for example, here we have an assignment to be.</p>
+<p>257<br>00:17:30,880 –&gt; 00:17:35,520<br>And then we have a copy a is equal to b.</p>
+<p>258<br>00:17:35,520 –&gt; 00:17:39,000<br>And then down here we have a use of a in the last instruction.</p>
+<p>259<br>00:17:39,000 –&gt; 00:17:43,480<br>Well, that use of a in the last instruction can be replaced by a use of b.</p>
+<p>260<br>00:17:43,480 –&gt; 00:17:48,480<br>And this is called copy propagation.</p>
+<p>261<br>00:17:48,480 –&gt; 00:17:51,720<br>We are propagating copies through the code.</p>
+<p>262<br>00:17:51,720 –&gt; 00:17:55,720<br>And by itself, notice that this makes absolutely no improvement in the code.</p>
+<p>263<br>00:17:55,720 –&gt; 00:18:00,360<br>It’s really only useful in conjunction with some of the other optimizations.</p>
+<p>264<br>00:18:00,359 –&gt; 00:18:04,519<br>So for example, in this case, after we do the copy propagation,</p>
+<p>265<br>00:18:04,519 –&gt; 00:18:07,199<br>it might be the case that this instruction can be deleted.</p>
+<p>266<br>00:18:07,199 –&gt; 00:18:13,319<br>If a is not used any place else in the code, then this instruction can be removed.</p>
+<p>267<br>00:18:13,319 –&gt; 00:18:16,679<br>Now let’s do a little more complex example and use some of the optimizations</p>
+<p>268<br>00:18:16,679 –&gt; 00:18:20,279<br>that we’ve discussed so far on a slightly bigger piece of code.</p>
+<p>269<br>00:18:20,279 –&gt; 00:18:23,039<br>So we’re starting with this piece of code here on the left.</p>
+<p>270<br>00:18:23,039 –&gt; 00:18:25,799<br>And we’re going to wind up with this piece of code on the right.</p>
+<p>271<br>00:18:25,799 –&gt; 00:18:27,159<br>And how does that work?</p>
+<p>272<br>00:18:27,159 –&gt; 00:18:29,759<br>Well, first we have a copy propagation.</p>
+<p>273<br>00:18:29,759 –&gt; 00:18:32,079<br>So we have a is assigned to value five.</p>
+<p>274<br>00:18:32,079 –&gt; 00:18:37,839<br>And so we can propagate that forward and replace the use of a later on by five.</p>
+<p>275<br>00:18:37,839 –&gt; 00:18:42,519<br>And I should say that when the value that’s being propagated is a constant,</p>
+<p>276<br>00:18:42,519 –&gt; 00:18:46,839<br>rather than a register name, it’s called constant propagation instead of copy propagation.</p>
+<p>277<br>00:18:46,839 –&gt; 00:18:48,200<br>But it’s exactly the same thing.</p>
+<p>278<br>00:18:48,200 –&gt; 00:18:51,480<br>We have a single value assigned on the right-hand side,</p>
+<p>279<br>00:18:51,480 –&gt; 00:18:53,000<br>either a register name or a constant.</p>
+<p>280<br>00:18:53,000 –&gt; 00:18:58,519<br>And we’re replacing uses of that in later instructions by that register name or constant.</p>
+<p>281<br>00:18:58,519 –&gt; 00:18:59,279<br>OK?</p>
+<p>282<br>00:18:59,279 –&gt; 00:19:02,359<br>So once we have replaced a here by five, now we can do constant folding.</p>
+<p>283<br>00:19:02,359 –&gt; 00:19:05,519<br>Now we have two constant arguments for this instruction.</p>
+<p>284<br>00:19:05,519 –&gt; 00:19:09,519<br>So this two times five can be replaced by the constant ten.</p>
+<p>285<br>00:19:09,519 –&gt; 00:19:13,960<br>Now notice we have another assignment of a constant to a register.</p>
+<p>286<br>00:19:13,960 –&gt; 00:19:15,759<br>And so we can propagate that constant forward.</p>
+<p>287<br>00:19:15,759 –&gt; 00:19:20,799<br>We can replace the subsequent uses of x by the number ten.</p>
+<p>288<br>00:19:20,799 –&gt; 00:19:23,039<br>And now we have more opportunities for constant folding.</p>
+<p>289<br>00:19:23,039 –&gt; 00:19:27,319<br>Ten plus six can be replaced by the value sixteen.</p>
+<p>290<br>00:19:27,319 –&gt; 00:19:33,079<br>All right? Now we have another value here, which is a constant assignment.</p>
+<p>291<br>00:19:33,079 –&gt; 00:19:37,399<br>Sorry, another instruction here, which is just an assignment of a constant to a register.</p>
+<p>292<br>00:19:37,399 –&gt; 00:19:39,799<br>So we can propagate that constant forward.</p>
+<p>293<br>00:19:39,799 –&gt; 00:19:45,079<br>All right? And we wind up down here with ten times sixteen.</p>
+<p>294<br>00:19:45,079 –&gt; 00:19:47,079<br>And I see over here in my final example here,</p>
+<p>295<br>00:19:47,079 –&gt; 00:19:50,399<br>I didn’t bother to propagate the ten to x.</p>
+<p>296<br>00:19:50,399 –&gt; 00:19:52,200<br>But we could do that.</p>
+<p>297<br>00:19:52,200 –&gt; 00:19:55,639<br>And this, so we can either do this optimization.</p>
+<p>298<br>00:19:55,640 –&gt; 00:19:58,920<br>So x times sixteen, if we didn’t do the propagation,</p>
+<p>299<br>00:19:58,920 –&gt; 00:20:01,720<br>would be equivalent to x left shifted four.</p>
+<p>300<br>00:20:01,720 –&gt; 00:20:05,680<br>Or we can just replace this by ten times sixteen.</p>
+<p>301<br>00:20:05,680 –&gt; 00:20:06,600<br>That would be even better.</p>
+<p>302<br>00:20:06,600 –&gt; 00:20:09,720<br>And we wind up with T being assigned the value 160.</p>
+<p>303<br>00:20:12,880 –&gt; 00:20:15,320<br>Returning to an idea I mentioned a couple of slides ago.</p>
+<p>304<br>00:20:15,320 –&gt; 00:20:17,520<br>Let’s say there’s an assignment in a basic block.</p>
+<p>305<br>00:20:17,520 –&gt; 00:20:21,560<br>Some register w is assigned some value that’s computed on the right-hand side.</p>
+<p>306<br>00:20:21,559 –&gt; 00:20:25,799<br>So let’s say that w, the register name, is not used anywhere else in the program.</p>
+<p>307<br>00:20:25,799 –&gt; 00:20:30,119<br>It doesn’t appear anywhere, not only in this basic block,</p>
+<p>308<br>00:20:30,119 –&gt; 00:20:35,559<br>but in any other part of the procedure in which this statement appears.</p>
+<p>309<br>00:20:35,559 –&gt; 00:20:40,839<br>Well, then the statement is dead and can be just deleted from the program.</p>
+<p>310<br>00:20:40,839 –&gt; 00:20:44,759<br>And dead here means it does not contribute to the program’s result.</p>
+<p>311<br>00:20:44,759 –&gt; 00:20:48,440<br>Since the value that we write into w is never referenced anywhere.</p>
+<p>312<br>00:20:48,440 –&gt; 00:20:50,200<br>W is never used.</p>
+<p>313<br>00:20:50,200 –&gt; 00:20:54,320<br>Doing the computation of w in the first place was a waste of time.</p>
+<p>314<br>00:20:54,320 –&gt; 00:20:57,000<br>So we can just delete that computation.</p>
+<p>315<br>00:20:57,000 –&gt; 00:20:59,000<br>Here’s a simple example.</p>
+<p>316<br>00:20:59,000 –&gt; 00:21:03,200<br>Let’s assume that the register a is not used anyplace else in the program.</p>
+<p>317<br>00:21:03,200 –&gt; 00:21:06,840<br>And the first thing we have to do, so here’s our initial piece of code.</p>
+<p>318<br>00:21:06,840 –&gt; 00:21:09,519<br>The first thing we do is we put it in single assignment form.</p>
+<p>319<br>00:21:09,519 –&gt; 00:21:17,160<br>And so I’ve renamed here this register x to be a register b.</p>
+<p>320<br>00:21:17,160 –&gt; 00:21:19,320<br>And once we do that, let me do that.</p>
+<p>321<br>00:21:19,320 –&gt; 00:21:23,000<br>So we just say b equals z plus y and a equals b.</p>
+<p>322<br>00:21:23,000 –&gt; 00:21:26,200<br>And then we propagate this copy forward.</p>
+<p>323<br>00:21:26,200 –&gt; 00:21:30,519<br>So we’ve now replaced this use of a by b.</p>
+<p>324<br>00:21:30,519 –&gt; 00:21:33,160<br>So this takes us to this state where we have this piece of code.</p>
+<p>325<br>00:21:33,160 –&gt; 00:21:36,120<br>Now we can see that we have an assignment to a.</p>
+<p>326<br>00:21:36,120 –&gt; 00:21:38,920<br>A is not used in the subsequent instruction.</p>
+<p>327<br>00:21:38,920 –&gt; 00:21:42,320<br>We already said that a is not used anyplace outside of the basic block.</p>
+<p>328<br>00:21:42,320 –&gt; 00:21:45,640<br>And so the assignment a equals b can be deleted.</p>
+<p>329<br>00:21:45,640 –&gt; 00:21:50,320<br>And we wind up with this shorter basic block.</p>
+<p>330<br>00:21:50,320 –&gt; 00:21:53,840<br>Now each local optimization actually does very little by itself.</p>
+<p>331<br>00:21:53,840 –&gt; 00:21:58,240<br>And some of these optimizations, some of these transformations that I presented,</p>
+<p>332<br>00:21:58,240 –&gt; 00:22:00,880<br>actually don’t make the program run faster at all.</p>
+<p>333<br>00:22:00,880 –&gt; 00:22:02,600<br>They don’t make it run slower either.</p>
+<p>334<br>00:22:02,600 –&gt; 00:22:06,520<br>But by themselves, they don’t actually make any improvement to the program.</p>
+<p>335<br>00:22:06,520 –&gt; 00:22:09,480<br>But typically the optimizations will interact.</p>
+<p>336<br>00:22:09,480 –&gt; 00:22:12,680<br>So performing one optimization will enable another.</p>
+<p>337<br>00:22:12,680 –&gt; 00:22:17,240<br>And we saw this in the little example that I did a few slides ago.</p>
+<p>338<br>00:22:17,240 –&gt; 00:22:21,960<br>So the way to think about an optimizing compiler is that it has a big bag of tricks.</p>
+<p>339<br>00:22:21,960 –&gt; 00:22:26,680<br>It has a lot of individual program transformations that it knows.</p>
+<p>340<br>00:22:26,680 –&gt; 00:22:30,960<br>And what it is going to do when faced with a program to optimize is going to rummage around</p>
+<p>341<br>00:22:30,960 –&gt; 00:22:36,000<br>in its bag looking for an optimization that applies to some part of the code.</p>
+<p>342<br>00:22:36,000 –&gt; 00:22:38,200<br>If it finds one, it will do the optimization.</p>
+<p>343<br>00:22:38,200 –&gt; 00:22:39,680<br>It will do the transformation.</p>
+<p>344<br>00:22:39,680 –&gt; 00:22:40,680<br>And then it will repeat.</p>
+<p>345<br>00:22:40,680 –&gt; 00:22:44,279<br>It will go back and look at the program again and see if there’s another optimization that</p>
+<p>346<br>00:22:44,279 –&gt; 00:22:45,279<br>replies.</p>
+<p>347<br>00:22:45,279 –&gt; 00:22:50,240<br>And it will just keep doing this until it reaches a point where none of the authorizations</p>
+<p>348<br>00:22:50,240 –&gt; 00:22:55,440<br>it knows about can be applied to the program.</p>
+<p>349<br>00:22:55,440 –&gt; 00:22:59,720<br>Next we’ll take a look at a bigger example and try applying some of the optimizations that</p>
+<p>350<br>00:22:59,720 –&gt; 00:23:02,720<br>we’ve discussed to it and see how far we get.</p>
+<p>351<br>00:23:02,720 –&gt; 00:23:07,560<br>And of course, this example has been constructed to illustrate many of the optimizations that</p>
+<p>352<br>00:23:07,560 –&gt; 00:23:09,360<br>we discussed.</p>
+<p>353<br>00:23:09,359 –&gt; 00:23:15,799<br>So first thing we can do, there’s a couple of opportunities for algebraic simplifications.</p>
+<p>354<br>00:23:15,799 –&gt; 00:23:21,119<br>So we can replace the squaring up here by a multiply.</p>
+<p>355<br>00:23:21,119 –&gt; 00:23:28,919<br>And down here we had a multiply by two, which we can replace by a left shift of one.</p>
+<p>356<br>00:23:28,919 –&gt; 00:23:32,159<br>Next we can observe that we have some copies in constants.</p>
+<p>357<br>00:23:32,159 –&gt; 00:23:35,799<br>So we have a constant assignment to be and a copy assignment to see.</p>
+<p>358<br>00:23:35,799 –&gt; 00:23:41,480<br>And those can be propagated forward to the uses of B and C.</p>
+<p>359<br>00:23:41,480 –&gt; 00:23:43,359<br>Once we’ve done that, we can do constant folding.</p>
+<p>360<br>00:23:43,359 –&gt; 00:23:48,279<br>So here in the assignment to E, the arguments to the shift are all constants.</p>
+<p>361<br>00:23:48,279 –&gt; 00:23:54,240<br>And so that can be replaced by an assignment that E gets the value 6.</p>
+<p>362<br>00:23:54,240 –&gt; 00:23:57,559<br>Next we could observe that we have a common sub expression that we can eliminate that both</p>
+<p>363<br>00:23:57,559 –&gt; 00:24:00,639<br>A and D have the value x times x.</p>
+<p>364<br>00:24:00,640 –&gt; 00:24:08,680<br>So the assignment to D can be replaced by a copy that D now gets the value of A.</p>
+<p>365<br>00:24:08,680 –&gt; 00:24:12,240<br>Now we have two opportunities again for copy and constant propagation, the assignment to</p>
+<p>366<br>00:24:12,240 –&gt; 00:24:17,800<br>D and the assignment to E can be propagated forward.</p>
+<p>367<br>00:24:17,800 –&gt; 00:24:20,360<br>And finally we can do a bunch of dead code elimination.</p>
+<p>368<br>00:24:20,360 –&gt; 00:24:27,800<br>So assuming that none of these values, the BCD or E, is used anyplace else in the program,</p>
+<p>369<br>00:24:27,800 –&gt; 00:24:29,680<br>all four of these statements can be deleted.</p>
+<p>370<br>00:24:29,680 –&gt; 00:24:32,600<br>This is where we actually get some real performance improvement.</p>
+<p>371<br>00:24:32,600 –&gt; 00:24:37,279<br>So here we actually save entire instructions and that’s the best kind of savings that</p>
+<p>372<br>00:24:37,279 –&gt; 00:24:40,480<br>we can have.</p>
+<p>373<br>00:24:40,480 –&gt; 00:24:42,799<br>And so we wind up with this is our final form.</p>
+<p>374<br>00:24:42,799 –&gt; 00:24:45,799<br>So notice that A is assigned to value x times x.</p>
+<p>375<br>00:24:45,799 –&gt; 00:24:50,320<br>F is then assigned to value A plus A and then G is assigned to value 6 times F.</p>
+<p>376<br>00:24:50,320 –&gt; 00:24:54,080<br>Now this is not quite as fast as it could be.</p>
+<p>377<br>00:24:54,080 –&gt; 00:24:58,200<br>There’s actually one more algebraic optimization that could be done.</p>
+<p>378<br>00:24:58,200 –&gt; 00:25:05,559<br>We could notice here that F is actually equal to 2 times A and then we could do some rearrangement</p>
+<p>379<br>00:25:05,559 –&gt; 00:25:10,880<br>here to discover that G is equal to 12 times F.</p>
+<p>380<br>00:25:10,880 –&gt; 00:25:15,039<br>Sorry, sorry, 12 times A.</p>
+<p>381<br>00:25:15,039 –&gt; 00:25:20,400<br>And then this statement assignment to F might become dead code and we could delete it from</p>
+<p>382<br>00:25:20,400 –&gt; 00:25:22,200<br>the program.</p>
+<p>383<br>00:25:22,200 –&gt; 00:25:26,759<br>I think some compilers would actually find this but I believe that even current state</p>
+<p>384<br>00:25:26,759 –&gt; 00:25:33,359<br>there are compilers many of them would not discover this last rearrangement to the program.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P99Week814 03 Local Optimization</div>
+      <div>http://example.com/2025/10/25/CS143 P99Week814-03-local-optimization/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2026/10/12/hello-world/" title="自学大纲">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">自学大纲</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P9Week203-02-lexical-analysis-examples-final/" title="CS143 P9Week203 02 Lexical Analysis Examples Final">
+                        <span class="hidden-mobile">CS143 P9Week203 02 Lexical Analysis Examples Final</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

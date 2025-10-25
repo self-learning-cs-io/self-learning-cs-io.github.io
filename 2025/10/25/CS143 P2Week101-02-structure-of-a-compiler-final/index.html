@@ -1,0 +1,683 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,919Welcome back. In this second half of the lecture, we’ll continue with our overview of the 200:00:06,919 –&gt; 00:00:16,000structure of a compiler. Recall that a compile">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS143 P2Week101 02 Structure Of A Compiler Final">
+<meta property="og:url" content="http://example.com/2025/10/25/CS143%20P2Week101-02-structure-of-a-compiler-final/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,919Welcome back. In this second half of the lecture, we’ll continue with our overview of the 200:00:06,919 –&gt; 00:00:16,000structure of a compiler. Recall that a compile">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T07:38:14.395Z">
+<meta property="article:modified_time" content="2025-10-25T07:40:51.935Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS143 P2Week101 02 Structure Of A Compiler Final - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS143 P2Week101 02 Structure Of A Compiler Final"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 15:38" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          860 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          8 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS143 P2Week101 02 Structure Of A Compiler Final</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,919<br>Welcome back. In this second half of the lecture, we’ll continue with our overview of the</p>
+<p>2<br>00:00:06,919 –&gt; 00:00:16,000<br>structure of a compiler. Recall that a compiler has five major phases,</p>
+<p>3<br>00:00:16,000 –&gt; 00:00:22,000<br>lexical analysis, parsing, semantic analysis, optimization, and code generation.</p>
+<p>4<br>00:00:22,000 –&gt; 00:00:27,199<br>And now we’re going to briefly talk about each one, and we’re going to explain how a compiler</p>
+<p>5<br>00:00:27,199 –&gt; 00:00:33,200<br>understands these with an analogy to how humans understand English.</p>
+<p>6<br>00:00:33,200 –&gt; 00:00:41,200<br>The first step in understanding a program, both for a compiler and for a human, is to understand the words.</p>
+<p>7<br>00:00:41,200 –&gt; 00:00:49,200<br>Now, humans can look at this example sentence and immediately recognize that there are four words. This is</p>
+<p>8<br>00:00:49,200 –&gt; 00:01:17,200<br>so automatic that you don’t even think about it, but there is real computation going on here. You have to recognize the separators, namely the blanks, and the punctuation, things like the periods, and also clues like capital letters. And these help you to divide up this group of letters into a bunch of words that you can understand. And just emphasize that this is not completely trivial.</p>
+<p>9<br>00:01:17,200 –&gt; 00:01:34,200<br>Let’s take a look at this sentence. And you can read this, but it takes a little bit of time, because I’ve put the separators in odd places. So you can see the word is the word this, the word, and the word, sentence.</p>
+<p>10<br>00:01:34,200 –&gt; 00:01:45,200<br>But again, this isn’t something that comes to you immediately. You actually have to do some work to see where the divisions lie, because they’re not given to you in the way that you’re used to.</p>
+<p>11<br>00:01:45,200 –&gt; 00:01:55,200<br>The goal of lexical analysis, then, is to divide the program text into its words, or what we call in compiler speak, the tokens.</p>
+<p>12<br>00:01:55,200 –&gt; 00:02:04,200<br>So here’s an example piece of program text now, instead of a piece of English text. And let’s walk through this and identify the tokens.</p>
+<p>13<br>00:02:04,200 –&gt; 00:02:18,199<br>So there are some obvious ones, there are keywords like if and then and else that we want to identify. And then there are variable names, things like x, and y, and z.</p>
+<p>14<br>00:02:18,199 –&gt; 00:02:31,199<br>There’s also constants, things like number one and the number two. And then there’s some operators, double equals is one, and the assignment operator is another.</p>
+<p>15<br>00:02:31,199 –&gt; 00:02:44,199<br>And here’s already an interesting question. How do we know that double equals is not two individual equal signs? How do we know that we want this to be a double equals and we want and not two single equals?</p>
+<p>16<br>00:02:44,199 –&gt; 00:02:54,199<br>Well, we don’t know right now, but we’ll talk about that in the lecture on how we implement lexical analysis. But we’re not done with all the tokens in this example, either. There’s a few more.</p>
+<p>17<br>00:02:54,199 –&gt; 00:03:15,199<br>The semicolons, the punctuation are also tokens. And then the separators are also tokens. So here’s a blank. That’s a token. Here’s another blank. That’s another token. And then there are lots of blanks here that serve to separate things like the keywords and the variable names and other symbols from each other. And those are the tokens of this example.</p>
+<p>18<br>00:03:16,199 –&gt; 00:03:30,199<br>So for humans, once the words are understood, the next step is to understand the structure of the sentence. And this is called parsing. And as we all learned in elementary school, this means diagramming sentences and these diagrams are trees. And it’s a very simple procedure.</p>
+<p>19<br>00:03:31,199 –&gt; 00:03:45,199<br>Let’s look at this example. This line is a longer sentence. The first step in parsing is to identify the role of each word in the sentence. So we have things like nouns and verbs and adjectives.</p>
+<p>20<br>00:03:46,199 –&gt; 00:03:59,199<br>But then the actual work of parsing is to group these words together into higher level constructs. So for example, this particular sentence consists of a subject, a verb, and an object.</p>
+<p>21<br>00:04:00,199 –&gt; 00:04:16,199<br>And that actually forms an entire sentence. So here we have the root of the tree called a sentence. And that’s broken down in the constituent parts, the high level structure, as we said, is subject verb object. And then the subject is more complicated as is the object. And this is an example of parsing an English sentence.</p>
+<p>22<br>00:04:17,199 –&gt; 00:04:30,199<br>The analogy between parsing English text and parsing program text is very strong. In fact, they’re exactly the same thing. So here’s our little example piece of code again. And let’s work through parsing it.</p>
+<p>23<br>00:04:30,199 –&gt; 00:04:39,199<br>So clearly this is an if and then, and so the root of our diagram of our parse tree is going to be an if and else.</p>
+<p>24<br>00:04:40,199 –&gt; 00:04:53,199<br>This if and else consists of three parts, there’s a predicate, then statement and an else statement. And now let’s look at the predicate, which consists of three pieces. There’s a variable, a comparison operator, and another variable.</p>
+<p>25<br>00:04:53,199 –&gt; 00:05:01,199<br>And together, those form a relation. So the comparison, a comparison between two things is one of the things you can have as a valid predicate.</p>
+<p>26<br>00:05:02,199 –&gt; 00:05:12,199<br>Similarly, the then statement consists of an assignment where z gets one and the else statement also has the form of an assignment, z gets two.</p>
+<p>27<br>00:05:12,199 –&gt; 00:05:21,199<br>And altogether, this is a parse tree of the if and else showing its structure, breaking it up into its constituent pieces.</p>
+<p>28<br>00:05:22,199 –&gt; 00:05:32,199<br>Now, once we’ve understood the sentence structure, the next step is to try to understand the meaning of what has been written. And this is hard.</p>
+<p>29<br>00:05:32,199 –&gt; 00:05:40,199<br>So actually, we don’t know how this works for humans still. We don’t understand what happens after lexical analysis and parsing.</p>
+<p>30<br>00:05:40,199 –&gt; 00:05:48,199<br>We do know that people do lexical analysis and parsing in much the same way that compilers lexically analyze and parse programs.</p>
+<p>31<br>00:05:48,199 –&gt; 00:06:04,199<br>But frankly, understanding meaning is something that is simply too hard for compilers. So the first important thing to understand about semantic analysis is that compilers can only do very limited kinds of semantic analysis.</p>
+<p>32<br>00:06:05,199 –&gt; 00:06:22,199<br>And in particular, the kinds of things that compilers generally do are try to catch inconsistencies. So if the program is somehow self inconsistent, compilers can often notice that and report errors, but they don’t really know what the program is supposed to do.</p>
+<p>33<br>00:06:22,199 –&gt; 00:06:31,199<br>So for example, of the kind of thing that we do in semantic analysis, again, using an analogy in English, let’s consider the following sentence.</p>
+<p>34<br>00:06:31,199 –&gt; 00:06:48,199<br>Jack said Jerry left his assignment at home. And the question is, what who does his refer to here? It could be that his refers to Jerry, in which case we would read Jack said Jerry left Jerry’s assignment at home, or it could refer to Jack.</p>
+<p>35<br>00:06:48,199 –&gt; 00:07:01,199<br>And in the case we could read the sentence as Jack said Jerry left Jack’s assignment at home. And without more information, we actually don’t know which one his is referring to, whether it’s Jack or it’s Jerry.</p>
+<p>36<br>00:07:01,199 –&gt; 00:07:13,199<br>And even worse, let’s take a look at this sentence down here, Jack said Jack left his assignment at home. And the question is, how many people are actually involved in this sentence?</p>
+<p>37<br>00:07:13,199 –&gt; 00:07:27,199<br>There could be as many as three, there could be two separate jacks and his could even refer to somebody completely different. We don’t know without seeing the rest of the story that surrounds this sentence, all the possibilities for his.</p>
+<p>38<br>00:07:27,199 –&gt; 00:07:41,199<br>But it could also be as few as only a single person. It could be that Jack and Jack and his are all the same person in this sentence. And so this kind of ambiguity is a real problem in semantic analysis.</p>
+<p>39<br>00:07:41,199 –&gt; 00:07:53,199<br>And the analogy in programming languages is variable bindings. So we would have variables, in this case, a variable called Jack, or maybe more than one variable called Jack.</p>
+<p>40<br>00:07:53,199 –&gt; 00:08:03,199<br>And a programming language is going to have very strict rules to prevent the kind of ambiguity we had in the English sentences on the previous slide.</p>
+<p>41<br>00:08:03,199 –&gt; 00:08:18,199<br>So, you know, in this example, the question is, what value is printed by this output statement? And the answer is, it’s going to print four because this use of the variable Jack binds to this definition here.</p>
+<p>42<br>00:08:18,199 –&gt; 00:08:31,199<br>And the outer definition is hidden. So the outer definition is not active in this scope because it’s hidden by the inner definition. And that’s just a standard rule of a lot of lexically scoped programming languages.</p>
+<p>43<br>00:08:31,199 –&gt; 00:08:44,200<br>Now, from pilots perform many semantic checks besides analyzing the variable bindings. And so here’s another example in English. So Jack left her homework at home.</p>
+<p>44<br>00:08:44,200 –&gt; 00:08:55,200<br>And under the usual naming conventions, assuming that Jack is male, we know there’s a tight mismatch between Jack and her. So we know that whoever her is, it is not Jack.</p>
+<p>45<br>00:08:55,200 –&gt; 00:09:04,200<br>And therefore, we know that this sentence is talking about two different people. And so this is analogous to type checking.</p>
+<p>46<br>00:09:04,200 –&gt; 00:09:20,200<br>The fourth compiler phase optimization doesn’t have a very strong counterpart in everyday English usage, but it’s a little bit like editing. And in fact, it’s a lot like what professional editors do when they have to reduce the length of an article to get it down to some word budget.</p>
+<p>47<br>00:09:20,200 –&gt; 00:09:34,200<br>So for example, I have this phrase right here, but a little bit like editing. And if I didn’t like it, if I thought it was too long, I could replace the middle four words with two words akin to.</p>
+<p>48<br>00:09:34,200 –&gt; 00:09:41,200<br>So now it says, but a kin to editing. And that means exactly the same thing as the original phrase, but uses fewer words.</p>
+<p>49<br>00:09:41,200 –&gt; 00:09:59,200<br>And the goal in program optimization is to modify the program so that it uses less of some resource. Maybe we want to use less time. We want the program to run faster. Maybe we wanted to use less space so that we can fit more data in memory.</p>
+<p>50<br>00:09:59,200 –&gt; 00:10:12,200<br>For a handheld device, we might be interested in reducing the amount of power that it uses. If we have external communication, we might be interested in reducing the number of network messages or the number of database accesses.</p>
+<p>51<br>00:10:12,200 –&gt; 00:10:24,200<br>And there’s any number of resources that we might want to improve the program to use up.</p>
+<p>52<br>00:10:24,200 –&gt; 00:10:39,200<br>So for example, of the kinds of optimizations a program might do, we can have a rule in our compiler that says x equals y times zero is the same as x equals zero. And this seems like a real improvement because instead of doing the multiply, we can just do an assignment.</p>
+<p>53<br>00:10:39,200 –&gt; 00:11:02,200<br>So we save some computation by doing that. Now, unfortunately, this is not a correct rule. And this is one of the important things to know about compiler optimization is it’s not always obvious when it’s legal to do certain optimizations or not. Now it turns out that this particular rule is valid for integers.</p>
+<p>54<br>00:11:02,200 –&gt; 00:11:16,200<br>So if x and y are integers, then multiplying by zero is always the same thing as just assigning zero. But it’s invalid for floating point.</p>
+<p>55<br>00:11:16,200 –&gt; 00:11:36,200<br>And why is that? Well, because you have to know some details of the IEEE floating point standard, but there is a special number in the IEEE standard called not a number. And it turns out that not a number called a n times zero is equal to not a number.</p>
+<p>56<br>00:11:36,200 –&gt; 00:11:55,200<br>And in particular, not a number times zero is not equal to zero. So if x and y are floating point numbers, you can’t do this optimization. And in fact, if you did this optimization, it would break certain very important algorithms that rely on the proper propagation of not a numbers.</p>
+<p>57<br>00:11:56,200 –&gt; 00:12:04,200<br>Finally, the last compiler phase is code generation, often referred to as code gen.</p>
+<p>58<br>00:12:04,200 –&gt; 00:12:15,200<br>And code gen can produce assembly code. That’s the most common thing that a compiler would produce. But in general, it’s a translation into some other language. And this is entirely analogous to human translation.</p>
+<p>59<br>00:12:15,200 –&gt; 00:12:27,200<br>So just as a human translator might translate English into French, a compiler will translate a high level program into assembly code.</p>
+<p>60<br>00:12:28,200 –&gt; 00:12:45,200<br>To wrap up, almost every compiler has the five phases that we outlined. However, the proportions have changed a lot over the years. And if we were to go back to Fortran one and look inside of that compiler, we would probably see a size and complexity that looks something like this.</p>
+<p>61<br>00:12:45,200 –&gt; 00:13:03,200<br>A fairly complex electrical analysis phase, an equally complicated parsing phase, a very small semantic analysis phase, a fairly involved optimization phase, and another fairly involved code generation phase.</p>
+<p>62<br>00:13:04,200 –&gt; 00:13:14,200<br>And so we’d see a compiler where the complexity was spread fairly evenly throughout except for semantic analysis, which was very weak in the early days.</p>
+<p>63<br>00:13:14,200 –&gt; 00:13:25,200<br>And today, if we look at a modern compiler, you’ll see almost nothing in Lexing very little in parsing because we have extremely good tools to help us write those two phases.</p>
+<p>64<br>00:13:25,200 –&gt; 00:13:46,200<br>But we would see a fairly involved semantic analysis phase. We would see a very large optimization phase. And this is in fact the dominant component of all modern compilers. And then a very small code generation phase, because again, we understand that phase very, very well.</p>
+<p>65<br>00:13:46,200 –&gt; 00:13:52,200<br>That’s it for this lecture. Future lectures will look at each of these phases in detail.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS143 P2Week101 02 Structure Of A Compiler Final</div>
+      <div>http://example.com/2025/10/25/CS143 P2Week101-02-structure-of-a-compiler-final/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P34Week306-05-B+Left+Recursion/" title="CS143 P34Week306 05 B+Left+Recursion">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS143 P34Week306 05 B+Left+Recursion</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS143%20P29Week306-02-abstract-syntax-trees/" title="CS143 P29Week306 02 Abstract Syntax Trees">
+                        <span class="hidden-mobile">CS143 P29Week306 02 Abstract Syntax Trees</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
