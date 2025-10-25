@@ -1,0 +1,752 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,000Continuing on a theme of routing, in this lecture I’m going to be telling you about something called the spanning tree protocol. 200:00:06,000 –&gt; 00:00:10,000The spa">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP916 7Routing">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP916-7Routing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,000Continuing on a theme of routing, in this lecture I’m going to be telling you about something called the spanning tree protocol. 200:00:06,000 –&gt; 00:00:10,000The spa">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.795Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.795Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP916 7Routing - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP916 7Routing"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP916 7Routing</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,000<br>Continuing on a theme of routing, in this lecture I’m going to be telling you about something called the spanning tree protocol.</p>
+<p>2<br>00:00:06,000 –&gt; 00:00:10,000<br>The spanning tree protocol is actually used for Ethernet switches.</p>
+<p>3<br>00:00:10,000 –&gt; 00:00:15,000<br>We normally think of routing as operating at the IP or the network layer.</p>
+<p>4<br>00:00:15,000 –&gt; 00:00:23,000<br>But anything that any situation where we want to send packets along a particular path that we choose carefully, we can think of that as routing.</p>
+<p>5<br>00:00:23,000 –&gt; 00:00:30,000<br>Ethernet switches need to decide how to route or forward packets to the correct set of destinations as well.</p>
+<p>6<br>00:00:30,000 –&gt; 00:00:33,000<br>That’s what we’re looking at in this video.</p>
+<p>7<br>00:00:33,000 –&gt; 00:00:37,000<br>We’re going to continue with this theme of routing.</p>
+<p>8<br>00:00:37,000 –&gt; 00:00:47,000<br>I’m going to describe something that at first point seemed like routing because we normally use the term routing to refer to the network layer and IP addressing.</p>
+<p>9<br>00:00:47,000 –&gt; 00:00:55,000<br>But routing really means any mechanism for delivering packets in a mindful way from a source to a destination.</p>
+<p>10<br>00:00:55,000 –&gt; 00:00:58,000<br>So in that sense, Ethernet routes packets too.</p>
+<p>11<br>00:00:58,000 –&gt; 00:01:00,000<br>It’s forwarding packets from a source to a destination.</p>
+<p>12<br>00:01:00,000 –&gt; 00:01:04,000<br>It just happens to be doing this based on the Ethernet address.</p>
+<p>13<br>00:01:04,000 –&gt; 00:01:09,000<br>So in this video, I’m going to be talking about how Ethernet forwards packets.</p>
+<p>14<br>00:01:09,000 –&gt; 00:01:12,000<br>So we know how addresses are learned in Ethernet.</p>
+<p>15<br>00:01:13,000 –&gt; 00:01:17,000<br>But how does it prevent loops from happening?</p>
+<p>16<br>00:01:17,000 –&gt; 00:01:27,000<br>We know that it will learn the address and until it’s learnt the address and knows the correct direction to send a packet, it will flood to everyone.</p>
+<p>17<br>00:01:27,000 –&gt; 00:01:36,000<br>How do we make sure that those flooded messages, those broadcast messages, are not looping in the network forever after all there’s no TTL field in Ethernet?</p>
+<p>18<br>00:01:37,000 –&gt; 00:01:43,000<br>So Ethernet does this by building a spanning tree over which packets are forwarded.</p>
+<p>19<br>00:01:43,000 –&gt; 00:01:50,000<br>I’m going to see that specifically in a moment, this works in quite a different way from what we’ve seen so far.</p>
+<p>20<br>00:01:50,000 –&gt; 00:02:00,000<br>Because instead of building a spanning tree per destination or per router, in Ethernet we’re going to build a single spanning tree for the entire network.</p>
+<p>21<br>00:02:00,000 –&gt; 00:02:07,000<br>In other words, it’s going to constrain the overall topology to only use those ports belonging to a single spanning tree.</p>
+<p>22<br>00:02:07,000 –&gt; 00:02:12,000<br>So just recall briefly how an Ethernet switch forwards packets.</p>
+<p>23<br>00:02:12,000 –&gt; 00:02:16,000<br>First of all, it examines the header of each arriving Ethernet frame.</p>
+<p>24<br>00:02:16,000 –&gt; 00:02:25,000<br>If it finds that the Ethernet destination address is in its forwarding table, it’s going to forward the frame to the correct outgoing port.</p>
+<p>25<br>00:02:25,000 –&gt; 00:02:32,000<br>If the Ethernet destination address is not found in the table, it’s going to broadcast the frame to all outgoing ports.</p>
+<p>26<br>00:02:32,000 –&gt; 00:02:36,000<br>Because it doesn’t know which one to send it to, it’s just going to send it to everyone.</p>
+<p>27<br>00:02:36,000 –&gt; 00:02:44,000<br>And now that we’ve learned about flooding, we can see why it would do that, because we can be sure that it will reach its eventual destination.</p>
+<p>28<br>00:02:44,000 –&gt; 00:02:51,000<br>And then it learns entries in the table are learned by examining the Ethernet source address of arriving packets.</p>
+<p>29<br>00:02:51,000 –&gt; 00:02:58,000<br>In other words, when it looks at the source address, it will learn that in order to reach that particular source address,</p>
+<p>30<br>00:02:58,000 –&gt; 00:03:04,000<br>it sends packets out through the port through which that packet arrived.</p>
+<p>31<br>00:03:04,000 –&gt; 00:03:08,000<br>So that must be on the direction between towards the source.</p>
+<p>32<br>00:03:08,000 –&gt; 00:03:14,000<br>But this all presupposes that packets don’t loop in the network forever, and that in fact,</p>
+<p>33<br>00:03:14,000 –&gt; 00:03:26,000<br>the particularly in the learning process, that the Ethernet source address actually is on the shortest path or on a reasonable path back towards that address.</p>
+<p>34<br>00:03:26,000 –&gt; 00:03:30,000<br>So how does it know that?</p>
+<p>35<br>00:03:30,000 –&gt; 00:03:34,000<br>And in fact, the whole learning process could lead to loops.</p>
+<p>36<br>00:03:34,000 –&gt; 00:03:38,000<br>So let’s see an example of what might happen.</p>
+<p>37<br>00:03:38,000 –&gt; 00:03:45,000<br>If we have a network with, let’s say that this is a source, and this is a destination.</p>
+<p>38<br>00:03:45,000 –&gt; 00:03:54,000<br>And in between we have a sequence of switches, something like this, that are all connected, like this.</p>
+<p>39<br>00:03:54,000 –&gt; 00:04:00,000<br>So B is directly connected here, and then A is connected to a switch here.</p>
+<p>40<br>00:04:00,000 –&gt; 00:04:12,000<br>In the learning process, as we’ve described, the first time that A sends to B, and let’s say it’s going to send it’s packet in here, destined to be,</p>
+<p>41<br>00:04:12,000 –&gt; 00:04:18,000<br>this first switch is not going to know where to send it, because it’s never heard from A and B about A and B before.</p>
+<p>42<br>00:04:18,000 –&gt; 00:04:27,000<br>So it’s going to flood its message out all of these ports that’s going to come down here, it’s going to go out here,</p>
+<p>43<br>00:04:27,000 –&gt; 00:04:34,000<br>it’s going to come down here, but because this, what this switch here will do is send it out of all of the ports,</p>
+<p>44<br>00:04:34,000 –&gt; 00:04:37,000<br>except the one that it heard from.</p>
+<p>45<br>00:04:37,000 –&gt; 00:04:46,000<br>This is also going to come from here, back down here, and go around this loop forever, and this one is going to go around this loop forever.</p>
+<p>46<br>00:04:46,000 –&gt; 00:04:52,000<br>And there’s another loop here, and so you can quickly get the picture, these packets are going to go be looping around forever.</p>
+<p>47<br>00:04:52,000 –&gt; 00:05:02,000<br>They are going to get delivered to B, B will respond and the address will get learned, but in the meantime, we’ve created this huge loop of flooded addresses.</p>
+<p>48<br>00:05:02,000 –&gt; 00:05:05,000<br>So we need to make sure that that doesn’t happen.</p>
+<p>49<br>00:05:05,000 –&gt; 00:05:11,000<br>The spanning tree protocol that I’m going to describe now was invented to solve this problem.</p>
+<p>50<br>00:05:11,000 –&gt; 00:05:18,000<br>So rather than deciding how we route along a spanning tree for each address, or to reach each destination,</p>
+<p>51<br>00:05:18,000 –&gt; 00:05:23,000<br>it’s going to build one spanning tree for the entire network.</p>
+<p>52<br>00:05:23,000 –&gt; 00:05:34,000<br>So just to give you an example, I’m going to redraw my, or a switch network here that has a bunch of loops in it.</p>
+<p>53<br>00:05:34,000 –&gt; 00:05:37,000<br>It won’t be exactly the same as the one before, but roughly the same.</p>
+<p>54<br>00:05:37,000 –&gt; 00:05:47,000<br>So here at A and B, what it’s going to do is it’s going to go through and disable some ports in the network to prevent this loop from happening.</p>
+<p>55<br>00:05:47,000 –&gt; 00:05:55,000<br>So one example of what it might do is essentially switch off this link here so that loop at the top is prevented.</p>
+<p>56<br>00:05:55,000 –&gt; 00:06:02,000<br>And it could switch off the loop, the link here, and prevent this loop down, down here.</p>
+<p>57<br>00:06:02,000 –&gt; 00:06:13,000<br>So we end up with a spanning tree in this case, which is like this, of which all the switches are on that spanning tree.</p>
+<p>58<br>00:06:13,000 –&gt; 00:06:21,000<br>So it spans, it’s a tree so that there are no loops. And A and B can talk to each other over that spanning tree.</p>
+<p>59<br>00:06:21,000 –&gt; 00:06:29,000<br>So it gives us a rough idea of what we’re going to see next.</p>
+<p>60<br>00:06:29,000 –&gt; 00:06:37,000<br>So preventing loops. The spanning tree protocol, it’s going to start by recognizing that the topology of switches is a graph.</p>
+<p>61<br>00:06:37,000 –&gt; 00:06:48,000<br>And we’ve seen many examples of these before. And the spanning tree protocol is going to find a subgraph that spans all of the vertices, all of the switches without creating any loops.</p>
+<p>62<br>00:06:48,000 –&gt; 00:07:01,000<br>It’s a spanning tree. And the distributed protocol is going to run across all of these switches. And it’s going to start by deciding which switch is the root of the tree of the single spanning tree that it’s going to create.</p>
+<p>63<br>00:07:01,000 –&gt; 00:07:06,000<br>And then which ports are allowed to forward packets along the tree.</p>
+<p>64<br>00:07:06,000 –&gt; 00:07:11,000<br>Let’s look at an example here. This is a, just an example spanning tree.</p>
+<p>65<br>00:07:11,000 –&gt; 00:07:20,000<br>So the step one is it’s going to pick a single, a single root. And the way that it’s going to do this is just exchange ID numbers and pick the one with the lowest ID.</p>
+<p>66<br>00:07:20,000 –&gt; 00:07:27,000<br>So I’m just going to assume here that it’s, it’s exchanged enough to decide that S one is the root.</p>
+<p>67<br>00:07:27,000 –&gt; 00:07:35,000<br>And then it’s going to forward packets on the ports on the shortest hop count path to the root.</p>
+<p>68<br>00:07:35,000 –&gt; 00:07:44,000<br>And so S six would send along here. S two would send along here as four. We’ve seen many examples of this now of how to create this.</p>
+<p>69<br>00:07:44,000 –&gt; 00:07:51,000<br>S eight. Well, there’s a hop count of two here and a hop count of two here. That’s that’s somewhat arbitrarily decided it’s going to send this way.</p>
+<p>70<br>00:07:51,000 –&gt; 00:08:02,000<br>And then S three that’s got a hop count of two this way and one two three this way. So it will send this way. S nine will send this way.</p>
+<p>71<br>00:08:02,000 –&gt; 00:08:10,000<br>So there’s a spanning tree that covers all of them. And here’s an example of one that that could be created.</p>
+<p>72<br>00:08:10,000 –&gt; 00:08:19,000<br>It’s it’s almost the same as the one previously because it had a couple of ties that I could break. So this is the logical spanning tree that has been created.</p>
+<p>73<br>00:08:19,000 –&gt; 00:08:23,000<br>And of course there are no loops in it and it spans all of the switches.</p>
+<p>74<br>00:08:23,000 –&gt; 00:08:29,000<br>So the thing that remains to do is to figure out how does it do this? We know what it’s going to end up with. So how does it get there?</p>
+<p>75<br>00:08:29,000 –&gt; 00:08:38,000<br>So let’s take a look at how spanning tree protocol works. There’s a little bit of detail here and I’m going to go through this one step at a time.</p>
+<p>76<br>00:08:38,000 –&gt; 00:08:47,000<br>So the first thing that happens is that all switches broadcast a special type of packet called a bridge protocol data unit.</p>
+<p>77<br>00:08:47,000 –&gt; 00:08:54,000<br>Protocol data unit is just a little bit of an old fashioned term for a packet and bridge is an old name for switches.</p>
+<p>78<br>00:08:54,000 –&gt; 00:09:05,000<br>They before Ethernet switches were popularized in the 1990s. They were called bridges. So bridge protocol data unit is usually abbreviated to BPDU.</p>
+<p>79<br>00:09:05,000 –&gt; 00:09:10,000<br>This is the only context in which this term BPDU is is used. So don’t worry too much about it.</p>
+<p>80<br>00:09:10,000 –&gt; 00:09:16,000<br>It’s essentially the special control messages that are sent around in order to build the spanning tree.</p>
+<p>81<br>00:09:16,000 –&gt; 00:09:24,000<br>The BPDU contains three pieces of information. The ID of who it is that’s sending it and that’s the switch ID.</p>
+<p>82<br>00:09:24,000 –&gt; 00:09:34,000<br>So my previous example S1, S2, S3. It’s usually actually derived from the MAC address just so that it’s unique and it may be manually configured by the administrator.</p>
+<p>83<br>00:09:34,000 –&gt; 00:09:40,000<br>But we’ll just use these switch IDs on the PowerPoint pictures for now.</p>
+<p>84<br>00:09:40,000 –&gt; 00:09:46,000<br>It contains the ID of who it currently believes to be the root and we’ll see how this evolves in a moment.</p>
+<p>85<br>00:09:46,000 –&gt; 00:09:55,000<br>And it’s the distance from the sender to the root. In other words, what it believes is the distance from itself to the root.</p>
+<p>86<br>00:09:55,000 –&gt; 00:10:01,000<br>And this is the best estimate that it has right now.</p>
+<p>87<br>00:10:01,000 –&gt; 00:10:08,000<br>So to start with, every switch is going to boot up and think that it’s the root. It’s going to claim that it’s the root.</p>
+<p>88<br>00:10:08,000 –&gt; 00:10:13,000<br>In other words, it’s going to put its ID of its sender to be the same as the ID of the root.</p>
+<p>89<br>00:10:13,000 –&gt; 00:10:20,000<br>And because they are one and the same, it’s going to say the distance feel to zero because that’s the distance from the sender to the root.</p>
+<p>90<br>00:10:20,000 –&gt; 00:10:25,000<br>And every switch is going to broadcast this value until it hears a better value.</p>
+<p>91<br>00:10:25,000 –&gt; 00:10:29,000<br>In other words, a root with a smaller ID would be the most likely case.</p>
+<p>92<br>00:10:29,000 –&gt; 00:10:34,000<br>So if I’m currently advertising that I think that I’m root, and then somebody else sends me a message and says,</p>
+<p>93<br>00:10:34,000 –&gt; 00:10:43,000<br>I’m the root and its ID is lower than mine, then I will start saying, OK, I believe that you’re the root instead of me.</p>
+<p>94<br>00:10:43,000 –&gt; 00:10:54,000<br>If there happens to be a root with the same ID, it’s going to pick the one with a shorter distance and ties are going to be broken by the smaller ID of the sender.</p>
+<p>95<br>00:10:54,000 –&gt; 00:10:59,000<br>So if a switch hears a better message, it’s not only going to adopt that value as the root.</p>
+<p>96<br>00:10:59,000 –&gt; 00:11:09,000<br>It’s going to retransmit that message and it’s going to add one to the distance and say, I’m going to forward my ID as the sender,</p>
+<p>97<br>00:11:09,000 –&gt; 00:11:16,000<br>the newly learned ID of the root. I’m going to add one value, one to the value that was told to me because the hop count is now increased by one.</p>
+<p>98<br>00:11:16,000 –&gt; 00:11:21,000<br>And I’m going to say that that is the distance from the sender to the root.</p>
+<p>99<br>00:11:21,000 –&gt; 00:11:36,000<br>So eventually, jumping down to here, eventually, there will be only one root that will originate these message and everybody else will retransmit them because everybody will uniquely pick the same switch ID as the root.</p>
+<p>100<br>00:11:36,000 –&gt; 00:11:44,000<br>OK, now we know who the root is, we know to figure out how the spanning tree is built in order to send packets to and from that root.</p>
+<p>101<br>00:11:45,000 –&gt; 00:11:53,000<br>So the root port is picked on every switch. It’s the port on a switch that is closest to the root.</p>
+<p>102<br>00:11:53,000 –&gt; 00:11:59,000<br>In other words, it’s the one through which the BPDU was heard that gave it that shortest distance to the root.</p>
+<p>103<br>00:11:59,000 –&gt; 00:12:02,000<br>So that’s an easy thing to figure out.</p>
+<p>104<br>00:12:02,000 –&gt; 00:12:10,000<br>And that will be the one through which it sends messages, forwards messages to the root or receives them from the root.</p>
+<p>105<br>00:12:10,000 –&gt; 00:12:14,000<br>Not only the BPDUs, but also the forwarded packets.</p>
+<p>106<br>00:12:14,000 –&gt; 00:12:18,000<br>The second type of port is what’s called the designated port.</p>
+<p>107<br>00:12:18,000 –&gt; 00:12:22,000<br>This is the port that neighbors agree to use in order to reach the port.</p>
+<p>108<br>00:12:22,000 –&gt; 00:12:29,000<br>It’s essentially the port through which eventually packets destined to the root will be received at this switch.</p>
+<p>109<br>00:12:29,000 –&gt; 00:12:37,000<br>And packets coming from the root will be forwarded onto this port in order to reach the other switches.</p>
+<p>110<br>00:12:37,000 –&gt; 00:12:41,000<br>All other ports are blocked from forwarding.</p>
+<p>111<br>00:12:41,000 –&gt; 00:12:48,000<br>In other words, only those ports that are the root port or the designated port will continue to forward regular packets.</p>
+<p>112<br>00:12:48,000 –&gt; 00:12:51,000<br>All other ports are blocked from forwarding.</p>
+<p>113<br>00:12:51,000 –&gt; 00:13:06,000<br>However, they will still send and receive BPDUs so that the control messages are still sent and received so that we can continue to build the spanning tree such that if something changes, a switch goes down or a link goes down, everybody will converge on a new shortest distance.</p>
+<p>114<br>00:13:06,000 –&gt; 00:13:10,000<br>A new spanning tree.</p>
+<p>115<br>00:13:10,000 –&gt; 00:13:20,000<br>Okay, so eventually, locally, only switch will only forward on the ports that are root ports and designated ports.</p>
+<p>116<br>00:13:20,000 –&gt; 00:13:26,000<br>Let me finish this video on the spanning tree protocol by telling you about a brief history.</p>
+<p>117<br>00:13:26,000 –&gt; 00:13:30,000<br>Spending tree protocol was originally invented in 1985 by Radia Pullman.</p>
+<p>118<br>00:13:30,000 –&gt; 00:13:34,000<br>At that time, Ethernet switches were called bridges.</p>
+<p>119<br>00:13:34,000 –&gt; 00:13:38,000<br>And networks were beginning to be built with a large number of bridges.</p>
+<p>120<br>00:13:38,000 –&gt; 00:13:41,000<br>This was really before routing was very popular.</p>
+<p>121<br>00:13:41,000 –&gt; 00:13:54,000<br>And as a consequence, they really needed a quick method for reliably building a spanning tree that all of the packets could follow to prevent broadcast storms from escalating in the network.</p>
+<p>122<br>00:13:54,000 –&gt; 00:13:57,000<br>It was standardized in 1990 by the IEEE.</p>
+<p>123<br>00:13:57,000 –&gt; 00:14:03,000<br>Still, we converged relatively slowly and as networks became bigger, this became more and more of a problem.</p>
+<p>124<br>00:14:03,000 –&gt; 00:14:09,000<br>The timers that were used were quite long and the method takes quite a while to converge.</p>
+<p>125<br>00:14:09,000 –&gt; 00:14:14,000<br>And so a more rapid version called the rapid spanning tree protocol was introduced in 2004.</p>
+<p>126<br>00:14:14,000 –&gt; 00:14:18,000<br>Still, this built a single tree for the entire network.</p>
+<p>127<br>00:14:18,000 –&gt; 00:14:22,000<br>And the path followed by packets would often be a somewhat tortuous path.</p>
+<p>128<br>00:14:22,000 –&gt; 00:14:28,000<br>It’s not necessarily the shortest path between the source and destination, because those packets would always have to go through the route.</p>
+<p>129<br>00:14:28,000 –&gt; 00:14:34,000<br>So more recently, the shortest path bridging protocol was introduced just in 2012.</p>
+<p>130<br>00:14:34,000 –&gt; 00:14:41,000<br>And this uses our old friend, the Link State algorithm, a little bit like Dijkstra’s algorithm used in OSPF.</p>
+<p>131<br>00:14:41,000 –&gt; 00:14:47,000<br>In order to build a shortest path tree from each source to each destination.</p>
+<p>132<br>00:14:47,000 –&gt; 00:14:54,000<br>And so in the end, we’ve ended up with a method that is very similar to what’s used at layer 3.</p>
+<p>133<br>00:14:54,000 –&gt; 00:14:59,000<br>This will probably be rolled out and more widely adopted over the next few years.</p>
+<p>134<br>00:14:59,000 –&gt; 00:15:03,000<br>That’s the end of this video.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP916 7Routing</div>
+      <div>http://example.com/2025/10/25/CS144-networkP916-7Routing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP936-9Routing/" title="CS144 NetworkP936 9Routing">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP936 9Routing</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP856-1Routing/" title="CS144 NetworkP856 1Routing">
+                        <span class="hidden-mobile">CS144 NetworkP856 1Routing</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

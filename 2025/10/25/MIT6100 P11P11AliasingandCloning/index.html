@@ -1,0 +1,1175 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:16,719So, let’s get started with lists and mutability. 200:00:16,719 –&gt; 00:00:22,960So last lecture we talked a lot about what it means to have these mutable data structur">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6100 P11P11AliasingandCloning">
+<meta property="og:url" content="http://example.com/2025/10/25/MIT6100%20P11P11AliasingandCloning/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:16,719So, let’s get started with lists and mutability. 200:00:16,719 –&gt; 00:00:22,960So last lecture we talked a lot about what it means to have these mutable data structur">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:09:25.353Z">
+<meta property="article:modified_time" content="2025-10-25T05:11:04.550Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>MIT6100 P11P11AliasingandCloning - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6100 P11P11AliasingandCloning"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:09" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          5.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          48 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MIT6100 P11P11AliasingandCloning</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:16,719<br>So, let’s get started with lists and mutability.</p>
+<p>2<br>00:00:16,719 –&gt; 00:00:22,960<br>So last lecture we talked a lot about what it means to have these mutable data structures</p>
+<p>3<br>00:00:22,960 –&gt; 00:00:23,960<br>lists.</p>
+<p>4<br>00:00:23,960 –&gt; 00:00:26,160<br>Today, we’re not off the hook.</p>
+<p>5<br>00:00:26,160 –&gt; 00:00:29,560<br>We will continue talking about the idea of mutability.</p>
+<p>6<br>00:00:29,639 –&gt; 00:00:35,239<br>We’re going to do it in the context of removing items from lists and some of the pitfalls that</p>
+<p>7<br>00:00:35,239 –&gt; 00:00:36,839<br>come with that.</p>
+<p>8<br>00:00:36,839 –&gt; 00:00:42,600<br>And then we’ll go into along the way ideas about cloning or making copies of lists and</p>
+<p>9<br>00:00:42,600 –&gt; 00:00:48,359<br>aliasing, making another name for the same object in memory.</p>
+<p>10<br>00:00:48,359 –&gt; 00:00:56,280<br>So first, let’s quickly talk about making a copy of a list because so far when we’re dealing</p>
+<p>11<br>00:00:56,280 –&gt; 00:01:04,200<br>with these mutable objects, we notice that it’s sometimes inconvenient to mutate the</p>
+<p>12<br>00:01:04,200 –&gt; 00:01:05,200<br>list.</p>
+<p>13<br>00:01:05,200 –&gt; 00:01:08,200<br>And it’s hard to keep track of the fact that we’re mutating a list.</p>
+<p>14<br>00:01:08,200 –&gt; 00:01:12,879<br>And there are some problems for when it does make sense to make a copy of our list so</p>
+<p>15<br>00:01:12,879 –&gt; 00:01:20,920<br>that we can mutate the copy or mutate the original while still having those original items</p>
+<p>16<br>00:01:20,920 –&gt; 00:01:23,719<br>in saved somewhere else.</p>
+<p>17<br>00:01:23,719 –&gt; 00:01:29,840<br>So you can ask Python to make a copy of a list and basically behind the scenes, it creates</p>
+<p>18<br>00:01:29,840 –&gt; 00:01:35,239<br>a new list object for us in memory and copies over every single element from the list you’d</p>
+<p>19<br>00:01:35,239 –&gt; 00:01:38,920<br>like to copy into the new list.</p>
+<p>20<br>00:01:38,920 –&gt; 00:01:43,159<br>So the syntax for doing a copy of a list is as follows.</p>
+<p>21<br>00:01:43,159 –&gt; 00:01:48,719<br>So we’ve got a list that’s already made called L and we want to make a copy of it.</p>
+<p>22<br>00:01:48,719 –&gt; 00:01:52,680<br>So the syntax is L, square brackets with a colon inside it.</p>
+<p>23<br>00:01:52,680 –&gt; 00:01:57,920<br>And behind the scenes, Python makes this list inside memory and then we save that new list</p>
+<p>24<br>00:01:57,920 –&gt; 00:02:04,700<br>that has the exact same elements as L into a list named L copy.</p>
+<p>25<br>00:02:04,700 –&gt; 00:02:09,240<br>And so in memory the way this looks, so if I have this code here where I name my list</p>
+<p>26<br>00:02:09,240 –&gt; 00:02:14,800<br>L original, again I’m choosing a different name than L just to show you that whatever list</p>
+<p>27<br>00:02:14,800 –&gt; 00:02:17,719<br>object I have, that’s the name I need a reference.</p>
+<p>28<br>00:02:17,719 –&gt; 00:02:23,800<br>So if I have L original is 4, 5, 6, and memory, if I want to make a copy of my list, I just</p>
+<p>29<br>00:02:23,800 –&gt; 00:02:28,719<br>say L original, square brackets with a colon inside it, that means copy every single element</p>
+<p>30<br>00:02:28,719 –&gt; 00:02:34,879<br>from beginning to end of this list and bind it to the name L new.</p>
+<p>31<br>00:02:34,879 –&gt; 00:02:40,039<br>So notice in memory now I have two list objects, they’re referenced by different names and</p>
+<p>32<br>00:02:40,039 –&gt; 00:02:44,240<br>so if I change one of them, the other one will not change, right?</p>
+<p>33<br>00:02:44,240 –&gt; 00:02:49,080<br>So there are now completely separate objects.</p>
+<p>34<br>00:02:49,080 –&gt; 00:02:53,400<br>So we’re starting this lecture off with a quick little exercise just to kind of get you</p>
+<p>35<br>00:02:53,400 –&gt; 00:02:58,000<br>to remember what we did last time and to practice writing a little bit of code with mutable</p>
+<p>36<br>00:02:58,000 –&gt; 00:03:00,600<br>function or with mutable objects.</p>
+<p>37<br>00:03:00,600 –&gt; 00:03:05,120<br>So I would like you to write this function called remove all.</p>
+<p>38<br>00:03:05,120 –&gt; 00:03:08,200<br>This is going to feel very similar to something we did last lecture.</p>
+<p>39<br>00:03:08,200 –&gt; 00:03:12,600<br>So last lecture I asked you to write a similar function which took in a list L and an element</p>
+<p>40<br>00:03:12,599 –&gt; 00:03:20,359<br>E. And that function from last lecture created a new list and then basically populated that</p>
+<p>41<br>00:03:20,359 –&gt; 00:03:26,439<br>new list with all the elements from, it had all the same elements as L except for omitting</p>
+<p>42<br>00:03:26,439 –&gt; 00:03:29,840<br>the ones that were equal to E.</p>
+<p>43<br>00:03:29,840 –&gt; 00:03:34,400<br>This version that I would like you to write for me is not going to create a new list and</p>
+<p>44<br>00:03:34,400 –&gt; 00:03:36,479<br>return this new list.</p>
+<p>45<br>00:03:36,479 –&gt; 00:03:45,199<br>It will mutate my input L such that you’re going to only keep the elements from L that</p>
+<p>46<br>00:03:45,199 –&gt; 00:03:51,879<br>do not match E. So I’m going to give you a hint for how to do this.</p>
+<p>47<br>00:03:51,879 –&gt; 00:03:58,479<br>So the process for this is going to make use of this thing that we just saw which is I want</p>
+<p>48<br>00:03:58,479 –&gt; 00:04:02,639<br>you to first save the list as is into a copy.</p>
+<p>49<br>00:04:02,639 –&gt; 00:04:07,959<br>And then at the end of last lecture we saw a way for us to mutate a list to empty it out</p>
+<p>50<br>00:04:07,959 –&gt; 00:04:09,159<br>of all the elements.</p>
+<p>51<br>00:04:09,159 –&gt; 00:04:13,359<br>So we still have that object in memory but we’re just essentially clearing it out.</p>
+<p>52<br>00:04:13,359 –&gt; 00:04:15,479<br>We remove all the elements from it.</p>
+<p>53<br>00:04:15,479 –&gt; 00:04:18,360<br>So first make a copy and save the elements.</p>
+<p>54<br>00:04:18,360 –&gt; 00:04:26,719<br>Then clear the list we want to mutate L and then iterate through the copy and add all</p>
+<p>55<br>00:04:26,719 –&gt; 00:04:30,560<br>of the elements that do not equal E back into L.</p>
+<p>56<br>00:04:30,560 –&gt; 00:04:32,000<br>So that should be the process.</p>
+<p>57<br>00:04:32,000 –&gt; 00:04:37,639<br>And in the end when we call this remove all function the thing that we’re passing in will</p>
+<p>58<br>00:04:37,639 –&gt; 00:04:41,399<br>have been mutated we don’t have anything to return.</p>
+<p>59<br>00:04:41,399 –&gt; 00:04:44,600<br>We’re just mutating the thing that’s being passed in.</p>
+<p>60<br>00:04:44,600 –&gt; 00:04:49,160<br>So I’ll give you a couple of minutes to work on that and you can start writing it on</p>
+<p>61<br>00:04:49,160 –&gt; 00:04:54,160<br>around line 30.</p>
+<p>62<br>00:04:54,160 –&gt; 00:04:57,040<br>Okay.</p>
+<p>63<br>00:04:57,040 –&gt; 00:05:00,240<br>Does anyone have some code to start with?</p>
+<p>64<br>00:05:00,240 –&gt; 00:05:01,240<br>Yes.</p>
+<p>65<br>00:05:01,240 –&gt; 00:05:02,240<br>Yeah.</p>
+<p>66<br>00:05:02,240 –&gt; 00:05:05,439<br>Initialize a new list.</p>
+<p>67<br>00:05:05,439 –&gt; 00:05:07,720<br>Yep.</p>
+<p>68<br>00:05:07,720 –&gt; 00:05:08,720<br>What do you want to call it?</p>
+<p>69<br>00:05:08,720 –&gt; 00:05:09,720<br>L new.</p>
+<p>70<br>00:05:09,720 –&gt; 00:05:10,720<br>Good name.</p>
+<p>71<br>00:05:10,720 –&gt; 00:05:11,720<br>L new equals.</p>
+<p>72<br>00:05:11,720 –&gt; 00:05:16,200<br>How do we make a copy and what do we copy?</p>
+<p>73<br>00:05:16,200 –&gt; 00:05:25,960<br>So what we’d like to do is mutate L. Right?</p>
+<p>74<br>00:05:25,959 –&gt; 00:05:30,039<br>But L already contains a bunch of items in it.</p>
+<p>75<br>00:05:30,039 –&gt; 00:05:33,079<br>So that’s why we first want to make a copy of it.</p>
+<p>76<br>00:05:33,079 –&gt; 00:05:36,279<br>So just like in the syntax from the slides.</p>
+<p>77<br>00:05:36,279 –&gt; 00:05:41,560<br>This will essentially save for us everything that we already have in L in a new list called</p>
+<p>78<br>00:05:41,560 –&gt; 00:05:43,560<br>L new.</p>
+<p>79<br>00:05:43,560 –&gt; 00:05:44,560<br>Okay.</p>
+<p>80<br>00:05:44,560 –&gt; 00:05:47,159<br>So now that we have that does anyone.</p>
+<p>81<br>00:05:47,159 –&gt; 00:05:48,159<br>Yeah.</p>
+<p>82<br>00:05:48,160 –&gt; 00:05:55,680<br>So L dot clear does not take a parameter in.</p>
+<p>83<br>00:05:55,680 –&gt; 00:05:58,760<br>It’s just a function that empties out L fully.</p>
+<p>84<br>00:05:58,760 –&gt; 00:06:02,760<br>So it’ll basically drop every single element in L. Okay.</p>
+<p>85<br>00:06:02,760 –&gt; 00:06:07,760<br>But we will see some function that will remove elements.</p>
+<p>86<br>00:06:07,760 –&gt; 00:06:14,040<br>So if we do L dot clear, then L becomes the empty list.</p>
+<p>87<br>00:06:14,040 –&gt; 00:06:15,720<br>L just becomes this.</p>
+<p>88<br>00:06:15,720 –&gt; 00:06:20,760<br>So now that I’ve mutated my object to contain none of my elements in it, how do I add back</p>
+<p>89<br>00:06:20,760 –&gt; 00:06:25,720<br>in the elements that satisfy the condition?</p>
+<p>90<br>00:06:25,720 –&gt; 00:06:32,760<br>Yeah.</p>
+<p>91<br>00:06:32,760 –&gt; 00:06:36,400<br>So for N in L new, right?</p>
+<p>92<br>00:06:36,400 –&gt; 00:06:39,920<br>So I’m iterating over the list that actually contains stuff.</p>
+<p>93<br>00:06:39,920 –&gt; 00:06:43,000<br>The thing I’ve copied.</p>
+<p>94<br>00:06:43,000 –&gt; 00:06:47,959<br>And then you can see like if you have not even been in your appendix account.</p>
+<p>95<br>00:06:47,959 –&gt; 00:06:48,959<br>Yeah, exactly.</p>
+<p>96<br>00:06:48,959 –&gt; 00:06:49,959<br>L dot append.</p>
+<p>97<br>00:06:49,959 –&gt; 00:06:59,240<br>So notice I am, yeah, E. I am appending to L, but I’m iterating over L new.</p>
+<p>98<br>00:06:59,240 –&gt; 00:07:01,040<br>L new has all of these elements in it.</p>
+<p>99<br>00:07:01,040 –&gt; 00:07:04,279<br>I want to touch each element to see what value it has.</p>
+<p>100<br>00:07:04,279 –&gt; 00:07:10,079<br>If it’s not equal to the one from the parameter E, then I add it to my list L.</p>
+<p>101<br>00:07:10,079 –&gt; 00:07:12,279<br>The one that’s currently empty.</p>
+<p>102<br>00:07:12,839 –&gt; 00:07:18,079<br>And then do I need to return anything?</p>
+<p>103<br>00:07:18,079 –&gt; 00:07:23,879<br>We don’t need to return, it won’t hurt to return L, but L will already be mutated by virtue</p>
+<p>104<br>00:07:23,879 –&gt; 00:07:25,599<br>of this function.</p>
+<p>105<br>00:07:25,599 –&gt; 00:07:28,719<br>So we don’t need to return any L.</p>
+<p>106<br>00:07:28,719 –&gt; 00:07:28,919<br>Right?</p>
+<p>107<br>00:07:28,919 –&gt; 00:07:31,759<br>L is my parameter that I’ve passed in.</p>
+<p>108<br>00:07:31,759 –&gt; 00:07:33,119<br>So there’s nothing to return.</p>
+<p>109<br>00:07:33,119 –&gt; 00:07:38,839<br>It’s just being mutated in the function.</p>
+<p>110<br>00:07:38,839 –&gt; 00:07:41,959<br>So when I make my function call here, right?</p>
+<p>111<br>00:07:41,959 –&gt; 00:07:43,599<br>I’m passing an L in.</p>
+<p>112<br>00:07:43,599 –&gt; 00:07:51,439<br>I’m just making a call to remove all with this L in object, which is this one here.</p>
+<p>113<br>00:07:51,439 –&gt; 00:07:56,079<br>And notice there’s no, I’m not saving the return from this function to anything, right?</p>
+<p>114<br>00:07:56,079 –&gt; 00:08:00,359<br>Because this function will just mutate whatever I passed in.</p>
+<p>115<br>00:08:00,359 –&gt; 00:08:06,560<br>And then if I just print the value of L in after this function call, it’ll print the mutated</p>
+<p>116<br>00:08:06,560 –&gt; 00:08:07,560<br>value.</p>
+<p>117<br>00:08:07,560 –&gt; 00:08:14,800<br>Yes, sorry, we should append N, not E. Thank you.</p>
+<p>118<br>00:08:14,800 –&gt; 00:08:17,000<br>Yep, and that looked weird.</p>
+<p>119<br>00:08:17,000 –&gt; 00:08:18,519<br>Perfect.</p>
+<p>120<br>00:08:18,519 –&gt; 00:08:24,920<br>And so if I run the other two examples, here I’m removing one, so it should just show me</p>
+<p>121<br>00:08:24,920 –&gt; 00:08:26,920<br>a list with all twos.</p>
+<p>122<br>00:08:26,920 –&gt; 00:08:29,680<br>And here I’m removing zero.</p>
+<p>123<br>00:08:29,680 –&gt; 00:08:37,360<br>And zero doesn’t even exist, so it doesn’t mutate that input list at all.</p>
+<p>124<br>00:08:37,360 –&gt; 00:08:39,800<br>Okay.</p>
+<p>125<br>00:08:39,800 –&gt; 00:08:46,919<br>So now we can start talking about other operations on lists, which deal with removing lists, making</p>
+<p>126<br>00:08:46,919 –&gt; 00:08:48,560<br>the lists smaller.</p>
+<p>127<br>00:08:48,560 –&gt; 00:08:52,320<br>So we’re actually going to take elements away from the list.</p>
+<p>128<br>00:08:52,320 –&gt; 00:08:58,800<br>And this is similar to kind of what the suggestion was, instead of kind of to clear out an element,</p>
+<p>129<br>00:08:58,800 –&gt; 00:09:00,440<br>a specific element, right?</p>
+<p>130<br>00:09:00,440 –&gt; 00:09:02,680<br>But the clear function removes all the elements.</p>
+<p>131<br>00:09:02,680 –&gt; 00:09:06,800<br>However, these functions will remove certain elements from our lists.</p>
+<p>132<br>00:09:06,799 –&gt; 00:09:09,679<br>So there’s three different ways that are on this slide.</p>
+<p>133<br>00:09:09,679 –&gt; 00:09:14,039<br>And I’m going to show you an example with this list L, and I’m showcasing what each one</p>
+<p>134<br>00:09:14,039 –&gt; 00:09:15,039<br>of these functions do.</p>
+<p>135<br>00:09:15,039 –&gt; 00:09:17,039<br>But first, I’ll just explain them.</p>
+<p>136<br>00:09:17,039 –&gt; 00:09:21,919<br>So one option for removing an item from a list is if you know the index of the item you</p>
+<p>137<br>00:09:21,919 –&gt; 00:09:25,359<br>want to remove, like you want to remove the very first one in the list, or the last one</p>
+<p>138<br>00:09:25,359 –&gt; 00:09:30,000<br>in the list, or the halfway point, or something like that, you can tell Python to remove the</p>
+<p>139<br>00:09:30,000 –&gt; 00:09:35,679<br>item from list L at a particular index with this del parenthesis.</p>
+<p>140<br>00:09:35,679 –&gt; 00:09:42,639<br>So this function del, and you pass in L at whatever index you want to remove.</p>
+<p>141<br>00:09:42,639 –&gt; 00:09:47,839<br>Now sometimes you want to remove the item all the way at the end of the list.</p>
+<p>142<br>00:09:47,839 –&gt; 00:09:49,839<br>So the farthest, most right.</p>
+<p>143<br>00:09:49,839 –&gt; 00:09:56,399<br>In that case, there’s an operation called pop, and you call pop on list L. So if you just</p>
+<p>144<br>00:09:56,399 –&gt; 00:10:01,319<br>say L dot pop with nothing in the parentheses, Python will automatically grab that last value</p>
+<p>145<br>00:10:01,319 –&gt; 00:10:04,959<br>from the list and drop it from the list.</p>
+<p>146<br>00:10:04,960 –&gt; 00:10:10,840<br>Now pop is a little bit interesting because it has a return value.</p>
+<p>147<br>00:10:10,840 –&gt; 00:10:16,040<br>We’re using this dot notation, which we used with append and clear and a bunch of other</p>
+<p>148<br>00:10:16,040 –&gt; 00:10:17,200<br>things from last lecture.</p>
+<p>149<br>00:10:17,200 –&gt; 00:10:22,840<br>But here, this pop not only does it have the side effect of mutating my list by dropping</p>
+<p>150<br>00:10:22,840 –&gt; 00:10:26,120<br>the last element from it, but it also returns something.</p>
+<p>151<br>00:10:26,120 –&gt; 00:10:32,320<br>So this function call here will return for me the value of the element that got dropped,</p>
+<p>152<br>00:10:32,320 –&gt; 00:10:37,080<br>just in case you want to do something with it.</p>
+<p>153<br>00:10:37,080 –&gt; 00:10:41,320<br>And lastly, if you know the element you’d like to remove specifically, so if you have a</p>
+<p>154<br>00:10:41,320 –&gt; 00:10:45,920<br>list of a bunch of names and you want to remove Anna from that list and you know the string</p>
+<p>155<br>00:10:45,920 –&gt; 00:10:51,480<br>ANA is what you’d like to remove, you do that using the function L dot remove.</p>
+<p>156<br>00:10:51,480 –&gt; 00:10:56,120<br>So whatever list your names are part of, you say that list dot remove, and then you’d</p>
+<p>157<br>00:10:56,120 –&gt; 00:11:01,360<br>pass it in the string Anna or the number five or whatever actual element you’d like to</p>
+<p>158<br>00:11:01,360 –&gt; 00:11:02,360<br>remove.</p>
+<p>159<br>00:11:02,360 –&gt; 00:11:09,480<br>Now, if there are many elements that match that value, right, if there’s many Anna’s in</p>
+<p>160<br>00:11:09,480 –&gt; 00:11:13,360<br>my list of names, it will only remove the first one it finds.</p>
+<p>161<br>00:11:13,360 –&gt; 00:11:18,639<br>So from index zero, all the other ones will remain, you’ll have to call that function again.</p>
+<p>162<br>00:11:18,639 –&gt; 00:11:20,120<br>So let’s look at this example here.</p>
+<p>163<br>00:11:20,120 –&gt; 00:11:26,399<br>I’ve got this list of seven elements within it.</p>
+<p>164<br>00:11:26,399 –&gt; 00:11:29,639<br>Let’s do a few of these operations all in a row.</p>
+<p>165<br>00:11:29,639 –&gt; 00:11:32,199<br>So each one of these operations will mutate my list.</p>
+<p>166<br>00:11:32,199 –&gt; 00:11:37,080<br>So the operation right after it will work on the mutated list.</p>
+<p>167<br>00:11:37,080 –&gt; 00:11:43,039<br>So let’s start with this L. If we say L dot remove two, Python will look for the element</p>
+<p>168<br>00:11:43,039 –&gt; 00:11:44,600<br>whose value is two.</p>
+<p>169<br>00:11:44,600 –&gt; 00:11:46,039<br>Well, there it is.</p>
+<p>170<br>00:11:46,039 –&gt; 00:11:47,399<br>It’s at the front of my list.</p>
+<p>171<br>00:11:47,399 –&gt; 00:11:48,639<br>That’s fine.</p>
+<p>172<br>00:11:48,639 –&gt; 00:11:50,240<br>And Python will remove that element.</p>
+<p>173<br>00:11:50,240 –&gt; 00:11:54,519<br>So this list will now be one element less shorter, right?</p>
+<p>174<br>00:11:54,519 –&gt; 00:11:55,960<br>And that two is going to be gone.</p>
+<p>175<br>00:11:55,960 –&gt; 00:12:00,759<br>So the list L will now be mutated to be one, three, six, three, seven, zero.</p>
+<p>176<br>00:12:00,759 –&gt; 00:12:01,759<br>All right.</p>
+<p>177<br>00:12:01,759 –&gt; 00:12:04,440<br>Well, what if we remove three now, right?</p>
+<p>178<br>00:12:04,440 –&gt; 00:12:06,600<br>So we’ve done the operation to remove two.</p>
+<p>179<br>00:12:06,600 –&gt; 00:12:08,920<br>We’ve ended up with this mutated list.</p>
+<p>180<br>00:12:08,920 –&gt; 00:12:12,759<br>Now what if we remove three from this mutated list?</p>
+<p>181<br>00:12:12,759 –&gt; 00:12:15,440<br>There’s two of them in there, right?</p>
+<p>182<br>00:12:15,440 –&gt; 00:12:19,000<br>The element that’s going to be removed is the first one it finds.</p>
+<p>183<br>00:12:19,000 –&gt; 00:12:21,480<br>So just this one here.</p>
+<p>184<br>00:12:21,480 –&gt; 00:12:24,480<br>And again, this is an operation that mutates my list.</p>
+<p>185<br>00:12:24,480 –&gt; 00:12:32,320<br>So this list here that I’ve started with would be one less element shorter.</p>
+<p>186<br>00:12:32,320 –&gt; 00:12:33,840<br>And that three will have been removed, right?</p>
+<p>187<br>00:12:33,840 –&gt; 00:12:39,159<br>So now I’ve got one, six, three, seven, zero.</p>
+<p>188<br>00:12:39,159 –&gt; 00:12:39,680<br>All right.</p>
+<p>189<br>00:12:39,680 –&gt; 00:12:43,399<br>What if we want to delete an element at a particular index?</p>
+<p>190<br>00:12:43,399 –&gt; 00:12:48,240<br>So now again, we’re working with the mutated list, one, six, three, seven, zero.</p>
+<p>191<br>00:12:48,240 –&gt; 00:12:54,440<br>This del function takes an index in a specific list and removes the element</p>
+<p>192<br>00:12:54,480 –&gt; 00:12:55,960<br>that is there.</p>
+<p>193<br>00:12:55,960 –&gt; 00:12:59,440<br>So in this case, I want to remove the element at index one.</p>
+<p>194<br>00:12:59,440 –&gt; 00:13:03,920<br>So in this list here, the element at index one is the six, right?</p>
+<p>195<br>00:13:03,920 –&gt; 00:13:05,640<br>This is zero, this is one.</p>
+<p>196<br>00:13:05,640 –&gt; 00:13:07,800<br>So the six will be removed.</p>
+<p>197<br>00:13:07,800 –&gt; 00:13:15,160<br>And my list will be mutated to just contain these four elements, one, three, seven, and zero.</p>
+<p>198<br>00:13:15,160 –&gt; 00:13:22,720<br>And lastly, if we pop, that function will just remove the element at the end of the list.</p>
+<p>199<br>00:13:22,720 –&gt; 00:13:25,600<br>The element at the end of the list is this zero.</p>
+<p>200<br>00:13:25,600 –&gt; 00:13:33,360<br>So the list through this side effect of pop, right, is going to be mutated to contain just the three elements,</p>
+<p>201<br>00:13:33,360 –&gt; 00:13:35,279<br>except for the last one.</p>
+<p>202<br>00:13:35,279 –&gt; 00:13:37,639<br>So contain one, three, and seven.</p>
+<p>203<br>00:13:37,639 –&gt; 00:13:44,320<br>And additionally, if I’d like to save the value of the element that got removed from the end of the list,</p>
+<p>204<br>00:13:44,320 –&gt; 00:13:50,320<br>the zero, you can, because this function called here, l.pop,</p>
+<p>205<br>00:13:50,320 –&gt; 00:13:55,960<br>you can save the return value into a variable.</p>
+<p>206<br>00:13:55,960 –&gt; 00:14:01,760<br>None of the other ones, del, or remove, have any return, right?</p>
+<p>207<br>00:14:01,760 –&gt; 00:14:06,960<br>So if you saved a variable from that function, the function called to a variable,</p>
+<p>208<br>00:14:06,960 –&gt; 00:14:08,840<br>that variable will be none.</p>
+<p>209<br>00:14:08,840 –&gt; 00:14:14,320<br>Pop is special because it actually grabs that variable value and returns it.</p>
+<p>210<br>00:14:16,320 –&gt; 00:14:19,680<br>So all of these operations mutate the list, right?</p>
+<p>211<br>00:14:19,679 –&gt; 00:14:24,959<br>So that means as we did operation after operation, we were working with the mutated list.</p>
+<p>212<br>00:14:27,239 –&gt; 00:14:28,559<br>Okay.</p>
+<p>213<br>00:14:28,559 –&gt; 00:14:30,079<br>Yes, there was a question.</p>
+<p>214<br>00:14:30,079 –&gt; 00:14:35,359<br>Yeah, it’s coming out one, the proof of the last one.</p>
+<p>215<br>00:14:35,359 –&gt; 00:14:36,239<br>I’m sorry, say again.</p>
+<p>216<br>00:14:36,239 –&gt; 00:14:38,919<br>Like in the third one, it’s like, it’s like, it’s going to be element.</p>
+<p>217<br>00:14:38,919 –&gt; 00:14:40,399<br>L at index one.</p>
+<p>218<br>00:14:40,399 –&gt; 00:14:44,399<br>Yeah, so the L at index one here works on the list we had just mutated.</p>
+<p>219<br>00:14:44,399 –&gt; 00:14:47,919<br>So this one, the element at index one is the six.</p>
+<p>220<br>00:14:47,919 –&gt; 00:14:48,599<br>Oh, yeah.</p>
+<p>221<br>00:14:49,040 –&gt; 00:14:49,879<br>No worries.</p>
+<p>222<br>00:14:51,879 –&gt; 00:14:57,879<br>Okay, so let’s look at the code we just wrote in the UTIAN exercise and try to rewrite it using this remove operation.</p>
+<p>223<br>00:14:59,000 –&gt; 00:15:05,399<br>Well, the way we can think of it is we’d like to remove the element that is e, right?</p>
+<p>224<br>00:15:05,399 –&gt; 00:15:08,440<br>So we know the value of the element we’d like to remove.</p>
+<p>225<br>00:15:08,440 –&gt; 00:15:11,680<br>It’s three or five or one or two or whatever.</p>
+<p>226<br>00:15:11,680 –&gt; 00:15:17,240<br>So that’s e and we know of an operation that can remove the element from the list.</p>
+<p>227<br>00:15:17,240 –&gt; 00:15:20,000<br>It’s called remove unsurprisingly.</p>
+<p>228<br>00:15:20,000 –&gt; 00:15:24,840<br>So what we can do is we can say L dot remove e, right?</p>
+<p>229<br>00:15:24,840 –&gt; 00:15:27,480<br>And that would remove the first instance of the element in the list.</p>
+<p>230<br>00:15:27,480 –&gt; 00:15:31,639<br>But I might have many of these elements in my list.</p>
+<p>231<br>00:15:31,639 –&gt; 00:15:35,320<br>So we can just write a little while loop around this operation.</p>
+<p>232<br>00:15:35,320 –&gt; 00:15:40,279<br>And we say while we still have this value in our list, remove it.</p>
+<p>233<br>00:15:42,279 –&gt; 00:15:44,159<br>So that’s what this while loop is doing.</p>
+<p>234<br>00:15:44,159 –&gt; 00:15:46,680<br>E and L is going to be their true or false.</p>
+<p>235<br>00:15:46,679 –&gt; 00:15:50,279<br>Whether the number five or whatever is in my list.</p>
+<p>236<br>00:15:50,279 –&gt; 00:15:56,679<br>And as long as I still have a five in my list, call L dot remove on five or whatever is.</p>
+<p>237<br>00:15:58,959 –&gt; 00:16:03,719<br>So a nice little two liner here to solve the same problem.</p>
+<p>238<br>00:16:05,879 –&gt; 00:16:10,759<br>Now, what if we rewrote that code in a slightly different way, again using remove,</p>
+<p>239<br>00:16:10,759 –&gt; 00:16:13,759<br>but let’s say maybe we didn’t realize we could use a while loop.</p>
+<p>240<br>00:16:13,759 –&gt; 00:16:18,679<br>And instead we used a for loop to iterate over each element in L.</p>
+<p>241<br>00:16:18,679 –&gt; 00:16:22,319<br>And if that element is equal to e, remove it.</p>
+<p>242<br>00:16:24,399 –&gt; 00:16:25,279<br>Seems reasonable.</p>
+<p>243<br>00:16:26,319 –&gt; 00:16:28,600<br>So what would happen?</p>
+<p>244<br>00:16:28,600 –&gt; 00:16:31,360<br>And I can run it for you guys.</p>
+<p>245<br>00:16:31,360 –&gt; 00:16:36,639<br>So if we run it with this code here, this is the one from the slides.</p>
+<p>246<br>00:16:38,879 –&gt; 00:16:41,559<br>Just to show you that I’m not making it up.</p>
+<p>247<br>00:16:41,559 –&gt; 00:16:43,559<br>So if this is the code that we wrote,</p>
+<p>248<br>00:16:43,559 –&gt; 00:16:46,279<br>I tried to remove the two from the list.</p>
+<p>249<br>00:16:46,279 –&gt; 00:16:50,919<br>And when I printed the result, it actually printed one comma two.</p>
+<p>250<br>00:16:50,919 –&gt; 00:16:54,239<br>So I have two elements left in my list.</p>
+<p>251<br>00:16:54,239 –&gt; 00:16:57,559<br>It looks like it didn’t correctly remove a two.</p>
+<p>252<br>00:17:03,239 –&gt; 00:17:09,440<br>And at first, it’s surprising why this is right because the code seems to,</p>
+<p>253<br>00:17:09,440 –&gt; 00:17:10,240<br>it looks right.</p>
+<p>254<br>00:17:10,240 –&gt; 00:17:12,399<br>It seems to work just fine.</p>
+<p>255<br>00:17:12,400 –&gt; 00:17:17,960<br>But let’s step through this memory diagram and see exactly what happens step by step.</p>
+<p>256<br>00:17:17,960 –&gt; 00:17:20,080<br>So with each iteration of our for loop.</p>
+<p>257<br>00:17:21,600 –&gt; 00:17:25,560<br>So originally, I’ve got L containing one, two, two, two.</p>
+<p>258<br>00:17:25,560 –&gt; 00:17:26,480<br>So far so good.</p>
+<p>259<br>00:17:26,480 –&gt; 00:17:29,040<br>That’s just us doing this line here.</p>
+<p>260<br>00:17:29,040 –&gt; 00:17:31,680<br>And then I make a function called to remove all.</p>
+<p>261<br>00:17:31,680 –&gt; 00:17:34,000<br>So I want to remove the number two from my list.</p>
+<p>262<br>00:17:35,920 –&gt; 00:17:39,560<br>I’ve got a for loop where my loop variable is called LM.</p>
+<p>263<br>00:17:39,559 –&gt; 00:17:44,759<br>And it will iterate through each element in my sequence,</p>
+<p>264<br>00:17:44,759 –&gt; 00:17:47,960<br>where my sequence is all the elements in L.</p>
+<p>265<br>00:17:47,960 –&gt; 00:17:54,519<br>So first it’ll be one, then it’ll be the next value in a sequence two and then two and then two.</p>
+<p>266<br>00:17:54,519 –&gt; 00:17:58,399<br>So here, I’ve just got LM initialized to the first value in the sequence.</p>
+<p>267<br>00:17:58,399 –&gt; 00:18:02,200<br>If LM equal E, well, the one does not equal the two.</p>
+<p>268<br>00:18:02,200 –&gt; 00:18:04,279<br>So then we do not remove anything.</p>
+<p>269<br>00:18:05,399 –&gt; 00:18:09,079<br>Next, the for loop goes on to the next value in my sequence, the two.</p>
+<p>270<br>00:18:10,039 –&gt; 00:18:12,599<br>So now LM is two.</p>
+<p>271<br>00:18:12,599 –&gt; 00:18:19,039<br>And if LM equal to, it does equal to, what am I going to do?</p>
+<p>272<br>00:18:19,039 –&gt; 00:18:21,839<br>Well, I need to do L dot remove E.</p>
+<p>273<br>00:18:21,839 –&gt; 00:18:25,720<br>So this is where bad things happen.</p>
+<p>274<br>00:18:25,720 –&gt; 00:18:28,759<br>I’m going to remove an element from my list.</p>
+<p>275<br>00:18:28,759 –&gt; 00:18:30,799<br>So I still have those three twos in there.</p>
+<p>276<br>00:18:30,799 –&gt; 00:18:35,759<br>But as soon as I drop one of the twos, all the elements beyond that two,</p>
+<p>277<br>00:18:35,759 –&gt; 00:18:36,679<br>shift over.</p>
+<p>278<br>00:18:40,119 –&gt; 00:18:44,519<br>But Python doesn’t know that it should also shift over the pointer.</p>
+<p>279<br>00:18:45,720 –&gt; 00:18:50,240<br>It’s still pointing to that element that it’s currently at.</p>
+<p>280<br>00:18:50,240 –&gt; 00:18:53,720<br>It’s not going to shift itself backward just because you removed an element.</p>
+<p>281<br>00:18:54,919 –&gt; 00:19:02,480<br>And so Python just finished removing the element and now it says I finished this loop through.</p>
+<p>282<br>00:19:02,480 –&gt; 00:19:08,440<br>So I need to go back up here and make element be the next value in my sequence, the next two.</p>
+<p>283<br>00:19:09,639 –&gt; 00:19:14,759<br>So I’ve essentially skipped over one thing that I needed to remove</p>
+<p>284<br>00:19:14,759 –&gt; 00:19:19,720<br>because when I remove the item, everything else shifted over as well.</p>
+<p>285<br>00:19:19,720 –&gt; 00:19:21,799<br>But my pointer didn’t decrement.</p>
+<p>286<br>00:19:24,279 –&gt; 00:19:25,639<br>So this is a big problem.</p>
+<p>287<br>00:19:25,639 –&gt; 00:19:30,200<br>I mean, we can finish off here, but we’ve already seen the problem.</p>
+<p>288<br>00:19:31,200 –&gt; 00:19:36,240<br>The last time through the loop, Python sees well, is this two equal to the thing I want to remove?</p>
+<p>289<br>00:19:36,240 –&gt; 00:19:37,000<br>It is.</p>
+<p>290<br>00:19:37,000 –&gt; 00:19:37,879<br>So it removes it.</p>
+<p>291<br>00:19:38,840 –&gt; 00:19:39,880<br>And this is the end.</p>
+<p>292<br>00:19:39,880 –&gt; 00:19:45,960<br>It has no more values left to go through in the sequence because it’s already, its pointer is already out of the bounds.</p>
+<p>293<br>00:19:49,240 –&gt; 00:19:50,680<br>Is everyone okay with that issue?</p>
+<p>294<br>00:19:51,960 –&gt; 00:19:59,080<br>So the problem here with remove is that we’re iterating over a list as we’re mutating it.</p>
+<p>295<br>00:19:59,080 –&gt; 00:19:59,560<br>Right?</p>
+<p>296<br>00:19:59,560 –&gt; 00:20:03,480<br>And so removing these items can cause unpredictable behavior.</p>
+<p>297<br>00:20:03,480 –&gt; 00:20:07,720<br>Something like this could still happen if we were adding items.</p>
+<p>298<br>00:20:07,720 –&gt; 00:20:12,120<br>It’s to accept that we’re usually adding items to the end of the list, right, with a pen.</p>
+<p>299<br>00:20:12,120 –&gt; 00:20:17,480<br>If we were adding items somewhere in the middle or somewhere around where our pointer is supposed to be,</p>
+<p>300<br>00:20:18,200 –&gt; 00:20:23,799<br>I think we could theoretically run into the same issue when we’re adding items, where we might skip elements,</p>
+<p>301<br>00:20:23,799 –&gt; 00:20:25,559<br>or we might see an element twice.</p>
+<p>302<br>00:20:26,360 –&gt; 00:20:28,680<br>It’s just more apparent when we’re removing items.</p>
+<p>303<br>00:20:31,160 –&gt; 00:20:34,600<br>So this is the big thing that we’re going to talk about in this lecture.</p>
+<p>304<br>00:20:34,599 –&gt; 00:20:36,279<br>So I’m going to go through another example.</p>
+<p>305<br>00:20:36,279 –&gt; 00:20:40,439<br>This is trick example number four, where we’re going to do a very similar thing,</p>
+<p>306<br>00:20:40,439 –&gt; 00:20:46,759<br>but we’re going to have a loop iterating over L’s elements directly, just like we did,</p>
+<p>307<br>00:20:47,719 –&gt; 00:20:49,159<br>but doing a different task.</p>
+<p>308<br>00:20:49,159 –&gt; 00:20:51,799<br>Just so we’re not doing that same remove all task.</p>
+<p>309<br>00:20:53,639 –&gt; 00:20:56,039<br>So let’s look at a slightly different problem.</p>
+<p>310<br>00:20:56,839 –&gt; 00:21:00,199<br>This will be in the context of a function called remove duplicates.</p>
+<p>311<br>00:21:00,680 –&gt; 00:21:04,200<br>This function will take in two lists.</p>
+<p>312<br>00:21:04,200 –&gt; 00:21:09,000<br>So as an example here, I’ve got a list with 10, 20, 30, and 40 in it,</p>
+<p>313<br>00:21:09,000 –&gt; 00:21:11,720<br>and I’ve got another list with 10, 20, 50, and 60 in it.</p>
+<p>314<br>00:21:12,840 –&gt; 00:21:16,840<br>The purpose of this function is to mutate L1.</p>
+<p>315<br>00:21:18,759 –&gt; 00:21:28,279<br>And the way I want to mutate L1 is such that if an element in L1 is also in L2, I want to remove it.</p>
+<p>316<br>00:21:28,279 –&gt; 00:21:32,920<br>So the 10 and the 20 notice are common to L1 and L2.</p>
+<p>317<br>00:21:32,920 –&gt; 00:21:36,440<br>So I would like to remove the 10 and the 20 from L1.</p>
+<p>318<br>00:21:37,399 –&gt; 00:21:41,160<br>The 30 and the 40 stay because there’s no 30 or 40 in L2.</p>
+<p>319<br>00:21:44,119 –&gt; 00:21:45,160<br>So that’s our task.</p>
+<p>320<br>00:21:45,799 –&gt; 00:21:49,319<br>And this is the code that supposedly does this.</p>
+<p>321<br>00:21:49,319 –&gt; 00:21:52,440<br>So I’ve got a loop that goes through each element in L1,</p>
+<p>322<br>00:21:52,440 –&gt; 00:21:54,759<br>so 10, 20, 30, and 40.</p>
+<p>323<br>00:21:55,559 –&gt; 00:22:01,559<br>And I ask if the element is in L2, so here they are, there’s two of them here,</p>
+<p>324<br>00:22:01,559 –&gt; 00:22:03,000<br>then remove it from L1.</p>
+<p>325<br>00:22:04,039 –&gt; 00:22:05,559<br>Very similar thing to what we just did.</p>
+<p>326<br>00:22:07,079 –&gt; 00:22:09,720<br>This code doesn’t work because if we actually run it,</p>
+<p>327<br>00:22:10,440 –&gt; 00:22:17,000<br>the in the end Python will mutate L1 to contain the 20 and the 30 and the 40,</p>
+<p>328<br>00:22:17,799 –&gt; 00:22:20,440<br>whereas we only wanted to keep the 30 and the 40.</p>
+<p>329<br>00:22:21,160 –&gt; 00:22:24,279<br>Because the 20 also appeared in L2, so why in the world did we keep it?</p>
+<p>330<br>00:22:25,640 –&gt; 00:22:28,920<br>Well, we kept it because of the same issue that we just saw.</p>
+<p>331<br>00:22:28,920 –&gt; 00:22:33,720<br>We’re mutating a list as we’re iterating over it.</p>
+<p>332<br>00:22:33,720 –&gt; 00:22:37,799<br>And we’re doing a removal, so we’re again skipping over an element.</p>
+<p>333<br>00:22:37,799 –&gt; 00:22:41,079<br>So let’s just step through this one, just to show you again what can happen.</p>
+<p>334<br>00:22:41,079 –&gt; 00:22:47,160<br>So here I’ve got 10, 20, 30, 40 for L1 and 10, 20, 50, 60 for L2.</p>
+<p>335<br>00:22:48,119 –&gt; 00:22:52,519<br>In my loop, my variable is E, so first it’ll be 10.</p>
+<p>336<br>00:22:53,400 –&gt; 00:22:59,240<br>And we ask if 10 is in L2, that’s true, remove it from L1.</p>
+<p>337<br>00:22:59,240 –&gt; 00:23:01,480<br>So you can see what’s going to happen.</p>
+<p>338<br>00:23:02,279 –&gt; 00:23:06,119<br>My 10 is removed, everything else shifts over by 1,</p>
+<p>339<br>00:23:06,119 –&gt; 00:23:09,480<br>but my loop index is stays fixed.</p>
+<p>340<br>00:23:12,039 –&gt; 00:23:21,559<br>Next, Python says I’m going to increment my variable, E, to go to the next item in my sequence.</p>
+<p>341<br>00:23:21,639 –&gt; 00:23:23,240<br>So E becomes the 30.</p>
+<p>342<br>00:23:24,200 –&gt; 00:23:29,240<br>And already I’ve skipped over one element that I was interested in removing.</p>
+<p>343<br>00:23:31,079 –&gt; 00:23:35,879<br>So here when we’re pointing to the 30, Python says, well, the 30 is not in L2,</p>
+<p>344<br>00:23:35,879 –&gt; 00:23:37,399<br>so we don’t do anything.</p>
+<p>345<br>00:23:37,399 –&gt; 00:23:41,559<br>And then it points to the 40, the 40 is not in L2, so we don’t do anything.</p>
+<p>346<br>00:23:41,559 –&gt; 00:23:43,079<br>And then the code is done.</p>
+<p>347<br>00:23:43,079 –&gt; 00:23:48,839<br>And we’ve erroneously finished with mutating L1 to just be the 20, 30, and the 40.</p>
+<p>348<br>00:23:49,319 –&gt; 00:23:58,359<br>Okay. So let’s try to rewrite the code to actually work by using copies.</p>
+<p>349<br>00:23:59,319 –&gt; 00:24:02,199<br>So we certainly could use the same trick we did previous,</p>
+<p>350<br>00:24:02,839 –&gt; 00:24:08,039<br>we had the first you tried exercise, where we could make a copy, clear L1,</p>
+<p>351<br>00:24:08,039 –&gt; 00:24:10,359<br>and then add the elements back.</p>
+<p>352<br>00:24:10,359 –&gt; 00:24:11,720<br>We could do that.</p>
+<p>353<br>00:24:11,720 –&gt; 00:24:16,039<br>But we can also do a slightly different version of that where again we make a copy.</p>
+<p>354<br>00:24:16,039 –&gt; 00:24:20,279<br>So here I’ve got L1 copy equals L1 square bracket colon.</p>
+<p>355<br>00:24:21,799 –&gt; 00:24:25,399<br>And then the key thing here is we’re iterating over the copy, right?</p>
+<p>356<br>00:24:27,399 –&gt; 00:24:31,319<br>So if we iterate over the copy, we’re not going to mutate the copy,</p>
+<p>357<br>00:24:31,319 –&gt; 00:24:32,759<br>but we will mutate L1.</p>
+<p>358<br>00:24:33,399 –&gt; 00:24:40,920<br>So for the for loop variable goes over the copy, but the removal is done from L1.</p>
+<p>359<br>00:24:41,880 –&gt; 00:24:45,880<br>So to visualize that, this is what happens.</p>
+<p>360<br>00:24:45,880 –&gt; 00:24:47,960<br>So I’ve got L1 and L2 as before.</p>
+<p>361<br>00:24:48,840 –&gt; 00:24:55,160<br>So when I make my function call here, I have L1 copy equals L1 square bracket colon.</p>
+<p>362<br>00:24:55,160 –&gt; 00:25:00,200<br>So this makes for me a new variable inside memory, which is an exact duplicate</p>
+<p>363<br>00:25:00,200 –&gt; 00:25:02,360<br>copy or clone of L1.</p>
+<p>364<br>00:25:04,279 –&gt; 00:25:07,320<br>Okay. So every one of my elements is now saved.</p>
+<p>365<br>00:25:07,879 –&gt; 00:25:13,960<br>So I can do whatever I’d like to L1 and know that I can still have a way to iterate</p>
+<p>366<br>00:25:13,960 –&gt; 00:25:17,079<br>and look at each variable from the original L1.</p>
+<p>367<br>00:25:19,559 –&gt; 00:25:25,399<br>So now my loop variable E goes over elements in L1 copy.</p>
+<p>368<br>00:25:28,599 –&gt; 00:25:32,359<br>So first we look at the 10 and I say if the 10 is in L2, it is</p>
+<p>369<br>00:25:33,079 –&gt; 00:25:34,279<br>remove it from L1.</p>
+<p>370<br>00:25:34,279 –&gt; 00:25:39,159<br>So notice I have just mutated L1 not the copy to be one element less.</p>
+<p>371<br>00:25:41,559 –&gt; 00:25:45,079<br>Then the loop variable E goes to the next value in my sequence.</p>
+<p>372<br>00:25:45,079 –&gt; 00:25:48,679<br>So I’m not skipping anything here because I didn’t mutate L1 copy.</p>
+<p>373<br>00:25:48,679 –&gt; 00:25:51,639<br>So now we look at the 20 correctly this time, right?</p>
+<p>374<br>00:25:52,519 –&gt; 00:25:54,439<br>So now we ask is the 20 in L2?</p>
+<p>375<br>00:25:55,079 –&gt; 00:25:56,919<br>It is. So we remove it from L1.</p>
+<p>376<br>00:25:57,799 –&gt; 00:26:00,119<br>And then the 30 and the 40, we do nothing.</p>
+<p>377<br>00:26:02,839 –&gt; 00:26:04,519<br>Questions about this.</p>
+<p>378<br>00:26:04,519 –&gt; 00:26:07,000<br>Is this okay? Is this too fast? Is this too slow?</p>
+<p>379<br>00:26:12,439 –&gt; 00:26:23,959<br>Okay. So that’s using copies or aka clones to help you keep track of values in an original list</p>
+<p>380<br>00:26:23,959 –&gt; 00:26:27,399<br>without overriding them or without removing them accidentally.</p>
+<p>381<br>00:26:27,959 –&gt; 00:26:32,119<br>Now I want to talk about aliases because this is a very important topic</p>
+<p>382<br>00:26:32,119 –&gt; 00:26:34,039<br>when we have these mutable data structures.</p>
+<p>383<br>00:26:34,839 –&gt; 00:26:39,079<br>So let’s do a quick overview of what an aliases.</p>
+<p>384<br>00:26:39,079 –&gt; 00:26:42,839<br>So we think about city for example Boston.</p>
+<p>385<br>00:26:43,559 –&gt; 00:26:47,879<br>An aliase for Boston is basically any other name that refers to the same city,</p>
+<p>386<br>00:26:47,879 –&gt; 00:26:49,399<br>right? The same object.</p>
+<p>387<br>00:26:49,879 –&gt; 00:26:53,879<br>So Boston also known as the Haber being town or Athens of America.</p>
+<p>388<br>00:26:54,919 –&gt; 00:26:58,439<br>All of these names refer to the same inherent city, right?</p>
+<p>389<br>00:26:58,519 –&gt; 00:27:01,559<br>So if I say Boston is small in tech savvy,</p>
+<p>390<br>00:27:02,279 –&gt; 00:27:07,480<br>then those two attributes or properties refer to this object itself, right?</p>
+<p>391<br>00:27:07,480 –&gt; 00:27:12,759<br>The city. So the hub is small in tech savvy or being town is small in tech savvy, right?</p>
+<p>392<br>00:27:12,759 –&gt; 00:27:18,039<br>It doesn’t matter what I refer, what name I refer to this object as.</p>
+<p>393<br>00:27:18,039 –&gt; 00:27:20,680<br>It’s the same set of properties still apply to it.</p>
+<p>394<br>00:27:21,480 –&gt; 00:27:26,440<br>And so if I add an attribute or if I take away an attribute through one of these aliases,</p>
+<p>395<br>00:27:26,440 –&gt; 00:27:31,400<br>through one of these names, well, if it’s suddenly snowing in Boston,</p>
+<p>396<br>00:27:31,400 –&gt; 00:27:34,680<br>then yes, it’s snowing in the hub or it’s snowing in being town, right?</p>
+<p>397<br>00:27:34,680 –&gt; 00:27:38,039<br>Because these are just names for the same object.</p>
+<p>398<br>00:27:38,600 –&gt; 00:27:45,480<br>And so that idea is also something that comes up when we deal with these mutable objects.</p>
+<p>399<br>00:27:47,720 –&gt; 00:27:52,519<br>If you don’t explicitly tell Python, you’d like to make a copy of a list,</p>
+<p>400<br>00:27:52,599 –&gt; 00:28:00,039<br>and you just use the equal sign between a mutable object and another name for this mutable object,</p>
+<p>401<br>00:28:00,839 –&gt; 00:28:04,279<br>then Python only creates an alias for that object.</p>
+<p>402<br>00:28:05,240 –&gt; 00:28:09,079<br>So notice we had to say explicitly I want to make a copy with the square brackets colon.</p>
+<p>403<br>00:28:10,039 –&gt; 00:28:14,519<br>If we write code that looks like this, so here the only difference I’ve done,</p>
+<p>404<br>00:28:15,400 –&gt; 00:28:17,079<br>so the code on the right is the one that worked.</p>
+<p>405<br>00:28:17,079 –&gt; 00:28:21,240<br>The code on the left is me not making a copy of my L1.</p>
+<p>406<br>00:28:21,240 –&gt; 00:28:24,279<br>I’m only using the equal sign directly.</p>
+<p>407<br>00:28:26,519 –&gt; 00:28:29,880<br>And in Python using this assignment operator, the equal sign,</p>
+<p>408<br>00:28:32,680 –&gt; 00:28:37,960<br>means that you’re making an alias for that same object in memory.</p>
+<p>409<br>00:28:38,599 –&gt; 00:28:41,960<br>So it’s just another name to refer to that same object.</p>
+<p>410<br>00:28:42,680 –&gt; 00:28:44,599<br>If you mutate that object through L1,</p>
+<p>411<br>00:28:45,319 –&gt; 00:28:50,440<br>L1 copy will also have been mutated because it’s pointing to the same object</p>
+<p>412<br>00:28:50,440 –&gt; 00:28:51,160<br>and vice versa.</p>
+<p>413<br>00:28:52,120 –&gt; 00:28:59,320<br>So really, this particular code on the left here is not any better than saying for E in L1</p>
+<p>414<br>00:28:59,320 –&gt; 00:29:03,080<br>because L1 copy is pointing to the exact same object in memory.</p>
+<p>415<br>00:29:04,600 –&gt; 00:29:11,960<br>So let me show you exactly what this means and the Cloud diagram that we’ve been doing.</p>
+<p>416<br>00:29:13,240 –&gt; 00:29:17,480<br>So this is the code that creates an alias, not a copy.</p>
+<p>417<br>00:29:18,039 –&gt; 00:29:23,559<br>So I’ve got L1 equals 10, 20, 30, 40, L2 is 10, 20, 50, 60, just like before.</p>
+<p>418<br>00:29:25,160 –&gt; 00:29:31,240<br>The code up here, so L1 copy equals L1, I just named it copy, but it’s not actually making a copy.</p>
+<p>419<br>00:29:31,240 –&gt; 00:29:35,960<br>Right? Because I know where did I say explicitly to make a copy using the square brackets colon.</p>
+<p>420<br>00:29:36,759 –&gt; 00:29:44,279<br>So the alias in memory means that it’s just another name pointing to that exact same object.</p>
+<p>421<br>00:29:45,240 –&gt; 00:29:53,480<br>Okay? So then the for loop for E in L1 copy is iterating through this object here,</p>
+<p>422<br>00:29:53,480 –&gt; 00:29:56,759<br>which is being pointed to by L1 copy and L1.</p>
+<p>423<br>00:29:57,720 –&gt; 00:30:02,440<br>Okay? So if I’m iterating through and removing elements as I’m doing so,</p>
+<p>424<br>00:30:02,680 –&gt; 00:30:07,240<br>this is just the original buggy code that we had that iterated through L1.</p>
+<p>425<br>00:30:07,720 –&gt; 00:30:11,319<br>Right? So I’m removing the 10, incrementing the element,</p>
+<p>426<br>00:30:11,960 –&gt; 00:30:18,279<br>the E variable to the next element, and then not doing anything with the 30 and not doing anything with the 40.</p>
+<p>427<br>00:30:20,519 –&gt; 00:30:22,759<br>Does that make sense? Alias is? Is that all right?</p>
+<p>428<br>00:30:24,519 –&gt; 00:30:30,200<br>Okay. So the big idea that we’ll kind of tie a couple things together</p>
+<p>429<br>00:30:31,799 –&gt; 00:30:35,639<br>is related to functions, formal parameters and actual parameters.</p>
+<p>430<br>00:30:36,600 –&gt; 00:30:45,240<br>So when we make a function definition, right, the things inside the parameters inside the function definition</p>
+<p>431<br>00:30:45,240 –&gt; 00:30:49,080<br>are called formal parameters, right? We’re just writing the function assuming that these will</p>
+<p>432<br>00:30:49,080 –&gt; 00:30:54,440<br>eventually get some actual values associated with them. When we make a function call,</p>
+<p>433<br>00:30:54,440 –&gt; 00:31:01,000<br>that’s when we pass actual values. And when we have mutable objects being passed into a function,</p>
+<p>434<br>00:31:01,000 –&gt; 00:31:09,000<br>the formal parameter actually becomes an alias for the actual parameter in the function call.</p>
+<p>435<br>00:31:10,119 –&gt; 00:31:16,920<br>So here’s our function once again. The difference between what we’ve been seeing so far,</p>
+<p>436<br>00:31:16,920 –&gt; 00:31:23,000<br>this is the code that we had just seen, the difference that I’ve done in this particular code is not</p>
+<p>437<br>00:31:23,000 –&gt; 00:31:29,000<br>name this L1 and L2 like it was named up here, right? Because it doesn’t have to be named L1 and L2.</p>
+<p>438<br>00:31:29,799 –&gt; 00:31:37,559<br>I named it L-A and L-B. And this will sort of bring the point home. So when I make my function call to</p>
+<p>439<br>00:31:37,559 –&gt; 00:31:45,000<br>remove duplicates with L-A and L-B, Python takes this object and this object and passes them in as</p>
+<p>440<br>00:31:45,000 –&gt; 00:31:52,680<br>parameters. So in my memory diagram, I’ve got L-A is 1020, 3040 and L-B 1020, 5060, right? That’s what I</p>
+<p>441<br>00:31:52,680 –&gt; 00:32:00,360<br>have down here. As soon as I make my function call, remember Python maps out, right? Formal parameters</p>
+<p>442<br>00:32:00,360 –&gt; 00:32:08,039<br>to actual parameters. But when we’re dealing with these mutable objects, L1 and L2 are aliases</p>
+<p>443<br>00:32:08,840 –&gt; 00:32:20,039<br>for the things being passed in. So L1 will point to, you tell me. Yes, exactly. So here, I’ve got</p>
+<p>444<br>00:32:20,039 –&gt; 00:32:27,960<br>the same name for the same object and L2 will point to L-B, right? Two different names pointing to</p>
+<p>445<br>00:32:27,960 –&gt; 00:32:34,680<br>the same object. And that’s why when I’m iterating through and doing whatever I am doing to these</p>
+<p>446<br>00:32:35,240 –&gt; 00:32:43,799<br>formal parameters here, Python actually mutates the objects that were passed in. Yes.</p>
+<p>447<br>00:32:52,600 –&gt; 00:33:01,160<br>L-A and L1 will have the same IDs. Yeah, yeah, exactly. Yeah, using the ID function we did last time.</p>
+<p>448<br>00:33:01,160 –&gt; 00:33:07,640<br>Exactly. I invite you to try it too. But I think they should because they’re modifying the same</p>
+<p>449<br>00:33:07,640 –&gt; 00:33:15,480<br>object. Everyone okay so far? Two names aliases for that same object. And so that’s why when we’re</p>
+<p>450<br>00:33:15,480 –&gt; 00:33:22,519<br>mutating L1 here, this L-A and L-B that we passed in will be mutated, right? So here’s my L1 copy as</p>
+<p>451<br>00:33:22,519 –&gt; 00:33:28,200<br>well. So I’ve got three names for this particular object. And then we do the thing where we mutate</p>
+<p>452<br>00:33:28,200 –&gt; 00:33:35,000<br>the thing, right? And then at the end of the function, when it’s done, this entire thing has no</p>
+<p>453<br>00:33:35,000 –&gt; 00:33:43,640<br>return, it returns none. But when we print L-A, the thing we’re printing is this object here. It’s</p>
+<p>454<br>00:33:43,640 –&gt; 00:33:55,319<br>whatever L-A points to. And it’s this thing that was mutated through L1. Yes, no, thumbs up, thumbs down.</p>
+<p>455<br>00:33:55,319 –&gt; 00:34:05,879<br>Is it good? This is very cool, you guys. Okay, this was a nice loosen to tie up. Okay, so the last</p>
+<p>456<br>00:34:06,599 –&gt; 00:34:16,199<br>10 minutes, I want to talk about what happens when we have lists that contain lists themselves,</p>
+<p>457<br>00:34:16,199 –&gt; 00:34:22,360<br>right? So so far the examples we’ve been working with are lists that just contain, you know,</p>
+<p>458<br>00:34:22,360 –&gt; 00:34:29,720<br>strings or integers or things that are immutable. But what exactly happens behind the scenes when we</p>
+<p>459<br>00:34:29,720 –&gt; 00:34:38,680<br>have elements that are mutable themselves? So we’re going to do an example. We’re going to go through</p>
+<p>460<br>00:34:38,680 –&gt; 00:34:44,840<br>in a lot of in all of these slides, working through an example where we start out with this old list</p>
+<p>461<br>00:34:44,840 –&gt; 00:34:52,280<br>that looks something like this. So we have a list that contains three elements, right? The first one</p>
+<p>462<br>00:34:52,280 –&gt; 00:35:00,120<br>is another list, the second is another list, and the third is another list. I don’t care what elements</p>
+<p>463<br>00:35:00,120 –&gt; 00:35:08,200<br>those lists have for now. All I know is at the top level, old list contains three things. Okay, so</p>
+<p>464<br>00:35:08,200 –&gt; 00:35:14,039<br>let’s do aliasing and then we’ll do a shallow copy of this list and then we’ll do a deep copy of</p>
+<p>465<br>00:35:14,039 –&gt; 00:35:20,039<br>this list and show you what happens. So in this example, what we’re going to do is just to straight</p>
+<p>466<br>00:35:20,039 –&gt; 00:35:27,480<br>up alias of old list. So we’re going to make old list and new list be aliases for the exact same</p>
+<p>467<br>00:35:27,480 –&gt; 00:35:36,039<br>object this thing here. So I do that with just the plain old assignment operator. So inside memory,</p>
+<p>468<br>00:35:36,039 –&gt; 00:35:40,840<br>the way we’re going to represent this old list is here is by list with three elements in it,</p>
+<p>469<br>00:35:40,840 –&gt; 00:35:47,880<br>and because each element is itself a list, so a mutable object, I’m not going to plop it in here,</p>
+<p>470<br>00:35:48,840 –&gt; 00:35:55,640<br>but instead Python generally tends to make a pointer to that mutable object somewhere else in memory.</p>
+<p>471<br>00:35:57,079 –&gt; 00:36:01,960<br>You’ll see why in a couple slides. But for now, I mean, it will, it will look cluttered if I did so,</p>
+<p>472<br>00:36:01,960 –&gt; 00:36:07,400<br>but for now it helps to visualize the structure. So old list contains three elements,</p>
+<p>473<br>00:36:07,400 –&gt; 00:36:13,320<br>and each one of those elements are kind of pointed to over here. So if I say new list equals old list,</p>
+<p>474<br>00:36:13,320 –&gt; 00:36:20,599<br>Python will make another name for the same thing in memory. When I do this line here where I index</p>
+<p>475<br>00:36:20,599 –&gt; 00:36:28,920<br>new list at index two, so that’s zero, one, two, and then I follow it to index one over here, right?</p>
+<p>476<br>00:36:28,920 –&gt; 00:36:38,360<br>So this guy here, the six, I have changed the string food to be six, and now new list and old list</p>
+<p>477<br>00:36:38,360 –&gt; 00:36:44,440<br>both are pointing to the same object, so it will have been mutated to contain that six in that</p>
+<p>478<br>00:36:44,440 –&gt; 00:36:56,200<br>sum list. Okay, so that’s aliasing. Now what we can do is we can create copies of mutable objects,</p>
+<p>479<br>00:36:56,199 –&gt; 00:37:02,519<br>and we can create either something called a shallow copy or a deep copy. The shallow copy is</p>
+<p>480<br>00:37:02,519 –&gt; 00:37:08,839<br>equivalent to what we’ve been doing with the square brackets colon, and that’s perfectly okay if</p>
+<p>481<br>00:37:08,839 –&gt; 00:37:16,919<br>we’re dealing with lists that just contain immutable things. But as soon as we create a shallow copy</p>
+<p>482<br>00:37:16,919 –&gt; 00:37:23,719<br>of a list that can contain other lists or other mutable things, interesting things happen. Only the</p>
+<p>483<br>00:37:23,719 –&gt; 00:37:31,639<br>top level gets copied, but anything that’s mutable at a deeper level than that top level does not</p>
+<p>484<br>00:37:31,639 –&gt; 00:37:37,079<br>get copied. Okay, because if it did and you had many, many levels deep of all these mutable things,</p>
+<p>485<br>00:37:37,079 –&gt; 00:37:43,159<br>that would be a lot of things for Python to copy. Okay, so what we’re doing with this particular code</p>
+<p>486<br>00:37:43,159 –&gt; 00:37:48,679<br>is we’re going to create this old list here, so it’s one, two, as first element, three, four,</p>
+<p>487<br>00:37:48,679 –&gt; 00:37:54,039<br>as a second element, and five, six as the last element. We’re going to create something called a</p>
+<p>488<br>00:37:54,039 –&gt; 00:37:59,079<br>shallow copy, and we could have also said old lists square brackets colon, it would be equivalent.</p>
+<p>489<br>00:38:00,199 –&gt; 00:38:09,079<br>And in this shallow copy, Python only creates a copy of the top level. So notice new list is pointing</p>
+<p>490<br>00:38:09,079 –&gt; 00:38:17,719<br>to a list with three elements in it, but anything that’s at a deeper level than that top level does</p>
+<p>491<br>00:38:17,719 –&gt; 00:38:24,199<br>not get copied. So all these mutable things that are my elements, this list and this list and</p>
+<p>492<br>00:38:24,199 –&gt; 00:38:31,559<br>this list, these are three mutable elements, they do not get their own copies because we’ve only made a</p>
+<p>493<br>00:38:31,559 –&gt; 00:38:41,719<br>shallow copy. So what this means is at the top level, sorry, so this is just what it prints out.</p>
+<p>494<br>00:38:42,679 –&gt; 00:38:49,559<br>So at the top level, we can add elements to old list and it won’t interfere with the top level</p>
+<p>495<br>00:38:49,559 –&gt; 00:38:58,599<br>of new list. So as an example here, we’re going to add this seven, eight list to old list.</p>
+<p>496<br>00:38:59,879 –&gt; 00:39:06,359<br>So we follow old list and we add another element to the end of it. Okay, so there it is,</p>
+<p>497<br>00:39:06,360 –&gt; 00:39:15,720<br>but that element didn’t get added to new list, right, because we only added it to the top level of old list.</p>
+<p>498<br>00:39:17,800 –&gt; 00:39:23,880<br>So now question is, what happens if we go in and mutate one of these three shared items?</p>
+<p>499<br>00:39:24,840 –&gt; 00:39:30,920<br>So old list and new list is as we would expect. So let’s do one more operation. So instead of</p>
+<p>500<br>00:39:30,920 –&gt; 00:39:36,440<br>a pending or in addition to a pending the seven and the eight, like we do over here, let’s also</p>
+<p>501<br>00:39:36,440 –&gt; 00:39:42,119<br>mutate one of those shared items. So here it is, this is what we just did on the previous slide,</p>
+<p>502<br>00:39:42,119 –&gt; 00:39:48,519<br>there’s my seven and eight. And now let’s go into old list at index one, so zero one, that’s this</p>
+<p>503<br>00:39:48,519 –&gt; 00:39:56,119<br>middle one here, and at index one in that, so that’s zero one, the four over here, let’s change the</p>
+<p>504<br>00:39:56,119 –&gt; 00:40:07,000<br>four to the nine. Okay, well when we print new list, we’re going to be printing a list with three</p>
+<p>505<br>00:40:07,000 –&gt; 00:40:12,920<br>things in it. The first one is the list one, two, the second one is three, nine, we just mutated that.</p>
+<p>506<br>00:40:13,559 –&gt; 00:40:23,559<br>And the last one is five, six. And when we print old list, this one will also have that nine over</p>
+<p>507<br>00:40:23,559 –&gt; 00:40:31,239<br>there, because those middle elements are shared, but we will also have an extra element at the top</p>
+<p>508<br>00:40:31,239 –&gt; 00:40:41,880<br>level, the seven comma eight that we just added only to old list. Okay, thoughts on this example,</p>
+<p>509<br>00:40:41,880 –&gt; 00:40:55,720<br>what is confusing? Yeah. Yeah, why does the nine get added or get changed to the new list?</p>
+<p>510<br>00:40:55,720 –&gt; 00:41:04,440<br>Yeah, so the operation called copy from this library, which is also named copy, only creates a</p>
+<p>511<br>00:41:04,440 –&gt; 00:41:11,160<br>shallow copy of the list. So a shallow copy means that if you have a list with some elements within</p>
+<p>512<br>00:41:11,159 –&gt; 00:41:17,960<br>it, right? So here in this case, you know, we have those three elements in it. All you’re doing is</p>
+<p>513<br>00:41:17,960 –&gt; 00:41:24,440<br>copying the top structure, right? So this structure here. But if you have any elements that are</p>
+<p>514<br>00:41:24,440 –&gt; 00:41:30,359<br>themselves mutable, they don’t get their own copies. So really inside the memory, if this one is</p>
+<p>515<br>00:41:30,359 –&gt; 00:41:39,000<br>pointing to some object, like it does to that list one comma, one comma, two, the copy is also going</p>
+<p>516<br>00:41:39,000 –&gt; 00:41:47,639<br>to point to that same sub object, sub structure. And so if you’re mutating this sub structure through</p>
+<p>517<br>00:41:47,639 –&gt; 00:41:54,199<br>one name, if you’re accessing it through the other name, that other name is still accessing the</p>
+<p>518<br>00:41:54,199 –&gt; 00:42:01,719<br>thing that was mutated. Does that make sense? Is that okay? Yeah. And so this shallow copy is just</p>
+<p>519<br>00:42:01,719 –&gt; 00:42:07,400<br>copying the top structure here. So you can see at the top level, we have these two different lists.</p>
+<p>520<br>00:42:07,400 –&gt; 00:42:14,200<br>So that means to this one, I can add another item to the end of it, right? And that item will not be</p>
+<p>521<br>00:42:14,200 –&gt; 00:42:20,360<br>duplicated up here because this is one thing, this is one other thing. But the middle ones or any</p>
+<p>522<br>00:42:20,360 –&gt; 00:42:25,559<br>levels that are beyond that top level are shared. They’re not copies. Yeah.</p>
+<p>523<br>00:42:25,559 –&gt; 00:42:33,000<br>So if you edited it through the new list, what is it in your troll? I get it wrong. Yes, yes, exactly.</p>
+<p>524<br>00:42:33,000 –&gt; 00:42:39,239<br>Great question. So if you edited, if we edited this number one here through the new list, then yeah,</p>
+<p>525<br>00:42:39,239 –&gt; 00:42:46,519<br>the old list will still see the edits because they’re both pointing to these shared things. But if I</p>
+<p>526<br>00:42:46,519 –&gt; 00:42:54,519<br>edit the seven and eight, it will only be edited through old list because that seven eight is only seen</p>
+<p>527<br>00:42:54,519 –&gt; 00:43:03,159<br>by old list. Okay, that’s basically what I’ve sent here. And so if you really, really,</p>
+<p>528<br>00:43:03,159 –&gt; 00:43:09,239<br>really want to copy every single mutable object or every single object at all the different levels,</p>
+<p>529<br>00:43:09,239 –&gt; 00:43:13,719<br>we would have to create something called a deep copy. So we do this using copy.deepcopy.</p>
+<p>530<br>00:43:14,519 –&gt; 00:43:21,400<br>Okay. And so this is exact same example except that we’ve just changed copy.copy to copy.deepcopy.</p>
+<p>531<br>00:43:21,400 –&gt; 00:43:28,039<br>And so here we’ve got our old list exactly as we had before. And if we deep copy old list,</p>
+<p>532<br>00:43:28,039 –&gt; 00:43:36,119<br>Python will make copies of every single object at every single level in, you know, from old list.</p>
+<p>533<br>00:43:36,119 –&gt; 00:43:42,920<br>So everything becomes its own object. So now if I mutate old list to pen seven and eight,</p>
+<p>534<br>00:43:42,920 –&gt; 00:43:49,000<br>that only gets added to old list. And if I mutate old list to have this element be a nine,</p>
+<p>535<br>00:43:49,000 –&gt; 00:43:55,480<br>that only gets mutated through old list. So old list contains the changed values, but new list</p>
+<p>536<br>00:43:55,480 –&gt; 00:44:01,639<br>remains untouched because I’ve made copies at every level. Yes. So this copy.copy kind of like doing</p>
+<p>537<br>00:44:01,639 –&gt; 00:44:08,519<br>old list square bracket with a column. Yes, but then it goes further down at every single level.</p>
+<p>538<br>00:44:08,519 –&gt; 00:44:16,039<br>So the regular copy.copy does the square bracket colon. And the deep copy goes further to all the</p>
+<p>539<br>00:44:16,039 –&gt; 00:44:27,880<br>other levels. Okay. So lots of ideas in this lecture and last, I would highly suggest going</p>
+<p>540<br>00:44:27,880 –&gt; 00:44:33,239<br>through the Python tutor and all these examples just to so you see them in a kind of different way</p>
+<p>541<br>00:44:33,239 –&gt; 00:44:38,119<br>to see exactly how, you know, it’ll be the same sort of memory diagram that, but we’ve done except</p>
+<p>542<br>00:44:38,119 –&gt; 00:44:44,119<br>that, you know, through the Python tutor. So it will be very helpful for you, I think. I would give</p>
+<p>543<br>00:44:44,119 –&gt; 00:44:48,440<br>that a try as you’re setting for the quiz. I think what’s important to realize is that we have</p>
+<p>544<br>00:44:48,440 –&gt; 00:44:54,599<br>objects in memory and we have names that point to these objects. And so if you kind of get that</p>
+<p>545<br>00:44:54,599 –&gt; 00:45:00,279<br>and keep that straight in your in your mind, it will be very, very helpful to understanding what’s</p>
+<p>546<br>00:45:00,279 –&gt; 00:45:05,319<br>an alias, what’s a clone when you’re iterating over certain objects and things like that. And the</p>
+<p>547<br>00:45:05,319 –&gt; 00:45:12,759<br>big idea here is just side effects. Okay. Every one of these operations has some sort of side effect</p>
+<p>548<br>00:45:12,840 –&gt; 00:45:16,680<br>and it’s important to make sure that you’re not changing something you don’t want to be changing.</p>
+<p>549<br>00:45:17,960 –&gt; 00:45:24,760<br>Okay. I guess I just had one last thing to say about lists of tuples. I guess we’ve seen both of them.</p>
+<p>550<br>00:45:25,400 –&gt; 00:45:30,600<br>When do you want to use tuples and not lists? When you want something that shouldn’t be changed. So</p>
+<p>551<br>00:45:30,600 –&gt; 00:45:37,320<br>if you have something that might accidentally get changed, do not save it as a list. If you,</p>
+<p>552<br>00:45:37,320 –&gt; 00:45:44,039<br>okay. And then on the other side, why would you use a list but not a tuple? You would use a list</p>
+<p>553<br>00:45:44,039 –&gt; 00:45:50,280<br>because you don’t want to be creating copies all the time. So when you have, again, these large</p>
+<p>554<br>00:45:50,280 –&gt; 00:45:55,080<br>databases, every time you want to make a change to it, you don’t want to make a copy of everything</p>
+<p>555<br>00:45:55,080 –&gt; 00:46:01,800<br>with that small change in it. And so mutating an object is good for that respect. Okay. So that wraps</p>
+<p>556<br>00:46:01,800 –&gt; 00:46:07,800<br>up lists and univ. Next lecture will just tie up a bunch more loose ends and then we’ll get into</p>
+<p>557<br>00:46:07,800 –&gt; 00:46:09,000<br>a new topic.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6100 P11P11AliasingandCloning</div>
+      <div>http://example.com/2025/10/25/MIT6100 P11P11AliasingandCloning/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6100%20P14P14Dictionaries/" title="MIT6100 P14P14Dictionaries">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6100 P14P14Dictionaries</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6100%20P12P12ListComprehensionFunctionsasObjectsTestingandDebuggingFIXED/" title="MIT6100 P12P12ListComprehensionFunctionsasObjectsTestingandDebuggingFIXED">
+                        <span class="hidden-mobile">MIT6100 P12P12ListComprehensionFunctionsasObjectsTestingandDebuggingFIXED</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

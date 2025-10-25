@@ -1,0 +1,657 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,000So in this unit, we’re going to finally dig down below IP and answer the question, what is a link and how do they work? 200:00:08,000 –&gt; 00:00:12,000So how does the">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP947 0LowerLayers">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP947-0LowerLayers/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,000So in this unit, we’re going to finally dig down below IP and answer the question, what is a link and how do they work? 200:00:08,000 –&gt; 00:00:12,000So how does the">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.796Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.796Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP947 0LowerLayers - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP947 0LowerLayers"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          424 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          4 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP947 0LowerLayers</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,000<br>So in this unit, we’re going to finally dig down below IP and answer the question, what is a link and how do they work?</p>
+<p>2<br>00:00:08,000 –&gt; 00:00:12,000<br>So how does the link layer work and what are the issues that you encounter at the link layer?</p>
+<p>3<br>00:00:12,000 –&gt; 00:00:16,000<br>And so there are two basic things that this unit is going to cover.</p>
+<p>4<br>00:00:16,000 –&gt; 00:00:19,000<br>The first, the fundamental principles of communication.</p>
+<p>5<br>00:00:19,000 –&gt; 00:00:24,000<br>This is sort of the boundary of computer science networking with electrical engineering.</p>
+<p>6<br>00:00:24,000 –&gt; 00:00:29,000<br>We’re going to talk about things like signal and noise and how the signal to noise ratio in fact determines what’s the link layer.</p>
+<p>7<br>00:00:29,000 –&gt; 00:00:32,000<br>And so what determines what’s the potential bit rate capacity of a link?</p>
+<p>8<br>00:00:32,000 –&gt; 00:00:41,000<br>I mean, there’s a reason why today we don’t have 100 terabit per second link layers because of some of these fundamental mathematical principles of communication.</p>
+<p>9<br>00:00:41,000 –&gt; 00:00:48,000<br>So based on that, we’re going to look at things like bid errors and how link layers can recover from them using coding error correcting codes.</p>
+<p>10<br>00:00:48,000 –&gt; 00:00:58,000<br>So that, for example, you add a little bit of redundancy to your link layer frames such that if there are a few bid errors done at the physical link layer, you can recover from them and still receive the frame correctly.</p>
+<p>11<br>00:00:58,000 –&gt; 00:01:04,000<br>So the second thing that we’re going to be learning about in this in this unit are how these links are actually built.</p>
+<p>12<br>00:01:04,000 –&gt; 00:01:17,000<br>You’ll remember from the from unit one, we learned that the thin waste of IP allows many, many physical layers of link layers to operate underneath and still use the Internet protocol and to tie them all together.</p>
+<p>13<br>00:01:17,000 –&gt; 00:01:24,000<br>So there are different categories of physical links and we’re going to be talking about two here, two that will be very familiar with already.</p>
+<p>14<br>00:01:24,000 –&gt; 00:01:31,000<br>There’s wired links for which the dominant wired link in use today is Ethernet. So we’re learning how Ethernet works.</p>
+<p>15<br>00:01:31,000 –&gt; 00:01:36,000<br>The original version of Ethernet used to share the cable and so needed a way to share that cable.</p>
+<p>16<br>00:01:36,000 –&gt; 00:01:45,000<br>And so we’ll be learning about what’s called the CSMA CD protocol and access control mechanism that allows us to share that that physical cable.</p>
+<p>17<br>00:01:45,000 –&gt; 00:01:56,000<br>But we’ll learn also how Ethernet works today, which is to use switches and learn a little bit about those already in previous unit, how they learn addresses and how those tables get operated.</p>
+<p>18<br>00:01:56,000 –&gt; 00:02:07,000<br>The second thing we’ll be learning under the links is wireless links. Now wireless is quite different from wired, more than just the fact that it’s broadcast into the air.</p>
+<p>19<br>00:02:07,000 –&gt; 00:02:12,000<br>There are many, many characteristics of wireless that make it fundamentally different in the way that it works.</p>
+<p>20<br>00:02:12,000 –&gt; 00:02:16,000<br>So we need to be mindful of these when making practical links.</p>
+<p>21<br>00:02:16,000 –&gt; 00:02:27,000<br>The first one is that the signal itself in the channel can vary. It’s not fixed over time like it is in a wired link where it always has the same capacity operating on the same link.</p>
+<p>22<br>00:02:27,000 –&gt; 00:02:34,000<br>The channel can fade, there can be different types of interference, signals can take different paths of different lengths and it can fit with itself.</p>
+<p>23<br>00:02:35,000 –&gt; 00:02:45,000<br>And because it’s broadcast, everybody can hear and so this introduces some challenges as well as well as security challenges because everybody can hear what they’re saying.</p>
+<p>24<br>00:02:45,000 –&gt; 00:02:55,000<br>There’s another type of problem that we’ll learn about called the hidden terminal problem. This is when two clients that are communicating are both talking to an AP.</p>
+<p>25<br>00:02:55,000 –&gt; 00:03:01,000<br>They can happily talk to an AP, but they have no means to communicate to each other because they don’t have any direct signal contact with each other.</p>
+<p>26<br>00:03:02,000 –&gt; 00:03:10,000<br>And so there needs to be some extra level of coordination in the network to make sure that they don’t interfere with each other at the access point.</p>
+<p>27<br>00:03:10,000 –&gt; 00:03:17,000<br>Also, in addition to learning about these different types of link, we’ll be learning about one of the consequences of having these different links.</p>
+<p>28<br>00:03:17,000 –&gt; 00:03:23,000<br>And that is different links can carry packets up to a different maximum size, the so-called maximum transmission unit.</p>
+<p>29<br>00:03:23,000 –&gt; 00:03:31,000<br>Ethernet, for example, can take packets up to 1,500 bytes long, but other links may take packets only up to a certain length.</p>
+<p>30<br>00:03:31,000 –&gt; 00:03:37,000<br>And so you’ll probably remember that we’ve mentioned IP fragmentation in earlier parts of the class.</p>
+<p>31<br>00:03:37,000 –&gt; 00:03:52,000<br>This is necessary when you’re going from a link with a large maximum transmission unit down to a smaller one because it’s not able to carry it, the network will fragmented into a number of self-contained fragments that don’t get put back together again until we get to the endos.</p>
+<p>32<br>00:03:52,000 –&gt; 00:03:56,000<br>Which then resembles the data and hands it up to the next layer.</p>
+<p>33<br>00:03:56,000 –&gt; 00:04:02,000<br>So you’ll learn how that works and what the specific mechanisms are inside a IP to make that work.</p>
+<p>34<br>00:04:02,000 –&gt; 00:04:08,000<br>The last thing that we’re going to be learning about is this sort of interesting tricky little detail of the communication channel.</p>
+<p>35<br>00:04:08,000 –&gt; 00:04:15,000<br>And that is that when two hosts or two ends of a link are communicating with each other, they can’t possibly be using exactly the same clock.</p>
+<p>36<br>00:04:15,000 –&gt; 00:04:22,000<br>You can’t have exactly the same frequency, exactly the same phase at two different places at the same time.</p>
+<p>37<br>00:04:22,000 –&gt; 00:04:27,000<br>So when a sender is sending, it’s using one clock, which is potentially different from the one the receiver is using.</p>
+<p>38<br>00:04:27,000 –&gt; 00:04:36,000<br>So somehow we need to indicate to the receiver what clock rate and frequency and phase that we were using in order for the farmer to correctly decode the data.</p>
+<p>39<br>00:04:36,000 –&gt; 00:04:44,000<br>So we’ll learn about encoding in order to recover the clock and use it correctly at the farm end.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP947 0LowerLayers</div>
+      <div>http://example.com/2025/10/25/CS144-networkP947-0LowerLayers/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP997-5PhysicalandLink/" title="CS144 NetworkP997 5PhysicalandLink">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP997 5PhysicalandLink</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP967-2PhysicalandLinkPrinciples/" title="CS144 NetworkP967 2PhysicalandLinkPrinciples">
+                        <span class="hidden-mobile">CS144 NetworkP967 2PhysicalandLinkPrinciples</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

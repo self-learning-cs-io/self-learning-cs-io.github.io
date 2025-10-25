@@ -1,0 +1,833 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,000In this video, I’m going to start out by telling some of the shortcomings of a 200:00:04,000 –&gt; 00:00:08,199FIFO output queue and some of the problems that it causes">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP483 9PacketSwitching">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP483-9PacketSwitching/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,000In this video, I’m going to start out by telling some of the shortcomings of a 200:00:04,000 –&gt; 00:00:08,199FIFO output queue and some of the problems that it causes">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.783Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.783Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP483 9PacketSwitching - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP483 9PacketSwitching"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP483 9PacketSwitching</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,000<br>In this video, I’m going to start out by telling some of the shortcomings of a</p>
+<p>2<br>00:00:04,000 –&gt; 00:00:08,199<br>FIFO output queue and some of the problems that it causes. And I’m going to</p>
+<p>3<br>00:00:08,199 –&gt; 00:00:13,519<br>describe two alternatives. Switches that provide strict priorities to give</p>
+<p>4<br>00:00:13,519 –&gt; 00:00:18,160<br>priority and low priority traffic and those that can give a guaranteed rate to</p>
+<p>5<br>00:00:18,160 –&gt; 00:00:23,160<br>each of the flows passing through it. Let’s start by reviewing what an</p>
+<p>6<br>00:00:23,160 –&gt; 00:00:27,400<br>output-cute packet switch looks like. This is an example we saw before where we</p>
+<p>7<br>00:00:27,399 –&gt; 00:00:31,160<br>had three packets arriving. Their addresses will be looked up and they will be</p>
+<p>8<br>00:00:31,160 –&gt; 00:00:35,199<br>switched to the correct output. In this particular case, two red packets, meaning</p>
+<p>9<br>00:00:35,199 –&gt; 00:00:40,719<br>they’ll go to that middle red output and blue one to the top. One of the red</p>
+<p>10<br>00:00:40,719 –&gt; 00:00:44,239<br>packets gets to go. The other one is held back, waiting for the link to be free,</p>
+<p>11<br>00:00:44,239 –&gt; 00:00:49,480<br>and then it goes on its way afterwards. So implicit here is the assumption that</p>
+<p>12<br>00:00:49,480 –&gt; 00:00:54,119<br>the the output queue is a FIFO, first in first out. And that’s a pretty</p>
+<p>13<br>00:00:54,119 –&gt; 00:00:58,399<br>reasonable assumption for most router queues. But in what we’re going to be</p>
+<p>14<br>00:00:58,399 –&gt; 00:01:03,000<br>looking at next, we’re going to be focusing on this output queue and seeing what</p>
+<p>15<br>00:01:03,000 –&gt; 00:01:10,000<br>some of the consequences are of it being a FIFO. So a FIFO queue is sometimes</p>
+<p>16<br>00:01:10,000 –&gt; 00:01:14,640<br>called a free-for-all queue. There are many packets flowing through this queue</p>
+<p>17<br>00:01:14,640 –&gt; 00:01:17,759<br>coming from the different inputs. I’ve drawn here three inputs to the queue</p>
+<p>18<br>00:01:17,759 –&gt; 00:01:22,840<br>representing the three inputs to the other inputs to the switch. So these are all</p>
+<p>19<br>00:01:22,840 –&gt; 00:01:26,120<br>packets that are coming through that are part of flows that are going to this</p>
+<p>20<br>00:01:26,120 –&gt; 00:01:30,960<br>one output. So we’ll see packets coming out of here coming from all of those</p>
+<p>21<br>00:01:30,960 –&gt; 00:01:35,200<br>inputs and presumably at any one time when we have congestion, we’ll see packets</p>
+<p>22<br>00:01:35,200 –&gt; 00:01:41,640<br>queued up in this FIFO queue. If there are many flows passing through the queue</p>
+<p>23<br>00:01:41,640 –&gt; 00:01:46,960<br>whoever sends at the highest rate, whoever sends the most packets will in fact</p>
+<p>24<br>00:01:46,960 –&gt; 00:01:51,560<br>receive the highest usage of this output link. So in other words, if this one</p>
+<p>25<br>00:01:51,560 –&gt; 00:01:55,600<br>up here is able to get a whole load of packets into here, well this one down</p>
+<p>26<br>00:01:55,600 –&gt; 00:02:00,719<br>here, this the bottom input is only able to get a small number, this guy up here is</p>
+<p>27<br>00:02:00,719 –&gt; 00:02:06,400<br>going to hog this output link. So if there’s a really big hog of a flow going</p>
+<p>28<br>00:02:06,400 –&gt; 00:02:11,480<br>through, a little flow could easily get squeezed out completely. People say that</p>
+<p>29<br>00:02:11,480 –&gt; 00:02:16,599<br>this this kind of FIFO queue, well it’s nice and simple, it encourages bad</p>
+<p>30<br>00:02:16,599 –&gt; 00:02:20,719<br>behavior because the best thing for a flow to do is to try and crowd out every</p>
+<p>31<br>00:02:20,719 –&gt; 00:02:24,280<br>other flow by sending as fast as it can. It would be a little bit like when you’re</p>
+<p>32<br>00:02:24,280 –&gt; 00:02:28,759<br>downloading a web page, the thing to do would be to try and get your packets sent</p>
+<p>33<br>00:02:28,759 –&gt; 00:02:32,240<br>towards you at the highest possible rate to maximize the amount of the</p>
+<p>34<br>00:02:32,240 –&gt; 00:02:36,400<br>amount of the queue that you can get. It’s not very friendly behavior and it</p>
+<p>35<br>00:02:36,400 –&gt; 00:02:41,840<br>doesn’t provide a good incentive for good behavior. Now imagine that some of</p>
+<p>36<br>00:02:41,840 –&gt; 00:02:46,800<br>the traffic was very urgent, for example some control traffic. So let’s say we</p>
+<p>37<br>00:02:46,800 –&gt; 00:02:53,320<br>had some urgent red packets here and then we had some less urgent green packets</p>
+<p>38<br>00:02:53,320 –&gt; 00:02:57,120<br>elsewhere. Maybe there’s another one that squeezed in in front of that and a</p>
+<p>39<br>00:02:57,120 –&gt; 00:03:01,320<br>green packet down here and a green packet down here. Maybe let’s just add in</p>
+<p>40<br>00:03:01,320 –&gt; 00:03:06,060<br>another red packet for good measure. So if these ones were more important, what</p>
+<p>41<br>00:03:06,060 –&gt; 00:03:11,040<br>the FIFO queue will do is simply send them out in the order in which they came</p>
+<p>42<br>00:03:11,040 –&gt; 00:03:15,960<br>in. So if we were to number the order in which they arrived, say this was number</p>
+<p>43<br>00:03:15,960 –&gt; 00:03:20,080<br>one, this was number two, this was the third one to arrive, this one was the</p>
+<p>44<br>00:03:20,080 –&gt; 00:03:23,320<br>fourth one, this the fifth one and the sixth one, they’re obviously just going to go</p>
+<p>45<br>00:03:23,320 –&gt; 00:03:29,200<br>out in that order of one, two, three, four, five, six on the outgoing line. So not</p>
+<p>46<br>00:03:29,200 –&gt; 00:03:32,600<br>very good for the urgent control traffic or perhaps it’s some important</p>
+<p>47<br>00:03:32,600 –&gt; 00:03:36,360<br>video traffic. So the FIFO doesn’t have any way to distinguish important. It just</p>
+<p>48<br>00:03:36,360 –&gt; 00:03:40,800<br>says if you got here first and there was room in the queue, you are the most</p>
+<p>49<br>00:03:40,800 –&gt; 00:03:45,840<br>important packet. So we can’t say anything meaningful about the rate of</p>
+<p>50<br>00:03:45,840 –&gt; 00:03:51,719<br>each flow sharing this queue. One little observation that’s going to prove</p>
+<p>51<br>00:03:51,719 –&gt; 00:03:57,840<br>useful later and it’s why I’ve labeled this as the size of the queue as B and the</p>
+<p>52<br>00:03:57,840 –&gt; 00:04:02,000<br>rate at which it’s being served the outgoing link are. Notice that if a packet</p>
+<p>53<br>00:04:02,000 –&gt; 00:04:06,360<br>does make it into the queue, so if I have a packet that does make it into the queue,</p>
+<p>54<br>00:04:06,360 –&gt; 00:04:11,400<br>let’s say this one ends up at the tail of the queue, the maximum time it has to</p>
+<p>55<br>00:04:11,400 –&gt; 00:04:18,439<br>wait is B over R. So the delay through that queue we know is less than or equal</p>
+<p>56<br>00:04:18,439 –&gt; 00:04:21,480<br>to B over R. So I’m going to remember this, we’re going to use this observation</p>
+<p>57<br>00:04:21,480 –&gt; 00:04:26,120<br>later. In this video, I’m going to describe two alternatives to</p>
+<p>58<br>00:04:26,120 –&gt; 00:04:31,639<br>simple FIFO queuing. The first one is called strict priorities where we give</p>
+<p>59<br>00:04:31,639 –&gt; 00:04:35,639<br>higher priority to some flows over others and the second one is rate</p>
+<p>60<br>00:04:35,639 –&gt; 00:04:39,120<br>guarantees where we give a guaranteed rate or a guaranteed fraction of the</p>
+<p>61<br>00:04:39,120 –&gt; 00:04:43,560<br>outgoing link to each of the flows. So basically we’re going to take our single</p>
+<p>62<br>00:04:43,560 –&gt; 00:04:47,959<br>FIFO that we had before and replace it with a more complicated mechanism here.</p>
+<p>63<br>00:04:47,959 –&gt; 00:04:52,319<br>We’ve simply replaced it with a high priority queue and a low priority queue. So</p>
+<p>64<br>00:04:52,319 –&gt; 00:04:55,879<br>the inputs are just the same as before. These are where packets arrive from the</p>
+<p>65<br>00:04:55,879 –&gt; 00:05:00,879<br>incoming links. But now as a packet arrives, we’re going to decide whether to place</p>
+<p>66<br>00:05:00,879 –&gt; 00:05:04,079<br>it into the high priority queue or into a low priority queue and we do this</p>
+<p>67<br>00:05:04,079 –&gt; 00:05:08,720<br>based on bits in the header. So when a packet arrives, it might have a bit in the</p>
+<p>68<br>00:05:08,720 –&gt; 00:05:13,160<br>header and in IP there’s a specific field for this. It’s called the type of</p>
+<p>69<br>00:05:13,160 –&gt; 00:05:19,160<br>service field. And we might use that to decide which traffic is high priority and</p>
+<p>70<br>00:05:19,160 –&gt; 00:05:24,560<br>which is low priority. We might do this for example to say that video traffic is</p>
+<p>71<br>00:05:24,560 –&gt; 00:05:28,640<br>more important than email. So we might want to put the video in the high priority</p>
+<p>72<br>00:05:28,640 –&gt; 00:05:33,440<br>queue and the email in the low priority queue. Or we might say that control</p>
+<p>73<br>00:05:33,440 –&gt; 00:05:38,000<br>traffic is more important than data because we always want to have high</p>
+<p>74<br>00:05:38,000 –&gt; 00:05:43,720<br>priority for the management traffic on the network. Or an operator might say</p>
+<p>75<br>00:05:43,720 –&gt; 00:05:48,079<br>that their goal uses, that their traffic takes strict preference over their</p>
+<p>76<br>00:05:48,079 –&gt; 00:05:54,000<br>silver customers. And so that’s a way of classifying users and giving preference</p>
+<p>77<br>00:05:54,000 –&gt; 00:06:00,560<br>to those who pay more. The way that this actually works is when the packets</p>
+<p>78<br>00:06:00,560 –&gt; 00:06:04,920<br>arrive, so they would be placed and I’m going to put red packets in here and I’m</p>
+<p>79<br>00:06:04,920 –&gt; 00:06:09,680<br>going to put green packets in here for lower priority. The basic discipline is</p>
+<p>80<br>00:06:09,680 –&gt; 00:06:16,199<br>this. There’s a scheduler that sits at the output here and it’s always going to</p>
+<p>81<br>00:06:16,199 –&gt; 00:06:21,080<br>take packets from the high priority if they are there. And it’s only going to</p>
+<p>82<br>00:06:21,080 –&gt; 00:06:25,360<br>serve the low priority if there’s nothing in the high priority queue. The</p>
+<p>83<br>00:06:25,360 –&gt; 00:06:29,840<br>consequence is that high priority traffic doesn’t see the low priority traffic.</p>
+<p>84<br>00:06:29,840 –&gt; 00:06:34,240<br>It’s unaffected by it because we only serve the low priority queue if the high</p>
+<p>85<br>00:06:34,240 –&gt; 00:06:38,280<br>priority queue is empty. It’s as if the high priority traffic has its own</p>
+<p>86<br>00:06:38,280 –&gt; 00:06:42,400<br>private network and doesn’t see the low priority traffic at all. This is great</p>
+<p>87<br>00:06:42,400 –&gt; 00:06:46,360<br>for many types of many occasions where we want to give strict preference to</p>
+<p>88<br>00:06:46,360 –&gt; 00:06:50,120<br>another one, but it does run the danger of starving out the low priority</p>
+<p>89<br>00:06:50,120 –&gt; 00:06:53,920<br>traffic. So you can only use it when there’s a reasonably small amount of high</p>
+<p>90<br>00:06:53,920 –&gt; 00:06:58,720<br>high priority traffic. We don’t want to completely hog the link and starve out</p>
+<p>91<br>00:06:58,720 –&gt; 00:07:02,120<br>this low priority traffic at all. But it is quite widely used and many switches</p>
+<p>92<br>00:07:02,120 –&gt; 00:07:07,280<br>around to support this capability today. What if instead of strict</p>
+<p>93<br>00:07:07,280 –&gt; 00:07:12,639<br>priorities, we wanted to have weighted priorities. What I mean by that is if a</p>
+<p>94<br>00:07:12,639 –&gt; 00:07:20,120<br>packet arrives into this queue here and packets arrive into this queue here, I</p>
+<p>95<br>00:07:20,120 –&gt; 00:07:25,000<br>want the in some sense for the traffic here to be considered to be twice as</p>
+<p>96<br>00:07:25,000 –&gt; 00:07:30,280<br>important as this here. Not not always having strict preference, but having twice</p>
+<p>97<br>00:07:30,279 –&gt; 00:07:36,399<br>as many opportunities to send. More precisely, I’m going to say that the rate at</p>
+<p>98<br>00:07:36,399 –&gt; 00:07:42,799<br>which this queue is served is going to be 2 over 2 plus 1. So in other words, 2 is</p>
+<p>99<br>00:07:42,799 –&gt; 00:07:48,079<br>a fraction of the total rate of the Egress link. Likewise, I’m going to say that</p>
+<p>100<br>00:07:48,079 –&gt; 00:07:53,759<br>the rate that this one is going to be served is 1 that’s its weight divided by</p>
+<p>101<br>00:07:53,759 –&gt; 00:07:58,959<br>the total weight times the outgoing link rate. Okay, that’s what I’m trying to</p>
+<p>102<br>00:07:58,959 –&gt; 00:08:05,079<br>accomplish. I can generalize this to many queues as follows. This is simply just</p>
+<p>103<br>00:08:05,079 –&gt; 00:08:15,399<br>just increasing it from 2 to n where qi is going to receive W sub i bits of service</p>
+<p>104<br>00:08:15,399 –&gt; 00:08:22,519<br>and that’s the that that’s its its weight. So for example, W1 here will have a rate</p>
+<p>105<br>00:08:22,519 –&gt; 00:08:30,680<br>r1 is W1 divided by the sum of all of the weights. Alright, that is the sum over i</p>
+<p>106<br>00:08:30,680 –&gt; 00:08:39,439<br>of W i times r. All the way down to of course, W sub n just as before r of n equals</p>
+<p>107<br>00:08:39,439 –&gt; 00:08:46,279<br>W of n over the sum. I’ll just write it like that times r of the outgoing link. If</p>
+<p>108<br>00:08:46,279 –&gt; 00:08:50,279<br>all the packets were of the same length, this would actually be pretty easy. We</p>
+<p>109<br>00:08:50,279 –&gt; 00:08:58,839<br>would simply visit each of the queues in turn and we will call that a round. So one round</p>
+<p>110<br>00:08:58,839 –&gt; 00:09:06,000<br>is when we visited all of the queues in turn and then we would send W sub i units. So they</p>
+<p>111<br>00:09:06,000 –&gt; 00:09:12,159<br>could be bits or complete packets from each queue in each round. So on the outgoing line,</p>
+<p>112<br>00:09:12,159 –&gt; 00:09:18,159<br>we could have we could have W sub 1 bits from here. Then we would have all the way through</p>
+<p>113<br>00:09:18,159 –&gt; 00:09:23,879<br>to W sub n bits from this one and then all the intervening queues as well. And so this</p>
+<p>114<br>00:09:23,879 –&gt; 00:09:28,799<br>would be a round when we visited all of the queues. And you can see that the proportion</p>
+<p>115<br>00:09:28,799 –&gt; 00:09:33,759<br>that each queue has has been served in that round is in proportion to the weights, which</p>
+<p>116<br>00:09:33,759 –&gt; 00:09:40,079<br>is exactly what we wanted. So if we could serve the packets as bits at a time and actually</p>
+<p>117<br>00:09:40,079 –&gt; 00:09:43,919<br>send them out as bits in a time, which of course we can’t, but if we could, then this would</p>
+<p>118<br>00:09:43,919 –&gt; 00:09:48,559<br>actually pretty easy to accomplish what we wanted. We would simply classify the packets as they</p>
+<p>119<br>00:09:48,559 –&gt; 00:09:55,360<br>arrive into the queue that they are destined for. And then we would serve those queues according to</p>
+<p>120<br>00:09:55,360 –&gt; 00:10:04,319<br>the W sub i bits in each round and then send them out. Of course, packets are variable length and</p>
+<p>121<br>00:10:04,319 –&gt; 00:10:12,959<br>they don’t consist of single bits. And the problem is that real packets vary in size from something</p>
+<p>122<br>00:10:12,960 –&gt; 00:10:19,920<br>like 64 bytes all the way to, in the case of Ethernet, about 1,500 bytes. There are jumbo</p>
+<p>123<br>00:10:19,920 –&gt; 00:10:25,759<br>frames that are even longer than this. But even here, we’ve got two orders of magnitude difference</p>
+<p>124<br>00:10:25,759 –&gt; 00:10:30,639<br>in packet size. So if we were to serve this packet by packet instead of bit by bit, it would</p>
+<p>125<br>00:10:30,639 –&gt; 00:10:35,840<br>really mess up the weights and we wouldn’t accomplish what we were trying to do. Clearly, we must</p>
+<p>126<br>00:10:35,840 –&gt; 00:10:40,560<br>take into account the packet lengths if we want to prevent long packets from creating out a short</p>
+<p>127<br>00:10:40,639 –&gt; 00:10:48,319<br>ones. So let me describe how we do this. I’m going to first describe it in terms of a kind of a</p>
+<p>128<br>00:10:48,319 –&gt; 00:10:54,559<br>thought experiment. I’m going to use this notion of rounds again where we visit each queue in turn</p>
+<p>129<br>00:10:54,559 –&gt; 00:11:01,759<br>in a round. And then we’re going to send W sub i bits from each queue during that round.</p>
+<p>130<br>00:11:03,919 –&gt; 00:11:10,159<br>But I’m going to assume that in addition to the queues that I have here, that I have another</p>
+<p>131<br>00:11:10,159 –&gt; 00:11:15,839<br>I’m going to call it a magic queue just to remind us that this isn’t really a queue. It’s just</p>
+<p>132<br>00:11:15,839 –&gt; 00:11:19,919<br>going to be a processing element just to help us think about the problem. We’re going to get rid of</p>
+<p>133<br>00:11:19,919 –&gt; 00:11:27,360<br>this in a minute. So in a round, the first queue gets to send W sub one bits and the last queue gets</p>
+<p>134<br>00:11:27,360 –&gt; 00:11:34,879<br>to send W n bits. And what we’re going to do is we’re going to imagine that we’re going to serve</p>
+<p>135<br>00:11:34,879 –&gt; 00:11:40,720<br>each of these queues by that number of bits in each round. And then when we get to an end of</p>
+<p>136<br>00:11:40,720 –&gt; 00:11:46,559<br>packet marker, which is the last bit in the last bit in a packet. So this would be the end of packet</p>
+<p>137<br>00:11:46,559 –&gt; 00:11:52,159<br>here. And then let’s say this is the end of packet here. Once we’ve got to that end of packet marker,</p>
+<p>138<br>00:11:52,159 –&gt; 00:11:56,879<br>we will construct complete packets and send them onto the outgoing link. So that’s what this magic</p>
+<p>139<br>00:11:56,879 –&gt; 00:12:04,159<br>queue is going to do. It’s going to turn those bit by bit into packet by packet. And so this will</p>
+<p>140<br>00:12:04,159 –&gt; 00:12:10,719<br>be the end of packet bit here. And this is the end of packet bit here. But this is recognizing that</p>
+<p>141<br>00:12:11,360 –&gt; 00:12:16,000<br>we can’t send them out as bits. We wait until a full packet is accumulated and then send them out.</p>
+<p>142<br>00:12:17,120 –&gt; 00:12:22,959<br>So the question is, in what order should we be sending these out onto the line? When should we send</p>
+<p>143<br>00:12:22,959 –&gt; 00:12:30,000<br>them? Because our goal is to meet the rate guarantees where each queue gets that weighted fair share</p>
+<p>144<br>00:12:30,000 –&gt; 00:12:34,879<br>of the outgoing line. So in what order should we send this packets in order to accomplish that?</p>
+<p>145<br>00:12:35,519 –&gt; 00:12:42,240<br>I’m going to describe that next. So just as before, we’re going to assume that time proceeds in rounds.</p>
+<p>146<br>00:12:42,879 –&gt; 00:12:49,600<br>So our unit of time is going to be rounds. And we’re going to figure out if we were to service</p>
+<p>147<br>00:12:49,600 –&gt; 00:12:58,000<br>the packets bit by bit, which round would they have finished in? Okay, so if we were to serve them bit</p>
+<p>148<br>00:12:58,000 –&gt; 00:13:07,039<br>by bit, which round would they have finished in? Well, I’m going to start by making an observation that</p>
+<p>149<br>00:13:07,039 –&gt; 00:13:12,799<br>will give you a give your clue as to how we’re going to use this. Let’s consider a packet here</p>
+<p>150<br>00:13:12,799 –&gt; 00:13:18,799<br>that’s waiting to go. And let’s consider the round in which it starts. We’ll call that s of k. And</p>
+<p>151<br>00:13:18,799 –&gt; 00:13:26,720<br>the round in which it finishes. And we’ll call that f sub k. Because we’re serving everything in rounds</p>
+<p>152<br>00:13:26,720 –&gt; 00:13:32,960<br>and time progresses in rounds. We can say the finishing time of this packet is its starting time in</p>
+<p>153<br>00:13:32,960 –&gt; 00:13:42,399<br>rounds plus the length of the packet divided by w of 1. That’s because that first queue will receive</p>
+<p>154<br>00:13:42,399 –&gt; 00:13:48,080<br>exactly w sub 1 bits of service in each round. So it’s finishing round is its starting round plus</p>
+<p>155<br>00:13:48,080 –&gt; 00:13:53,279<br>its length divided by the number of bits it gets served per round. Okay, so this is the finishing time here.</p>
+<p>156<br>00:13:53,279 –&gt; 00:14:01,919<br>Now let’s think about what happens when a packet arrives. So we’re going to try and calculate the</p>
+<p>157<br>00:14:01,919 –&gt; 00:14:07,199<br>starting time of that packet when it arrives. In other words, what time will it enter service?</p>
+<p>158<br>00:14:08,399 –&gt; 00:14:12,799<br>And what time will it finish service? Might be surprising that we can do this, but I’m going to show</p>
+<p>159<br>00:14:12,799 –&gt; 00:14:19,519<br>you a way we can calculate both its starting time and its finishing time when it arrives. So the</p>
+<p>160<br>00:14:19,519 –&gt; 00:14:24,720<br>starting time of that packet, the time at which it starts to enter service, is going to depend on</p>
+<p>161<br>00:14:24,720 –&gt; 00:14:30,799<br>what’s ahead of it in the queue. So if we’re keeping track of the finishing time of this packet in rounds</p>
+<p>162<br>00:14:31,759 –&gt; 00:14:38,480<br>and we want to know what the starting time of this next packet here and its finishing time,</p>
+<p>163<br>00:14:38,480 –&gt; 00:14:43,279<br>we can do the following calculation. So this is the finishing time of the k minus 1 packet. It’s the</p>
+<p>164<br>00:14:43,279 –&gt; 00:14:49,679<br>one that’s ahead of it in queue. We can say that the starting time of the packet k is going to be</p>
+<p>165<br>00:14:49,679 –&gt; 00:14:56,319<br>simply the finishing time of the packet ahead of it because we’re proceeding in rounds so it will be</p>
+<p>166<br>00:14:56,319 –&gt; 00:15:01,919<br>immediately entering service as soon as the one ahead of it is finished. Unless the queue happens</p>
+<p>167<br>00:15:01,919 –&gt; 00:15:06,799<br>to be empty and there’s nothing ahead of us, in which case it will enter service now. There’s going</p>
+<p>168<br>00:15:06,799 –&gt; 00:15:12,240<br>to be the max of these two values, the max of the finishing time of the packet ahead of it and now.</p>
+<p>169<br>00:15:14,240 –&gt; 00:15:20,559<br>The second thing that we can say is that the finishing time of k is its starting time plus</p>
+<p>170<br>00:15:20,559 –&gt; 00:15:26,639<br>l over w1 just as before because we know that’s how much service. So the combination of these two</p>
+<p>171<br>00:15:26,639 –&gt; 00:15:33,839<br>gives us a recursion that so long as we keep calculating the finishing time and keep track of that,</p>
+<p>172<br>00:15:33,839 –&gt; 00:15:38,079<br>we can calculate the starting time and the finishing time of packets as they arrive.</p>
+<p>173<br>00:15:38,720 –&gt; 00:15:45,040<br>That’s a pretty neat property. And then what we’re going to do is we’re going to service the packets</p>
+<p>174<br>00:15:45,040 –&gt; 00:15:48,480<br>in other words we’re going to take the packets from head of line. So here is a scheduler. It’s going</p>
+<p>175<br>00:15:48,480 –&gt; 00:15:53,280<br>to be examining the head of line packets and it’s going to pick the one with the lowest</p>
+<p>176<br>00:15:54,400 –&gt; 00:15:59,200<br>f, the lowest finishing time. So it’ll pick the packet with the lowest finishing time. So that’s what</p>
+<p>177<br>00:15:59,200 –&gt; 00:16:06,320<br>the scheduler does. So we calculated the f of k when the packet came in and then when it gets to</p>
+<p>178<br>00:16:06,320 –&gt; 00:16:11,040<br>the head of line it’s competing with all the head of line packets to leave and the scheduler is</p>
+<p>179<br>00:16:11,040 –&gt; 00:16:16,640<br>simply going to pick the one with the lowest finishing time. This has the nice property that</p>
+<p>180<br>00:16:16,640 –&gt; 00:16:22,400<br>finishing times can be determined when the packet arrives and the packets are served in order of</p>
+<p>181<br>00:16:22,400 –&gt; 00:16:26,800<br>their finishing time which at least intuitively seems like the best thing to do. Turns out that it’s</p>
+<p>182<br>00:16:26,800 –&gt; 00:16:32,480<br>more than just intuitively a good thing to do. I’ll show you why it actually is the right thing to do.</p>
+<p>183<br>00:16:32,800 –&gt; 00:16:41,039<br>If we plot the finishing time of the packets if they were being served bit by bit,</p>
+<p>184<br>00:16:41,680 –&gt; 00:16:47,200<br>in other words the time that the end of packet bit would leave on the outgoing line if the packet</p>
+<p>185<br>00:16:47,200 –&gt; 00:16:50,639<br>was being served bit by. It might look something like this. This is just something I sketched.</p>
+<p>186<br>00:16:52,639 –&gt; 00:16:58,000<br>If we look at the finishing time of the packet by packet scheme where each packet goes and must</p>
+<p>187<br>00:16:58,000 –&gt; 00:17:03,039<br>wait for the packet head of it to finish before it can go on the line, packets could end up actually</p>
+<p>188<br>00:17:03,039 –&gt; 00:17:07,359<br>departing a little bit later because they could be held up by a packet that’s still in service.</p>
+<p>189<br>00:17:07,359 –&gt; 00:17:13,200<br>So there could be a little bit of a delta between when the packet would finish bit by bit and we know</p>
+<p>190<br>00:17:13,200 –&gt; 00:17:22,319<br>if it’s bit by bit and the rate that it will receive the qi would receive will be w sub i over the</p>
+<p>191<br>00:17:22,319 –&gt; 00:17:27,279<br>sum of the wj’s. In other words the the weight that we’re looking for of the outgoing line. So</p>
+<p>192<br>00:17:28,559 –&gt; 00:17:33,920<br>if this was being met then we know that would be true. In the packet by packet scheme it can be</p>
+<p>193<br>00:17:33,920 –&gt; 00:17:39,039<br>proved that the difference in the time that it will depart under the packet by packet scheme</p>
+<p>194<br>00:17:39,039 –&gt; 00:17:47,119<br>is no more than lmax the maximum length packet divided by r later than under the bit by bit scheme.</p>
+<p>195<br>00:17:48,319 –&gt; 00:17:54,960<br>And that’s true for every single packet in the system. So this is really useful because over a</p>
+<p>196<br>00:17:54,960 –&gt; 00:18:00,319<br>long period of time this tells us that the same number of bits will have departed as under the bit</p>
+<p>197<br>00:18:00,319 –&gt; 00:18:04,319<br>by bit scheme. They’ll just be jiggled around a little bit. There’ll be a little variance in the</p>
+<p>198<br>00:18:04,319 –&gt; 00:18:09,759<br>actual departure time but measured over a long period of time. So under this packet by packet scheme</p>
+<p>199<br>00:18:09,759 –&gt; 00:18:18,720<br>r of i will be the same as it was before. So it’ll be that weight of i divided by the sum over wj</p>
+<p>200<br>00:18:19,440 –&gt; 00:18:28,640<br>r. So this will accomplish exactly the rates that we want. This scheme is often called wfq or weighted</p>
+<p>201<br>00:18:28,640 –&gt; 00:18:34,799<br>fair queuing. Weighted fair queuing is a pretty famous technique. You can find lots of references to it.</p>
+<p>202<br>00:18:35,680 –&gt; 00:18:40,319<br>It’s also known as packet by packet generalized processor sharing but if you look under wfq you</p>
+<p>203<br>00:18:40,319 –&gt; 00:18:45,759<br>can find lots of references to it. But what it essentially tells us is tells us a specific mechanism</p>
+<p>204<br>00:18:45,759 –&gt; 00:18:50,879<br>for calculating the finishing time of packets and scheduling them so that we can give weighted</p>
+<p>205<br>00:18:50,879 –&gt; 00:18:57,039<br>fairness, weighted usage of the outgoing link and rate guarantees to each of the flows.</p>
+<p>206<br>00:18:59,200 –&gt; 00:19:04,720<br>In summary, fifo queues are a bit of a free-for-all. They have no priorities, no guaranteed rates</p>
+<p>207<br>00:19:04,720 –&gt; 00:19:10,559<br>and there’s an incentive for a flow to send as many packets as it can into the queue so that it</p>
+<p>208<br>00:19:10,559 –&gt; 00:19:14,559<br>maximizes its share of the outgoing link. So they kind of encourage bad behavior.</p>
+<p>209<br>00:19:15,519 –&gt; 00:19:21,919<br>So instead it’s quite common to use strict priorities. High priority traffic could see or experience</p>
+<p>210<br>00:19:21,919 –&gt; 00:19:26,720<br>a network with which appears to have no low priority traffic at all. It’s unaffected by it.</p>
+<p>211<br>00:19:26,720 –&gt; 00:19:31,359<br>This is useful if we have limited amounts of high priority traffic like control traffic in the</p>
+<p>212<br>00:19:31,359 –&gt; 00:19:36,639<br>network. But if we want to do something that is more of a weighted priority then we need to use</p>
+<p>213<br>00:19:36,639 –&gt; 00:19:40,960<br>something like weighted fair queuing which lets us give each flow a guaranteed service rate.</p>
+<p>214<br>00:19:41,600 –&gt; 00:19:45,840<br>And we do that by scheduling the packets in order of their bit by bit finishing times.</p>
+<p>215<br>00:19:46,880 –&gt; 00:19:54,319<br>That’s the end of the video.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP483 9PacketSwitching</div>
+      <div>http://example.com/2025/10/25/CS144-networkP483-9PacketSwitching/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP544-2CongestionControl/" title="CS144 NetworkP544 2CongestionControl">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP544 2CongestionControl</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP493-10PacketSwitching/" title="CS144 NetworkP493 10PacketSwitching">
+                        <span class="hidden-mobile">CS144 NetworkP493 10PacketSwitching</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

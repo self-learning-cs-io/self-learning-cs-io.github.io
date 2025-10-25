@@ -1,0 +1,938 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,719So this video I’m going to dig into the details of TCP connection setup in Teradown. 200:00:04,719 –&gt; 00:00:09,000This is a deeper look than the initial service mode">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP362 11Reliablecomm">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP362-11Reliablecomm/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,719So this video I’m going to dig into the details of TCP connection setup in Teradown. 200:00:04,719 –&gt; 00:00:09,000This is a deeper look than the initial service mode">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.778Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.778Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP362 11Reliablecomm - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP362 11Reliablecomm"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          27 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP362 11Reliablecomm</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,719<br>So this video I’m going to dig into the details of TCP connection setup in Teradown.</p>
+<p>2<br>00:00:04,719 –&gt; 00:00:09,000<br>This is a deeper look than the initial service model presented, looking at a couple of edge</p>
+<p>3<br>00:00:09,000 –&gt; 00:00:12,160<br>cases and the entire TCP state diagram.</p>
+<p>4<br>00:00:12,160 –&gt; 00:00:16,280<br>So we’ll look at through a handshake, something called simultaneous open, which turns out</p>
+<p>5<br>00:00:16,280 –&gt; 00:00:20,960<br>to be really important today in peer-to-peer applications, and actually show the full TCP state</p>
+<p>6<br>00:00:20,960 –&gt; 00:00:23,679<br>machine for connection setup in Teradown.</p>
+<p>7<br>00:00:23,679 –&gt; 00:00:26,600<br>So the high level problem here is if we want to communicate reliably, it turns out it’s</p>
+<p>8<br>00:00:26,600 –&gt; 00:00:29,520<br>very helpful to have state on one or both ends of the connection.</p>
+<p>9<br>00:00:29,520 –&gt; 00:00:33,920<br>You can, in fact, turn turns out you can communicate reliably with having something</p>
+<p>10<br>00:00:33,920 –&gt; 00:00:37,000<br>stateless on one end or the other, but it’s much less efficient.</p>
+<p>11<br>00:00:37,000 –&gt; 00:00:38,480<br>Having a little bit of state is great.</p>
+<p>12<br>00:00:38,480 –&gt; 00:00:42,960<br>It’ll make you have much better throughput, et cetera.</p>
+<p>13<br>00:00:42,960 –&gt; 00:00:46,480<br>But if we have this state, there’s this problem of how do we set up that state?</p>
+<p>14<br>00:00:46,480 –&gt; 00:00:47,480<br>What is it?</p>
+<p>15<br>00:00:47,480 –&gt; 00:00:48,880<br>So connection establishment.</p>
+<p>16<br>00:00:48,880 –&gt; 00:00:54,120<br>But then also, given the states can a state take up RAM in your machine, when can your</p>
+<p>17<br>00:00:54,119 –&gt; 00:00:55,119<br>Teradown?</p>
+<p>18<br>00:00:55,119 –&gt; 00:00:58,719<br>When is, can you sort of garbage collect this state and reuse it?</p>
+<p>19<br>00:00:58,719 –&gt; 00:01:02,799<br>So examples of the memory structures using for your TCP connection, the buffers, or also</p>
+<p>20<br>00:01:02,799 –&gt; 00:01:04,239<br>the port numbers that you’ve used.</p>
+<p>21<br>00:01:04,239 –&gt; 00:01:08,239<br>So there are these problems of connection establishment and Teradown.</p>
+<p>22<br>00:01:08,239 –&gt; 00:01:19,359<br>So here’s the standard TCP header with its standard 20 byte payload and then options.</p>
+<p>23<br>00:01:19,359 –&gt; 00:01:23,599<br>So for connection setup, as we’ve seen before, there are four parts of the header that are</p>
+<p>24<br>00:01:23,599 –&gt; 00:01:24,599<br>used.</p>
+<p>25<br>00:01:24,599 –&gt; 00:01:29,519<br>The sequence number, the acknowledgement number, the actbit, and the sin bit.</p>
+<p>26<br>00:01:29,519 –&gt; 00:01:32,519<br>So here I’m going to walk through the through a handshake in a little bit more detail as</p>
+<p>27<br>00:01:32,519 –&gt; 00:01:34,679<br>to what happens in the packets that are exchanged.</p>
+<p>28<br>00:01:34,679 –&gt; 00:01:39,560<br>So recall, in the standard through a handshake model, we have an active opener and a passive</p>
+<p>29<br>00:01:39,560 –&gt; 00:01:40,560<br>opener.</p>
+<p>30<br>00:01:40,560 –&gt; 00:01:43,799<br>The passive opener is sitting, listening, waiting for connection requests, such as a web</p>
+<p>31<br>00:01:43,799 –&gt; 00:01:44,799<br>server.</p>
+<p>32<br>00:01:44,799 –&gt; 00:01:50,919<br>The active opener is the one who initiates the request to start the connection.</p>
+<p>33<br>00:01:50,920 –&gt; 00:02:00,000<br>So in the first step, the active opener sends a TCP segment with the sin bit set to indicate</p>
+<p>34<br>00:02:00,000 –&gt; 00:02:03,400<br>that it’s synchronizing the passive side to the beginning of its stream.</p>
+<p>35<br>00:02:03,400 –&gt; 00:02:05,840<br>It’s saying, what is the first sequence number of my stream?</p>
+<p>36<br>00:02:05,840 –&gt; 00:02:07,920<br>So let’s call it S sub A.</p>
+<p>37<br>00:02:07,920 –&gt; 00:02:13,960<br>So you do this rather than just say, assume zero for a bunch of reasons.</p>
+<p>38<br>00:02:13,960 –&gt; 00:02:18,960<br>Number one, it’s very helpful to randomize your starting sequence number for security reasons.</p>
+<p>39<br>00:02:18,960 –&gt; 00:02:23,879<br>It means that people can guess where your stream starts and try to insert data on you.</p>
+<p>40<br>00:02:23,879 –&gt; 00:02:28,080<br>Also it’s useful if there happen to be old packets flying around the internet, which sometimes</p>
+<p>41<br>00:02:28,080 –&gt; 00:02:30,439<br>happens you can have tremendous delays somewhere.</p>
+<p>42<br>00:02:30,439 –&gt; 00:02:34,719<br>If you randomize your starting sequence number, then it becomes very unlikely that some random</p>
+<p>43<br>00:02:34,719 –&gt; 00:02:42,319<br>segment or perhaps a corrupted segment is going to overlap your own sequence window.</p>
+<p>44<br>00:02:42,319 –&gt; 00:02:47,240<br>So the active side sends a sin saying, this is my starting sequence number, S sub A.</p>
+<p>45<br>00:02:47,240 –&gt; 00:02:55,200<br>The passive side responds also with a sin saying, okay, I’m going to synchronize you.</p>
+<p>46<br>00:02:55,200 –&gt; 00:02:59,480<br>My starting sequence number is that’s a SAP for passive.</p>
+<p>47<br>00:02:59,480 –&gt; 00:03:02,400<br>But I’m also going to set the ACBIT, which means that the acknowledgment sequence number</p>
+<p>48<br>00:03:02,400 –&gt; 00:03:04,560<br>in the packet is valid.</p>
+<p>49<br>00:03:04,560 –&gt; 00:03:07,960<br>And I’m going to ACCA plus one.</p>
+<p>50<br>00:03:07,960 –&gt; 00:03:13,600<br>Recall that the node acknowledges not the last byte received, but rather the first byte</p>
+<p>51<br>00:03:13,600 –&gt; 00:03:14,600<br>that hasn’t been received.</p>
+<p>52<br>00:03:14,599 –&gt; 00:03:20,439<br>By sending ACCA plus one, the passive side has acknowledged that it received the sin,</p>
+<p>53<br>00:03:20,439 –&gt; 00:03:26,240<br>which is effectively byte S sub A. The active side then responds.</p>
+<p>54<br>00:03:26,240 –&gt; 00:03:28,439<br>It doesn’t need to send a sin because it’s synchronized.</p>
+<p>55<br>00:03:28,439 –&gt; 00:03:37,359<br>So it sends a packet with sequence number SP plus one that’s commonly that was used.</p>
+<p>56<br>00:03:37,360 –&gt; 00:03:49,380<br>And AC, I’m sorry, sends a packet with S A plus one, and AC SP plus one.</p>
+<p>57<br>00:03:49,380 –&gt; 00:03:53,540<br>And so now it’s acknowledging saying, I have received your sin and I’m acknowledging</p>
+<p>58<br>00:03:53,540 –&gt; 00:03:54,540<br>that.</p>
+<p>59<br>00:03:54,540 –&gt; 00:03:58,800<br>Now this initial packet, the sequence number is SA plus one, but it tends to be of zero</p>
+<p>60<br>00:03:58,800 –&gt; 00:04:00,920<br>length.</p>
+<p>61<br>00:04:00,920 –&gt; 00:04:05,200<br>So if there were a byte in the packet, it would be SA plus one.</p>
+<p>62<br>00:04:05,200 –&gt; 00:04:06,200<br>But it’s not.</p>
+<p>63<br>00:04:06,200 –&gt; 00:04:07,200<br>And so it’s of length zero.</p>
+<p>64<br>00:04:07,199 –&gt; 00:04:09,159<br>It’s just a simple control packet.</p>
+<p>65<br>00:04:09,159 –&gt; 00:04:14,539<br>And so there’s the sequence number of which the bytes would start, but there are no bytes.</p>
+<p>66<br>00:04:14,539 –&gt; 00:04:16,560<br>So that’s the basic connection setup.</p>
+<p>67<br>00:04:16,560 –&gt; 00:04:23,759<br>Sin, sin, AC, AC, A plus one, P, P plus one, and then an empty segment just for connection</p>
+<p>68<br>00:04:23,759 –&gt; 00:04:25,919<br>establishment.</p>
+<p>69<br>00:04:25,919 –&gt; 00:04:28,599<br>So it turns out TCP also supports another way of opening a connection.</p>
+<p>70<br>00:04:28,599 –&gt; 00:04:32,120<br>Something that’s called simultaneous open, which as I said is used a lot as we’ll see</p>
+<p>71<br>00:04:32,120 –&gt; 00:04:35,240<br>later in the course in peer-to-peer applications.</p>
+<p>72<br>00:04:35,240 –&gt; 00:04:39,800<br>It’s a reverse thing called network address translation boxes.</p>
+<p>73<br>00:04:39,800 –&gt; 00:04:44,800<br>And so the way simultaneous open works is this happens if both the active, if the two sides,</p>
+<p>74<br>00:04:44,800 –&gt; 00:04:48,960<br>we call them active and passive, but now they’re really both active, both know each other’s</p>
+<p>75<br>00:04:48,960 –&gt; 00:04:49,960<br>port numbers.</p>
+<p>76<br>00:04:49,960 –&gt; 00:04:55,160<br>So the note on the left knows that the port that the note on the right is issuing a connection</p>
+<p>77<br>00:04:55,160 –&gt; 00:04:56,160<br>request from.</p>
+<p>78<br>00:04:56,160 –&gt; 00:04:58,639<br>The note on the right knows the same for the note on the left.</p>
+<p>79<br>00:04:58,639 –&gt; 00:05:00,480<br>And so they’re using the correct port numbers.</p>
+<p>80<br>00:05:00,480 –&gt; 00:05:04,480<br>And they do this to negotiate the SA beforehand.</p>
+<p>81<br>00:05:04,480 –&gt; 00:05:11,000<br>So what happens with simultaneous open is both sides send sins at the same time.</p>
+<p>82<br>00:05:11,000 –&gt; 00:05:14,759<br>And so here the one on the left sends a sin.</p>
+<p>83<br>00:05:14,759 –&gt; 00:05:17,000<br>Let’s call it just S, S, A again.</p>
+<p>84<br>00:05:17,000 –&gt; 00:05:18,000<br>S, A.</p>
+<p>85<br>00:05:18,000 –&gt; 00:05:25,520<br>But at the same time, the note on the right sends a sin, S, P. Well, the note on the left</p>
+<p>86<br>00:05:25,519 –&gt; 00:05:40,680<br>responds and it sends sin, S, S, A, A, S, P plus one.</p>
+<p>87<br>00:05:40,680 –&gt; 00:05:50,399<br>Similarly the note on the right responds with sin, S, P, A, S, A, plus one.</p>
+<p>88<br>00:05:50,399 –&gt; 00:05:52,079<br>At this point, we’ve now established the connection.</p>
+<p>89<br>00:05:52,079 –&gt; 00:05:53,079<br>Both sides are synchronized.</p>
+<p>90<br>00:05:53,079 –&gt; 00:05:55,719<br>The starting sequence numbers, they’ve acknowledged that.</p>
+<p>91<br>00:05:55,719 –&gt; 00:05:58,399<br>Note that this takes four messages rather than three.</p>
+<p>92<br>00:05:58,399 –&gt; 00:06:02,319<br>So let’s see this just to standard through a handshake and practice.</p>
+<p>93<br>00:06:02,319 –&gt; 00:06:08,079<br>So here I’ve opened up Warrashark, filtering on port 80 and a certain IP address.</p>
+<p>94<br>00:06:08,079 –&gt; 00:06:13,039<br>And so I’m just going to tell net to port 80 on that host and we’ll see the sin, sin</p>
+<p>95<br>00:06:13,039 –&gt; 00:06:14,799<br>act, act set up.</p>
+<p>96<br>00:06:14,799 –&gt; 00:06:15,799<br>So there it is.</p>
+<p>97<br>00:06:15,799 –&gt; 00:06:19,519<br>So here’s the first packet sent from my host to the destination.</p>
+<p>98<br>00:06:19,519 –&gt; 00:06:27,240<br>And we see that it’s an HTTP port 80 sin sequence number zero and there’s no act set.</p>
+<p>99<br>00:06:27,240 –&gt; 00:06:28,240<br>There’s no act bit.</p>
+<p>100<br>00:06:28,240 –&gt; 00:06:31,159<br>And so the acknowledgement fields and valets is not displayed.</p>
+<p>101<br>00:06:31,159 –&gt; 00:06:33,560<br>Now it turns out the sequence number in this packet isn’t actually zero.</p>
+<p>102<br>00:06:33,560 –&gt; 00:06:37,879<br>What tools like Warrashark do just to make things easier to read is they use relative sequence</p>
+<p>103<br>00:06:37,879 –&gt; 00:06:38,879<br>numbers.</p>
+<p>104<br>00:06:38,879 –&gt; 00:06:43,439<br>They show you what the sequence number is relative to the beginning of the stream.</p>
+<p>105<br>00:06:43,439 –&gt; 00:06:46,560<br>And since we’re just starting the scene, we see sequence number zero.</p>
+<p>106<br>00:06:46,560 –&gt; 00:06:48,560<br>We dig inside the packet down here at the bottom.</p>
+<p>107<br>00:06:48,560 –&gt; 00:06:54,280<br>You can see where Warrashark tells you sequence number zero relative sequence number.</p>
+<p>108<br>00:06:54,280 –&gt; 00:06:59,000<br>And if we then look at the actual field, it’s CCBD1DBB.</p>
+<p>109<br>00:06:59,000 –&gt; 00:07:02,360<br>And so it’s much larger than zero.</p>
+<p>110<br>00:07:02,360 –&gt; 00:07:06,199<br>Now what we then see is for the second packet that’s acknowledging this, it’s going to</p>
+<p>111<br>00:07:06,199 –&gt; 00:07:12,879<br>acknowledge with CCBD1DBC.</p>
+<p>112<br>00:07:12,879 –&gt; 00:07:16,040<br>Here again, it’s using relative act numbers, but that’s what we see.</p>
+<p>113<br>00:07:16,040 –&gt; 00:07:19,080<br>CCBD1DBC.</p>
+<p>114<br>00:07:19,080 –&gt; 00:07:20,760<br>It’s also sending a sin.</p>
+<p>115<br>00:07:20,760 –&gt; 00:07:22,920<br>So here’s the sin act.</p>
+<p>116<br>00:07:22,920 –&gt; 00:07:30,200<br>And so the sequence number again, a relative sequence number of zero, but it’s 341135AE.</p>
+<p>117<br>00:07:30,200 –&gt; 00:07:32,520<br>So this is from my host to the server.</p>
+<p>118<br>00:07:32,520 –&gt; 00:07:34,800<br>This is the server back of the sin act.</p>
+<p>119<br>00:07:34,800 –&gt; 00:07:37,240<br>Then my host responds to the an act.</p>
+<p>120<br>00:07:37,240 –&gt; 00:07:40,600<br>And so you can see sequence number one, acknowledgement number one.</p>
+<p>121<br>00:07:40,600 –&gt; 00:07:43,320<br>So it’s acknowledging the sin that was sent from the server.</p>
+<p>122<br>00:07:43,319 –&gt; 00:07:46,759<br>And it gives a sequence number one, but it’s a length of zero.</p>
+<p>123<br>00:07:46,759 –&gt; 00:07:50,879<br>And so it’s saying, aha, you know, I, this packet contains the stream starting at byte</p>
+<p>124<br>00:07:50,879 –&gt; 00:07:52,040<br>one, but there’s nothing in it.</p>
+<p>125<br>00:07:52,040 –&gt; 00:07:53,759<br>So there’s actually no data.</p>
+<p>126<br>00:07:53,759 –&gt; 00:07:55,959<br>So there we see a simple three way hand shake.</p>
+<p>127<br>00:07:55,959 –&gt; 00:07:58,319<br>So now let’s look at a TSP connection when there is data.</p>
+<p>128<br>00:07:58,319 –&gt; 00:08:02,159<br>So we’re going to see the sin, sin act, and then some data communication.</p>
+<p>129<br>00:08:02,159 –&gt; 00:08:07,560<br>So I can do the same things before except this time rather than tell netting to port 80 where</p>
+<p>130<br>00:08:07,560 –&gt; 00:08:11,959<br>there’s no data transfer, I’m just going to do a standard web request to port 80.</p>
+<p>131<br>00:08:11,959 –&gt; 00:08:20,919<br>And so here we see a TSP connection.</p>
+<p>132<br>00:08:20,919 –&gt; 00:08:24,240<br>And so here we have the sin sin act act.</p>
+<p>133<br>00:08:24,240 –&gt; 00:08:28,439<br>So now the connection is then established and then data transmission starts.</p>
+<p>134<br>00:08:28,439 –&gt; 00:08:31,519<br>And so here’s a packet showing its HTTP.</p>
+<p>135<br>00:08:31,519 –&gt; 00:08:38,000<br>And if we look inside this particular TSP segment, see sequence number one.</p>
+<p>136<br>00:08:38,000 –&gt; 00:08:40,000<br>So it’s the start of the data stream.</p>
+<p>137<br>00:08:40,000 –&gt; 00:08:41,399<br>Now length 474.</p>
+<p>138<br>00:08:41,399 –&gt; 00:08:45,639<br>So this particular chunk of data was 474 bytes long.</p>
+<p>139<br>00:08:45,639 –&gt; 00:08:48,480<br>So the next sequence number would be 475.</p>
+<p>140<br>00:08:48,480 –&gt; 00:08:50,440<br>Still act one.</p>
+<p>141<br>00:08:50,440 –&gt; 00:08:53,879<br>And so there’s the data that we’re sending as there’s request to the web server, then the</p>
+<p>142<br>00:08:53,879 –&gt; 00:08:58,000<br>web server responds and responds with act 475.</p>
+<p>143<br>00:08:58,000 –&gt; 00:08:59,000<br>Right.</p>
+<p>144<br>00:08:59,000 –&gt; 00:09:02,840<br>So at the next byte to expect is 475.</p>
+<p>145<br>00:09:02,840 –&gt; 00:09:04,320<br>But sequence number one.</p>
+<p>146<br>00:09:04,320 –&gt; 00:09:06,159<br>So this is just length zero.</p>
+<p>147<br>00:09:06,159 –&gt; 00:09:08,720<br>This act, it has no data in it.</p>
+<p>148<br>00:09:08,720 –&gt; 00:09:12,680<br>This was recall sort of off just an act packet.</p>
+<p>149<br>00:09:12,680 –&gt; 00:09:18,320<br>And so it has no TSP segment data, but is acknowledging the data that it’s received.</p>
+<p>150<br>00:09:18,320 –&gt; 00:09:21,879<br>The next packet though from the server actually has data in it.</p>
+<p>151<br>00:09:21,879 –&gt; 00:09:25,240<br>So you can see here length 1448, but sequence number one.</p>
+<p>152<br>00:09:25,240 –&gt; 00:09:31,040<br>So it’s one to 1449.</p>
+<p>153<br>00:09:31,040 –&gt; 00:09:32,519<br>And here’s the next TCP segment.</p>
+<p>154<br>00:09:32,519 –&gt; 00:09:38,399<br>And then we see here putting that together, there’s the HTTP response, which it’s put together.</p>
+<p>155<br>00:09:38,399 –&gt; 00:09:40,439<br>And so there we see the connection to establishment.</p>
+<p>156<br>00:09:40,439 –&gt; 00:09:44,240<br>And now the sequence and acknowledgement number spaces are walking forward according</p>
+<p>157<br>00:09:44,240 –&gt; 00:09:45,639<br>to the data communication.</p>
+<p>158<br>00:09:45,639 –&gt; 00:09:49,399<br>So next we’re going to look at how TCP tears down a connection.</p>
+<p>159<br>00:09:49,399 –&gt; 00:09:54,319<br>Like a connection setup, this uses the sequence number and acknowledgement number fields.</p>
+<p>160<br>00:09:54,319 –&gt; 00:09:58,399<br>But unlike connection setup, which uses the synchronization bit to synchronize sequence</p>
+<p>161<br>00:09:58,399 –&gt; 00:10:02,360<br>numbers, connection turned on uses the fin bit to denote that there’s no word data sense.</p>
+<p>162<br>00:10:02,360 –&gt; 00:10:04,840<br>It uses the act and fin bits.</p>
+<p>163<br>00:10:04,840 –&gt; 00:10:09,040<br>And so when TCP sends a packet with a fin bit, what this means is that that sender has</p>
+<p>164<br>00:10:09,040 –&gt; 00:10:10,280<br>no more data descent.</p>
+<p>165<br>00:10:10,280 –&gt; 00:10:12,120<br>This is the end of the stream.</p>
+<p>166<br>00:10:12,120 –&gt; 00:10:17,920<br>This is cause when you say call close or shutdown in the application.</p>
+<p>167<br>00:10:17,920 –&gt; 00:10:22,040<br>But TCP connections like most reliable connections are bidirectional.</p>
+<p>168<br>00:10:22,040 –&gt; 00:10:26,639<br>And so it’s not until both sides have nothing to send that you actually terminate the connection</p>
+<p>169<br>00:10:26,639 –&gt; 00:10:30,800<br>because it’s going to be one side it’s done, but the other side has more to send.</p>
+<p>170<br>00:10:30,800 –&gt; 00:10:34,200<br>And so it’s not until both sides have finned and you’ve acknowledged those that you can</p>
+<p>171<br>00:10:34,200 –&gt; 00:10:35,520<br>tear things down.</p>
+<p>172<br>00:10:35,520 –&gt; 00:10:41,200<br>So a typical tear down exchange looks like this where we say if A and B who are communicating</p>
+<p>173<br>00:10:41,200 –&gt; 00:10:43,040<br>and A closes first.</p>
+<p>174<br>00:10:43,040 –&gt; 00:10:48,640<br>And so it sends a packet with the fin bit with sequence number s sub A and acknowledging</p>
+<p>175<br>00:10:48,640 –&gt; 00:10:50,440<br>a s sub B.</p>
+<p>176<br>00:10:50,440 –&gt; 00:10:53,160<br>B then sends a packet to acknowledge this fin.</p>
+<p>177<br>00:10:53,160 –&gt; 00:10:56,200<br>So acts s sub A plus one.</p>
+<p>178<br>00:10:56,200 –&gt; 00:10:59,400<br>Then at some point later, B decides it needs to close its side of the connection.</p>
+<p>179<br>00:10:59,399 –&gt; 00:11:04,879<br>So it sends a fin sequence number s sub B, acknowledgement s sub one, it’s still acknowledging</p>
+<p>180<br>00:11:04,879 –&gt; 00:11:06,480<br>s A plus one.</p>
+<p>181<br>00:11:06,480 –&gt; 00:11:09,879<br>Which then A responds saying A, I’ll acknowledge s B plus one.</p>
+<p>182<br>00:11:09,879 –&gt; 00:11:14,840<br>So fin like sin represents of the last bite of the connection, the way that you like sin</p>
+<p>183<br>00:11:14,840 –&gt; 00:11:19,159<br>represents the first bite of the way you acknowledge is by acknowledging plus one.</p>
+<p>184<br>00:11:19,159 –&gt; 00:11:23,079<br>With fin, you acknowledge you received a by acknowledging plus one.</p>
+<p>185<br>00:11:23,079 –&gt; 00:11:27,199<br>Of course, you can also have simultaneous close where they send the fins in parallel</p>
+<p>186<br>00:11:27,200 –&gt; 00:11:30,680<br>and the same exchange occurs.</p>
+<p>187<br>00:11:30,680 –&gt; 00:11:31,680<br>Great.</p>
+<p>188<br>00:11:31,680 –&gt; 00:11:34,680<br>So now we’ve exchanged these messages and we’ve acknowledged them.</p>
+<p>189<br>00:11:34,680 –&gt; 00:11:36,280<br>When can we actually tear down the connection?</p>
+<p>190<br>00:11:36,280 –&gt; 00:11:38,720<br>When can we actually delete the state?</p>
+<p>191<br>00:11:38,720 –&gt; 00:11:40,840<br>When can we reuse the ports?</p>
+<p>192<br>00:11:40,840 –&gt; 00:11:41,840<br>This turns out to be non-trivial.</p>
+<p>193<br>00:11:41,840 –&gt; 00:11:43,840<br>You can’t do it immediately.</p>
+<p>194<br>00:11:43,840 –&gt; 00:11:48,080<br>So for example, what happens if this final act is lost in the network?</p>
+<p>195<br>00:11:48,080 –&gt; 00:11:55,240<br>So I’ve sent fin, then I receive a fin and I act it, I can’t immediately tear down my</p>
+<p>196<br>00:11:55,240 –&gt; 00:11:58,820<br>connection because what happens if that act is lost, the other side is never going to</p>
+<p>197<br>00:11:58,820 –&gt; 00:12:04,120<br>hear it, it’s never going to know whether the connection was torn down.</p>
+<p>198<br>00:12:04,120 –&gt; 00:12:08,680<br>Another issue is it could be that we do a fin, fin act and acknowledge and tear down and</p>
+<p>199<br>00:12:08,680 –&gt; 00:12:13,440<br>then these same port pair, the same port pair is used immediately for a new connection.</p>
+<p>200<br>00:12:13,440 –&gt; 00:12:17,759<br>We want to make sure that we don’t by accident then corrupt the data because the sequence</p>
+<p>201<br>00:12:17,759 –&gt; 00:12:20,200<br>number spaces overlap.</p>
+<p>202<br>00:12:20,200 –&gt; 00:12:24,560<br>So a solution that’s used is the active closer goes into something called time weight.</p>
+<p>203<br>00:12:24,639 –&gt; 00:12:29,319<br>But this means that if I’m the person who sends the fin first, then once the connection</p>
+<p>204<br>00:12:29,319 –&gt; 00:12:34,000<br>is torn down, I have to wait a little while before I can reuse my state.</p>
+<p>205<br>00:12:34,000 –&gt; 00:12:39,039<br>And so you keep the socket around for two, what’s sort of maximum segment lifetimes or two</p>
+<p>206<br>00:12:39,039 –&gt; 00:12:43,399<br>times or what you’d expect me the longest time seconds might live in the network, which</p>
+<p>207<br>00:12:43,399 –&gt; 00:12:47,399<br>is on the order of say a minute or so.</p>
+<p>208<br>00:12:47,399 –&gt; 00:12:53,479<br>So this approach of two maximum segment lifetimes can pose problems with servers in particular</p>
+<p>209<br>00:12:53,480 –&gt; 00:12:58,320<br>if I have a server that says tons and tons of sockets which are in this time weight state,</p>
+<p>210<br>00:12:58,320 –&gt; 00:12:59,800<br>this can slow things down.</p>
+<p>211<br>00:12:59,800 –&gt; 00:13:02,120<br>The server was the one closing first.</p>
+<p>212<br>00:13:02,120 –&gt; 00:13:07,920<br>So there are tricks you can send a reset, delete the socket, you can set an option to make</p>
+<p>213<br>00:13:07,920 –&gt; 00:13:10,920<br>the the linger time to be zero.</p>
+<p>214<br>00:13:10,920 –&gt; 00:13:14,399<br>Another issue is the US might not let you reuse a port because it’s still in use.</p>
+<p>215<br>00:13:14,399 –&gt; 00:13:18,600<br>There is an option you can do called SO reuse outer that’ll let you to rebind a port number.</p>
+<p>216<br>00:13:18,600 –&gt; 00:13:22,200<br>This is useful to say you’re just debugging something and gosh I don’t want to wait two</p>
+<p>217<br>00:13:22,240 –&gt; 00:13:26,520<br>hours just because I happen to have a fin in this in this order.</p>
+<p>218<br>00:13:26,520 –&gt; 00:13:29,360<br>So let’s see what a connection tear down looks like.</p>
+<p>219<br>00:13:29,360 –&gt; 00:13:35,600<br>So here’s a basic connection setup, sin, sinac, ac and then here’s the tear down.</p>
+<p>220<br>00:13:35,600 –&gt; 00:13:40,080<br>So because we are of our exchanging data we have a big knowledge been bit set.</p>
+<p>221<br>00:13:40,080 –&gt; 00:13:45,200<br>So here’s the fin, here’s the initial fin from my host when I close the connection.</p>
+<p>222<br>00:13:45,200 –&gt; 00:13:50,000<br>And so it sets the fin bit, ac1, sequence number one, ac1.</p>
+<p>223<br>00:13:50,000 –&gt; 00:13:53,960<br>And the server in response is also closing.</p>
+<p>224<br>00:13:53,960 –&gt; 00:13:56,919<br>So it sends a fin sequence number one, ac2.</p>
+<p>225<br>00:13:56,919 –&gt; 00:13:59,200<br>So it’s acknowledging my fin.</p>
+<p>226<br>00:13:59,200 –&gt; 00:14:04,840<br>And then my host responds with an ac for that fin sequence number two, ac2.</p>
+<p>227<br>00:14:04,840 –&gt; 00:14:09,960<br>So here’s a simple three way handshake for tearing down the connection fin, acknowledging</p>
+<p>228<br>00:14:09,960 –&gt; 00:14:15,399<br>some prior data, acknowledging the fin, sending your own fin and then acknowledging the</p>
+<p>229<br>00:14:15,399 –&gt; 00:14:16,720<br>fin.</p>
+<p>230<br>00:14:16,720 –&gt; 00:14:21,240<br>So now if we put all of this together, we could see what the full TCP finite state machine</p>
+<p>231<br>00:14:21,240 –&gt; 00:14:22,240<br>looks like.</p>
+<p>232<br>00:14:22,240 –&gt; 00:14:24,080<br>And so this is something you’re coming across many, many times.</p>
+<p>233<br>00:14:24,080 –&gt; 00:14:28,120<br>This is well established, a finite state machine that really sort of lays the ground for</p>
+<p>234<br>00:14:28,120 –&gt; 00:14:31,639<br>how you want to set up reliable connections.</p>
+<p>235<br>00:14:31,639 –&gt; 00:14:32,639<br>And so I’m going to walk through it.</p>
+<p>236<br>00:14:32,639 –&gt; 00:14:35,519<br>It looks pretty complicated in your first seat, but it’s because there are a couple of cases</p>
+<p>237<br>00:14:35,519 –&gt; 00:14:40,120<br>and actually given what we’ve presented before, it should all be pretty simple.</p>
+<p>238<br>00:14:40,120 –&gt; 00:14:42,440<br>So first we’re starting in the closed state.</p>
+<p>239<br>00:14:42,440 –&gt; 00:14:44,759<br>So this is when there are no connections open.</p>
+<p>240<br>00:14:44,759 –&gt; 00:14:46,399<br>You know, I’m just sitting there.</p>
+<p>241<br>00:14:46,399 –&gt; 00:14:50,639<br>My application is not tried to open a connection.</p>
+<p>242<br>00:14:50,639 –&gt; 00:14:56,879<br>So then the first transition here to the listen state, this is the passive openers.</p>
+<p>243<br>00:14:56,879 –&gt; 00:14:57,879<br>This is a server.</p>
+<p>244<br>00:14:57,879 –&gt; 00:14:58,879<br>A server is listening for connection.</p>
+<p>245<br>00:14:58,879 –&gt; 00:15:04,039<br>So you can see the action is listen and there’s no packets exchanged.</p>
+<p>246<br>00:15:04,039 –&gt; 00:15:06,200<br>If you close it, you then return to the closed state.</p>
+<p>247<br>00:15:06,200 –&gt; 00:15:10,200<br>So this if I’m listening for connections, I hear nothing or turn to the closed state.</p>
+<p>248<br>00:15:10,200 –&gt; 00:15:13,919<br>The other transition out of the closed state is the active open.</p>
+<p>249<br>00:15:13,919 –&gt; 00:15:15,439<br>So here’s the connect.</p>
+<p>250<br>00:15:15,439 –&gt; 00:15:17,879<br>And connect causes a sin packet to be set.</p>
+<p>251<br>00:15:17,879 –&gt; 00:15:20,319<br>So this is step one of the three way handshake.</p>
+<p>252<br>00:15:20,319 –&gt; 00:15:24,360<br>So you send a sin and you’re now in the sin send state.</p>
+<p>253<br>00:15:24,360 –&gt; 00:15:25,360<br>Sin sent state.</p>
+<p>254<br>00:15:25,360 –&gt; 00:15:27,000<br>So this is the active side.</p>
+<p>255<br>00:15:27,000 –&gt; 00:15:30,959<br>These red lines are showing the active opener of the three way connection.</p>
+<p>256<br>00:15:30,959 –&gt; 00:15:32,839<br>So sin sent.</p>
+<p>257<br>00:15:32,839 –&gt; 00:15:38,120<br>Then if you receive a sin and act, so this is the stage two, you send an act and now the</p>
+<p>258<br>00:15:38,120 –&gt; 00:15:40,559<br>connections established.</p>
+<p>259<br>00:15:40,559 –&gt; 00:15:43,480<br>So this path here, this is the active opener.</p>
+<p>260<br>00:15:44,480 –&gt; 00:15:46,600<br>Now let’s watch the passive opener.</p>
+<p>261<br>00:15:46,600 –&gt; 00:15:51,120<br>The passive opener is in the listen state and it receives a sin from an active opener.</p>
+<p>262<br>00:15:51,120 –&gt; 00:15:55,800<br>In response, it sends a sin act and enters the sin received state.</p>
+<p>263<br>00:15:55,800 –&gt; 00:15:59,519<br>Then if it receives an acknowledgement for its sin, there’s a stage three of the three</p>
+<p>264<br>00:15:59,519 –&gt; 00:16:00,519<br>way handshake.</p>
+<p>265<br>00:16:00,519 –&gt; 00:16:02,480<br>It’s through a flexion of this step here.</p>
+<p>266<br>00:16:02,480 –&gt; 00:16:05,560<br>Then the connection has been established.</p>
+<p>267<br>00:16:05,560 –&gt; 00:16:11,800<br>Now if you’re in the listen state, it’s possible that you can also call send to then result</p>
+<p>268<br>00:16:11,799 –&gt; 00:16:17,279<br>in sending a sin message or you can also, in that way, you’re then going to, even though</p>
+<p>269<br>00:16:17,279 –&gt; 00:16:22,240<br>you’re in the listen state, you can actively open an active and open state.</p>
+<p>270<br>00:16:22,240 –&gt; 00:16:29,919<br>So now there’s one more path here, which I mentioned, the four way simultaneous open,</p>
+<p>271<br>00:16:29,919 –&gt; 00:16:33,559<br>which is this.</p>
+<p>272<br>00:16:33,559 –&gt; 00:16:35,759<br>And so this is when both sides have sent sin.</p>
+<p>273<br>00:16:35,759 –&gt; 00:16:38,000<br>So we’re just looking at one side of the connection.</p>
+<p>274<br>00:16:38,039 –&gt; 00:16:42,519<br>When response to a sin, you get a sin from the other side.</p>
+<p>275<br>00:16:42,519 –&gt; 00:16:44,279<br>And so this is the two sins crossing.</p>
+<p>276<br>00:16:44,279 –&gt; 00:16:48,200<br>So in response, you send sin plus act, sin received, then you act.</p>
+<p>277<br>00:16:48,200 –&gt; 00:16:54,240<br>And so there’s the four messages, each is sent to sin, each is received to sin, and</p>
+<p>278<br>00:16:54,240 –&gt; 00:16:59,279<br>then received a sin, is sent to sin act, and there’s an act and data change exchange</p>
+<p>279<br>00:16:59,279 –&gt; 00:17:00,279<br>can occur.</p>
+<p>280<br>00:17:00,279 –&gt; 00:17:01,759<br>And so now we’re in the established state.</p>
+<p>281<br>00:17:01,759 –&gt; 00:17:05,319<br>Now of course, you can always transition out, we’d like to close those in resets.</p>
+<p>282<br>00:17:05,319 –&gt; 00:17:17,679<br>And now at this point, we’ve gone through connection establishment.</p>
+<p>283<br>00:17:17,679 –&gt; 00:17:25,799<br>Now we’re going to go into connection tear down.</p>
+<p>284<br>00:17:25,799 –&gt; 00:17:28,200<br>And so there are two cases here.</p>
+<p>285<br>00:17:28,200 –&gt; 00:17:32,599<br>One is that if we’re the active closer, here we call close, that results in a sin message</p>
+<p>286<br>00:17:32,599 –&gt; 00:17:35,359<br>being sent, a sin packet with a thin bit.</p>
+<p>287<br>00:17:35,359 –&gt; 00:17:37,759<br>We now enter a fin weight one.</p>
+<p>288<br>00:17:37,759 –&gt; 00:17:41,639<br>The other is if we receive a fin, then we acknowledge it.</p>
+<p>289<br>00:17:41,639 –&gt; 00:17:45,079<br>And we’re now in the passive close, state where the other side is closed, and then we</p>
+<p>290<br>00:17:45,079 –&gt; 00:17:49,679<br>call, when we actually call close, we’ll send fin, send the less act, and be closed.</p>
+<p>291<br>00:17:49,679 –&gt; 00:17:54,559<br>And so here a close weight is we are still allowed to send data, right, until we call close.</p>
+<p>292<br>00:17:54,559 –&gt; 00:17:58,079<br>This is the other side is closed, but we haven’t.</p>
+<p>293<br>00:17:58,079 –&gt; 00:18:01,399<br>So now when close is called, we’re in the fin one state.</p>
+<p>294<br>00:18:01,400 –&gt; 00:18:03,400<br>And there are a bunch of transitions out of that.</p>
+<p>295<br>00:18:03,400 –&gt; 00:18:05,240<br>One is that we receive a fin.</p>
+<p>296<br>00:18:05,240 –&gt; 00:18:09,519<br>So we’ve sent a fin, received a fin, this is the example I showed with the TCP tear down.</p>
+<p>297<br>00:18:09,519 –&gt; 00:18:12,720<br>So we’ve sent a fin, we receive a fin, we acknowledge it, we’re now in the closing</p>
+<p>298<br>00:18:12,720 –&gt; 00:18:15,960<br>state, we then transition to time weight.</p>
+<p>299<br>00:18:15,960 –&gt; 00:18:23,240<br>Another is that we receive a thin plus an act, so we can just acknowledge that and enter</p>
+<p>300<br>00:18:23,240 –&gt; 00:18:24,560<br>time weight.</p>
+<p>301<br>00:18:24,560 –&gt; 00:18:29,759<br>The final one is that we receive an act, but no fin.</p>
+<p>302<br>00:18:29,759 –&gt; 00:18:33,720<br>So this is, we have closed our side of the connection, the other side hasn’t.</p>
+<p>303<br>00:18:33,720 –&gt; 00:18:38,879<br>And so it’s sort of the, this state here is correlated with this state here.</p>
+<p>304<br>00:18:38,879 –&gt; 00:18:42,960<br>Then when we do receive the fin, we acknowledge it, enter the time weight state, and then we</p>
+<p>305<br>00:18:42,960 –&gt; 00:18:48,240<br>have the time up before we can actually close and recover the state.</p>
+<p>306<br>00:18:48,240 –&gt; 00:18:52,319<br>So you can ask, what’s the difference between this transition to closing and time weight?</p>
+<p>307<br>00:18:52,319 –&gt; 00:18:56,160<br>The reason is that this transition to closing is when the two fins pass each other.</p>
+<p>308<br>00:18:56,160 –&gt; 00:19:01,360<br>So I send a fin, the other side fence sends me a fin, but hasn’t acknowledged my fin,</p>
+<p>309<br>00:19:01,360 –&gt; 00:19:05,279<br>this is the difference between thin slash act and thin plus act slash act.</p>
+<p>310<br>00:19:05,279 –&gt; 00:19:08,960<br>And so then I wait for that fin to be acknowledged and then transition to time weight.</p>
+<p>311<br>00:19:08,960 –&gt; 00:19:10,960<br>So this is the full TCP finite state machine.</p>
+<p>312<br>00:19:10,960 –&gt; 00:19:14,680<br>It looks really complicated, it does have one, two, three, four, five, six, seven, eight,</p>
+<p>313<br>00:19:14,680 –&gt; 00:19:17,080<br>nine, ten, eleven, twelve states.</p>
+<p>314<br>00:19:17,080 –&gt; 00:19:20,160<br>But when you realize it breaks in these two parts connection establishment connection</p>
+<p>315<br>00:19:20,160 –&gt; 00:19:24,080<br>tear down, and really there’s just a bunch of different possible ways the fins can be</p>
+<p>316<br>00:19:24,079 –&gt; 00:19:27,119<br>exchanged, it’s actually not that complicated.</p>
+<p>317<br>00:19:27,119 –&gt; 00:19:31,559<br>And so I encourage you to open up wire shark and just open up a couple of web connections</p>
+<p>318<br>00:19:31,559 –&gt; 00:19:34,159<br>and just see what’s happening with your TCP connections.</p>
+<p>319<br>00:19:34,159 –&gt; 00:19:38,240<br>And you’ll be able to see how those different connections are traversing this finite state</p>
+<p>320<br>00:19:38,240 –&gt; 00:19:38,519<br>machine.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP362 11Reliablecomm</div>
+      <div>http://example.com/2025/10/25/CS144-networkP362-11Reliablecomm/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP372-12Transportrecap/" title="CS144 NetworkP372 12Transportrecap">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP372 12Transportrecap</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP312-6dFinitestatemachines4/" title="CS144 NetworkP312 6dFinitestatemachines4">
+                        <span class="hidden-mobile">CS144 NetworkP312 6dFinitestatemachines4</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

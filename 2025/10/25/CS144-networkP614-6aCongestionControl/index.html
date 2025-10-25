@@ -1,0 +1,742 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,160So in this video, I’m going to talk about two additional mechanisms that TCP Tahoe introduced to 200:00:04,160 –&gt; 00:00:09,200control congestion. Better RTT around t">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP614 6aCongestionControl">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP614-6aCongestionControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,160So in this video, I’m going to talk about two additional mechanisms that TCP Tahoe introduced to 200:00:04,160 –&gt; 00:00:09,200control congestion. Better RTT around t">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.787Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.787Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP614 6aCongestionControl - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP614 6aCongestionControl"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP614 6aCongestionControl</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,160<br>So in this video, I’m going to talk about two additional mechanisms that TCP Tahoe introduced to</p>
+<p>2<br>00:00:04,160 –&gt; 00:00:09,200<br>control congestion. Better RTT around triptime estimation and self-clocking.</p>
+<p>3<br>00:00:13,599 –&gt; 00:00:18,879<br>To recall the TCP Tahoe introduced three basic mechanisms that allowed it to tame congestion and</p>
+<p>4<br>00:00:18,879 –&gt; 00:00:24,000<br>essentially allow the internet to work again. The prior video talked about a congestion window</p>
+<p>5<br>00:00:24,000 –&gt; 00:00:29,519<br>and this idea of the slow start and the condition of wooden states. Now let’s talk about the second</p>
+<p>6<br>00:00:29,519 –&gt; 00:00:37,359<br>mechanism timeout estimation. So it turns out that estimating around triptime is really critical</p>
+<p>7<br>00:00:37,359 –&gt; 00:00:42,159<br>for retransmissions and for timeouts. If your round trip time is estimated to be too short,</p>
+<p>8<br>00:00:42,159 –&gt; 00:00:46,000<br>that is, you estimate to be shorter than what it is, then this means that you’re going to waste</p>
+<p>9<br>00:00:46,000 –&gt; 00:00:51,039<br>capacity. You are going to think that the packet wasn’t successfully received when it has been</p>
+<p>10<br>00:00:51,039 –&gt; 00:00:55,760<br>and retransmit unnecessarily. This is then going to trigger slow start. So this is really bad.</p>
+<p>11<br>00:00:55,759 –&gt; 00:01:00,559<br>In the sense of I have a nice window size, I’m sending data, but my RTT estimates are too short.</p>
+<p>12<br>00:01:00,559 –&gt; 00:01:07,120<br>I’m now entering slow start unnecessarily. Now, if the RTT estimation is too long, that’s also a</p>
+<p>13<br>00:01:07,120 –&gt; 00:01:12,159<br>problem because it could be that really I could have retransmined a long time ago. The packet didn’t</p>
+<p>14<br>00:01:12,159 –&gt; 00:01:16,000<br>get there, but say let’s say I estimated an RTT of five minutes when it’s only a couple hundred</p>
+<p>15<br>00:01:16,000 –&gt; 00:01:21,840<br>milliseconds. Your protocol is going to sit there dead for five minutes before it issues a timeout</p>
+<p>16<br>00:01:21,920 –&gt; 00:01:27,920<br>and tries to do a retransmission. This is fine, but the real challenge is that especially on the</p>
+<p>17<br>00:01:27,920 –&gt; 00:01:33,040<br>internet, as we’ve seen with packet switching, RTT can be highly dynamic. Furthermore, it can vary</p>
+<p>18<br>00:01:33,040 –&gt; 00:01:37,359<br>significantly with load, even as you are starting to send things faster, you can change your own RTT,</p>
+<p>19<br>00:01:37,359 –&gt; 00:01:42,400<br>even if the rest of the world remain the same. So how do you estimate RTT, very inexpensively,</p>
+<p>20<br>00:01:42,400 –&gt; 00:01:49,600<br>very quickly, given these constraints? So before TCPTaho, there is a very simple mechanism,</p>
+<p>21<br>00:01:49,599 –&gt; 00:01:54,239<br>which is that R is your RTT estimate. English initialize it to something reasonable. Okay,</p>
+<p>22<br>00:01:54,239 –&gt; 00:02:00,399<br>we’ll guess 500 milliseconds or something. Then you are generating a measurement from the most</p>
+<p>23<br>00:02:00,399 –&gt; 00:02:05,439<br>recently axed data packet. So you say, okay, I sent packet five at this time. I now got the</p>
+<p>24<br>00:02:05,439 –&gt; 00:02:11,840<br>act at time plus 57 milliseconds or say 200 milliseconds, and then going to estimate M will be</p>
+<p>25<br>00:02:12,319 –&gt; 00:02:18,719<br>57 or 200 milliseconds. I then maintain an expensively weighted moving average. Alpha</p>
+<p>26<br>00:02:18,879 –&gt; 00:02:25,280<br>R plus 1 minus alpha M. This is basically saying take my existing estimate and incorporate</p>
+<p>27<br>00:02:25,280 –&gt; 00:02:32,159<br>some fraction of my new estimate. So if I say, let’s just say R is equal to 100 milliseconds,</p>
+<p>28<br>00:02:33,039 –&gt; 00:02:39,680<br>and my measurement is equal to 80 milliseconds, and alpha, which are the weighting of history to</p>
+<p>29<br>00:02:39,680 –&gt; 00:02:45,680<br>the present sample, let’s just say alpha is equal to 0.9. So I’m going to weight history a lot,</p>
+<p>30<br>00:02:45,680 –&gt; 00:02:51,920<br>this is the way to sort of smooth out noise. Then the new R is going to be 0.9 times 100 milliseconds,</p>
+<p>31<br>00:02:52,480 –&gt; 00:03:00,240<br>plus 0.1 times 80 milliseconds, equal to 90 milliseconds. And so this one sample of 80 milliseconds</p>
+<p>32<br>00:03:00,240 –&gt; 00:03:04,159<br>is going to sort of go one tenth of the way between R and M.</p>
+<p>33<br>00:03:07,360 –&gt; 00:03:11,120<br>So you can imagine a lower alpha value means that you’re going to weight the current measurements</p>
+<p>34<br>00:03:11,120 –&gt; 00:03:19,120<br>more versus a higher alpha value weight history more. Then your timeout is based on this factor beta</p>
+<p>35<br>00:03:19,120 –&gt; 00:03:26,719<br>R and beta was 2. And so if you see that you don’t get an acknowledgement for twice your average,</p>
+<p>36<br>00:03:26,719 –&gt; 00:03:31,680<br>then you assume there’s a timeout and then you trigger a timeout. So this seems like a totally</p>
+<p>37<br>00:03:31,680 –&gt; 00:03:37,040<br>reasonable algorithm, you know, in first blush. So what’s the problem? It turns out that the problem</p>
+<p>38<br>00:03:37,039 –&gt; 00:03:44,319<br>is that the fact that R is a certain value should not say anything about what the distribution of</p>
+<p>39<br>00:03:44,319 –&gt; 00:03:48,799<br>RTT values is like. So one way to imagine is let’s say, you know, here’s a graph and I’m looking at</p>
+<p>40<br>00:03:48,799 –&gt; 00:03:53,120<br>a distribution of the round trip times packets. They’re not constant, they’re varying over time.</p>
+<p>41<br>00:03:53,840 –&gt; 00:03:59,599<br>Well, in some cases, I might have, here’s my average, let’s call it A, I might have a distribution</p>
+<p>42<br>00:03:59,680 –&gt; 00:04:10,000<br>like this, right? Where in fact, if I were to look at 2A, that less than 0.0001 percent of packets take</p>
+<p>43<br>00:04:10,000 –&gt; 00:04:14,639<br>that long. At which point beta, a beta of 2 is a tremendously conservative estimate.</p>
+<p>44<br>00:04:16,959 –&gt; 00:04:21,680<br>But it could also be, obviously, a different case. We’re here, let’s just say I have another link</p>
+<p>45<br>00:04:21,680 –&gt; 00:04:27,199<br>or another path, which is B, where my distribution looks more like this.</p>
+<p>46<br>00:04:30,560 –&gt; 00:04:40,000<br>Where if I look at 2B, some say 20 percent of packets tend to have an RTT of that long.</p>
+<p>47<br>00:04:40,879 –&gt; 00:04:44,639<br>Depending on the dynamics of the network, you can have very different distribution of RTTs.</p>
+<p>48<br>00:04:45,599 –&gt; 00:04:52,000<br>And this approach didn’t keep that in mind. And so for TCP connections that had very, very tight</p>
+<p>49<br>00:04:52,000 –&gt; 00:04:57,519<br>distributions, beta is way too conservative. And you end up being idle when you don’t need to be,</p>
+<p>50<br>00:04:57,519 –&gt; 00:05:04,719<br>it nestimates to large in RTT. But when the RTT has a very broad distribution,</p>
+<p>51<br>00:05:04,719 –&gt; 00:05:11,439<br>a beta equals 2 is far too aggressive. And you end up retransmitting on this,</p>
+<p>52<br>00:05:11,439 –&gt; 00:05:17,920<br>necessarily. So TCP Tahoe solved this problem by essentially including the notion of the</p>
+<p>53<br>00:05:17,920 –&gt; 00:05:23,920<br>variance of the RTT in its estimates. And so this is the algorithm that was proposed,</p>
+<p>54<br>00:05:23,920 –&gt; 00:05:28,159<br>which is used. And essentially what you’re going to do is just like before you’re doing an</p>
+<p>55<br>00:05:28,159 –&gt; 00:05:36,879<br>exponentially weighted moving average, you have this RTT estimate. And what you’re doing is also</p>
+<p>56<br>00:05:36,879 –&gt; 00:05:42,159<br>measuring your error in the estimate. And so given I have this estimate R, and I have</p>
+<p>57<br>00:05:42,159 –&gt; 00:05:47,680<br>an measurement M, I measure the error to be M minus R. And I multiply it by this gain factor,</p>
+<p>58<br>00:05:47,680 –&gt; 00:05:52,399<br>because these terms are essentially multiplying by minus R. So there’s the alpha factor</p>
+<p>59<br>00:05:53,439 –&gt; 00:05:59,120<br>that we saw in the prior approach. And then we measure the variance. And so the variance is,</p>
+<p>60<br>00:05:59,120 –&gt; 00:06:02,800<br>again, with weighted averages, the gain factor of the error minus the variance.</p>
+<p>61<br>00:06:03,439 –&gt; 00:06:10,639<br>But the basic idea here is we’re measuring not only an exponentially weighted moving average of R,</p>
+<p>62<br>00:06:11,680 –&gt; 00:06:17,680<br>but we’re also measuring an exponentially moving average of the variance over time.</p>
+<p>63<br>00:06:18,800 –&gt; 00:06:24,080<br>And then our timeout is equal to the average plus four times the variance, where beta is four.</p>
+<p>64<br>00:06:24,079 –&gt; 00:06:32,000<br>So this way, if we have, as before, if we have a very tight distribution, then with the variance</p>
+<p>65<br>00:06:32,800 –&gt; 00:06:37,599<br>like this, then we’re going to timeout when the packet, when the variance is just, when you have a</p>
+<p>66<br>00:06:37,599 –&gt; 00:06:42,799<br>packet that’s just four times the variance out. Similarly, if you have a very broad distribution,</p>
+<p>67<br>00:06:44,240 –&gt; 00:06:49,680<br>your variance is going to be out here. Then you’ll end up timing out when the very, when the,</p>
+<p>68<br>00:06:50,400 –&gt; 00:06:55,680<br>it’s four times that value. And so it’s very likely that the packet was actually lost.</p>
+<p>69<br>00:06:57,040 –&gt; 00:07:02,079<br>In the case of tremendous congestion, you’re not getting estimates, you’re nothing is happening.</p>
+<p>70<br>00:07:02,079 –&gt; 00:07:07,920<br>You exponentially increase this timeout. So here are two graphs from Vengeance paper, which show</p>
+<p>71<br>00:07:07,920 –&gt; 00:07:17,040<br>the performance of this RTTS dimension. And so what the faint line on the bottom shows is the actual</p>
+<p>72<br>00:07:17,040 –&gt; 00:07:23,600<br>measured RTTS of packets from acknowledgments. And the solid line above shows the timeout estimate</p>
+<p>73<br>00:07:24,400 –&gt; 00:07:31,920<br>for the TCP algorithm. And so the idea is that a perfect world that the timeout would</p>
+<p>74<br>00:07:32,879 –&gt; 00:07:37,840<br>perfectly mirror this such that gosh, we didn’t get it. And if we just wait a little longer,</p>
+<p>75<br>00:07:37,840 –&gt; 00:07:41,920<br>then we know to retransmit. So there are two points. This figure on the left, you can see that there’s</p>
+<p>76<br>00:07:41,920 –&gt; 00:07:46,240<br>this huge gap. So TCP is sitting idle for a long time when really it could have retransmit</p>
+<p>77<br>00:07:46,240 –&gt; 00:07:52,319<br>much sooner. There’s also cases where it crosses. So this is kind of bad where this means that the</p>
+<p>78<br>00:07:52,319 –&gt; 00:07:59,759<br>packet took longer. You know, the estimate was in fact two, was too short. And so if you look,</p>
+<p>79<br>00:07:59,759 –&gt; 00:08:03,600<br>this is the pre-Tahoe algorithm on the right is the post-Tahoe algorithm. We see that it’s tracking</p>
+<p>80<br>00:08:04,560 –&gt; 00:08:10,400<br>the RTTS much, much better, right? That the gap here between the observed RTTS and the timeouts</p>
+<p>81<br>00:08:10,399 –&gt; 00:08:17,679<br>is much closer. So the third improvement that TCP Tahoe brought was something called self-clocking.</p>
+<p>82<br>00:08:18,399 –&gt; 00:08:25,519<br>And this in some ways the greatest conceptual contribution of TCP Tahoe. This idea that</p>
+<p>83<br>00:08:26,639 –&gt; 00:08:31,679<br>you want to essentially clock out the packets that you send based on the acknowledgments to receive.</p>
+<p>84<br>00:08:33,360 –&gt; 00:08:39,679<br>And so this is the conceptual model that Van Jacobson laid out. So let’s say I have a sender that</p>
+<p>85<br>00:08:39,679 –&gt; 00:08:44,559<br>has a really big pipe. We show it by sort of being fat here where the volume of these packets is</p>
+<p>86<br>00:08:44,559 –&gt; 00:08:50,000<br>constant. And the receiver also has a fat pipe. But there is this bottleneck link in the middle.</p>
+<p>87<br>00:08:50,000 –&gt; 00:08:53,519<br>Well, since there’s this bottleneck link, what’s going to happen is these packets that are sent very</p>
+<p>88<br>00:08:53,519 –&gt; 00:08:57,519<br>fast from the sender are going to be stretched out in time. They’re going to take longer. And they’re</p>
+<p>89<br>00:08:57,519 –&gt; 00:09:03,919<br>then going to be spaced out in time at the receiver. The receiver, if it generates acknowledgments</p>
+<p>90<br>00:09:03,919 –&gt; 00:09:09,359<br>directly in response to these packets, then it’s going to be sending acknowledgments back with the</p>
+<p>91<br>00:09:09,360 –&gt; 00:09:16,720<br>same timing that it’s receiving them, which is determined by this bottleneck congestion link.</p>
+<p>92<br>00:09:18,080 –&gt; 00:09:22,639<br>Then those acts are going to arrive. They traverse the bottleneck link. You can see they’re</p>
+<p>93<br>00:09:22,639 –&gt; 00:09:27,360<br>much shorter. So they’re not filling it. They only take a part of it. And then these acknowledgments</p>
+<p>94<br>00:09:27,360 –&gt; 00:09:32,639<br>arrive at the sender corresponding to the frequency of the packets arriving at the receiver. And then</p>
+<p>95<br>00:09:32,639 –&gt; 00:09:38,879<br>if the sender sends new packets timed by these acknowledgments, which essentially is going to</p>
+<p>96<br>00:09:38,879 –&gt; 00:09:46,240<br>inherently rate limit itself for space up packets in time so that they’re entering this bottleneck link</p>
+<p>97<br>00:09:46,240 –&gt; 00:09:52,000<br>at the right rate. That is just as a packet’s leaving, like here, which then falls through to the</p>
+<p>98<br>00:09:52,000 –&gt; 00:09:57,679<br>neck, a new packet starts arriving. And this is the idea of self-clocking that you don’t put a new</p>
+<p>99<br>00:09:57,679 –&gt; 00:10:04,159<br>packet in the network until one comes out. And you clock yourself based on this. Is what allows TCP</p>
+<p>100<br>00:10:04,159 –&gt; 00:10:08,879<br>you in a very simple mechanism to not stuff lots of packets into the network and to not suddenly</p>
+<p>101<br>00:10:08,879 –&gt; 00:10:13,120<br>send huge bursts of packets that saturate this link. Because you can imagine there is some queue here.</p>
+<p>102<br>00:10:13,839 –&gt; 00:10:19,600<br>And so even if TCP knows, oh, I can only send five packets per round trip time. If it sends a burst</p>
+<p>103<br>00:10:19,600 –&gt; 00:10:23,519<br>of five packets, then those packets might fall off the end of this queue. But if it’s</p>
+<p>104<br>00:10:23,519 –&gt; 00:10:28,240<br>they’re spaced out properly due to this timing, then it’s going to be feeding them out at a nice</p>
+<p>105<br>00:10:28,240 –&gt; 00:10:35,680<br>steady rate, which will fill this pipe without overfilling the queue. And so the principle here is</p>
+<p>106<br>00:10:35,680 –&gt; 00:10:39,200<br>you only want to put data into the network when data is left. Otherwise, you’re increasing the</p>
+<p>107<br>00:10:39,200 –&gt; 00:10:44,480<br>amount of data in the network in your cousin congestion. And so you send new data directly in response</p>
+<p>108<br>00:10:44,480 –&gt; 00:10:49,840<br>to acknowledgments. But also it’s important that you send acknowledgments aggressively, such as we</p>
+<p>109<br>00:10:49,840 –&gt; 00:10:54,399<br>saw with duplicate acknowledgments, they’re really important signals to the to the sender. And so if</p>
+<p>110<br>00:10:54,399 –&gt; 00:10:59,199<br>you’re receiving additional segments and you have segments that you have missing segment, you should</p>
+<p>111<br>00:10:59,199 –&gt; 00:11:03,039<br>send acknowledgments for those segments aggressively. So it sees that there are duplicate acknowledgments</p>
+<p>112<br>00:11:03,039 –&gt; 00:11:08,159<br>that it gets a signal that something has been missed. It also knows on receiving those acknowledgments,</p>
+<p>113<br>00:11:08,159 –&gt; 00:11:12,079<br>those duplicate acknowledgments, that packets have left the network and it can make decisions</p>
+<p>114<br>00:11:12,079 –&gt; 00:11:18,559<br>accordingly. So this is the those three mechanisms of a congestion window, better RTT estimation that</p>
+<p>115<br>00:11:18,559 –&gt; 00:11:25,119<br>considers variance on self-clocking or really the foundation of TCP Tahoe. And so in 1978, in 1987,</p>
+<p>116<br>00:11:25,119 –&gt; 00:11:29,839<br>in 1988, van Jacobson fixed TCP with his Mac as well as a few other tricks and published the</p>
+<p>117<br>00:11:29,839 –&gt; 00:11:36,559<br>seminal TCP paper on TCP Tahoe. And this is basically solved TCP’s congestion control problem, the</p>
+<p>118<br>00:11:36,559 –&gt; 00:11:43,679<br>internet started working again. And this actually spawned a huge area of research in TCP in this whole</p>
+<p>119<br>00:11:43,679 –&gt; 00:11:49,679<br>idea of how do you manage your sending rate to not congest the network. And so in this next,</p>
+<p>120<br>00:11:49,679 –&gt; 00:11:53,439<br>I’ve just talked about the first version TCP Tahoe, but there’s a long history. So the next video</p>
+<p>121<br>00:11:53,439 –&gt; 00:11:59,039<br>is going to talk about TCP Reno, new Reno, trick culture to what’s done today. They add a couple</p>
+<p>122<br>00:11:59,039 –&gt; 00:12:04,959<br>new mechanisms. And so if this is interesting, I totally recommend reading van Jacobson’s</p>
+<p>123<br>00:12:04,959 –&gt; 00:12:09,359<br>original paper congestion of voice and control, sort of lays out a little bit of the story of what</p>
+<p>124<br>00:12:09,360 –&gt; 00:12:19,360<br>they saw and then these mechanisms and how they solved it.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP614 6aCongestionControl</div>
+      <div>http://example.com/2025/10/25/CS144-networkP614-6aCongestionControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP604-6TCPRTTEstimation/" title="CS144 NetworkP604 6TCPRTTEstimation">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP604 6TCPRTTEstimation</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP564-3aSingleAIMDflowworkedexample/" title="CS144 NetworkP564 3aSingleAIMDflowworkedexample">
+                        <span class="hidden-mobile">CS144 NetworkP564 3aSingleAIMDflowworkedexample</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

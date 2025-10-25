@@ -1,0 +1,737 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,120I’m going to explain finite state machines, something very commonly used when specifying network 200:00:05,120 –&gt; 00:00:06,120protocols and systems. 300:00:06,120 –&amp;">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP282 6aFinitestatemachines1">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP282-6aFinitestatemachines1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,120I’m going to explain finite state machines, something very commonly used when specifying network 200:00:05,120 –&gt; 00:00:06,120protocols and systems. 300:00:06,120 –&amp;">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.776Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.776Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP282 6aFinitestatemachines1 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP282 6aFinitestatemachines1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          10 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP282 6aFinitestatemachines1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,120<br>I’m going to explain finite state machines, something very commonly used when specifying network</p>
+<p>2<br>00:00:05,120 –&gt; 00:00:06,120<br>protocols and systems.</p>
+<p>3<br>00:00:06,120 –&gt; 00:00:09,960<br>I’ll also explain the common way they’re drawn in network protocols.</p>
+<p>4<br>00:00:09,960 –&gt; 00:00:14,439<br>I’ll conclude by showing you the finite state machine that’s part of the TCP specification,</p>
+<p>5<br>00:00:14,439 –&gt; 00:00:18,839<br>which defines how TCP connections are set up and torn down.</p>
+<p>6<br>00:00:18,839 –&gt; 00:00:23,640<br>So you’ll see how you can describe something like the three-way handshake of TCP in a finite</p>
+<p>7<br>00:00:23,640 –&gt; 00:00:24,960<br>state machine.</p>
+<p>8<br>00:00:24,960 –&gt; 00:00:29,760<br>As the name suggests, a finite state machine is composed of a finite number of states,</p>
+<p>9<br>00:00:29,760 –&gt; 00:00:32,560<br>a state is a particular configuration of the system.</p>
+<p>10<br>00:00:32,560 –&gt; 00:00:35,160<br>I’m going to start with an abstract example.</p>
+<p>11<br>00:00:35,160 –&gt; 00:00:41,400<br>In this example, we have three states, state 1, state 2, and state 3.</p>
+<p>12<br>00:00:41,400 –&gt; 00:00:44,520<br>So our system can be in one of these three states.</p>
+<p>13<br>00:00:44,520 –&gt; 00:00:48,200<br>Edges between the states define how we transition between them.</p>
+<p>14<br>00:00:48,200 –&gt; 00:00:54,120<br>When we draw an edge, we first specify what events cause the transition to occur.</p>
+<p>15<br>00:00:54,120 –&gt; 00:00:58,600<br>Below this, we can state what actions the system will take when that transition occurs.</p>
+<p>16<br>00:00:59,079 –&gt; 00:01:02,439<br>The second part is optional because not all transitions have actions associated with</p>
+<p>17<br>00:01:02,439 –&gt; 00:01:03,439<br>them.</p>
+<p>18<br>00:01:03,439 –&gt; 00:01:07,200<br>But if there is an action, you should specify it.</p>
+<p>19<br>00:01:07,200 –&gt; 00:01:11,640<br>Otherwise, you have an incomplete specification and people might not test or implement it</p>
+<p>20<br>00:01:11,640 –&gt; 00:01:12,960<br>correctly.</p>
+<p>21<br>00:01:12,960 –&gt; 00:01:17,799<br>If the system is in a state and an event arrives for which there is no transition described,</p>
+<p>22<br>00:01:17,799 –&gt; 00:01:21,240<br>then the behavior of the FSM is undefined.</p>
+<p>23<br>00:01:21,240 –&gt; 00:01:24,640<br>There could be multiple transitions from a single state.</p>
+<p>24<br>00:01:24,640 –&gt; 00:01:29,079<br>To hear we have a second transition from state 1, a different event that will take the</p>
+<p>25<br>00:01:29,079 –&gt; 00:01:31,519<br>system into state 3.</p>
+<p>26<br>00:01:31,519 –&gt; 00:01:36,439<br>For any given state, the transition for an event must be unique.</p>
+<p>27<br>00:01:36,439 –&gt; 00:01:43,120<br>In this example, an event can cause state 1 to transition to state 2 or transition to</p>
+<p>28<br>00:01:43,120 –&gt; 00:01:44,439<br>state 3.</p>
+<p>29<br>00:01:44,439 –&gt; 00:01:47,799<br>But you can’t have the same event associated with both transitions, otherwise the transition</p>
+<p>30<br>00:01:47,799 –&gt; 00:01:49,200<br>is ambiguous.</p>
+<p>31<br>00:01:49,200 –&gt; 00:01:52,079<br>If the event occurs, would you be in state 2 or state 3?</p>
+<p>32<br>00:01:52,079 –&gt; 00:01:56,200<br>The system can only be in one state.</p>
+<p>33<br>00:01:56,200 –&gt; 00:01:59,679<br>So let’s walk through an example in HTTP request.</p>
+<p>34<br>00:01:59,679 –&gt; 00:02:02,840<br>In practice, HTTP requests are a bit more complex than this.</p>
+<p>35<br>00:02:02,840 –&gt; 00:02:04,319<br>They’re all kinds of options.</p>
+<p>36<br>00:02:04,319 –&gt; 00:02:08,319<br>So for this example, we’ll use a very simple form.</p>
+<p>37<br>00:02:08,319 –&gt; 00:02:10,479<br>Let’s describe our system this way.</p>
+<p>38<br>00:02:10,479 –&gt; 00:02:14,599<br>In our starting state, we are viewing a page or otherwise idle.</p>
+<p>39<br>00:02:14,599 –&gt; 00:02:16,159<br>We want to load a new page.</p>
+<p>40<br>00:02:16,159 –&gt; 00:02:19,400<br>We transition to the page requesting state.</p>
+<p>41<br>00:02:19,400 –&gt; 00:02:26,520<br>So the event is load new page and the action is open a connection to the web server.</p>
+<p>42<br>00:02:26,520 –&gt; 00:02:30,240<br>Once we’ve opened a connection, we’re now in the page requesting state.</p>
+<p>43<br>00:02:30,240 –&gt; 00:02:34,040<br>We’ll transition back to the idle state when the connection closes, or when we finish</p>
+<p>44<br>00:02:34,040 –&gt; 00:02:38,159<br>requesting every resource on the page.</p>
+<p>45<br>00:02:38,159 –&gt; 00:02:43,560<br>We need one more state, which describes where we are in requesting a page.</p>
+<p>46<br>00:02:43,560 –&gt; 00:02:48,120<br>On the event of having more resources to request, we take the action of requesting a resource</p>
+<p>47<br>00:02:48,120 –&gt; 00:02:50,280<br>within HTTP get.</p>
+<p>48<br>00:02:50,280 –&gt; 00:02:54,039<br>This puts us in the requesting pending state.</p>
+<p>49<br>00:02:54,039 –&gt; 00:02:58,200<br>On the event of receiving the response, our system transitions back to the page requesting</p>
+<p>50<br>00:02:58,200 –&gt; 00:03:00,200<br>state.</p>
+<p>51<br>00:03:00,200 –&gt; 00:03:08,759<br>So here we have a three state system, idle, page requesting, and request pending.</p>
+<p>52<br>00:03:08,759 –&gt; 00:03:10,520<br>On one hand, this is a nice simple FSM.</p>
+<p>53<br>00:03:10,520 –&gt; 00:03:13,879<br>But if you’re trying to implement it, it leaves a lot unsaid.</p>
+<p>54<br>00:03:13,879 –&gt; 00:03:17,719<br>Specifically, we have four events in the system, page request, more requests, we’ve received</p>
+<p>55<br>00:03:17,719 –&gt; 00:03:20,319<br>response, and connection closed.</p>
+<p>56<br>00:03:20,319 –&gt; 00:03:24,680<br>So what happens if the connection close event arrives when we’re in the request pending</p>
+<p>57<br>00:03:24,680 –&gt; 00:03:30,120<br>state, or when we receive a page request while on the page requesting state, or receive</p>
+<p>58<br>00:03:30,120 –&gt; 00:03:33,680<br>response while on the idle state?</p>
+<p>59<br>00:03:33,680 –&gt; 00:03:38,000<br>If you want to be completely explicit and careful, you should specify what happens on each</p>
+<p>60<br>00:03:38,000 –&gt; 00:03:39,759<br>state for every event.</p>
+<p>61<br>00:03:40,560 –&gt; 00:03:44,799<br>But this can lead to complicated FSM which have tons of edges.</p>
+<p>62<br>00:03:44,799 –&gt; 00:03:51,599<br>So often, instead, you’ll write down just the common cases in the FSM for ease of understanding</p>
+<p>63<br>00:03:51,599 –&gt; 00:03:55,519<br>and have some supporting text about other transitions.</p>
+<p>64<br>00:03:55,519 –&gt; 00:03:59,919<br>Or in some cases, it can even be acceptable to leave something undefined.</p>
+<p>65<br>00:03:59,919 –&gt; 00:04:04,719<br>The Internet Engineering Task Force, for example, the ITF, often doesn’t completely specify</p>
+<p>66<br>00:04:04,719 –&gt; 00:04:05,719<br>every FSM.</p>
+<p>67<br>00:04:06,359 –&gt; 00:04:10,039<br>The idea is that by specifying only the parts that are necessary for interoperability,</p>
+<p>68<br>00:04:10,039 –&gt; 00:04:12,919<br>you can leave the specification flexible for future exploration.</p>
+<p>69<br>00:04:12,919 –&gt; 00:04:17,800<br>As people use the protocol, they’ll figure out if something is important and if so,</p>
+<p>70<br>00:04:17,800 –&gt; 00:04:19,600<br>can specify that extra part later.</p>
+<p>71<br>00:04:21,800 –&gt; 00:04:25,839<br>So let’s walk through a real example of an FSM, probably the most famous FSM on the</p>
+<p>72<br>00:04:25,839 –&gt; 00:04:27,120<br>Internet.</p>
+<p>73<br>00:04:27,120 –&gt; 00:04:31,720<br>This diagram here describes the finite state machine of TCP.</p>
+<p>74<br>00:04:31,720 –&gt; 00:04:33,199<br>I know it looks very complicated.</p>
+<p>75<br>00:04:33,199 –&gt; 00:04:38,199<br>It has 12 states, but it’ll walk through it bit by bit and you’ll see how it all fits</p>
+<p>76<br>00:04:38,199 –&gt; 00:04:39,199<br>together.</p>
+<p>77<br>00:04:39,199 –&gt; 00:04:45,000<br>First off, the diagram really has four parts which we can look at separately.</p>
+<p>78<br>00:04:45,000 –&gt; 00:04:52,120<br>These top four states are what describe how you open a TCP connection.</p>
+<p>79<br>00:04:52,120 –&gt; 00:04:59,039<br>This center state established is when TCP is sending and receiving data.</p>
+<p>80<br>00:04:59,040 –&gt; 00:05:03,439<br>This after the connection has been established, but before it’s been closed.</p>
+<p>81<br>00:05:03,439 –&gt; 00:05:09,040<br>These six states describe how connections close.</p>
+<p>82<br>00:05:09,040 –&gt; 00:05:14,600<br>This state at the bottom closed denotes the connection as closed and the node can forget</p>
+<p>83<br>00:05:14,600 –&gt; 00:05:15,600<br>about it.</p>
+<p>84<br>00:05:15,600 –&gt; 00:05:20,360<br>Note that the top state is also the closed state before we open the connection.</p>
+<p>85<br>00:05:20,360 –&gt; 00:05:26,320<br>We’ll call that you start a TCP connection with a three-way handshake, sin, sin-ac,</p>
+<p>86<br>00:05:26,319 –&gt; 00:05:34,360<br>the client or active opener sends a sin synchronization message to a program listening for connection</p>
+<p>87<br>00:05:34,360 –&gt; 00:05:36,360<br>requests.</p>
+<p>88<br>00:05:36,360 –&gt; 00:05:40,719<br>When this node receives a sin, it responds with a sin-ac synchronizing and acknowledging</p>
+<p>89<br>00:05:40,719 –&gt; 00:05:42,800<br>the original synchronization.</p>
+<p>90<br>00:05:42,800 –&gt; 00:05:49,319<br>The active opener on receiving the sin-ac responds with an acknowledgement and act.</p>
+<p>91<br>00:05:49,319 –&gt; 00:05:56,279<br>The state diagram here describes how TCP behaves on both sides of the TCP three-way handshake.</p>
+<p>92<br>00:05:56,559 –&gt; 00:06:00,399<br>A passive opener is a listener, it’s a server.</p>
+<p>93<br>00:06:00,399 –&gt; 00:06:04,359<br>It listens for requests for connections from active openers clients.</p>
+<p>94<br>00:06:04,359 –&gt; 00:06:11,559<br>So in a program calls listen, the socket transition from the orange closed state to the yellow</p>
+<p>95<br>00:06:11,559 –&gt; 00:06:14,039<br>listen state.</p>
+<p>96<br>00:06:14,039 –&gt; 00:06:16,159<br>The protocol takes no actions when this happens.</p>
+<p>97<br>00:06:16,159 –&gt; 00:06:17,719<br>It doesn’t send any messages.</p>
+<p>98<br>00:06:17,719 –&gt; 00:06:22,799<br>If the server calls close on the socket when it’s in the listen state, it transitions immediately</p>
+<p>99<br>00:06:22,799 –&gt; 00:06:26,199<br>to the closed state.</p>
+<p>100<br>00:06:26,199 –&gt; 00:06:30,439<br>Let’s walk through the three-way handshake starting with a first step when a client tries</p>
+<p>101<br>00:06:30,439 –&gt; 00:06:34,839<br>to open a connection and sends a sin-packed server.</p>
+<p>102<br>00:06:34,839 –&gt; 00:06:39,000<br>We can see that this first transition for the client side of the connection is this orange</p>
+<p>103<br>00:06:39,000 –&gt; 00:06:45,680<br>arrow from closed to the sin-sense state.</p>
+<p>104<br>00:06:45,680 –&gt; 00:06:53,000<br>This happens when the client program calls connect, the event, and the client sends a sin</p>
+<p>105<br>00:06:53,000 –&gt; 00:06:56,159<br>message.</p>
+<p>106<br>00:06:56,160 –&gt; 00:07:01,120<br>Once the first sin is sent, the client is in the sin-sense state and the server is in</p>
+<p>107<br>00:07:01,120 –&gt; 00:07:03,560<br>the listen state.</p>
+<p>108<br>00:07:03,560 –&gt; 00:07:10,720<br>When the sin arrives at the server, this leads to this blue transition.</p>
+<p>109<br>00:07:10,720 –&gt; 00:07:14,440<br>You can see the event is receiving a sin message.</p>
+<p>110<br>00:07:14,440 –&gt; 00:07:19,600<br>The actions to send a sin-ack message in response, now the server is in the sin-received</p>
+<p>111<br>00:07:19,600 –&gt; 00:07:21,600<br>state.</p>
+<p>112<br>00:07:21,600 –&gt; 00:07:23,600<br>Let’s jump back to the client.</p>
+<p>113<br>00:07:23,600 –&gt; 00:07:26,720<br>Remember it was in the sin-sense state.</p>
+<p>114<br>00:07:26,720 –&gt; 00:07:33,160<br>Now when it receives the sin-ack from the server, it transitions to the established state.</p>
+<p>115<br>00:07:33,160 –&gt; 00:07:38,240<br>It’s actions to send an act message, the third message of the sin-sense-ack-ack handshake.</p>
+<p>116<br>00:07:38,240 –&gt; 00:07:41,640<br>Now the client can start sending data to the server.</p>
+<p>117<br>00:07:41,640 –&gt; 00:07:44,879<br>Finally, let’s go back to the server, which is in the sin-received state.</p>
+<p>118<br>00:07:44,879 –&gt; 00:07:48,760<br>When it receives the act from the client, it transitions to the established state and</p>
+<p>119<br>00:07:48,759 –&gt; 00:07:49,759<br>can send data.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP282 6aFinitestatemachines1</div>
+      <div>http://example.com/2025/10/25/CS144-networkP282-6aFinitestatemachines1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP292-6bFinitestatemachines2/" title="CS144 NetworkP292 6bFinitestatemachines2">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP292 6bFinitestatemachines2</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP31-2ThefourlayerInternetmodel/" title="CS144 NetworkP31 2ThefourlayerInternetmodel">
+                        <span class="hidden-mobile">CS144 NetworkP31 2ThefourlayerInternetmodel</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

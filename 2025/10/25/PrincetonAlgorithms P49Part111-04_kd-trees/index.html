@@ -1,0 +1,923 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,359Now we’re going to look at KD trees, which is an extension of BSTs that allow us to do 200:00:08,359 –&gt; 00:00:16,240efficient processing of sets of points in space,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P49Part111 04_kd Trees">
+<meta property="og:url" content="http://example.com/2025/10/25/PrincetonAlgorithms%20P49Part111-04_kd-trees/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,359Now we’re going to look at KD trees, which is an extension of BSTs that allow us to do 200:00:08,359 –&gt; 00:00:16,240efficient processing of sets of points in space,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.828Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.828Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P49Part111 04_kd Trees - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P49Part111 04_kd Trees"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          3.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          26 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P49Part111 04_kd Trees</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,359<br>Now we’re going to look at KD trees, which is an extension of BSTs that allow us to do</p>
+<p>2<br>00:00:08,359 –&gt; 00:00:16,240<br>efficient processing of sets of points in space, and it’s very flexible and very useful</p>
+<p>3<br>00:00:16,240 –&gt; 00:00:19,359<br>in lots of applications.</p>
+<p>4<br>00:00:19,359 –&gt; 00:00:26,560<br>So now we’re going to extend the API to talk about two-dimensional keys.</p>
+<p>5<br>00:00:26,559 –&gt; 00:00:35,839<br>So that’s just, you can think of two-dimensional keys as points in two-dimensional geometric space.</p>
+<p>6<br>00:00:35,839 –&gt; 00:00:39,039<br>We’re going to talk about insertion and search.</p>
+<p>7<br>00:00:39,039 –&gt; 00:00:43,759<br>We want to talk about deletion and then range search and range count.</p>
+<p>8<br>00:00:43,759 –&gt; 00:00:49,320<br>So we want to be able to insert and delete points and think of a two-dimensional key as</p>
+<p>9<br>00:00:49,320 –&gt; 00:00:51,239<br>a point in two-dimensional space.</p>
+<p>10<br>00:00:51,239 –&gt; 00:00:56,239<br>And we want to be able to find all keys that lie within a two-dimensional range.</p>
+<p>11<br>00:00:56,240 –&gt; 00:01:02,320<br>It’s a rectangle, as I mentioned at the beginning, or count the number of keys that lie in a two-dimensional range.</p>
+<p>12<br>00:01:02,320 –&gt; 00:01:18,159<br>So again, the geometric interpretation is the keys are points in the plane, and we have a range, 2D range, is a rectangle, or is oriented to align with the horizontal vertical axes.</p>
+<p>13<br>00:01:18,159 –&gt; 00:01:24,159<br>And we want to be able to find or count the points in a given rectangle.</p>
+<p>14<br>00:01:24,159 –&gt; 00:01:31,119<br>And this one has many, many applications, and we’ll talk about some of them later on.</p>
+<p>15<br>00:01:31,119 –&gt; 00:01:44,920<br>And even if it’s not points in the plane, just databases, you might ask for all the people with incomes between 1 million and 10 million who are between at 40 and 50 years of age.</p>
+<p>16<br>00:01:44,920 –&gt; 00:01:51,560<br>And this kind of algorithm and data structure would be useful for that kind of situation too.</p>
+<p>17<br>00:01:51,560 –&gt; 00:02:04,719<br>So how are we going to solve this problem, implement this API, rebuild a data structure containing points that can efficiently support range searching and range counting?</p>
+<p>18<br>00:02:04,719 –&gt; 00:02:11,439<br>Well, one easy way to do it is to just think about dividing space into a grid of squares.</p>
+<p>19<br>00:02:11,439 –&gt; 00:02:17,159<br>So we’ll pick a parameter M and divide space into an N by M grid of squares.</p>
+<p>20<br>00:02:17,159 –&gt; 00:02:24,199<br>And then process all the points and make a list of points that are contained in each square.</p>
+<p>21<br>00:02:24,199 –&gt; 00:02:31,639<br>We can use a two-dimensional array to directly index relevant squares.</p>
+<p>22<br>00:02:31,639 –&gt; 00:02:40,719<br>And for insert, you just take x, y, figure out which square belongs to, simply divide by both coordinates by M and</p>
+<p>23<br>00:02:40,719 –&gt; 00:02:47,120<br>look in the two-dimensional array, and just add the point to the list for the corresponding square.</p>
+<p>24<br>00:02:47,120 –&gt; 00:02:55,560<br>Then range search is only find the squares that intersect the query and process the points in that square.</p>
+<p>25<br>00:02:55,560 –&gt; 00:03:01,680<br>And depending on the value of the parameter M, you have a space-time trade-off.</p>
+<p>26<br>00:03:01,680 –&gt; 00:03:07,759<br>The amount of space required is M squared for the grid plus N.</p>
+<p>27<br>00:03:07,759 –&gt; 00:03:12,759<br>You have to have a linked list element or whatever for each point.</p>
+<p>28<br>00:03:12,759 –&gt; 00:03:17,120<br>And then the time, though, gets divided by M squared.</p>
+<p>29<br>00:03:17,120 –&gt; 00:03:23,199<br>Your number of points M are spread out over the M squared different squares.</p>
+<p>30<br>00:03:23,199 –&gt; 00:03:30,000<br>And so on average, you examine N over M squared points per square.</p>
+<p>31<br>00:03:30,000 –&gt; 00:03:32,000<br>So you don’t want to make M too big.</p>
+<p>32<br>00:03:32,000 –&gt; 00:03:33,319<br>I’ll be too much space.</p>
+<p>33<br>00:03:33,319 –&gt; 00:03:35,359<br>You don’t want to make M too small.</p>
+<p>34<br>00:03:35,359 –&gt; 00:03:38,079<br>Be too much time.</p>
+<p>35<br>00:03:38,080 –&gt; 00:03:43,680<br>So what we want to choose is the square size that would best balance these two needs.</p>
+<p>36<br>00:03:43,680 –&gt; 00:03:49,720<br>And then it’s easy to see that what you should choose is M to be about square root of N.</p>
+<p>37<br>00:03:49,720 –&gt; 00:03:58,480<br>So then your space is within a constant factor of N and your time is constant.</p>
+<p>38<br>00:03:58,480 –&gt; 00:04:02,600<br>So if the points are randomly distributed, then this is ideal.</p>
+<p>39<br>00:04:02,599 –&gt; 00:04:07,799<br>It takes a linear time to initialize the data structure.</p>
+<p>40<br>00:04:07,799 –&gt; 00:04:12,400<br>And to insert and search, it takes constant time per point in the range.</p>
+<p>41<br>00:04:12,400 –&gt; 00:04:19,079<br>And this is absolutely a fine method that is not that difficult to implement in the case</p>
+<p>42<br>00:04:19,079 –&gt; 00:04:22,079<br>that the points are evenly distributed.</p>
+<p>43<br>00:04:22,079 –&gt; 00:04:31,000<br>Unfortunately, it’s usually the case that in geometric data that the points are not evenly distributed.</p>
+<p>44<br>00:04:31,000 –&gt; 00:04:34,279<br>So well-known phenomena known as clustering.</p>
+<p>45<br>00:04:34,279 –&gt; 00:04:40,839<br>It says that the points aren’t going to be evenly distributed all over the whole thing.</p>
+<p>46<br>00:04:40,839 –&gt; 00:04:45,759<br>In the case of the grid implementation, they might all fall in the same square.</p>
+<p>47<br>00:04:45,759 –&gt; 00:04:48,360<br>And so the average list length is short.</p>
+<p>48<br>00:04:48,360 –&gt; 00:04:51,240<br>This is like what we’re countered with hashing.</p>
+<p>49<br>00:04:51,240 –&gt; 00:04:57,360<br>If you take all the points in one square in zero and all the rest of them,</p>
+<p>50<br>00:04:57,360 –&gt; 00:05:00,600<br>your average is still in over M squared.</p>
+<p>51<br>00:05:00,600 –&gt; 00:05:03,319<br>But they’re all in that long list.</p>
+<p>52<br>00:05:03,319 –&gt; 00:05:09,040<br>And you’re going to have a slow algorithm if it’s based on this.</p>
+<p>53<br>00:05:09,040 –&gt; 00:05:16,199<br>So we need a data structure that more gracefully adapts to the distribution of the data.</p>
+<p>54<br>00:05:16,199 –&gt; 00:05:22,360<br>And again, it’s well known that most geometric data has this kind of problem.</p>
+<p>55<br>00:05:22,360 –&gt; 00:05:28,639<br>So for example, here’s some data which is cities in the US.</p>
+<p>56<br>00:05:28,639 –&gt; 00:05:30,520<br>It’s got 13,000 points.</p>
+<p>57<br>00:05:30,520 –&gt; 00:05:34,800<br>But if you tried to use the grid implementation for this,</p>
+<p>58<br>00:05:34,800 –&gt; 00:05:39,120<br>you find that half the squares would be empty.</p>
+<p>59<br>00:05:39,120 –&gt; 00:05:43,199<br>And half the points are in just 10% of the squares.</p>
+<p>60<br>00:05:43,199 –&gt; 00:05:48,879<br>So the clustering in the data is going to make the implementation inefficient.</p>
+<p>61<br>00:05:48,879 –&gt; 00:05:51,160<br>We need to adapt to the data.</p>
+<p>62<br>00:05:51,160 –&gt; 00:05:55,200<br>And this is very, very typical in geometric data,</p>
+<p>63<br>00:05:55,200 –&gt; 00:06:00,360<br>particularly in higher dimensional data, as we’ll see in a minute.</p>
+<p>64<br>00:06:00,360 –&gt; 00:06:08,360<br>So people have developed all different kinds of methods for adapting in this way.</p>
+<p>65<br>00:06:08,360 –&gt; 00:06:12,080<br>And what we’re going to look at is one of the most widely used,</p>
+<p>66<br>00:06:12,080 –&gt; 00:06:18,400<br>which is basically to use a tree to represent a recursive subdivision of the plane</p>
+<p>67<br>00:06:18,400 –&gt; 00:06:20,800<br>of two-dimensional space.</p>
+<p>68<br>00:06:20,800 –&gt; 00:06:22,079<br>It’s going to be recursive.</p>
+<p>69<br>00:06:22,079 –&gt; 00:06:26,560<br>It’s going to be based on the points, the way in which we divide into half planes.</p>
+<p>70<br>00:06:26,560 –&gt; 00:06:32,120<br>And it’s one of many different algorithms that have been studied for this.</p>
+<p>71<br>00:06:32,120 –&gt; 00:06:37,160<br>But again, it’s a simple one and widely used.</p>
+<p>72<br>00:06:37,160 –&gt; 00:06:43,560<br>So for example, if you’ve played the game Doom or used a flight simulator,</p>
+<p>73<br>00:06:43,560 –&gt; 00:06:50,240<br>that these types of graphical simulations and animations</p>
+<p>74<br>00:06:50,240 –&gt; 00:06:56,280<br>are made possible only through the use of space partitioning trees,</p>
+<p>75<br>00:06:56,280 –&gt; 00:06:58,960<br>like 2D trees and quadrrees.</p>
+<p>76<br>00:06:58,960 –&gt; 00:07:05,160<br>And also in all different types of scientific data processing,</p>
+<p>77<br>00:07:05,160 –&gt; 00:07:07,840<br>these things are extremely important.</p>
+<p>78<br>00:07:07,840 –&gt; 00:07:10,560<br>Whenever you’re processing geometric data,</p>
+<p>79<br>00:07:10,560 –&gt; 00:07:12,960<br>you’re doing some kind of geometric search.</p>
+<p>80<br>00:07:12,960 –&gt; 00:07:14,400<br>Where’s the closest thing?</p>
+<p>81<br>00:07:14,400 –&gt; 00:07:17,000<br>How am I going to find the closest thing efficiently?</p>
+<p>82<br>00:07:17,000 –&gt; 00:07:19,879<br>What things are nearby, and so forth?</p>
+<p>83<br>00:07:19,879 –&gt; 00:07:27,319<br>So rest assured, these types of algorithms lie at the heart of any program that you use</p>
+<p>84<br>00:07:27,319 –&gt; 00:07:32,199<br>that is evolving a lot of geometric data.</p>
+<p>85<br>00:07:32,199 –&gt; 00:07:36,040<br>So those are just two examples.</p>
+<p>86<br>00:07:36,040 –&gt; 00:07:37,759<br>So let’s look at how it looks now.</p>
+<p>87<br>00:07:37,759 –&gt; 00:07:45,560<br>So 2D tree is, again, it’s going to be a data structure based on a bunch of points</p>
+<p>88<br>00:07:45,560 –&gt; 00:07:50,000<br>that’s going to facilitate efficient data processing of these points.</p>
+<p>89<br>00:07:50,000 –&gt; 00:07:57,000<br>So just as we do for symbol tables where we take keys, now we’re going to take points,</p>
+<p>90<br>00:07:57,000 –&gt; 00:07:59,920<br>and we’re going to build a data structure based on these points.</p>
+<p>91<br>00:07:59,920 –&gt; 00:08:08,399<br>And the idea is to build a tree that corresponds to recursively partitioning the plane.</p>
+<p>92<br>00:08:08,399 –&gt; 00:08:13,680<br>So arbitrarily, our first point, we’re going to divide the plane into two parts</p>
+<p>93<br>00:08:13,680 –&gt; 00:08:17,000<br>based on a vertical line through that point.</p>
+<p>94<br>00:08:17,000 –&gt; 00:08:23,879<br>So now in the tree, on the right there, all the points that fall to the left of the first</p>
+<p>95<br>00:08:23,879 –&gt; 00:08:28,160<br>point are going to be on the left, and all the points that fall to the right of that first</p>
+<p>96<br>00:08:28,160 –&gt; 00:08:30,639<br>point are going to be on the right.</p>
+<p>97<br>00:08:30,639 –&gt; 00:08:36,919<br>But then we get to the next point, we’ll switch, and we’ll partition on a horizontal line.</p>
+<p>98<br>00:08:36,919 –&gt; 00:08:44,759<br>So now our second point in the tree, the left subtree corresponds to everybody below</p>
+<p>99<br>00:08:44,759 –&gt; 00:08:51,759<br>that horizontal line, and the right subtree corresponds to everybody above it.</p>
+<p>100<br>00:08:51,759 –&gt; 00:08:53,559<br>It’s similar.</p>
+<p>101<br>00:08:53,559 –&gt; 00:08:59,039<br>If our third point comes on the left, again, we’ll partition according to the horizontal</p>
+<p>102<br>00:08:59,039 –&gt; 00:09:01,480<br>line through that point on the left.</p>
+<p>103<br>00:09:01,480 –&gt; 00:09:08,080<br>So if we go left and then left, that means all the points to the left of one and above</p>
+<p>104<br>00:09:08,080 –&gt; 00:09:16,600<br>three, so the square in the upper left is represented by that node in the tree.</p>
+<p>105<br>00:09:16,600 –&gt; 00:09:22,560<br>And again, now when we go to one level below, we switch again to vertical, alternate between</p>
+<p>106<br>00:09:22,560 –&gt; 00:09:26,680<br>horizontal and vertical partitioning of the plane.</p>
+<p>107<br>00:09:26,679 –&gt; 00:09:32,000<br>So it’s a regular binary search tree, but it’s got this interpretation based on the geometric</p>
+<p>108<br>00:09:32,000 –&gt; 00:09:39,559<br>data where we switch which key we use for the comparison, the x-quarn or the y-carn at</p>
+<p>109<br>00:09:39,559 –&gt; 00:09:44,439<br>each level, and that corresponds to this partitioning of the plane.</p>
+<p>110<br>00:09:44,439 –&gt; 00:09:48,839<br>So now five comes in, that’s to the left of four, because it was partitioned on a vertical,</p>
+<p>111<br>00:09:48,839 –&gt; 00:09:52,439<br>and five’s going to partition on a horizontal.</p>
+<p>112<br>00:09:52,440 –&gt; 00:10:02,240<br>And this is a simple and completely well-defined partitioning of the plane corresponding to a</p>
+<p>113<br>00:10:02,240 –&gt; 00:10:05,600<br>binary tree.</p>
+<p>114<br>00:10:05,600 –&gt; 00:10:11,080<br>Now the ninth point, well, is to the left of eight, above two, to the left of eight, and then</p>
+<p>115<br>00:10:11,080 –&gt; 00:10:14,640<br>corresponds to horizontal partitioning.</p>
+<p>116<br>00:10:14,639 –&gt; 00:10:20,919<br>The ninth point is to the right of one, it’s below two, so we go to the left, and it’s</p>
+<p>117<br>00:10:20,919 –&gt; 00:10:25,279<br>to the right of seven, so we go to the right.</p>
+<p>118<br>00:10:25,279 –&gt; 00:10:34,679<br>So that’s a way to build a binary tree corresponding to partitioning of the plane.</p>
+<p>119<br>00:10:34,679 –&gt; 00:10:39,919<br>And it’s really the same as a binary search tree, it’s just that we alternate which coordinate</p>
+<p>120<br>00:10:39,919 –&gt; 00:10:41,919<br>we use as the key.</p>
+<p>121<br>00:10:41,919 –&gt; 00:10:46,639<br>At the even levels, we think of a vertical line, and the left subtrees all the points to</p>
+<p>122<br>00:10:46,639 –&gt; 00:10:49,879<br>the left, and the right subtrees all the points to the right.</p>
+<p>123<br>00:10:49,879 –&gt; 00:10:54,319<br>On odd levels, we use a horizontal line, and the left subtrees all points below, and the</p>
+<p>124<br>00:10:54,319 –&gt; 00:10:57,519<br>right subtrees all points above.</p>
+<p>125<br>00:10:57,519 –&gt; 00:11:03,759<br>And the code for this is, you know, the same as for binary search trees, it’s simply which</p>
+<p>126<br>00:11:03,759 –&gt; 00:11:08,360<br>coordinate we use for the comparison, that’s the only difference.</p>
+<p>127<br>00:11:08,360 –&gt; 00:11:11,720<br>So that’s 2D tree implementation.</p>
+<p>128<br>00:11:11,720 –&gt; 00:11:18,279<br>So now what about solving a problem like this rain search problem for a 2D tree?</p>
+<p>129<br>00:11:18,279 –&gt; 00:11:24,200<br>So now we have a query like this green rectangle, and what we want to find is all the points</p>
+<p>130<br>00:11:24,200 –&gt; 00:11:27,440<br>in the data structure that fall within that rectangle.</p>
+<p>131<br>00:11:27,440 –&gt; 00:11:33,600<br>Well, we’re going to use the 2D tree represents our points, and we’re going to use the structure</p>
+<p>132<br>00:11:33,600 –&gt; 00:11:41,680<br>and definition of that tree to go ahead and help us find the points that are in the rectangle.</p>
+<p>133<br>00:11:41,680 –&gt; 00:11:46,840<br>If the root node lies in the rectangle, then we’re done.</p>
+<p>134<br>00:11:46,840 –&gt; 00:11:54,519<br>We can return that point, but we have to look on both sides to look for more, but if the</p>
+<p>135<br>00:11:54,519 –&gt; 00:12:00,160<br>rectangle lies to the left of the root node, then we only have to look in the left and</p>
+<p>136<br>00:12:00,160 –&gt; 00:12:01,160<br>so forth.</p>
+<p>137<br>00:12:01,159 –&gt; 00:12:07,000<br>So look at how this works in a demo.</p>
+<p>138<br>00:12:07,000 –&gt; 00:12:10,839<br>All right, so we’re going to try to find all the points that are contained in that green</p>
+<p>139<br>00:12:10,839 –&gt; 00:12:13,279<br>query rectangle.</p>
+<p>140<br>00:12:13,279 –&gt; 00:12:18,480<br>So first thing is to check if our rectangle contains the node of the root, in this case</p>
+<p>141<br>00:12:18,480 –&gt; 00:12:20,079<br>it doesn’t.</p>
+<p>142<br>00:12:20,079 –&gt; 00:12:25,399<br>So since it’s to the left of the splitting line of the root, we only have to search in the</p>
+<p>143<br>00:12:25,399 –&gt; 00:12:27,240<br>left sub tree.</p>
+<p>144<br>00:12:27,240 –&gt; 00:12:33,320<br>Now we search the left sub tree, we’re going to check if it contains 0.3.</p>
+<p>145<br>00:12:33,320 –&gt; 00:12:39,799<br>It does not contain 0.3, but now what sub trees do we search?</p>
+<p>146<br>00:12:39,799 –&gt; 00:12:46,279<br>In this case, the rectangle intersects our splitting line, so we have to search both subtrees,</p>
+<p>147<br>00:12:46,279 –&gt; 00:12:49,519<br>both above and below.</p>
+<p>148<br>00:12:49,519 –&gt; 00:12:54,399<br>So first we search the left sub tree, that’s the one below.</p>
+<p>149<br>00:12:54,399 –&gt; 00:12:55,720<br>Does it contain 0.4?</p>
+<p>150<br>00:12:55,720 –&gt; 00:12:57,559<br>No.</p>
+<p>151<br>00:12:57,559 –&gt; 00:13:02,960<br>It’s to the left, so we only have to search the left sub tree of 0.4.</p>
+<p>152<br>00:13:02,960 –&gt; 00:13:07,480<br>So we search the left sub tree and we check if it contains 0.5 and it does, that’s the</p>
+<p>153<br>00:13:07,480 –&gt; 00:13:10,279<br>one that we return.</p>
+<p>154<br>00:13:10,279 –&gt; 00:13:13,759<br>It also intersects the splitting lines.</p>
+<p>155<br>00:13:13,759 –&gt; 00:13:18,360<br>We have to search both the subtrees, in this case they’re both empty.</p>
+<p>156<br>00:13:18,360 –&gt; 00:13:23,259<br>So we’re done with that, but now we have to go back and we have to search the other</p>
+<p>157<br>00:13:23,259 –&gt; 00:13:25,960<br>sub tree of 0.3.</p>
+<p>158<br>00:13:25,960 –&gt; 00:13:33,560<br>That’s the above, so now we check is 0.6 in the rectangle, in this case it’s not.</p>
+<p>159<br>00:13:33,560 –&gt; 00:13:38,519<br>It’s to the left, so we have to search the left sub tree of 0.6 and that one’s empty,</p>
+<p>160<br>00:13:38,519 –&gt; 00:13:41,759<br>and now we return and we’re done.</p>
+<p>161<br>00:13:41,759 –&gt; 00:13:45,080<br>So we don’t always go down just one branch.</p>
+<p>162<br>00:13:45,080 –&gt; 00:13:50,560<br>If our splitting line hits our rectangle we have to go down both branches, but still this</p>
+<p>163<br>00:13:50,560 –&gt; 00:13:53,440<br>is a very efficient algorithm.</p>
+<p>164<br>00:13:53,440 –&gt; 00:13:57,800<br>Particularly think about the rectangle being small, it’s going to be not that different</p>
+<p>165<br>00:13:57,800 –&gt; 00:14:02,840<br>than a regular search in a binary search tree.</p>
+<p>166<br>00:14:02,840 –&gt; 00:14:07,840<br>All right, so what about the analysis of how long is this going to take?</p>
+<p>167<br>00:14:07,840 –&gt; 00:14:15,759<br>Well again, the typical case, the rectangle’s small, that we’re only going to examine really</p>
+<p>168<br>00:14:15,759 –&gt; 00:14:21,000<br>a path of the tree, maybe a couple of other nodes along the path, in the running time will</p>
+<p>169<br>00:14:21,000 –&gt; 00:14:27,080<br>be proportional to the number of points returned plus log n.</p>
+<p>170<br>00:14:27,080 –&gt; 00:14:33,440<br>Would geometric data, the worst case, can be bad, so like all the points could be arranged</p>
+<p>171<br>00:14:33,440 –&gt; 00:14:41,240<br>in a circle, all different types of problems might occur, and with some difficulty it’s</p>
+<p>172<br>00:14:41,240 –&gt; 00:14:47,120<br>possible to prove that even if the tree’s balanced you can get a worst case proportional</p>
+<p>173<br>00:14:47,120 –&gt; 00:14:49,120<br>to square root of that.</p>
+<p>174<br>00:14:49,120 –&gt; 00:14:58,040<br>So analysis of 2D trees is a bit beyond our scope, but for many practical applications</p>
+<p>175<br>00:14:58,040 –&gt; 00:15:01,680<br>they’re easy to implement and worth using.</p>
+<p>176<br>00:15:01,679 –&gt; 00:15:06,759<br>Let’s look at another using 2D trees to solve another problem, so-called nearest neighbor</p>
+<p>177<br>00:15:06,759 –&gt; 00:15:07,959<br>search.</p>
+<p>178<br>00:15:07,959 –&gt; 00:15:13,399<br>So now instead of a rectangle we have a query point and our goal is to find the closest</p>
+<p>179<br>00:15:13,399 –&gt; 00:15:15,319<br>point to that point.</p>
+<p>180<br>00:15:15,319 –&gt; 00:15:22,120<br>So in this case our query point is over here in green and the algorithm is going to want</p>
+<p>181<br>00:15:22,120 –&gt; 00:15:26,959<br>to return 0.5, that’s the closest one to the query point.</p>
+<p>182<br>00:15:26,960 –&gt; 00:15:32,639<br>So let’s see how that looks in a demo.</p>
+<p>183<br>00:15:32,639 –&gt; 00:15:37,480<br>So again we start at the root and what do we want to do?</p>
+<p>184<br>00:15:37,480 –&gt; 00:15:43,000<br>Well we’re going to check, whenever we’re out of node it represents a point, so we’re</p>
+<p>185<br>00:15:43,000 –&gt; 00:15:50,280<br>going to check that point and we’ll compute the distance from that point to our query point.</p>
+<p>186<br>00:15:50,279 –&gt; 00:15:57,399<br>And if that distance is less than the best found so far then we’ll keep that as the</p>
+<p>187<br>00:15:57,399 –&gt; 00:15:58,399<br>champion.</p>
+<p>188<br>00:15:58,399 –&gt; 00:16:03,439<br>So the first point that’s the closest we found so far to the query point so we’ll save</p>
+<p>189<br>00:16:03,439 –&gt; 00:16:04,959<br>number one as the distance.</p>
+<p>190<br>00:16:04,959 –&gt; 00:16:10,720<br>And we’ll only worry about the possibility of finding something closer than that.</p>
+<p>191<br>00:16:10,720 –&gt; 00:16:18,959<br>And so just using that distance we recursively search any part of the tree that could contain</p>
+<p>192<br>00:16:18,960 –&gt; 00:16:22,200<br>a closer point.</p>
+<p>193<br>00:16:22,200 –&gt; 00:16:26,120<br>And so that’s what we’ll continue to do.</p>
+<p>194<br>00:16:26,120 –&gt; 00:16:34,120<br>So in this case the query point is to the left of the splitting line and we’ll always go</p>
+<p>195<br>00:16:34,120 –&gt; 00:16:36,720<br>towards the query point first.</p>
+<p>196<br>00:16:36,720 –&gt; 00:16:43,240<br>So in this case we have to search both, there might possibly be a closer point than one</p>
+<p>197<br>00:16:43,240 –&gt; 00:16:44,400<br>over in the right.</p>
+<p>198<br>00:16:44,400 –&gt; 00:16:47,280<br>If you come straight across there might be a closer point.</p>
+<p>199<br>00:16:47,279 –&gt; 00:16:50,799<br>We’re going to have to look at both as far as we know now.</p>
+<p>200<br>00:16:50,799 –&gt; 00:16:56,759<br>But we’ll go towards the query point and see if we can find something closer.</p>
+<p>201<br>00:16:56,759 –&gt; 00:17:03,959<br>So in that case now we go to root 0.3, compute the distance of that point to the query point.</p>
+<p>202<br>00:17:03,959 –&gt; 00:17:09,359<br>It’s closer so we update three to be our new champion.</p>
+<p>203<br>00:17:09,359 –&gt; 00:17:14,160<br>And so now we’re only going to look in parts of the tree that could give us a point that’s</p>
+<p>204<br>00:17:14,160 –&gt; 00:17:17,880<br>closer to our query point than three.</p>
+<p>205<br>00:17:17,880 –&gt; 00:17:23,680<br>Notice already that’ll mean when we get back to point one we won’t search the right sub-tree</p>
+<p>206<br>00:17:23,680 –&gt; 00:17:30,240<br>because there could be no point on the right sub-tree, the right of this splitting line that’s</p>
+<p>207<br>00:17:30,240 –&gt; 00:17:32,840<br>closer to the query point than three.</p>
+<p>208<br>00:17:32,840 –&gt; 00:17:37,800<br>And so that idea of getting closer and closer to the query point is going to cut out different</p>
+<p>209<br>00:17:37,800 –&gt; 00:17:41,320<br>parts of the tree as we process.</p>
+<p>210<br>00:17:41,319 –&gt; 00:17:46,000<br>So in any way starting at point three as far as we know we’re going to have to look at</p>
+<p>211<br>00:17:46,000 –&gt; 00:17:47,759<br>both sub-trees.</p>
+<p>212<br>00:17:47,759 –&gt; 00:17:52,839<br>So sometimes we look at both sub-trees but as we get closer and closer we only look at</p>
+<p>213<br>00:17:52,839 –&gt; 00:17:53,839<br>one.</p>
+<p>214<br>00:17:53,839 –&gt; 00:17:56,759<br>So let’s look at point three now.</p>
+<p>215<br>00:17:56,759 –&gt; 00:18:02,599<br>So again go towards the query point so we’ll go to the top first and that takes us to</p>
+<p>216<br>00:18:02,599 –&gt; 00:18:03,599<br>six.</p>
+<p>217<br>00:18:03,599 –&gt; 00:18:07,000<br>Six is not any closer to three was.</p>
+<p>218<br>00:18:07,000 –&gt; 00:18:13,079<br>So that’s not going to update our champion.</p>
+<p>219<br>00:18:13,079 –&gt; 00:18:20,279<br>And so we’ll search six is less sub-tree which is empty and then it’s right sub-tree.</p>
+<p>220<br>00:18:20,279 –&gt; 00:18:25,200<br>And while the nearest neighbor can’t we don’t have to go down the right sub-tree of six</p>
+<p>221<br>00:18:25,200 –&gt; 00:18:31,960<br>because you can’t have a point in that rectangle that’s closer to the query point than three.</p>
+<p>222<br>00:18:31,960 –&gt; 00:18:38,240<br>So now we can return from that and now we have to look at the bottom sub-tree associated</p>
+<p>223<br>00:18:38,240 –&gt; 00:18:40,240<br>with three.</p>
+<p>224<br>00:18:40,240 –&gt; 00:18:47,279<br>And so that takes us to four and that one is not closer so we still have three as our</p>
+<p>225<br>00:18:47,279 –&gt; 00:18:49,480<br>current champion.</p>
+<p>226<br>00:18:49,480 –&gt; 00:18:55,360<br>So now we’ll search the left sub-tree of four first because that query point is to the</p>
+<p>227<br>00:18:55,360 –&gt; 00:18:59,039<br>left of that splitting line and that takes us to five.</p>
+<p>228<br>00:18:59,039 –&gt; 00:19:05,240<br>And five is our new champion so that’s the closest point that we know about.</p>
+<p>229<br>00:19:05,240 –&gt; 00:19:12,639<br>Could there be a node that’s closer to five to our query point then five in the right</p>
+<p>230<br>00:19:12,639 –&gt; 00:19:16,279<br>sub-tree of four?</p>
+<p>231<br>00:19:16,279 –&gt; 00:19:20,399<br>We have to go above sorry to look at the top sub-tree associated with five and find</p>
+<p>232<br>00:19:20,399 –&gt; 00:19:21,639<br>that it’s empty.</p>
+<p>233<br>00:19:21,639 –&gt; 00:19:26,319<br>And now we’re back at four do we have to search the right sub-tree of four?</p>
+<p>234<br>00:19:26,319 –&gt; 00:19:32,639<br>No because there can’t be a closer point than five in the right sub-tree of four.</p>
+<p>235<br>00:19:32,639 –&gt; 00:19:43,679<br>So we’re done with four and we returned to come to three and now we search the,</p>
+<p>236<br>00:19:43,679 –&gt; 00:19:46,919<br>supposed to search and we turned from there and we’re now at one, supposed to search</p>
+<p>237<br>00:19:46,919 –&gt; 00:19:51,799<br>the right sub-tree of one next but we can prune that nearest neighbor couldn’t be in</p>
+<p>238<br>00:19:51,799 –&gt; 00:19:52,799<br>there.</p>
+<p>239<br>00:19:52,799 –&gt; 00:20:01,639<br>So then we’re done and we found that the nearest neighbor is five and this is going to be</p>
+<p>240<br>00:20:01,639 –&gt; 00:20:06,200<br>very efficient because as we get closer and closer to the query point we’re cutting out</p>
+<p>241<br>00:20:06,200 –&gt; 00:20:11,960<br>all the sub-trees that are away and again in practice the running time of this algorithm</p>
+<p>242<br>00:20:11,960 –&gt; 00:20:14,440<br>is going to be close to the logarithmic.</p>
+<p>243<br>00:20:14,440 –&gt; 00:20:21,119<br>So in typical cases the running time of nearest neighbor search in a 2D tree is going</p>
+<p>244<br>00:20:21,119 –&gt; 00:20:23,519<br>to be proportional to logarithmic.</p>
+<p>245<br>00:20:23,519 –&gt; 00:20:29,519<br>It is possible to concoct cases where you’re going to have to examine all the points.</p>
+<p>246<br>00:20:29,519 –&gt; 00:20:34,000<br>For example if they’re all arranged in a circle in your query points in the center or</p>
+<p>247<br>00:20:34,000 –&gt; 00:20:40,799<br>something of that sort but for typical data it’s very efficient.</p>
+<p>248<br>00:20:40,799 –&gt; 00:20:45,879<br>Now we’re going to look at an application where we simulate a phenomenon in nature and</p>
+<p>249<br>00:20:45,960 –&gt; 00:20:53,680<br>this is what kind of patterns do things like starlings and geese or cranes or fish or</p>
+<p>250<br>00:20:53,680 –&gt; 00:20:59,800<br>fireflies how do they flock together and we’re looking at a simulation that corresponds</p>
+<p>251<br>00:20:59,800 –&gt; 00:21:00,800<br>to that.</p>
+<p>252<br>00:21:00,800 –&gt; 00:21:07,800<br>And then when the moment is right they behave in a way should be impossible.</p>
+<p>253<br>00:21:45,880 –&gt; 00:21:53,920<br>Wow!</p>
+<p>254<br>00:22:15,880 –&gt; 00:22:17,880<br>I’m going to go to the next room.</p>
+<p>255<br>00:22:17,880 –&gt; 00:22:19,880<br>I’m going to go to the next room.</p>
+<p>256<br>00:22:19,880 –&gt; 00:22:21,880<br>I’m going to go to the next room.</p>
+<p>257<br>00:22:21,880 –&gt; 00:22:23,880<br>I’m going to go to the next room.</p>
+<p>258<br>00:22:23,880 –&gt; 00:22:25,880<br>I’m going to go to the next room.</p>
+<p>259<br>00:22:25,880 –&gt; 00:22:27,880<br>I’m going to go to the next room.</p>
+<p>260<br>00:22:27,880 –&gt; 00:22:29,880<br>I’m going to go to the next room.</p>
+<p>261<br>00:22:29,880 –&gt; 00:22:31,880<br>I’m going to go to the next room.</p>
+<p>262<br>00:22:31,880 –&gt; 00:22:33,880<br>I’m going to go to the next room.</p>
+<p>263<br>00:22:33,880 –&gt; 00:22:35,880<br>I’m going to go to the next room.</p>
+<p>264<br>00:22:35,880 –&gt; 00:22:37,880<br>I’m going to go to the next room.</p>
+<p>265<br>00:22:37,880 –&gt; 00:22:39,880<br>I’m going to go to the next room.</p>
+<p>266<br>00:22:39,880 –&gt; 00:22:41,880<br>I’m going to go to the next room.</p>
+<p>267<br>00:22:41,880 –&gt; 00:22:43,880<br>I’m going to go to the next room.</p>
+<p>268<br>00:22:43,880 –&gt; 00:22:53,880<br>And it happens every day right through the winter, just a couple of miles from my doorstep.</p>
+<p>269<br>00:22:53,880 –&gt; 00:22:55,880<br>How good is that?</p>
+<p>270<br>00:22:55,880 –&gt; 00:23:05,880<br>So, there’s a simple model developed by Craig Reynolds a while ago for a similar in this situation called the void.</p>
+<p>271<br>00:23:05,880 –&gt; 00:23:13,880<br>And the idea is to use three simple rules to you get something very close to this complex flocking behavior.</p>
+<p>272<br>00:23:13,880 –&gt; 00:23:21,880<br>So, you have collision avoidance where you always try to point away from the K nearest boards.</p>
+<p>273<br>00:23:21,880 –&gt; 00:23:27,880<br>You have centering where you try to point near the center of mass of the K nearest boards.</p>
+<p>274<br>00:23:27,880 –&gt; 00:23:33,880<br>And velocity matching where you update your velocity to the average of the K nearest boards.</p>
+<p>275<br>00:23:33,880 –&gt; 00:23:37,880<br>And that algorithm works like this.</p>
+<p>276<br>00:23:37,880 –&gt; 00:23:47,880<br>So, as that example shows, two D-trees are extremely effective in quickly processing huge amounts of geometric data.</p>
+<p>277<br>00:23:47,880 –&gt; 00:23:51,880<br>And what’s more, it expands to more dimensions.</p>
+<p>278<br>00:23:51,880 –&gt; 00:24:00,880<br>With a very simple modification, we can take a 2D tree and create a data structure known as a K-D tree, which even works for K dimensions.</p>
+<p>279<br>00:24:00,880 –&gt; 00:24:08,880<br>And the idea is, even if there’s K dimension, what we’ll do is recursively partition one dimension at a time.</p>
+<p>280<br>00:24:08,880 –&gt; 00:24:12,880<br>So, that’s called a K-D tree.</p>
+<p>281<br>00:24:12,880 –&gt; 00:24:17,880<br>And we use the same idea as for 2D trees.</p>
+<p>282<br>00:24:17,880 –&gt; 00:24:24,880<br>But instead of cycling through just horizontal vertical, we cycle through however many dimensions there are.</p>
+<p>283<br>00:24:24,880 –&gt; 00:24:32,880<br>So, it’s in three space, we use a plane and do above and below, and then simply cycle through the dimensions.</p>
+<p>284<br>00:24:32,880 –&gt; 00:24:42,880<br>At level I, we put on the left the points whose I’d coordinate are less than P. And on the right we put the points whose I’d coordinates are greater than P.</p>
+<p>285<br>00:24:42,880 –&gt; 00:24:54,880<br>And at level, cycle through the dimensions, at level I mod K, we just use that dimension of the point to do the comparison.</p>
+<p>286<br>00:24:54,880 –&gt; 00:25:02,880<br>Implementation is simple, except for the comparison, and we get the same kind of partitioning for three-dimensional data.</p>
+<p>287<br>00:25:02,880 –&gt; 00:25:18,880<br>So, we could do boards in three dimensions. Or for databases with a large number of dimensions, you could do even much higher dimensional data and find nearest neighbors and do range searching extremely efficiently.</p>
+<p>288<br>00:25:18,880 –&gt; 00:25:26,880<br>It’s a very efficient and simple data structure for processing K-dimensional data that’s very widely used.</p>
+<p>289<br>00:25:26,880 –&gt; 00:25:32,880<br>And the whole idea is that data clusters, particularly in high dimensions.</p>
+<p>290<br>00:25:32,880 –&gt; 00:25:41,880<br>And also one point to make for this class is that this algorithm was discovered by an undergraduate in an algorithms class.</p>
+<p>291<br>00:25:41,880 –&gt; 00:25:47,880<br>So, that’s John Bentley who discovered this while an undergraduate at Stanford.</p>
+<p>292<br>00:25:47,880 –&gt; 00:26:04,880<br>And so, it’s a simple idea that, but expert scientists were struggling with dealing with huge amounts of geometric data and Bentley found this way to process it efficiently that’s been widely used ever since.</p>
+<p>293<br>00:26:04,880 –&gt; 00:26:20,880<br>And in particular, just as another example, consider the idea of in-body simulation, which is a classic problem in physics, where you’ve got in particles mutually affected by gravity.</p>
+<p>294<br>00:26:20,880 –&gt; 00:26:31,880<br>And basically, the computation is based on computing the interacting force for each pair of particles.</p>
+<p>295<br>00:26:31,880 –&gt; 00:26:44,880<br>And so, then there’d be mutual gravitational pull. And this is what happens with large number of particles in a certain simulation.</p>
+<p>296<br>00:26:44,880 –&gt; 00:26:58,880<br>And people understand properties in the universe by coming up with doing these kinds of calculations and comparing against what’s observed in space.</p>
+<p>297<br>00:26:58,880 –&gt; 00:27:09,880<br>Now, but the thing is, for each pair of particles. So, if you have n particles and you have to do it for each pair, that’s n squared.</p>
+<p>298<br>00:27:09,880 –&gt; 00:27:20,880<br>So, the progress of scientific investigation is going to be affected by how quickly you can do this calculation for large number of particles.</p>
+<p>299<br>00:27:20,880 –&gt; 00:27:29,880<br>There’s a lot of particles out in the universe, and you can’t do a quadratic calculation for large n.</p>
+<p>300<br>00:27:29,880 –&gt; 00:27:42,880<br>So, another undergraduate in an algorithms class discovered this idea for in-body simulation. And that’s Andrew O’Pell.</p>
+<p>301<br>00:27:42,880 –&gt; 00:28:02,880<br>And his idea was that if some particle is way away from some cluster of particles, we can treat that cluster as a single aggregate particle, and not do the individual force calculation between our particle and every one of those in the aggregate, but use the center of mass.</p>
+<p>302<br>00:28:02,880 –&gt; 00:28:20,880<br>And you get a very accurate approximation to the n body doing that. And the algorithm that he used is based on 3D trees with the n particles as nodes, and storing the center of a mass of the subtree in each node.</p>
+<p>303<br>00:28:20,880 –&gt; 00:28:37,880<br>And then to compute the total force traversing the tree of all the information that you need to complete the n body calculation, but in time much closer to n log n than to n squared.</p>
+<p>304<br>00:28:37,880 –&gt; 00:28:55,880<br>And that idea that you didn’t need to take time proportional to n squared, but with a geometric algorithm like a 3D tree, you can get the time to n log n that enabled all sorts of new scientific investigation.</p>
+<p>305<br>00:28:55,880 –&gt; 00:29:01,880<br>And it’s an example of the use of algorithms to enable new research.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P49Part111 04_kd Trees</div>
+      <div>http://example.com/2025/10/25/PrincetonAlgorithms P49Part111-04_kd-trees/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P4Part12-05_quick-union/" title="PrincetonAlgorithms P4Part12 05_quick Union">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P4Part12 05_quick Union</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P46Part110-05_b-trees-optional/" title="PrincetonAlgorithms P46Part110 05_b Trees Optional">
+                        <span class="hidden-mobile">PrincetonAlgorithms P46Part110 05_b Trees Optional</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

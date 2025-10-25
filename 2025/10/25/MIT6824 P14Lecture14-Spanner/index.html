@@ -1,0 +1,1195 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,000Good afternoon, good evening, good night, good morning, whatever you are or whenever you’re watching this. 200:00:06,000 –&gt; 00:00:09,000So today I want to talk about">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824 P14Lecture14 Spanner">
+<meta property="og:url" content="http://example.com/2025/10/25/MIT6824%20P14Lecture14-Spanner/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,000Good afternoon, good evening, good night, good morning, whatever you are or whenever you’re watching this. 200:00:06,000 –&gt; 00:00:09,000So today I want to talk about">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.801Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.801Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>MIT6824 P14Lecture14 Spanner - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6824 P14Lecture14 Spanner"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          6k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          51 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MIT6824 P14Lecture14 Spanner</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,000<br>Good afternoon, good evening, good night, good morning, whatever you are or whenever you’re watching this.</p>
+<p>2<br>00:00:06,000 –&gt; 00:00:09,000<br>So today I want to talk about</p>
+<p>3<br>00:00:10,000 –&gt; 00:00:11,000<br>Spanner.</p>
+<p>4<br>00:00:11,000 –&gt; 00:00:20,000<br>This is a paper from 2012, but that the Spanner system is the active use and also still continuously under development.</p>
+<p>5<br>00:00:21,000 –&gt; 00:00:23,000<br>So it’s a real system.</p>
+<p>6<br>00:00:23,000 –&gt; 00:00:29,000<br>The main topic and then why do you spend is really interesting is it supports white area.</p>
+<p>7<br>00:00:30,000 –&gt; 00:00:32,000<br>Transactions.</p>
+<p>8<br>00:00:38,000 –&gt; 00:00:42,000<br>And this is a really powerful programming model.</p>
+<p>9<br>00:00:42,000 –&gt; 00:00:57,000<br>So even though the data, where maybe the data charted across multiple servers and servers being in different data centers and the different pieces on the planet, you can just run transactions and they have asset.</p>
+<p>10<br>00:00:58,000 –&gt; 00:01:02,000<br>Symandics, their atomic, you know, respective failure at all the right to happen or none of them.</p>
+<p>11<br>00:01:02,000 –&gt; 00:01:05,000<br>And they provide zero light ability.</p>
+<p>12<br>00:01:05,000 –&gt; 00:01:09,000<br>And so that’s an incredibly powerful programming abstraction.</p>
+<p>13<br>00:01:09,000 –&gt; 00:01:17,000<br>And of course, you know, the challenge is to implement it efficiently in one big challenge is just like a law physics.</p>
+<p>14<br>00:01:17,000 –&gt; 00:01:25,000<br>And the speed of light, you know, sending a packet from one end in one part of the U.S. to the other part of the US, or to another continent, that takes a lot of time.</p>
+<p>15<br>00:01:25,000 –&gt; 00:01:28,000<br>We’re talking about tens of milliseconds.</p>
+<p>16<br>00:01:28,000 –&gt; 00:01:34,000<br>And so what we’re going to see in this paper is that read write transactions are actually</p>
+<p>17<br>00:01:34,000 –&gt; 00:01:43,000<br>indeed quite expensive, but they work very hard to make read only transactions very inexpensive.</p>
+<p>18<br>00:01:43,000 –&gt; 00:01:52,000<br>And so the read write transactions are implemented using two phase commits.</p>
+<p>19<br>00:01:52,000 –&gt; 00:01:57,000<br>As we talked about last week, two phase locking.</p>
+<p>20<br>00:01:57,000 –&gt; 00:02:12,000<br>And one of the things that is interesting about it is that the participants in this vertical are just basically patched groups.</p>
+<p>21<br>00:02:12,000 –&gt; 00:02:19,000<br>The read only transactions can execute at any data center.</p>
+<p>22<br>00:02:19,000 –&gt; 00:02:24,000<br>And they’re ever going to run very fast in the fact that you get to tables six in the back.</p>
+<p>23<br>00:02:24,000 –&gt; 00:02:30,000<br>The paper, you will see the read only transactions are going to be like ten times fast with read write transactions.</p>
+<p>24<br>00:02:30,000 –&gt; 00:02:33,000<br>And there are two key ideas there that we’ll talk about in this lecture.</p>
+<p>25<br>00:02:33,000 –&gt; 00:02:41,000<br>One is snapshot isolation, which actually is a standard database idea, but I use it here to make the read.</p>
+<p>26<br>00:02:41,000 –&gt; 00:02:43,000<br>To make the read fast.</p>
+<p>27<br>00:02:43,000 –&gt; 00:02:54,000<br>And in particular, you know, to make it actually work well in a distributed write area setting, the rely on synchronized clocks or day.</p>
+<p>28<br>00:02:54,000 –&gt; 00:02:57,000<br>Now those clocks are not perfectly synchronized.</p>
+<p>29<br>00:02:57,000 –&gt; 00:03:09,000<br>And so their transaction scheme must deal with a little bit of a swap or drift or error margin in exactly know what the true time is.</p>
+<p>30<br>00:03:09,000 –&gt; 00:03:14,000<br>Now, as I said, it’s widely used.</p>
+<p>31<br>00:03:14,000 –&gt; 00:03:17,000<br>Both internally and Google.</p>
+<p>32<br>00:03:17,000 –&gt; 00:03:20,000<br>But also as a Google customer, you can use it.</p>
+<p>33<br>00:03:20,000 –&gt; 00:03:24,000<br>Spanner is basically a cloud service that you can use your Google customer.</p>
+<p>34<br>00:03:24,000 –&gt; 00:03:33,000<br>If you use Gmail, probably your email or part of the email system actually go through a standout.</p>
+<p>35<br>00:03:33,000 –&gt; 00:03:42,000<br>Maybe before diving into more detail, I want to make one logistic comment, not unrelated to spinner.</p>
+<p>36<br>00:03:42,000 –&gt; 00:03:50,000<br>As you may already have seen, we made some adjustment for the long weekend, long upcoming weekend.</p>
+<p>37<br>00:03:50,000 –&gt; 00:03:56,000<br>First of all, lack for a is not as heavy duty as the other labs.</p>
+<p>38<br>00:03:56,000 –&gt; 00:04:05,000<br>So hopefully to take the less time, we also canceled next week’s lectures, so that you can actually use that as time to work on for a.</p>
+<p>39<br>00:04:05,000 –&gt; 00:04:08,000<br>And we made the deadline for for a more flexible.</p>
+<p>40<br>00:04:08,000 –&gt; 00:04:11,000<br>So it’d be next Friday is not convenient for you.</p>
+<p>41<br>00:04:11,000 –&gt; 00:04:17,000<br>You can actually choose to have another extra late hour to submit it later.</p>
+<p>42<br>00:04:17,000 –&gt; 00:04:25,000<br>And hopefully that will allow you to enjoy the long weekend and perhaps get some sleep and maybe do something else.</p>
+<p>43<br>00:04:25,000 –&gt; 00:04:30,000<br>And then debugging your labs.</p>
+<p>44<br>00:04:30,000 –&gt; 00:04:34,000<br>The second point I want to make is directly related to spinner.</p>
+<p>45<br>00:04:34,000 –&gt; 00:04:38,000<br>Some of you noticed this and came through in the questions.</p>
+<p>46<br>00:04:38,000 –&gt; 00:04:41,000<br>This paper is quite complicated.</p>
+<p>47<br>00:04:41,000 –&gt; 00:04:43,000<br>And there’s many reasons why it’s complicated.</p>
+<p>48<br>00:04:43,000 –&gt; 00:04:48,000<br>But one reason is that actually there’s a lot of things going on.</p>
+<p>49<br>00:04:48,000 –&gt; 00:04:49,000<br>That’s a powerful system.</p>
+<p>50<br>00:04:49,000 –&gt; 00:04:52,000<br>And there’s a lot of different components to it.</p>
+<p>51<br>00:04:52,000 –&gt; 00:04:57,000<br>And you know, the interaction team of different components is important.</p>
+<p>52<br>00:04:57,000 –&gt; 00:05:00,000<br>And so there’s usually a lot, a lot of material in this paper.</p>
+<p>53<br>00:05:00,000 –&gt; 00:05:07,000<br>And so what I will try to do in this lecture is try to make it more clear by focusing on a couple aspects of the paper.</p>
+<p>54<br>00:05:07,000 –&gt; 00:05:11,000<br>And I’m not going to do a full treatment of the paper.</p>
+<p>55<br>00:05:11,000 –&gt; 00:05:17,000<br>But you know, focus, I think what are the most important ideas and why we’re reading it in a two four.</p>
+<p>56<br>00:05:17,000 –&gt; 00:05:32,000<br>That took me actually, you know, a little bit of time or a few years to figure out actually how to present this paper or explain it in a way that I think it’s maybe easier to understand, you know, if you’re for in the context of six or four.</p>
+<p>57<br>00:05:32,000 –&gt; 00:05:33,000<br>Okay.</p>
+<p>58<br>00:05:33,000 –&gt; 00:05:37,000<br>But they ask questions as always.</p>
+<p>59<br>00:05:37,000 –&gt; 00:05:50,000<br>Okay. So let’s dive in and talk a little bit of the high level organization.</p>
+<p>60<br>00:05:50,000 –&gt; 00:05:56,000<br>And more from the point of view, from the way I want to talk about this about spanner in this lecture.</p>
+<p>61<br>00:05:56,000 –&gt; 00:06:09,000<br>And so there’s multiple data centers. You know, there’s for convenience or simplicity, you know, just think about their free data centers, a, baby and see.</p>
+<p>62<br>00:06:09,000 –&gt; 00:06:13,000<br>And it can be anywhere in the world.</p>
+<p>63<br>00:06:13,000 –&gt; 00:06:25,000<br>And the goal is that basically, you know, data will be like way up and maybe data like a chart, you know, that contains, you know, some database rose or some key value pairs.</p>
+<p>64<br>00:06:25,000 –&gt; 00:06:27,000<br>So that’s a chart.</p>
+<p>65<br>00:06:27,000 –&gt; 00:06:31,000<br>Maybe it has the keys a to M.</p>
+<p>66<br>00:06:31,000 –&gt; 00:06:38,000<br>And the basic ideas is actually, you know, we’re going to replicate that chart across data centers.</p>
+<p>67<br>00:06:38,000 –&gt; 00:06:42,000<br>And then we’ve the goal that like even if a complete data center goes down.</p>
+<p>68<br>00:06:42,000 –&gt; 00:06:44,000<br>Then you know, we can proceed.</p>
+<p>69<br>00:06:44,000 –&gt; 00:06:52,000<br>And then we were going to arrange that we can be able to proceed is that basically these charts are going to form.</p>
+<p>70<br>00:06:52,000 –&gt; 00:06:55,000<br>These are broadcasts that are sitting in different data center.</p>
+<p>71<br>00:06:55,000 –&gt; 00:07:04,000<br>We’re going to form one taxes group.</p>
+<p>72<br>00:07:04,000 –&gt; 00:07:07,000<br>So you’re sort of thinking about it before we’re trying to think about this in terms of black.</p>
+<p>73<br>00:07:07,000 –&gt; 00:07:16,000<br>Three, then you could think about that, you know, we have a key value store where the key value servers are spread around different data centers.</p>
+<p>74<br>00:07:16,000 –&gt; 00:07:24,000<br>And the keys are updated, you know, the best knitting raft, you know, rights, you know, food, the rap log.</p>
+<p>75<br>00:07:24,000 –&gt; 00:07:29,000<br>And then you know, the individual key fees, KVs, you know, update their state.</p>
+<p>76<br>00:07:29,000 –&gt; 00:07:35,000<br>So you can think about like, you know, lap free being here instead of running, you know, free KV servers and machine.</p>
+<p>77<br>00:07:35,000 –&gt; 00:07:42,000<br>You’re going to run one KV server of indifferent data centers.</p>
+<p>78<br>00:07:42,000 –&gt; 00:07:44,000<br>Okay.</p>
+<p>79<br>00:07:44,000 –&gt; 00:07:49,000<br>So you know, then there’s going to be a packs of group per chart.</p>
+<p>80<br>00:07:49,000 –&gt; 00:07:55,000<br>So there.</p>
+<p>81<br>00:07:55,000 –&gt; 00:08:00,000<br>You might be out of charts, that have all the other parts of the.</p>
+<p>82<br>00:08:00,000 –&gt; 00:08:03,000<br>Value space or database rows.</p>
+<p>83<br>00:08:03,000 –&gt; 00:08:12,000<br>So let’s say, you know, we have only two charts, you know, for this particular database, you know, a chart containing eight to them and then the chart containing and disease.</p>
+<p>84<br>00:08:12,000 –&gt; 00:08:17,000<br>And then you’re going to form their own taxes group.</p>
+<p>85<br>00:08:17,000 –&gt; 00:08:31,000<br>And the reason we wanted to get a multiple charts is to get parallelism.</p>
+<p>86<br>00:08:31,000 –&gt; 00:08:43,000<br>So that we can, you know, I have the transactions involved different charts, you know, this jump this, this, this joint set of charts, you know, they can be these these transactions can actually proceed completing parallel.</p>
+<p>87<br>00:08:43,000 –&gt; 00:08:53,000<br>So as I mentioned earlier, we have a packs of group per chart.</p>
+<p>88<br>00:08:53,000 –&gt; 00:09:00,000<br>For replication, but you know, patches actually provides us, you know, an additional sort of benefit.</p>
+<p>89<br>00:09:00,000 –&gt; 00:09:05,000<br>The communication costs right for them from a to be here for me to see might be very expensive.</p>
+<p>90<br>00:09:05,000 –&gt; 00:09:15,000<br>And since you know, packs, there’s a lot of the proceeds or raft allows us to proceed with just the majority, you know, the slow machine might actually have not that much performance impact.</p>
+<p>91<br>00:09:15,000 –&gt; 00:09:23,000<br>And so we can sort of easily tolerate either slow machines or actually one, you know, data center being a doubt.</p>
+<p>92<br>00:09:23,000 –&gt; 00:09:36,000<br>So the majority of rule helps us in two ways. You know, we get data center full tolerance.</p>
+<p>93<br>00:09:36,000 –&gt; 00:09:41,000<br>And sort of slowness.</p>
+<p>94<br>00:09:41,000 –&gt; 00:09:54,000<br>Now, a final goal, as we’ll see in a little bit more detail is that a client of, and then a spinner. So let’s say you’re some server.</p>
+<p>95<br>00:09:54,000 –&gt; 00:10:01,000<br>Use a spinner. We’d like it to be the case that, you know, this server can actually use a closed replica.</p>
+<p>96<br>00:10:01,000 –&gt; 00:10:06,000<br>And so the replicas, you know, typically are placed.</p>
+<p>97<br>00:10:06,000 –&gt; 00:10:12,000<br>Close close to the clients that actually use them.</p>
+<p>98<br>00:10:12,000 –&gt; 00:10:19,000<br>And the fact we’ll see that, you know, green only traction transactions can really executed basically by the local replica.</p>
+<p>99<br>00:10:19,000 –&gt; 00:10:23,000<br>And without any communication to the other data centers.</p>
+<p>100<br>00:10:23,000 –&gt; 00:10:36,000<br>And that client here, this is typically sort of the backend service of some Google service. So, for example, this might be the Gmail server not sitting.</p>
+<p>101<br>00:10:36,000 –&gt; 00:10:42,000<br>You know, those are in some data center and maybe the same data center and talks to the replicas in that particular data centers.</p>
+<p>102<br>00:10:42,000 –&gt; 00:10:46,000<br>And of course, outside our real clients, like users.</p>
+<p>103<br>00:10:46,000 –&gt; 00:10:49,000<br>You know, read a right email.</p>
+<p>104<br>00:10:49,000 –&gt; 00:11:01,000<br>Okay, any sort of questions about this high level organization.</p>
+<p>105<br>00:11:01,000 –&gt; 00:11:05,000<br>Okay, so let me sort of.</p>
+<p>106<br>00:11:05,000 –&gt; 00:11:11,000<br>I have the challenges that I want to focus on in this lecture.</p>
+<p>107<br>00:11:11,000 –&gt; 00:11:18,000<br>And so we’re going to sort of free main challenges.</p>
+<p>108<br>00:11:18,000 –&gt; 00:11:28,000<br>One is, you know, the way is like, no, I said we want to actually do read only transaction without actually having to communicate with any other server.</p>
+<p>109<br>00:11:28,000 –&gt; 00:11:48,000<br>And we got to make sure that the read sees the latest right.</p>
+<p>110<br>00:11:48,000 –&gt; 00:11:59,000<br>And this sort of classic challenge that we’ve seen before, you know, and zookeeper, zookeeper, sort of, it doesn’t really address the challenge right head on. And there’s like a weakens the consistency.</p>
+<p>111<br>00:11:59,000 –&gt; 00:12:11,000<br>But here in this design, we’d like to arrange it in a way that actually we still keep linearizability. In fact, we’re the spendership for a slightly stronger property than the linearizability.</p>
+<p>112<br>00:12:11,000 –&gt; 00:12:21,000<br>Second thing is when you want to support spender wants to support transactions across charge.</p>
+<p>113<br>00:12:21,000 –&gt; 00:12:29,000<br>So even it’s actually like that we do a bank transfer and one account is in one chart, the other account that is nation count is another chart.</p>
+<p>114<br>00:12:29,000 –&gt; 00:12:37,000<br>We want to arrange that, you know, it’s still can be executed like a transaction and assets, as a Smentix.</p>
+<p>115<br>00:12:37,000 –&gt; 00:12:46,000<br>And finally, you know, the transactions both the read only once and the read right ones must be serializable.</p>
+<p>116<br>00:12:46,000 –&gt; 00:12:54,000<br>In fact, a little bit stronger than serializable.</p>
+<p>117<br>00:12:54,000 –&gt; 00:13:04,000<br>And we’ll see that the, you know, for this, you know, for the basically for the read right transactions, you know, we’re going to use two face locking to face commit.</p>
+<p>118<br>00:13:04,000 –&gt; 00:13:11,000<br>And the protocol basically the two protocols that we talked about in the last lecture.</p>
+<p>119<br>00:13:11,000 –&gt; 00:13:27,000<br>What I like to do first is talk about read right transactions and then talking more detail how read only transaction are executed so that they can run very efficiently.</p>
+<p>120<br>00:13:27,000 –&gt; 00:13:34,000<br>Okay, so read right transactions are basically two face locking and two face commit.</p>
+<p>121<br>00:13:34,000 –&gt; 00:13:43,000<br>Hopefully this is going to be easy to understand.</p>
+<p>122<br>00:13:43,000 –&gt; 00:13:49,000<br>And they’re going to involve the sort of complex timing diagrams that we looked at last last week.</p>
+<p>123<br>00:13:49,000 –&gt; 00:14:00,000<br>And so, you know, the way it’s set up and I’m going to simplify a bit, but you know, the way it’s sort of simple set up in a spanner is we have to climb.</p>
+<p>124<br>00:14:00,000 –&gt; 00:14:05,000<br>And then we’re going to find this sort of in charge of really running the transaction.</p>
+<p>125<br>00:14:05,000 –&gt; 00:14:08,000<br>The users of transaction manager, now, transaction library.</p>
+<p>126<br>00:14:08,000 –&gt; 00:14:11,000<br>That actually runs on the client machine.</p>
+<p>127<br>00:14:11,000 –&gt; 00:14:17,000<br>And you know, it’s in charge, you know, basically orchestrate the transaction.</p>
+<p>128<br>00:14:17,000 –&gt; 00:14:26,000<br>And again, the client here is not, you know, the user web browser or for Gmail, but it basically the servers with the server on the Gmail server in the data center.</p>
+<p>129<br>00:14:26,000 –&gt; 00:14:34,000<br>And so let’s make it the picture of a reasonable symbol. So we’re going to have two charge instead of three or five.</p>
+<p>130<br>00:14:34,000 –&gt; 00:14:38,000<br>So we have short a and we have short B.</p>
+<p>131<br>00:14:38,000 –&gt; 00:14:43,000<br>And let’s assume we’re going to just execute the transfer transaction.</p>
+<p>132<br>00:14:43,000 –&gt; 00:14:49,000<br>The same one is before where we’re going to deduct some money from one account and add up to another account.</p>
+<p>133<br>00:14:49,000 –&gt; 00:14:58,000<br>Initially, I’m going to talk about this without the timestamps.</p>
+<p>134<br>00:14:58,000 –&gt; 00:15:05,000<br>And in some ways, you know, the one we really do so is that for actually for the read right transaction timestamps are not very important.</p>
+<p>135<br>00:15:05,000 –&gt; 00:15:08,000<br>The timestamps actually are mostly there for read only transactions.</p>
+<p>136<br>00:15:08,000 –&gt; 00:15:17,000<br>And they need a little bit tweaking to the read right transactions to support the read only transactions and therefore the timestamps sort of sort of.</p>
+<p>137<br>00:15:17,000 –&gt; 00:15:27,000<br>And drifting to read right just actually two. But in essence, you know, the read right transactions are just basically straight two face locking and two face commit.</p>
+<p>138<br>00:15:27,000 –&gt; 00:15:34,000<br>So the client is going to reach these accounts. For example, let’s assume that read X.</p>
+<p>139<br>00:15:34,000 –&gt; 00:15:45,000<br>So reaches is going to do the transfer transaction from moving money from adding one to X and you know, subtracting what subtracting one dollar from X and adding a dollar to Y.</p>
+<p>140<br>00:15:45,000 –&gt; 00:15:52,000<br>So it’s going to read X. Let’s assume that X is sits in one chart. So that’s going to be a cross chart transaction.</p>
+<p>141<br>00:15:52,000 –&gt; 00:15:57,000<br>And yes, the read off Y.</p>
+<p>142<br>00:15:57,000 –&gt; 00:16:10,000<br>And there’s going to be when the client executes these or issues these read operations, they go to the charts and the charts actually keep a walk table.</p>
+<p>143<br>00:16:10,000 –&gt; 00:16:17,000<br>And so the record that basically this transaction, you know, so let’s say this is transaction whatever TID.</p>
+<p>144<br>00:16:17,000 –&gt; 00:16:22,000<br>And they’re going to record that the X is owned.</p>
+<p>145<br>00:16:22,000 –&gt; 00:16:28,000<br>It’s the lock table X is owned by the client. You know, and he is a wise owned by the client.</p>
+<p>146<br>00:16:28,000 –&gt; 00:16:33,000<br>And that’s sort of the very standard. So you know, we’ve seen before.</p>
+<p>147<br>00:16:33,000 –&gt; 00:16:45,000<br>And the thing that is slightly different here and I’m not fully drawing it out here is that when we’re talking to one chart, a chart, a is really one of these actress groups.</p>
+<p>148<br>00:16:45,000 –&gt; 00:16:48,000<br>And so it has you know, free.</p>
+<p>149<br>00:16:48,000 –&gt; 00:16:52,000<br>Yes, in this case, you know, a group of free peers.</p>
+<p>150<br>00:16:52,000 –&gt; 00:16:59,000<br>And so S a really replicated surface, you know, consisting of multiple peers.</p>
+<p>151<br>00:16:59,000 –&gt; 00:17:07,000<br>In when executing read only transaction, we’re going to be talking to the meter of that peer. So if you think it turns a raff style, you can just think about it.</p>
+<p>152<br>00:17:07,000 –&gt; 00:17:14,000<br>The read requires those to the meter of the access group.</p>
+<p>153<br>00:17:14,000 –&gt; 00:17:17,000<br>And another.</p>
+<p>154<br>00:17:17,000 –&gt; 00:17:23,000<br>So that is a sort of every time I sort of draw this one single arrow here for S a or for S b.</p>
+<p>155<br>00:17:23,000 –&gt; 00:17:34,000<br>And so it’s a much more complicated story, particularly when rights get involved, the goods rights action are going to go through, you know, the packsters or raft group.</p>
+<p>156<br>00:17:34,000 –&gt; 00:17:38,000<br>The read only of the lock tables actually not replicated.</p>
+<p>157<br>00:17:38,000 –&gt; 00:17:44,000<br>And it is your story at the leader of the packsters group.</p>
+<p>158<br>00:17:44,000 –&gt; 00:17:47,000<br>Either goes down during the transaction.</p>
+<p>159<br>00:17:47,000 –&gt; 00:17:56,000<br>Then you know, basically the transaction has to be restarted, which transaction will be rewarded because the walk information is lost.</p>
+<p>160<br>00:17:56,000 –&gt; 00:18:02,000<br>The reason that these walk table is not.</p>
+<p>161<br>00:18:02,000 –&gt; 00:18:06,000<br>Is not the replicate this is make read operations facts.</p>
+<p>162<br>00:18:06,000 –&gt; 00:18:17,000<br>Okay, so once you know the client actually has gotten the value of an extra Y and that’s taken out the locks, you know, and sort of two phase locking style.</p>
+<p>163<br>00:18:17,000 –&gt; 00:18:19,000<br>The.</p>
+<p>164<br>00:18:19,000 –&gt; 00:18:24,000<br>Yeah, it’s going to subtract one from X, you know, at one, you know, to Y.</p>
+<p>165<br>00:18:24,000 –&gt; 00:18:27,000<br>And then basically going to submit the transaction.</p>
+<p>166<br>00:18:27,000 –&gt; 00:18:33,000<br>So we all the rights are done locally at the client again, so this is the Gmail server.</p>
+<p>167<br>00:18:33,000 –&gt; 00:18:41,000<br>And one, everything is one of the clients done with transaction, it’s a mid transaction to.</p>
+<p>168<br>00:18:41,000 –&gt; 00:18:43,000<br>To spend it.</p>
+<p>169<br>00:18:43,000 –&gt; 00:18:49,000<br>And it’s a midsits to a transaction coordinator.</p>
+<p>170<br>00:18:49,000 –&gt; 00:18:52,000<br>So some, you know, sort of servers.</p>
+<p>171<br>00:18:52,000 –&gt; 00:18:56,000<br>Or some machine is the pick as the transaction coordinator.</p>
+<p>172<br>00:18:56,000 –&gt; 00:18:59,000<br>And again, the transaction coordinator is a packsters group.</p>
+<p>173<br>00:18:59,000 –&gt; 00:19:04,000<br>So it’s multiple peers in different data centers.</p>
+<p>174<br>00:19:04,000 –&gt; 00:19:09,000<br>And one reason we want this to be a packsters group is so that.</p>
+<p>175<br>00:19:09,000 –&gt; 00:19:18,000<br>As we’ve seen before in two phase protocol over the two phase commit that if the coordinator fails, it might actually block.</p>
+<p>176<br>00:19:18,000 –&gt; 00:19:24,000<br>And then the participants, right, like if the participants have to prepare and agreed to go along with the transaction.</p>
+<p>177<br>00:19:24,000 –&gt; 00:19:30,000<br>But then the coordinator fails, no, there’s participants have to hold on to their locks and have to wait until the.</p>
+<p>178<br>00:19:30,000 –&gt; 00:19:36,000<br>According to comes back by replicating the coordinator using paxas, you know, we make the.</p>
+<p>179<br>00:19:36,000 –&gt; 00:19:44,000<br>Coordinator highly available and so basically, sort of avoid that particular sort of disaster scenario.</p>
+<p>180<br>00:19:44,000 –&gt; 00:19:50,000<br>So the transaction coordinator is then basically in charge of running the two phase commit protocol.</p>
+<p>181<br>00:19:50,000 –&gt; 00:19:56,000<br>And so it will send, you know, the updates for X and Y to.</p>
+<p>182<br>00:19:56,000 –&gt; 00:20:02,000<br>The leader of char day, X and Y to the leader of sharp.</p>
+<p>183<br>00:20:02,000 –&gt; 00:20:13,000<br>The day, you know, grab the logs, you know, in this case, you know, the already hold the locks where promote the locks to read right locks.</p>
+<p>184<br>00:20:13,000 –&gt; 00:20:24,000<br>So basically prepare, you know, there’s a section so they don’t really execute it yet, but just make the, you know, typically using right ahead logging, you know, prepare to changes.</p>
+<p>185<br>00:20:24,000 –&gt; 00:20:36,000<br>And if everything is okay, then they, you know, basically commit to the transaction by entering sort of this prepared state.</p>
+<p>186<br>00:20:36,000 –&gt; 00:20:39,000<br>So sort of a big moment.</p>
+<p>187<br>00:20:39,000 –&gt; 00:20:45,000<br>Because of this point, the transaction is or the peers or the participants are committing to this transaction.</p>
+<p>188<br>00:20:45,000 –&gt; 00:20:56,000<br>And we know from last lecture, you know, the participants do actually have to record some state so that if they fail and they come back up, they can recover and pick up from where they left off.</p>
+<p>189<br>00:20:56,000 –&gt; 00:21:05,000<br>So at the prepared state, basically, this results into a paxas right.</p>
+<p>190<br>00:21:05,000 –&gt; 00:21:08,000<br>And then we’re starting the state of the transaction.</p>
+<p>191<br>00:21:08,000 –&gt; 00:21:13,000<br>And the two PC state.</p>
+<p>192<br>00:21:13,000 –&gt; 00:21:17,000<br>The locks that the.</p>
+<p>193<br>00:21:17,000 –&gt; 00:21:34,000<br>You know, participants holding, etc, etc. And so this pectures right, you know, so the leader of this different chart is when there’s a push at actors right across the different peers in the group to ensure that that state is replicated in fault talent.</p>
+<p>194<br>00:21:34,000 –&gt; 00:21:46,000<br>And so once you know the participants have, you know, prepared and agreed to prepare, then, you know, they send back, okay, you know, okay.</p>
+<p>195<br>00:21:46,000 –&gt; 00:21:50,000<br>This is very similar to our two days at vertical that we talked before.</p>
+<p>196<br>00:21:50,000 –&gt; 00:21:55,000<br>And at this point, you know, the coordinator can commit.</p>
+<p>197<br>00:21:55,000 –&gt; 00:22:05,000<br>And of course, at the point of the commit, the coordinator needs to record that actually make the commit decision, because you know, participants may come back later and want to know and find out about it.</p>
+<p>198<br>00:22:05,000 –&gt; 00:22:07,000<br>And we might have failures.</p>
+<p>199<br>00:22:07,000 –&gt; 00:22:19,000<br>So again, the paxas state with a PC to two phase commit state is written to using paxas and replicated using paxas.</p>
+<p>200<br>00:22:19,000 –&gt; 00:22:27,000<br>And for this, you know, whole presentation, you can just think about paxas being complete substitute or equivalent to raft.</p>
+<p>201<br>00:22:27,000 –&gt; 00:22:38,000<br>You know, spend or predates raft, but like, you know, for it, for sexually and, you know, through first order, you know, for this paper, basically the same.</p>
+<p>202<br>00:22:38,000 –&gt; 00:22:43,000<br>So this point that transaction commits and this, you know, is really the commit point.</p>
+<p>203<br>00:22:43,000 –&gt; 00:22:55,000<br>Once the transaction coordinator has written down that the transaction is committed, that is the absolute commit point and then in forums, you know, participants, you know, that.</p>
+<p>204<br>00:22:55,000 –&gt; 00:22:59,000<br>This has happened.</p>
+<p>205<br>00:22:59,000 –&gt; 00:23:06,000<br>And you know, they can respond back to you if okay, great transaction is committed and transaction coordinator can clean up its state.</p>
+<p>206<br>00:23:06,000 –&gt; 00:23:11,000<br>And at some point later, the charts can also clean up their state.</p>
+<p>207<br>00:23:11,000 –&gt; 00:23:26,000<br>And at the point of commit, the participants release release their walks.</p>
+<p>208<br>00:23:26,000 –&gt; 00:23:34,000<br>Okay, so that is sort of the basic story for rewriting transactions and so any questions about this.</p>
+<p>209<br>00:23:34,000 –&gt; 00:23:51,000<br>And I think the simple way to think about it is this is two phase commit to face locking with the main difference between what we talked about last week and this week is that the participant, the transaction coordinator, the participants are all a paxas group.</p>
+<p>210<br>00:23:51,000 –&gt; 00:23:54,000<br>So they’re replicated, they’re highly available.</p>
+<p>211<br>00:23:54,000 –&gt; 00:24:05,000<br>And some of the problems that we talked about the two phase commit last time are less relevant here because the participants are much more highly available.</p>
+<p>212<br>00:24:05,000 –&gt; 00:24:11,000<br>So the each chart is replicating the lock table or no.</p>
+<p>213<br>00:24:11,000 –&gt; 00:24:18,000<br>Well, it’s not leveraging the lock table. It’s replicating the lock that’s holding when it does to prepare.</p>
+<p>214<br>00:24:18,000 –&gt; 00:24:21,000<br>And it’s that it’s holding during the.</p>
+<p>215<br>00:24:21,000 –&gt; 00:24:27,000<br>The state that it needs to do the two phase commit.</p>
+<p>216<br>00:24:27,000 –&gt; 00:24:37,000<br>So then the like the current locks for some transaction that hasn’t reached the prepared stage, it will they just be lost.</p>
+<p>217<br>00:24:37,000 –&gt; 00:24:42,000<br>Then we lost and then the transaction will abort the participant would just not participate.</p>
+<p>218<br>00:24:42,000 –&gt; 00:24:47,000<br>Until the coordinator, hey, I lost my locks to that can do it.</p>
+<p>219<br>00:24:47,000 –&gt; 00:24:50,000<br>Thank you.</p>
+<p>220<br>00:24:50,000 –&gt; 00:24:56,000<br>Okay, so now the rest of these like this lecture is about to read only transactions.</p>
+<p>221<br>00:24:56,000 –&gt; 00:25:04,000<br>And.</p>
+<p>222<br>00:25:04,000 –&gt; 00:25:10,000<br>So these two transactions that they’re only do reads no rest.</p>
+<p>223<br>00:25:10,000 –&gt; 00:25:20,000<br>And then they’re going to make a very fast.</p>
+<p>224<br>00:25:20,000 –&gt; 00:25:28,000<br>And the way they’re going to the way they achieve the high performance is the range that the reads.</p>
+<p>225<br>00:25:28,000 –&gt; 00:25:38,000<br>And the ones that goes reads are only from local charts.</p>
+<p>226<br>00:25:38,000 –&gt; 00:25:43,000<br>And they have no locks.</p>
+<p>227<br>00:25:43,000 –&gt; 00:25:53,000<br>And no locks is good because that means that read right transactions can block and read transactions were another way of saying is that read only transaction can block read right transactions.</p>
+<p>228<br>00:25:53,000 –&gt; 00:25:57,000<br>And no, no, through phase commit.</p>
+<p>229<br>00:25:57,000 –&gt; 00:26:01,000<br>And so that means also no wide area communication necessary.</p>
+<p>230<br>00:26:01,000 –&gt; 00:26:06,000<br>And so that the reads can definitely execute from a local replica.</p>
+<p>231<br>00:26:06,000 –&gt; 00:26:11,000<br>And you know, as you see, of course, you know, this is the read from a local charts.</p>
+<p>232<br>00:26:11,000 –&gt; 00:26:16,000<br>The real challenge here is like how to still get the system.</p>
+<p>233<br>00:26:16,000 –&gt; 00:26:19,000<br>For where you know, signalized ability.</p>
+<p>234<br>00:26:19,000 –&gt; 00:26:24,000<br>And according to point out, like, you know, but for no moment to, you know, assume that we know how to do this.</p>
+<p>235<br>00:26:24,000 –&gt; 00:26:29,000<br>But we could then really from only like local charts.</p>
+<p>236<br>00:26:29,000 –&gt; 00:26:37,000<br>How holding no locks not doing two case commit means that like all the communication is local within that, within that particular data center.</p>
+<p>237<br>00:26:37,000 –&gt; 00:26:46,000<br>And it can be very fast. And if you look at the end in tables, free and six in the paper.</p>
+<p>238<br>00:26:46,000 –&gt; 00:26:52,000<br>And as we see that they basically read only transactions.</p>
+<p>239<br>00:26:52,000 –&gt; 00:26:57,000<br>Are 10 times faster than read right transactions.</p>
+<p>240<br>00:26:57,000 –&gt; 00:27:01,000<br>Read right transactions are in order of hundreds of milliseconds, which sort of makes sense.</p>
+<p>241<br>00:27:01,000 –&gt; 00:27:05,000<br>Because they have to communicate long distance.</p>
+<p>242<br>00:27:05,000 –&gt; 00:27:13,000<br>And but the read only transactions are in the order of five to 10 milliseconds.</p>
+<p>243<br>00:27:13,000 –&gt; 00:27:21,000<br>Okay, so the key challenge, of course, is always going to be with execute of a local replica, how to get correctness.</p>
+<p>244<br>00:27:21,000 –&gt; 00:27:27,000<br>So let me talk a little bit about it because it’s slightly different than what we see before.</p>
+<p>245<br>00:27:27,000 –&gt; 00:27:33,000<br>So correctness means two things here. One, you know, the transactions are serializable.</p>
+<p>246<br>00:27:33,000 –&gt; 00:27:40,000<br>So they must execute in some serial order. So we think about it like we have a read right transaction.</p>
+<p>247<br>00:27:40,000 –&gt; 00:27:44,000<br>And we have another read right transaction. And we have a read only transaction.</p>
+<p>248<br>00:27:44,000 –&gt; 00:27:49,000<br>No, the read only transaction has to sort of fit between the two read right transactions.</p>
+<p>249<br>00:27:49,000 –&gt; 00:27:55,000<br>And read only transaction should not observe some part of the read right transactions.</p>
+<p>250<br>00:27:55,000 –&gt; 00:27:59,000<br>So the read right transaction does multiple rights like the first one.</p>
+<p>251<br>00:27:59,000 –&gt; 00:28:03,000<br>Then the read only transaction, you know, see all those rights are none of them.</p>
+<p>252<br>00:28:03,000 –&gt; 00:28:06,000<br>And similarly for the one that actually is that asset.</p>
+<p>253<br>00:28:06,000 –&gt; 00:28:12,000<br>Okay, so the second. So this is a standard thing that we talked about last week’s serializability.</p>
+<p>254<br>00:28:12,000 –&gt; 00:28:25,000<br>And then when they go for something stronger, and what they call external consistency.</p>
+<p>255<br>00:28:25,000 –&gt; 00:28:30,000<br>And external consistency means that if a transaction.</p>
+<p>256<br>00:28:30,000 –&gt; 00:28:36,000<br>Two starts after transaction one has committed.</p>
+<p>257<br>00:28:36,000 –&gt; 00:28:42,000<br>Then you know, T two must see.</p>
+<p>258<br>00:28:42,000 –&gt; 00:28:48,000<br>T ones rights.</p>
+<p>259<br>00:28:48,000 –&gt; 00:28:53,000<br>So like we’ll go back to the previous picture like sort of his read only transaction.</p>
+<p>260<br>00:28:53,000 –&gt; 00:28:58,000<br>So the one started after read the first transaction committed.</p>
+<p>261<br>00:28:58,000 –&gt; 00:29:06,000<br>Then there’s read only transaction must see the read to the rights of that transaction T one.</p>
+<p>262<br>00:29:06,000 –&gt; 00:29:09,000<br>And, and so the idea.</p>
+<p>263<br>00:29:09,000 –&gt; 00:29:15,000<br>If you think about this, basically this sort of external consistency means like serializability.</p>
+<p>264<br>00:29:15,000 –&gt; 00:29:17,000<br>Plus this real time requirement.</p>
+<p>265<br>00:29:17,000 –&gt; 00:29:30,000<br>And so you know, it is very similar to linearizability.</p>
+<p>266<br>00:29:30,000 –&gt; 00:29:42,000<br>And except, you know, the one way to contrast external consistency for transactions with linearizability is that external consistency is really transaction left of property.</p>
+<p>267<br>00:29:42,000 –&gt; 00:29:51,000<br>And then you’ve been talking about linearizability so far and always has been sort of individual reach and rights.</p>
+<p>268<br>00:29:51,000 –&gt; 00:29:56,000<br>And to say first order, you know, I think you can sort of think about them exactly in the same way.</p>
+<p>269<br>00:29:56,000 –&gt; 00:30:01,000<br>And like linearizability, you know external assistant users pleasant for programs.</p>
+<p>270<br>00:30:01,000 –&gt; 00:30:07,000<br>And, and there’s a very strong consistent here, a property.</p>
+<p>271<br>00:30:07,000 –&gt; 00:30:11,680<br>about the correctness definition there or the correctness goal that the span</p>
+<p>272<br>00:30:11,680 –&gt; 00:30:14,000<br>are has.</p>
+<p>273<br>00:30:17,440 –&gt; 00:30:22,400<br>Okay, okay, let’s then talk about how the actually achieve this correctness for read</p>
+<p>274<br>00:30:22,400 –&gt; 00:30:27,400<br>only transactions. And let me start out by explaining a bad plan that actually</p>
+<p>275<br>00:30:27,400 –&gt; 00:30:34,440<br>doesn’t work and then we’ll go and talk about a better plan. So the bad plan is</p>
+<p>276<br>00:30:34,440 –&gt; 00:30:41,880<br>we’re going to read the range that we read always the latest committed values.</p>
+<p>277<br>00:30:43,360 –&gt; 00:30:46,519<br>That seems about the right.</p>
+<p>278<br>00:30:46,519 –&gt; 00:30:51,799<br>Because we’re going to have to range that if T2 starts after T1 committed, we</p>
+<p>279<br>00:30:51,799 –&gt; 00:30:54,759<br>receive and you have to see it’s right. So you know why not read the latest</p>
+<p>280<br>00:30:54,759 –&gt; 00:31:00,720<br>committed value and then we should be maybe we were good. So here is the problem</p>
+<p>281<br>00:31:00,720 –&gt; 00:31:06,480<br>case of course, you know, it doesn’t actually work. So T1, they may T1 does the</p>
+<p>282<br>00:31:06,480 –&gt; 00:31:16,000<br>right of X, this rate of Y, the transfer commits, then you know, we have another</p>
+<p>283<br>00:31:16,000 –&gt; 00:31:20,640<br>T transaction, we have this transaction T3 where T3 is the read only action. It</p>
+<p>284<br>00:31:20,640 –&gt; 00:31:26,720<br>actually does a read of X. And so this is sort of real time. And then after T2,</p>
+<p>285<br>00:31:27,440 –&gt; 00:31:34,240<br>then after T1 or T3 starts T2 runs, it runs quickly and addresses the right of X,</p>
+<p>286<br>00:31:34,240 –&gt; 00:31:38,720<br>the right of Y, commits, and then T3 you’ve got a little bit delayed and then</p>
+<p>287<br>00:31:38,720 –&gt; 00:31:40,960<br>actually does a second out of read to your read of Y.</p>
+<p>288<br>00:31:43,519 –&gt; 00:31:46,319<br>That’s a sort of time, you know, usual going that way.</p>
+<p>289<br>00:31:46,319 –&gt; 00:31:52,480<br>And you know, when you’re following the</p>
+<p>290<br>00:31:54,319 –&gt; 00:31:58,480<br>read leads the latest committed value, then you know, what is this read going to return?</p>
+<p>291<br>00:31:58,480 –&gt; 00:32:04,480<br>It’s going to return the value from this transaction P1. And this read is going to return</p>
+<p>292<br>00:32:05,279 –&gt; 00:32:09,119<br>the value from Y from that transaction because you know, that’s the line is a committed value.</p>
+<p>293<br>00:32:10,000 –&gt; 00:32:11,519<br>And that would be wrong, right?</p>
+<p>294<br>00:32:16,639 –&gt; 00:32:22,399<br>Because now we’re actually in the situation where basically, you know, T3s,</p>
+<p>295<br>00:32:22,399 –&gt; 00:32:27,599<br>objures, the rights, you know, from different transactions and not get a consistent picture.</p>
+<p>296<br>00:32:29,599 –&gt; 00:32:38,079<br>So, so this rule is not good enough and to avoid this problem and not, you know, use this</p>
+<p>297<br>00:32:38,079 –&gt; 00:32:45,279<br>bad plan, Spanner uses a different plan. And that’s plan is called snapshot isolation.</p>
+<p>298<br>00:32:46,559 –&gt; 00:32:57,839<br>And this actually just standard database idea and</p>
+<p>299<br>00:32:59,759 –&gt; 00:33:04,720<br>mostly sort of in the local databases and not actually across the white area.</p>
+<p>300<br>00:33:05,759 –&gt; 00:33:10,799<br>And so we’ll talk about that in the sort of the white area aspect in a second,</p>
+<p>301<br>00:33:10,799 –&gt; 00:33:15,839<br>but just let me first explain what snapshot isolation is. And so what snapshot isolation does</p>
+<p>302<br>00:33:15,839 –&gt; 00:33:23,599<br>is we’re going to sign a timestamp to a transaction.</p>
+<p>303<br>00:33:26,959 –&gt; 00:33:29,679<br>And you know, there’s two different points where we’re going to sign these</p>
+<p>304<br>00:33:31,839 –&gt; 00:33:37,759<br>timestamps. For read write transactions, it’s going to be, you know, the commit, start of the commit.</p>
+<p>305<br>00:33:37,759 –&gt; 00:33:45,839<br>And for read only transactions, it’s just going to be the start of the transactions.</p>
+<p>306<br>00:33:48,879 –&gt; 00:33:54,079<br>And then we’re going to execute all operations,</p>
+<p>307<br>00:33:55,839 –&gt; 00:33:58,720<br>of the transaction in timestamp order.</p>
+<p>308<br>00:33:58,720 –&gt; 00:34:07,759<br>I’ll explain in a second what I mean of that. And be able to execute all the operations</p>
+<p>309<br>00:34:07,759 –&gt; 00:34:14,000<br>in timestamp order. You know, each replica, this is stored one value for a particular key.</p>
+<p>310<br>00:34:15,199 –&gt; 00:34:20,880<br>But it’s replica that stores multiple values for a key, namely, with their timestamp.</p>
+<p>311<br>00:34:29,679 –&gt; 00:34:40,000<br>So for example, at a particular replica, we can ask, you know, please give me the value of x at time 10,</p>
+<p>312<br>00:34:40,000 –&gt; 00:34:48,719<br>or give me the value of timestamp in x at 20. And so sometimes this is called multi-version databases,</p>
+<p>313<br>00:34:48,719 –&gt; 00:34:55,279<br>or multi-version storage. You know, for every update, you basically keep a version of the data items that you</p>
+<p>314<br>00:34:55,280 –&gt; 00:35:03,280<br>can go back in time. And so this fixes, you know, the problem that I sort of showed on the first case,</p>
+<p>315<br>00:35:03,280 –&gt; 00:35:08,000<br>because basically what’s going to happen, let’s look at the fruit transaction again. So we got T1,</p>
+<p>316<br>00:35:08,000 –&gt; 00:35:18,880<br>we got T2, we got T3, T1 is right of one, you know, there’s a right of x, right of y, there’s commit.</p>
+<p>317<br>00:35:19,440 –&gt; 00:35:25,840<br>And let’s say the commit actually happens at, you know, 10. So this transaction basically</p>
+<p>318<br>00:35:25,840 –&gt; 00:35:33,920<br>runs at time 10. Then, you know, at some point, we’re going to get our read of x, we’ll talk about that</p>
+<p>319<br>00:35:33,920 –&gt; 00:35:41,280<br>in a second. And in here, we have this other transaction, we get the right of y, the right of</p>
+<p>320<br>00:35:41,280 –&gt; 00:35:48,560<br>x, right of y, the commit, let’s say this transaction permits at time 10. 20. So this run basically</p>
+<p>321<br>00:35:52,160 –&gt; 00:35:57,440<br>at that time stem. And then we have the read of x, and we have the read of y. Now, when the read of x</p>
+<p>322<br>00:35:57,440 –&gt; 00:36:01,600<br>happens, it’s going to be assigned to timestamp, you know, at the starting time, at the time of</p>
+<p>323<br>00:36:01,600 –&gt; 00:36:06,960<br>the transaction. So the starting time, let’s say that the starting time of this transaction is 15.</p>
+<p>324<br>00:36:07,760 –&gt; 00:36:18,159<br>So T2 runs at 15. And so when the read of x is executed, it needs basically to read the latest</p>
+<p>325<br>00:36:18,159 –&gt; 00:36:29,199<br>value of x after, you know, before 15. And, you know, the read of that, you know, the latest committed</p>
+<p>326<br>00:36:29,199 –&gt; 00:36:36,960<br>value for timestamp 15, before timestamp 15 is going to be the times the values from this</p>
+<p>327<br>00:36:36,960 –&gt; 00:36:43,839<br>transaction. So read x, you know, reads the value of transaction one. But of course, read y also will</p>
+<p>328<br>00:36:43,839 –&gt; 00:36:49,119<br>execute at the timestamp of the start of the transaction. So it’s going to be also read y at the time</p>
+<p>329<br>00:36:49,119 –&gt; 00:36:55,759<br>of 15. And, you know, there’s going to be only one value for that y, y, 15, namely that is the one</p>
+<p>330<br>00:36:55,760 –&gt; 00:37:04,000<br>produced by the transaction T1. And so read one, the read y will also read from T1. And so we</p>
+<p>331<br>00:37:04,000 –&gt; 00:37:09,520<br>avoid, you know, this problem that we had before, where we’re reading from the different transactions.</p>
+<p>332<br>00:37:10,560 –&gt; 00:37:15,600<br>And so this gives us the linearized ability or the signalized ability that we’re looking for.</p>
+<p>333<br>00:37:15,600 –&gt; 00:37:19,040<br>You can all the transactions are executed in a global timestamp order.</p>
+<p>334<br>00:37:22,640 –&gt; 00:37:23,360<br>Does that make sense?</p>
+<p>335<br>00:37:25,760 –&gt; 00:37:33,120<br>So what you can think about is that every replica basically keeps a table right of values and timestamps.</p>
+<p>336<br>00:37:33,120 –&gt; 00:37:44,000<br>And so we’re going to have like x at, you know, value nine at 10 and x at, you know, value eight at 20.</p>
+<p>337<br>00:37:45,280 –&gt; 00:37:49,360<br>And so when the read comes in, you know, at a particular replica, you know, the read for 15 comes in,</p>
+<p>338<br>00:37:49,360 –&gt; 00:37:54,080<br>I could just pick out, you know, the latest right, you know, preceding its timestamp.</p>
+<p>339<br>00:37:56,560 –&gt; 00:38:01,520<br>And so I have a question. So when we do the read x, let’s say, so let’s just focus on read x.</p>
+<p>340<br>00:38:02,160 –&gt; 00:38:08,640<br>So x itself exists on some shard, which is replicated on a taxes group, which let’s say,</p>
+<p>341<br>00:38:09,360 –&gt; 00:38:13,680<br>you know, like there are like three servers that replicate x. And when you read from x,</p>
+<p>342<br>00:38:13,680 –&gt; 00:38:19,040<br>because we want the read only transactions to be very fast, we just read from the local replica,</p>
+<p>343<br>00:38:19,040 –&gt; 00:38:24,720<br>which is not necessarily be the leader. So like, how do we guarantee that we don’t read the stale?</p>
+<p>344<br>00:38:25,359 –&gt; 00:38:27,359<br>That’s how do we, that we don’t make a stale read.</p>
+<p>345<br>00:38:28,159 –&gt; 00:38:33,439<br>You know, brilliant question. And that’s exactly the topic I want to talk about next.</p>
+<p>346<br>00:38:35,599 –&gt; 00:38:40,239<br>Great, that’s the problem is, you know, as you point out, you know, there’s a challenge that maybe the</p>
+<p>347<br>00:38:40,239 –&gt; 00:38:52,559<br>replica hasn’t seen. Hasn’t seen the right to x at timestamp, whatever 10. Right.</p>
+<p>348<br>00:38:52,559 –&gt; 00:39:02,239<br>And so the way, you know, this problem solved in the in spanner and disillusion they call something</p>
+<p>349<br>00:39:02,239 –&gt; 00:39:13,759<br>that’s called safe time. And so the way this is resolved is that they actually taxes</p>
+<p>350<br>00:39:13,920 –&gt; 00:39:21,440<br>or raft, you know, sends all rights also in timestamp order.</p>
+<p>351<br>00:39:25,280 –&gt; 00:39:30,000<br>So there’s not a, you know, you can think about like the total order is not a counter.</p>
+<p>352<br>00:39:30,000 –&gt; 00:39:37,600<br>That’s a usual example of done maybe in lap, lap three, but it actually is literally a timestamp.</p>
+<p>353<br>00:39:37,600 –&gt; 00:39:42,080<br>And since the time sends also form global order, that global order of timestamps,</p>
+<p>354<br>00:39:42,079 –&gt; 00:39:48,639<br>you know, sufficient sort of order all the rights. And then there’s a rule, there’s an additional rule for a read.</p>
+<p>355<br>00:39:50,000 –&gt; 00:40:01,840<br>Before you can do a read, so before read of x, that, you know, timestamp 15, the replica has to wait</p>
+<p>356<br>00:40:04,639 –&gt; 00:40:09,920<br>for a right that is with timestamps big enough 15.</p>
+<p>357<br>00:40:09,920 –&gt; 00:40:16,800<br>Because it is a season right with a timestamp big enough 15, it knows that there’s certainly no rights anymore.</p>
+<p>358<br>00:40:16,800 –&gt; 00:40:22,639<br>Be sure 15. And so therefore it’s safe to execute the read at timestamp 15.</p>
+<p>359<br>00:40:22,639 –&gt; 00:40:29,519<br>And know what value actually needs to be returned. And so for services that are, so this means that</p>
+<p>360<br>00:40:29,519 –&gt; 00:40:34,000<br>the read actually may have to get a delay a little bit until the next right. Now of course for busy services,</p>
+<p>361<br>00:40:34,000 –&gt; 00:40:39,280<br>you know, these rights will come along all the time. And so the way is probably a non-existence or almost</p>
+<p>362<br>00:40:39,280 –&gt; 00:40:45,360<br>non-existence. Okay. But this is the rule that needs to be followed to make sure that indeed this problem</p>
+<p>363<br>00:40:46,080 –&gt; 00:40:51,040<br>of replica actually have not seen the right yet, returning the wrong value.</p>
+<p>364<br>00:40:52,240 –&gt; 00:40:59,280<br>The rule is slightly more complicated. You also have to wait, also wait for injections that have</p>
+<p>365<br>00:40:59,280 –&gt; 00:41:00,480<br>prepared but not committed.</p>
+<p>366<br>00:41:09,280 –&gt; 00:41:24,160<br>For example, there’s actually might have been prepared basically at, you know, say timestamp 14.</p>
+<p>367<br>00:41:24,880 –&gt; 00:41:31,440<br>But it hasn’t maybe committed it right yet to the key value store. And so we got to make sure that,</p>
+<p>368<br>00:41:31,440 –&gt; 00:41:37,680<br>you know, any transaction that was prepared before our read timestamp that actually</p>
+<p>369<br>00:41:37,679 –&gt; 00:41:41,359<br>commits before we actually turn the value of the read. Okay.</p>
+<p>370<br>00:41:44,000 –&gt; 00:41:44,719<br>Does this make sense?</p>
+<p>371<br>00:41:46,879 –&gt; 00:41:52,399<br>With this also be the case for different shards. We’re doing consider different shards.</p>
+<p>372<br>00:41:52,399 –&gt; 00:41:53,679<br>Just step replay.</p>
+<p>373<br>00:41:55,839 –&gt; 00:41:58,719<br>Uh, the reads just hit a local shard.</p>
+<p>374<br>00:42:01,679 –&gt; 00:42:03,119<br>Right. The local replica.</p>
+<p>375<br>00:42:03,599 –&gt; 00:42:07,440<br>And so I’m not telling the passenger what the question is.</p>
+<p>376<br>00:42:08,000 –&gt; 00:42:15,440<br>I think the question I’m asking is the correctness guarantees do they apply across shards?</p>
+<p>377<br>00:42:16,880 –&gt; 00:42:22,880<br>Yes, you know, they apply the level of transactions, right? So, uh, so if a read only reads a local</p>
+<p>378<br>00:42:22,880 –&gt; 00:42:27,199<br>replica, we still have to make sure that the transactions are externally consistent.</p>
+<p>379<br>00:42:27,839 –&gt; 00:42:30,239<br>And by following these rules, we achieve that goal.</p>
+<p>380<br>00:42:32,000 –&gt; 00:42:33,519<br>Okay. Makes sense. Thank you.</p>
+<p>381<br>00:42:37,199 –&gt; 00:42:44,960<br>Okay. Now, you know, we’re sort of getting to sort of the, the core part of the</p>
+<p>382<br>00:42:45,519 –&gt; 00:42:49,839<br>spanner paper, which is really, you know, to be, we want to reason about time, like timestamps.</p>
+<p>383<br>00:42:50,720 –&gt; 00:42:56,240<br>In this case, then, you know, the clocks, you know, the, uh, different servers</p>
+<p>384<br>00:42:58,160 –&gt; 00:43:02,720<br>must be, uh, the clocks must be good. It must be perfect. You know, people must,</p>
+<p>385<br>00:43:02,720 –&gt; 00:43:07,360<br>kind of different participants must agree on the timestamp order. And uh,</p>
+<p>386<br>00:43:07,360 –&gt; 00:43:11,680<br>even transaction takes a particular timestamp, you know, that timestamp must be the sort of same</p>
+<p>387<br>00:43:11,680 –&gt; 00:43:18,400<br>timestamp everywhere in the system. Uh, so, uh, and so the way I’ve described it in this previous,</p>
+<p>388<br>00:43:19,840 –&gt; 00:43:24,000<br>uh, slide slide is the, you know, whatever from participant data picks the, the</p>
+<p>389<br>00:43:24,000 –&gt; 00:43:29,200<br>reach injection, assigns a timestamp to it, like 15, which I may go back a little bit,</p>
+<p>390<br>00:43:29,200 –&gt; 00:43:33,600<br>you know, year, you know, we’re just assigning, uh, timestamps to these injections.</p>
+<p>391<br>00:43:33,600 –&gt; 00:43:38,400<br>And at better be case, that actually T1 and T2 and T3 agree on these timestamps,</p>
+<p>392<br>00:43:39,680 –&gt; 00:43:47,600<br>uh, and that they’re comparable. And so, as we’ll see, uh, in, in, in the, in the second, uh,</p>
+<p>393<br>00:43:47,679 –&gt; 00:43:50,400<br>it just, it just, it only matters really for read-only transactions.</p>
+<p>394<br>00:44:05,279 –&gt; 00:44:09,839<br>Uh, and we didn’t, you know, consider sort of the two cases. Like, so what, what happens,</p>
+<p>395<br>00:44:09,839 –&gt; 00:44:13,599<br>you know, so the question that we want to ask is, what happens is like one replica or like one</p>
+<p>396<br>00:44:13,599 –&gt; 00:44:18,960<br>server, it just has the wrong time, right? And so it doesn’t agree with the time at the other</p>
+<p>397<br>00:44:18,960 –&gt; 00:44:24,319<br>servers. And, uh, now, what, what kind of problems could it introduce? So let’s first think about the</p>
+<p>398<br>00:44:24,319 –&gt; 00:44:36,719<br>case, what the timestamp is to the arch. So, for example, you know, let’s go back to our, uh,</p>
+<p>399<br>00:44:36,719 –&gt; 00:44:43,199<br>where’s the gear with this case. So let’s say the, uh, read-only transactions start reading,</p>
+<p>400<br>00:44:43,199 –&gt; 00:44:50,639<br>and it reads actually, uh, instead of, um, uh, you know, 15, maybe whatever the value of returns</p>
+<p>401<br>00:44:50,639 –&gt; 00:45:01,279<br>actually is, uh, 25. And what would I do? Or let me give a little simpler, you know, 18,</p>
+<p>402<br>00:45:04,239 –&gt; 00:45:08,879<br>to get less confusion. You know, what would, what is the outcome of actually having a time stamp</p>
+<p>403<br>00:45:09,440 –&gt; 00:45:12,240<br>is off, but off in the direction of being too large.</p>
+<p>404<br>00:45:15,760 –&gt; 00:45:21,440<br>It’s still less than 25, doesn’t it still read for the, than 20? Doesn’t it still read from the,</p>
+<p>405<br>00:45:22,400 –&gt; 00:45:26,559<br>first one? But if it’s later, it’ll read from the, the second one. Yeah, and which,</p>
+<p>406<br>00:45:26,559 –&gt; 00:45:32,160<br>either one is fine, correct? The real key issue here is that, uh, you know, before reading,</p>
+<p>407<br>00:45:32,160 –&gt; 00:45:37,119<br>remember, you have to wait until you see your right, right? So if you’re, so what happens if</p>
+<p>408<br>00:45:37,119 –&gt; 00:45:44,400<br>your time stamp is too large, off on the too large side? You have to wait for an index.</p>
+<p>409<br>00:45:44,400 –&gt; 00:45:49,599<br>Yeah, yeah, exactly. You have to wait, right? A little bit longer, maybe. But nothing goes wrong.</p>
+<p>410<br>00:45:54,960 –&gt; 00:46:00,480<br>And so now the other question, uh, is what if the, if the time stamp is too small?</p>
+<p>411<br>00:46:01,119 –&gt; 00:46:09,440<br>So for example, the read, uh, when the T3, the machine that actually goes T3, you know, I asked for</p>
+<p>412<br>00:46:09,440 –&gt; 00:46:14,960<br>the time, uh, instead of time 10, that actually gets back, you know, say nine. And this is</p>
+<p>413<br>00:46:14,960 –&gt; 00:46:24,159<br>a variation of the lecture question. So basically like T3, run it say nine. And maybe this is a good</p>
+<p>414<br>00:46:24,159 –&gt; 00:46:30,079<br>time for actually, so to take a breakout room and you can think and argue what, man, what is the outcome?</p>
+<p>415<br>00:46:30,480 –&gt; 00:46:36,400<br>What does the potential outcomes, you know, or what could go wrong if actually the time stamp that</p>
+<p>416<br>00:46:36,400 –&gt; 00:46:45,360<br>got assigned to T3 is nine instead of 10. So maybe we can do a breakout here. Literally,</p>
+<p>417<br>00:46:45,360 –&gt; 00:46:50,960<br>we’re done with the possible. I think we’ll have to use that. So</p>
+<p>418<br>00:46:51,280 –&gt; 00:46:52,920<br>long as I can hear.</p>
+<p>419<br>00:46:57,599 –&gt; 00:46:59,840<br>Hold on a second here.</p>
+<p>420<br>00:47:03,599 –&gt; 00:47:05,360<br>Thank you.</p>
+<p>421<br>00:47:05,360 –&gt; 00:47:19,360<br>Okay, here’s some books.</p>
+<p>422<br>00:47:19,360 –&gt; 00:47:23,360<br>Anybody else get any books?</p>
+<p>423<br>00:49:35,360 –&gt; 00:50:03,360<br>Okay.</p>
+<p>424<br>00:50:03,360 –&gt; 00:50:21,360<br>Okay.</p>
+<p>425<br>00:50:33,360 –&gt; 00:50:39,360<br>Okay.</p>
+<p>426<br>00:51:03,360 –&gt; 00:51:23,360<br>Okay.</p>
+<p>427<br>00:51:33,360 –&gt; 00:51:53,360<br>Okay.</p>
+<p>428<br>00:51:53,360 –&gt; 00:52:03,360<br>Okay.</p>
+<p>429<br>00:52:23,360 –&gt; 00:52:43,360<br>Okay.</p>
+<p>430<br>00:52:43,360 –&gt; 00:52:59,360<br>Okay.</p>
+<p>431<br>00:53:13,360 –&gt; 00:53:41,360<br>Okay.</p>
+<p>432<br>00:53:41,360 –&gt; 00:53:59,360<br>Okay.</p>
+<p>433<br>00:53:59,360 –&gt; 00:54:09,360<br>Okay.</p>
+<p>434<br>00:54:09,360 –&gt; 00:54:27,360<br>Okay.</p>
+<p>435<br>00:54:27,360 –&gt; 00:54:45,360<br>Okay.</p>
+<p>436<br>00:54:45,360 –&gt; 00:55:03,360<br>Okay.</p>
+<p>437<br>00:55:03,360 –&gt; 00:55:21,360<br>Okay.</p>
+<p>438<br>00:55:21,360 –&gt; 00:55:39,360<br>Okay.</p>
+<p>439<br>00:55:39,360 –&gt; 00:55:57,360<br>Okay.</p>
+<p>440<br>00:55:57,360 –&gt; 00:56:15,360<br>Okay.</p>
+<p>441<br>00:56:15,360 –&gt; 00:56:33,360<br>Okay.</p>
+<p>442<br>00:56:33,360 –&gt; 00:56:51,360<br>Okay.</p>
+<p>443<br>00:56:51,360 –&gt; 00:57:09,360<br>Okay.</p>
+<p>444<br>00:57:09,360 –&gt; 00:57:27,360<br>Okay.</p>
+<p>445<br>00:57:27,360 –&gt; 00:57:45,360<br>Okay.</p>
+<p>446<br>00:57:45,360 –&gt; 00:58:03,360<br>Okay.</p>
+<p>447<br>00:58:03,360 –&gt; 00:58:21,360<br>Okay.</p>
+<p>448<br>00:58:21,360 –&gt; 00:58:39,360<br>Okay.</p>
+<p>449<br>00:58:39,360 –&gt; 00:59:03,360<br>Okay.</p>
+<p>450<br>00:59:03,360 –&gt; 00:59:21,360<br>Okay.</p>
+<p>451<br>00:59:21,360 –&gt; 00:59:39,360<br>Okay.</p>
+<p>452<br>00:59:39,360 –&gt; 00:59:57,360<br>Okay.</p>
+<p>453<br>00:59:57,360 –&gt; 01:00:15,360<br>Okay.</p>
+<p>454<br>01:00:15,360 –&gt; 01:00:33,360<br>Okay.</p>
+<p>455<br>01:00:33,360 –&gt; 01:00:51,360<br>Okay.</p>
+<p>456<br>01:00:51,360 –&gt; 01:01:09,360<br>Okay.</p>
+<p>457<br>01:01:09,360 –&gt; 01:01:27,360<br>Okay.</p>
+<p>458<br>01:01:27,360 –&gt; 01:01:45,360<br>Okay.</p>
+<p>459<br>01:01:45,360 –&gt; 01:02:03,360<br>Okay.</p>
+<p>460<br>01:02:03,360 –&gt; 01:02:21,360<br>Okay.</p>
+<p>461<br>01:02:21,360 –&gt; 01:02:39,360<br>Okay.</p>
+<p>462<br>01:02:39,360 –&gt; 01:02:57,360<br>Okay.</p>
+<p>463<br>01:02:57,360 –&gt; 01:03:15,360<br>Okay.</p>
+<p>464<br>01:03:15,360 –&gt; 01:03:33,360<br>Okay.</p>
+<p>465<br>01:03:33,360 –&gt; 01:03:51,360<br>Okay.</p>
+<p>466<br>01:03:51,360 –&gt; 01:04:09,360<br>Okay.</p>
+<p>467<br>01:04:09,360 –&gt; 01:04:27,360<br>Okay.</p>
+<p>468<br>01:04:27,360 –&gt; 01:04:45,360<br>Okay.</p>
+<p>469<br>01:04:45,360 –&gt; 01:05:03,360<br>Okay.</p>
+<p>470<br>01:05:03,360 –&gt; 01:05:21,360<br>Okay.</p>
+<p>471<br>01:05:21,360 –&gt; 01:05:39,360<br>Okay.</p>
+<p>472<br>01:05:39,360 –&gt; 01:05:57,360<br>Okay.</p>
+<p>473<br>01:05:57,360 –&gt; 01:06:15,360<br>Okay.</p>
+<p>474<br>01:06:15,360 –&gt; 01:06:33,360<br>Okay.</p>
+<p>475<br>01:06:33,360 –&gt; 01:06:51,360<br>Okay.</p>
+<p>476<br>01:06:51,360 –&gt; 01:07:09,360<br>Okay.</p>
+<p>477<br>01:07:09,360 –&gt; 01:07:27,360<br>Okay.</p>
+<p>478<br>01:07:27,360 –&gt; 01:07:45,360<br>Okay.</p>
+<p>479<br>01:07:45,360 –&gt; 01:08:03,360<br>Okay.</p>
+<p>480<br>01:08:03,360 –&gt; 01:08:21,360<br>Okay.</p>
+<p>481<br>01:08:21,359 –&gt; 01:08:39,359<br>Okay.</p>
+<p>482<br>01:08:39,359 –&gt; 01:08:57,359<br>Okay.</p>
+<p>483<br>01:08:57,359 –&gt; 01:09:15,359<br>Okay.</p>
+<p>484<br>01:09:15,359 –&gt; 01:09:33,359<br>Okay.</p>
+<p>485<br>01:09:33,359 –&gt; 01:09:51,359<br>Okay.</p>
+<p>486<br>01:09:51,359 –&gt; 01:10:09,359<br>Okay.</p>
+<p>487<br>01:10:09,359 –&gt; 01:10:27,359<br>Okay.</p>
+<p>488<br>01:10:27,359 –&gt; 01:10:49,359<br>Okay.</p>
+<p>489<br>01:10:49,359 –&gt; 01:11:07,359<br>Okay.</p>
+<p>490<br>01:11:07,359 –&gt; 01:11:25,359<br>Okay.</p>
+<p>491<br>01:11:25,359 –&gt; 01:11:43,359<br>Okay.</p>
+<p>492<br>01:11:43,359 –&gt; 01:12:01,359<br>Okay.</p>
+<p>493<br>01:12:01,359 –&gt; 01:12:19,359<br>Okay.</p>
+<p>494<br>01:12:19,359 –&gt; 01:12:37,359<br>Okay.</p>
+<p>495<br>01:12:37,359 –&gt; 01:12:55,359<br>Okay.</p>
+<p>496<br>01:12:55,359 –&gt; 01:13:13,359<br>Okay.</p>
+<p>497<br>01:13:13,359 –&gt; 01:13:31,359<br>Okay.</p>
+<p>498<br>01:13:31,359 –&gt; 01:13:49,359<br>Okay.</p>
+<p>499<br>01:13:49,359 –&gt; 01:14:07,359<br>Okay.</p>
+<p>500<br>01:14:07,359 –&gt; 01:14:25,359<br>Okay.</p>
+<p>501<br>01:14:25,359 –&gt; 01:14:43,359<br>Okay.</p>
+<p>502<br>01:14:43,359 –&gt; 01:15:01,359<br>Okay.</p>
+<p>503<br>01:15:01,359 –&gt; 01:15:19,359<br>Okay.</p>
+<p>504<br>01:15:19,359 –&gt; 01:15:37,359<br>Okay.</p>
+<p>505<br>01:15:37,359 –&gt; 01:15:55,359<br>Okay.</p>
+<p>506<br>01:15:55,359 –&gt; 01:16:13,359<br>Okay.</p>
+<p>507<br>01:16:13,359 –&gt; 01:16:31,359<br>Okay.</p>
+<p>508<br>01:16:31,359 –&gt; 01:16:49,359<br>Okay.</p>
+<p>509<br>01:16:49,359 –&gt; 01:17:07,359<br>Okay.</p>
+<p>510<br>01:17:07,359 –&gt; 01:17:25,359<br>Okay.</p>
+<p>511<br>01:17:25,359 –&gt; 01:17:43,359<br>Okay.</p>
+<p>512<br>01:17:43,359 –&gt; 01:18:01,359<br>Okay.</p>
+<p>513<br>01:18:01,359 –&gt; 01:18:19,359<br>Okay.</p>
+<p>514<br>01:18:19,359 –&gt; 01:18:37,359<br>Okay.</p>
+<p>515<br>01:18:37,359 –&gt; 01:18:55,359<br>Okay.</p>
+<p>516<br>01:18:55,359 –&gt; 01:19:13,359<br>Okay.</p>
+<p>517<br>01:19:13,359 –&gt; 01:19:23,359<br>Okay.</p>
+<p>518<br>01:19:23,359 –&gt; 01:19:41,359<br>Okay.</p>
+<p>519<br>01:19:41,359 –&gt; 01:19:59,359<br>Okay.</p>
+<p>520<br>01:19:59,359 –&gt; 01:20:17,359<br>Okay.</p>
+<p>521<br>01:20:17,359 –&gt; 01:20:35,359<br>Okay.</p>
+<p>522<br>01:20:35,359 –&gt; 01:20:53,359<br>Okay.</p>
+<p>523<br>01:20:53,359 –&gt; 01:21:11,359<br>Okay.</p>
+<p>524<br>01:21:11,359 –&gt; 01:21:29,359<br>Okay.</p>
+<p>525<br>01:21:29,359 –&gt; 01:21:47,359<br>Okay.</p>
+<p>526<br>01:21:47,359 –&gt; 01:22:05,359<br>Okay.</p>
+<p>527<br>01:22:05,359 –&gt; 01:22:23,359<br>Okay.</p>
+<p>528<br>01:22:23,359 –&gt; 01:22:41,359<br>Okay.</p>
+<p>529<br>01:22:41,359 –&gt; 01:22:59,359<br>Okay.</p>
+<p>530<br>01:22:59,359 –&gt; 01:23:17,359<br>Okay.</p>
+<p>531<br>01:23:17,359 –&gt; 01:23:35,359<br>Okay.</p>
+<p>532<br>01:23:35,359 –&gt; 01:23:53,359<br>Okay.</p>
+<p>533<br>01:23:53,359 –&gt; 01:24:11,359<br>Okay.</p>
+<p>534<br>01:24:11,359 –&gt; 01:24:29,359<br>Okay.</p>
+<p>535<br>01:24:29,359 –&gt; 01:24:47,359<br>Okay.</p>
+<p>536<br>01:24:47,359 –&gt; 01:25:05,359<br>Okay.</p>
+<p>537<br>01:25:05,359 –&gt; 01:25:23,359<br>Okay.</p>
+<p>538<br>01:25:23,359 –&gt; 01:25:41,359<br>Okay.</p>
+<p>539<br>01:25:41,359 –&gt; 01:25:59,359<br>Okay.</p>
+<p>540<br>01:25:59,359 –&gt; 01:26:17,359<br>Okay.</p>
+<p>541<br>01:26:17,359 –&gt; 01:26:35,359<br>Okay.</p>
+<p>542<br>01:26:35,359 –&gt; 01:26:53,359<br>Okay.</p>
+<p>543<br>01:26:53,359 –&gt; 01:27:11,359<br>Okay.</p>
+<p>544<br>01:27:11,359 –&gt; 01:27:29,359<br>Okay.</p>
+<p>545<br>01:27:29,359 –&gt; 01:27:47,359<br>Okay.</p>
+<p>546<br>01:27:47,359 –&gt; 01:28:05,359<br>Okay.</p>
+<p>547<br>01:28:05,359 –&gt; 01:28:23,359<br>Okay.</p>
+<p>548<br>01:28:23,359 –&gt; 01:28:41,359<br>Okay.</p>
+<p>549<br>01:28:41,359 –&gt; 01:28:59,359<br>Okay.</p>
+<p>550<br>01:28:59,359 –&gt; 01:29:17,359<br>Okay.</p>
+<p>551<br>01:29:17,359 –&gt; 01:29:35,359<br>Okay.</p>
+<p>552<br>01:29:35,359 –&gt; 01:29:53,359<br>Okay.</p>
+<p>553<br>01:29:53,359 –&gt; 01:30:11,359<br>Okay.</p>
+<p>554<br>01:30:11,359 –&gt; 01:30:29,359<br>Okay.</p>
+<p>555<br>01:30:29,359 –&gt; 01:30:47,359<br>Okay.</p>
+<p>556<br>01:30:47,359 –&gt; 01:31:05,359<br>Okay.</p>
+<p>557<br>01:31:05,359 –&gt; 01:31:23,359<br>Okay.</p>
+<p>558<br>01:31:23,359 –&gt; 01:31:41,359<br>Okay.</p>
+<p>559<br>01:31:41,359 –&gt; 01:31:59,359<br>Okay.</p>
+<p>560<br>01:31:59,359 –&gt; 01:32:17,359<br>Okay.</p>
+<p>561<br>01:32:17,359 –&gt; 01:32:35,359<br>Okay.</p>
+<p>562<br>01:32:35,359 –&gt; 01:32:53,359<br>Okay.</p>
+<p>563<br>01:32:53,359 –&gt; 01:33:11,359<br>Okay.</p>
+<p>564<br>01:33:11,359 –&gt; 01:33:29,359<br>Okay.</p>
+<p>565<br>01:33:29,359 –&gt; 01:33:47,359<br>Okay.</p>
+<p>566<br>01:33:47,359 –&gt; 01:34:05,359<br>Okay.</p>
+<p>567<br>01:34:05,359 –&gt; 01:34:23,359<br>Okay.</p>
+<p>568<br>01:34:23,359 –&gt; 01:34:41,359<br>Okay.</p>
+<p>569<br>01:34:41,359 –&gt; 01:34:59,359<br>Okay.</p>
+<p>570<br>01:34:59,359 –&gt; 01:35:17,359<br>Okay.</p>
+<p>571<br>01:35:17,359 –&gt; 01:35:35,359<br>Okay.</p>
+<p>572<br>01:35:35,359 –&gt; 01:35:53,359<br>Okay.</p>
+<p>573<br>01:35:53,359 –&gt; 01:36:11,359<br>Okay.</p>
+<p>574<br>01:36:11,359 –&gt; 01:36:29,359<br>Okay.</p>
+<p>575<br>01:36:29,359 –&gt; 01:36:47,359<br>Okay.</p>
+<p>576<br>01:36:47,359 –&gt; 01:37:05,359<br>Okay.</p>
+<p>577<br>01:37:05,359 –&gt; 01:37:23,359<br>Okay.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6824 P14Lecture14 Spanner</div>
+      <div>http://example.com/2025/10/25/MIT6824 P14Lecture14-Spanner/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P19Lecture18-ForkConsistencySUNDR/" title="MIT6824 P19Lecture18 ForkConsistencySUNDR">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6824 P19Lecture18 ForkConsistencySUNDR</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P15Lecture15OptimisticConcurrencyControlFaRM/" title="MIT6824 P15Lecture15OptimisticConcurrencyControlFaRM">
+                        <span class="hidden-mobile">MIT6824 P15Lecture15OptimisticConcurrencyControlFaRM</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

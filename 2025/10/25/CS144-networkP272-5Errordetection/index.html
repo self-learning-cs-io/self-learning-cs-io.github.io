@@ -1,0 +1,722 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,000Networks aren’t perfect and neither are the hosts that run on them. 200:00:05,000 –&gt; 00:00:11,000They can introduce errors and for a network to be able to run proper">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP272 5Errordetection">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP272-5Errordetection/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,000Networks aren’t perfect and neither are the hosts that run on them. 200:00:05,000 –&gt; 00:00:11,000They can introduce errors and for a network to be able to run proper">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.776Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.776Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP272 5Errordetection - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP272 5Errordetection"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.3k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          11 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP272 5Errordetection</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,000<br>Networks aren’t perfect and neither are the hosts that run on them.</p>
+<p>2<br>00:00:05,000 –&gt; 00:00:11,000<br>They can introduce errors and for a network to be able to run properly, it needs to be able to detect these errors.</p>
+<p>3<br>00:00:11,000 –&gt; 00:00:17,000<br>For example, let’s say that a router along our path has a bad memory cell, such that sometimes it flips a bit in a packet.</p>
+<p>4<br>00:00:17,000 –&gt; 00:00:24,000<br>Imagine, for example, if the bit flipped is the most significant bit of the amount of charge or credit card.</p>
+<p>5<br>00:00:24,000 –&gt; 00:00:29,000<br>We need to be able to detect that error occurred so we don’t accept the corrupted data as correct data.</p>
+<p>6<br>00:00:29,000 –&gt; 00:00:33,000<br>Networks today usually use three different error detection algorithms.</p>
+<p>7<br>00:00:33,000 –&gt; 00:00:39,000<br>Check sums, cyclobodontic codes, or CRCs, and message authentication codes, or MACS.</p>
+<p>8<br>00:00:39,000 –&gt; 00:00:43,000<br>Each of them has very different characteristics. Understanding their differences is important.</p>
+<p>9<br>00:00:43,000 –&gt; 00:00:48,000<br>I’ve actually been in meetings in the IETF where a few people weren’t aware of the differences.</p>
+<p>10<br>00:00:48,000 –&gt; 00:00:52,000<br>If you don’t know, you might make a bad protocol decision or protocol analysis.</p>
+<p>11<br>00:00:59,000 –&gt; 00:01:20,000<br>At a high level, error detection looks like this. We have a payload of data.</p>
+<p>12<br>00:01:20,000 –&gt; 00:01:27,000<br>We calculate some error detection bits over that data and either append or prepend it to the payload.</p>
+<p>13<br>00:01:27,000 –&gt; 00:01:35,000<br>For example, Ethernet appends a cyclic redundancy code or CRC, while transportation security, TLS, appends a message authentication code.</p>
+<p>14<br>00:01:35,000 –&gt; 00:01:39,000<br>IP prepends a check sum, which replaces the IP header.</p>
+<p>15<br>00:01:39,000 –&gt; 00:01:46,000<br>TLS and Ethernet have a footer, protocol information, which follows the payload, which is where they put the CRC and MAC.</p>
+<p>16<br>00:01:57,000 –&gt; 00:02:24,000<br>The first of the three commonly used error detection algorithms is a check sum. You just add up all the data of the packet.</p>
+<p>17<br>00:02:24,000 –&gt; 00:02:30,000<br>It’s what TCP and IP use. Chexons are nice because they are very fast and cheap to compute, even in software.</p>
+<p>18<br>00:02:30,000 –&gt; 00:02:33,000<br>Back with the internet started and everything was in software, this was valuable.</p>
+<p>19<br>00:02:33,000 –&gt; 00:02:37,000<br>Their major drawback is that they have pretty weak error detection guarantees.</p>
+<p>20<br>00:02:37,000 –&gt; 00:02:42,000<br>While they can catch a lot of random errors, it’s easy to fool a check sum with as few as two bit errors.</p>
+<p>21<br>00:02:42,000 –&gt; 00:02:50,000<br>If the two bit errors count to each other out. For example, if one bit error adds 32, and another bit error subtracts 32, the check sum won’t catch the error.</p>
+<p>22<br>00:02:50,000 –&gt; 00:02:56,000<br>So check sum can catch a lot of errors, but it turns out to very weak guarantees on what errors it will catch.</p>
+<p>23<br>00:02:56,000 –&gt; 00:03:01,000<br>The second of the three commonly used error detection algorithms is a cyclic redundancy code or CRC.</p>
+<p>24<br>00:03:01,000 –&gt; 00:03:09,000<br>A CRC is much more computationally expensive than a check sum, but also much more robust. It computes the remainder of a polynomial.</p>
+<p>25<br>00:03:09,000 –&gt; 00:03:11,000<br>I’ll show what this means in how it works in a few minutes.</p>
+<p>26<br>00:03:11,000 –&gt; 00:03:17,000<br>With today’s processors, it’s easy to do, and it’s really easy to do on hardware. It’s what Ethernet and many Linklares use.</p>
+<p>27<br>00:03:17,000 –&gt; 00:03:22,000<br>In some ways, TCP and IP can get away with check sums because Linklares use CRCs.</p>
+<p>28<br>00:03:22,000 –&gt; 00:03:35,000<br>If you have a CRC that’s C bits long, a CRC can detect any one bit error, any two bit error, and any single burst of errors less than or equal to C bits long, as well as any odd number of errors.</p>
+<p>29<br>00:03:35,000 –&gt; 00:03:40,000<br>So you can detect a lot of errors, much stronger guarantees than a check sum.</p>
+<p>30<br>00:03:41,000 –&gt; 00:03:51,000<br>The final algorithm is something called a Message Authentication Coder Mac. A Message Authentication code combined with the packet with some secret information to generate a value.</p>
+<p>31<br>00:03:51,000 –&gt; 00:03:55,000<br>In theory, someone can only generate or check the Mac if they have the secret.</p>
+<p>32<br>00:03:55,000 –&gt; 00:04:00,000<br>So if you receive a packet and the Mac is correct, then you’re pretty sure the computer the computer the Mac has the secret.</p>
+<p>33<br>00:04:00,000 –&gt; 00:04:05,000<br>Unless I have the secret, it’s amazingly difficult to generate the correct Mac for a packet.</p>
+<p>34<br>00:04:05,000 –&gt; 00:04:16,000<br>So a bad guy can’t easily generate a new packet. In fact, if you have a strong Mac algorithm, then given one packet and its Mac, I have zero information on what the Mac will look like if I flip a single bit.</p>
+<p>35<br>00:04:16,000 –&gt; 00:04:28,000<br>Message Authentication Codes are therefore robust to malicious modifications. Message Authentication Codes are used in Transport Layer Security, TLS, which is what you use in your browse web page, securely, HGPS.</p>
+<p>36<br>00:04:28,000 –&gt; 00:04:39,000<br>But they’re actually not great for catching errors. If I flip a single bit in the packet, there is one and two to the C-chance that the changed packet will have the same Mac.</p>
+<p>37<br>00:04:39,000 –&gt; 00:04:51,000<br>I’ve seen people make this mistake with TogMatera correction, thinking of Mac as just as good as a CRC. It’s not. If I have a 16-bit CRC, I’m assured that I’ll detect a first of errors that are 16-bits longer shorter.</p>
+<p>38<br>00:04:51,000 –&gt; 00:05:05,000<br>If I have a 16-bit Mac, I’m only assured that I’ll detect a bit errors with very high probability, 99.90% or 165,536. That’s high, but think about how many packets you’ve watched just receiving this video.</p>
+<p>39<br>00:05:05,000 –&gt; 00:05:09,000<br>I’ll now go into each of these algorithms in greater detail.</p>
+<p>40<br>00:05:09,000 –&gt; 00:05:23,000<br>Let’s start with a checksum. IP, UDP, and TCP use one’s complement checksums. This means they add up the packet using one’s complement arithmetic, a version of binary arithmetic some older computers used. Most of the day, use two’s complement arithmetic.</p>
+<p>41<br>00:05:23,000 –&gt; 00:05:37,000<br>The algorithm is pretty simple. You start by sending the checksum field a little packet to zero. Then you add every 16-bit word in the packet. Any time you have to carry, because the sum is greater than two to the 16 or 65,535, you carry the back of the bit back in.</p>
+<p>42<br>00:05:37,000 –&gt; 00:05:53,000<br>So 60,000 plus 8,000 is 68,000 minus 65,535 plus 1, or 2,466. Once you’ve added up the complete packet, flip the bits in your sum and make this the checksum of the packet.</p>
+<p>43<br>00:05:53,000 –&gt; 00:06:01,000<br>Then, if you add up the complete packet, including this checksum value, you should get 0xFFF, all ones.</p>
+<p>44<br>00:06:01,000 –&gt; 00:06:12,000<br>There’s one edge case. If the computer checksum is all ones, you don’t make the checksum field zero and you make it all ones. In IP, UDP, and TCP, it checksum field of zero means there’s no checksum.</p>
+<p>45<br>00:06:12,000 –&gt; 00:06:21,000<br>That’s it. You can write this in just a few lines of seco. It’s fast, easy to compute, and easy to check. All you need to do is add the bytes of a packet and check that the checksum is all ones.</p>
+<p>46<br>00:06:21,000 –&gt; 00:06:28,000<br>Given that most early internet implementations were in software, this is really helpful.</p>
+<p>47<br>00:06:29,000 –&gt; 00:06:41,000<br>The drawback is that it’s not really that door bust. While it definitely detects a lot of random errors, the guarantees it can give on what errors it detects are really weak. In practice, it can only promise to catch single bit errors.</p>
+<p>48<br>00:06:41,000 –&gt; 00:06:45,000<br>But it works pretty well, and LinkLayer is doing a lot of heavy lifting for us.</p>
+<p>49<br>00:06:45,000 –&gt; 00:06:50,000<br>LinkLayer is doing their heavy lifting with something called a cyclic redundancy check, or CRC.</p>
+<p>50<br>00:06:51,000 –&gt; 00:06:59,000<br>The idea of a CRC is that I want to take the end bits of source data, and someone to still them down to see bits of error detection data, or see as much smaller than that.</p>
+<p>51<br>00:06:59,000 –&gt; 00:07:08,000<br>For example, I might have a 1500 byte ethernet frame, with a 4 byte 32 bit CRC. USB and Bluetooth use 16 bit CRCs.</p>
+<p>52<br>00:07:08,000 –&gt; 00:07:17,000<br>Of course, we can’t detect all errors. Given some other random packet, the chances that CRC matches is 2 to the minus c, or 1 and 2 to the c.</p>
+<p>53<br>00:07:17,000 –&gt; 00:07:27,000<br>For example, if I use an 8 bit CRC, then out of the space of all packets, 1 and 256, or 0.4%, had the same CRC as my packet.</p>
+<p>54<br>00:07:27,000 –&gt; 00:07:39,000<br>But CRCs are stronger than check sums. They can detect there’s an error in any packet with an odd number of errors, 2 bit errors, or any single burst of errors equal to or less than c bits long.</p>
+<p>55<br>00:07:39,000 –&gt; 00:07:52,000<br>They can’t guarantee detecting errors besides these, but they do a good job at it. For example, a 16 bit CRC can’t guarantee you’ll detect 2 bursts of 3 bit errors spaced far apart in the packet, but it’s likely it will detect it.</p>
+<p>56<br>00:07:52,000 –&gt; 00:08:01,000<br>Link layers typically use CRCs. The pretty robust, and as many link layers are vulnerable to burst of errors, the burst detection capabilities of CRCs is useful.</p>
+<p>57<br>00:08:01,000 –&gt; 00:08:10,000<br>It’s not hard to make a hardware compute them quickly, and you can compute them incrementally as you read or write the packet.</p>
+<p>58<br>00:08:10,000 –&gt; 00:08:20,000<br>So how does a CRC work? It distills these n bits and decebits using something called polynomial long division. You take bits of a message and use them to describe a polynomial m.</p>
+<p>59<br>00:08:20,000 –&gt; 00:08:29,000<br>Each bit in a packet is the coefficient of one term of the polynomial. If the bit is 0, the term is absent. If the bit is 1, the term is present.</p>
+<p>60<br>00:08:29,000 –&gt; 00:08:50,000<br>So, for example, a message of 1,00, 111, 01 is the polynomial x to the 7th plus x to the 4th plus x to the 3rd plus x squared plus 1, which is x to the 0. This is because the 7th, 4th, 3rd, 2nd, and 0th bits are set in the message.</p>
+<p>61<br>00:08:50,000 –&gt; 00:09:06,000<br>When we calculate a CRC, we have something called a generator polynomial. This is defined by the CRC algorithm. For example, the CRC, 16 algorithm used by USB, has a generator polynomial of x to the 16th plus x to the 15th plus x squared plus 1.</p>
+<p>62<br>00:09:06,000 –&gt; 00:09:20,000<br>For frustrating historical reasons, the generator polynomial is one term longer than this number of bits. The first term is always 1. So the CRC 16 generator polynomial is written as 0x, 8,005, even though it has an x to the 16th term.</p>
+<p>63<br>00:09:21,000 –&gt; 00:09:42,000<br>To compute a CRC, you take the message M, pat it with 0 is equal to the CRC length, and divide this pated value by G. The remainder is the CRC, which you append to the message. To check a CRC, you divide the message plus CRC by the generator polynomial G, if the remainder is 0, then the CRC passes.</p>
+<p>64<br>00:09:42,000 –&gt; 00:09:48,000<br>I won’t go into the details of how this works mathematically, but it turns out it can be implemented very quickly and efficiently in hardware.</p>
+<p>65<br>00:09:48,000 –&gt; 00:10:03,000<br>The strength of your CRC algorithm depends on what generator polynomial G you pick. This puts a lot of study of this, and so many good options which have the error detection properties I mentioned earlier, which you might not get the same error detection strength if you pick your own generator polynomial.</p>
+<p>66<br>00:10:03,000 –&gt; 00:10:15,000<br>The third and final kind of error detection algorithm you commonly see in networks is a message authentication code or MAC. Like CRC, there’s a deep and rich mathematical background on how message authentication codes work. There are good ones and bad ones.</p>
+<p>67<br>00:10:15,000 –&gt; 00:10:30,000<br>So you generally want to use an existing scheme rather than an inventory room. Thankfully, standard usually specify what MAC to use, and though there are some mistakes in the late 90s or standards picked for algorithms, nowadays security is important enough that everyone relies on a small number of really well studied approaches.</p>
+<p>68<br>00:10:30,000 –&gt; 00:10:40,000<br>Message authentication codes use cryptography, branch of mathematics that deals with secrets. The idea behind most message authentication codes is that the two parties share a secret S.</p>
+<p>69<br>00:10:40,000 –&gt; 00:10:52,000<br>The secret is just a set of randomly generated bits, random so it’s hard to guess. To calculate a message authentication code C, you apply the MAC algorithm to the message N and the secret S.</p>
+<p>70<br>00:10:52,000 –&gt; 00:11:03,000<br>MAC algorithms are the property that if you don’t have S, then it’s really hard to generate the correct C for a message M. Furthermore, it’s very hard to create a message M whose message authentication code is C.</p>
+<p>71<br>00:11:03,000 –&gt; 00:11:10,000<br>By hard, I mean is that the best case you just have to exhaustively try, having M in C gives you almost no information on what S is.</p>
+<p>72<br>00:11:10,000 –&gt; 00:11:20,000<br>This means that if you receive a message M with the correct message authentication code, this means the computer that generated the message probably has the secret.</p>
+<p>73<br>00:11:20,000 –&gt; 00:11:25,000<br>Or someone replayed a message generated by that computer.</p>
+<p>74<br>00:11:25,000 –&gt; 00:11:42,000<br>Because the goal is to keep S a secret, cryptographically strong message authentication codes an interesting property, you change a single bit in M, then this results in a completely new CRC, where the probability any bit in C is 0 or 1 is seemingly random, independent of the earlier C.</p>
+<p>75<br>00:11:43,000 –&gt; 00:11:52,000<br>If this weren’t the case, then someone could take a message, flip a single bit, so it changed a dollar value, and it wouldn’t be that difficult to generate the correct C.</p>
+<p>76<br>00:11:52,000 –&gt; 00:12:02,000<br>This means that technically message authentication codes have no error detection guarantees. If you flip a single bit, you could end up with the exact same MAC.</p>
+<p>77<br>00:12:03,000 –&gt; 00:12:07,000<br>Message authentication codes are very useful, but they’re first and foremost a security mechanism.</p>
+<p>78<br>00:12:07,000 –&gt; 00:12:18,000<br>Being able to get both error detection and security one with one mechanism is efficient and nice, but their security properties mean that their error detection isn’t as good as other approaches.</p>
+<p>79<br>00:12:18,000 –&gt; 00:12:27,000<br>Let’s go over the answers. Both checksems can detect a single bit error. Remember, this is one of the errors that checks and guarantees detecting.</p>
+<p>80<br>00:12:27,000 –&gt; 00:12:31,000<br>Both CRCs can also detect a single bit error.</p>
+<p>81<br>00:12:32,000 –&gt; 00:12:40,000<br>A MAC can’t guarantee that it’ll detect a single bit error. For security reasons, it could be that the new MAC is the same as the old one, so it can’t guarantee detecting it.</p>
+<p>82<br>00:12:40,000 –&gt; 00:12:48,000<br>In fact, a MAC can’t guarantee detecting errors, so you can mark no for all the columns for the message authentication code.</p>
+<p>83<br>00:12:48,000 –&gt; 00:12:54,000<br>So how about two bit errors? Check sums can’t guarantee detecting two bit errors, so no for both of them.</p>
+<p>84<br>00:12:55,000 –&gt; 00:13:06,000<br>CRCs, though, can detect guaranteeing bit errors runs less than or equals the length of the CRC. Since two bits is shorter than both 8 bits and 16 bits, both CRCs can detect a run of two bit errors.</p>
+<p>85<br>00:13:06,000 –&gt; 00:13:14,000<br>Correspondingly, an 8 bit CRC can’t guarantee detecting a run of 9 bit errors, but a 16 bit CRC can.</p>
+<p>86<br>00:13:14,000 –&gt; 00:13:20,000<br>So no for the 8 bit CRC, and yes, for the 16 bit CRC, for a 9 bit error runs.</p>
+<p>87<br>00:13:20,000 –&gt; 00:13:27,000<br>How about two bit errors 100 bits apart? It turns out none of these algorithms can guarantee detecting this error, so no for all of them.</p>
+<p>88<br>00:13:27,000 –&gt; 00:13:35,000<br>Looking at this matrix, you might think error detection is a waste. The algorithms promise very little, but guarantee is a very strong statement.</p>
+<p>89<br>00:13:35,000 –&gt; 00:13:41,000<br>While an 8 bit check sum can’t guarantee you will catch a run of 9 bit errors, there’s a high probability it will.</p>
+<p>90<br>00:13:41,000 –&gt; 00:13:49,000<br>Similarly, a 16 bit CRC is a very high probability of detecting two bit errors 100 bits apart, and in practice, high probability is often good enough.</p>
+<p>91<br>00:13:49,000 –&gt; 00:13:54,000<br>If failures are rare, then you only sometimes have to do something more expensive to recover.</p>
+<p>92<br>00:13:54,000 –&gt; 00:14:06,000<br>But it means in practice, you tend to have multiple layers of error detection. The link layer detection is CRCs, IP detection, and the check sums, TCP detection with check sums, and then off the application has its own error detection.</p>
+<p>93<br>00:14:06,000 –&gt; 00:14:11,000<br>So I’ll put together the chances of errors creeping through is very, very low.</p>
+<p>94<br>00:14:11,000 –&gt; 00:14:16,000<br>So we’ve seen three error detection schemes, check sums, CRCs, and message authentication codes.</p>
+<p>95<br>00:14:17,000 –&gt; 00:14:23,000<br>Data error detection is a great example of the end-to-end principle. It’s actually what originally motivated the principle.</p>
+<p>96<br>00:14:23,000 –&gt; 00:14:29,000<br>The only way a layer can be sure that it communicates data correctly is to perform an end-to-end check.</p>
+<p>97<br>00:14:29,000 –&gt; 00:14:34,000<br>Ethernet needs to be sure that its frames don’t have errors, so it can parse them correctly, so it has a CRC.</p>
+<p>98<br>00:14:34,000 –&gt; 00:14:38,000<br>IP needs to be sure that its packets are in a verice, so it can parse them correctly.</p>
+<p>99<br>00:14:39,000 –&gt; 00:14:44,000<br>IP can’t depend on what Ethernet is doing to check for its own check.</p>
+<p>100<br>00:14:44,000 –&gt; 00:14:49,000<br>The Ethernet Carter driver might introduce an error after the driver checks the packet.</p>
+<p>101<br>00:14:49,000 –&gt; 00:14:53,000<br>So IP has to do its own end-to-end check at the network layer.</p>
+<p>102<br>00:14:53,000 –&gt; 00:14:56,000<br>TLS using message authentication codes is another example.</p>
+<p>103<br>00:14:56,000 –&gt; 00:15:07,000<br>It’s especially interesting because TLS is very different error detection requirements than IP Ethernet. It wants security, so it has to provide its own end-to-end error detection scheme,</p>
+<p>104<br>00:15:07,000 –&gt; 00:15:12,000<br>so it’s the only way it can be sure its requirements are met.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP272 5Errordetection</div>
+      <div>http://example.com/2025/10/25/CS144-networkP272-5Errordetection/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP302-6cFinitestatemachines3/" title="CS144 NetworkP302 6cFinitestatemachines3">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP302 6cFinitestatemachines3</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP292-6bFinitestatemachines2/" title="CS144 NetworkP292 6bFinitestatemachines2">
+                        <span class="hidden-mobile">CS144 NetworkP292 6bFinitestatemachines2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

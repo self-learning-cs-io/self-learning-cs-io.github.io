@@ -1,0 +1,766 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:06,320In the last video, I told you how we can use the additive increase multiplicative decrease method to 200:00:06,320 –&gt; 00:00:12,439modulate the size of the TCP slidin">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP554 3CongestionControl">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP554-3CongestionControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:06,320In the last video, I told you how we can use the additive increase multiplicative decrease method to 200:00:06,320 –&gt; 00:00:12,439modulate the size of the TCP slidin">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.785Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.786Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP554 3CongestionControl - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP554 3CongestionControl"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.5k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          13 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP554 3CongestionControl</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:06,320<br>In the last video, I told you how we can use the additive increase multiplicative decrease method to</p>
+<p>2<br>00:00:06,320 –&gt; 00:00:12,439<br>modulate the size of the TCP sliding window and therefore control the number of bytes that are</p>
+<p>3<br>00:00:12,439 –&gt; 00:00:19,120<br>outstanding in the network. If we want to increase the number of bytes that are outstanding,</p>
+<p>4<br>00:00:19,120 –&gt; 00:00:23,480<br>we might contribute to more congestion. If there is congestion and we want to reduce it,</p>
+<p>5<br>00:00:23,480 –&gt; 00:00:28,240<br>then we might reduce the number of outstanding bytes, in other words reduce the window size.</p>
+<p>6<br>00:00:28,719 –&gt; 00:00:34,719<br>So using this window size modulation, we can vary the number of outstanding bytes and therefore</p>
+<p>7<br>00:00:34,719 –&gt; 00:00:39,920<br>affect or control the amount of congestion in the network. Notice this has been done by</p>
+<p>8<br>00:00:39,920 –&gt; 00:00:46,719<br>the end host only without any explicit support from the network. In order to understand how</p>
+<p>9<br>00:00:46,719 –&gt; 00:00:52,719<br>AIMD works and then later how TCP congestion control works, we’re going to start by looking in</p>
+<p>10<br>00:00:52,719 –&gt; 00:00:58,960<br>some detail at how AIMD works with a single flow. If we can understand how it works with a single</p>
+<p>11<br>00:00:58,960 –&gt; 00:01:03,439<br>flow, then we have a chance of understanding how it works in a more complicated network with many,</p>
+<p>12<br>00:01:03,439 –&gt; 00:01:12,879<br>many flows through a router at the same time. So we saw before AIMD works as follows. Each time a</p>
+<p>13<br>00:01:12,879 –&gt; 00:01:18,799<br>packet is received okay, we increase the window by 1 over W. Therefore, once we’ve received the</p>
+<p>14<br>00:01:18,799 –&gt; 00:01:25,200<br>whole windows worth of packets, the window size will be increased by 1. Every time a packet is dropped,</p>
+<p>15<br>00:01:26,079 –&gt; 00:01:32,319<br>we’re going to decrease the window size multiplicatively. We’re going to reduce it by a factor of 2,</p>
+<p>16<br>00:01:32,879 –&gt; 00:01:41,840<br>and this is the dynamics that we saw before. Now let’s look at an animation of the AIMD process working</p>
+<p>17<br>00:01:41,840 –&gt; 00:01:50,640<br>in practice. We’re going to take a good look at this animation of a single AIMD flow over a single</p>
+<p>18<br>00:01:50,640 –&gt; 00:01:58,480<br>bottleneck link. If we look on the let me explain what’s going on with the figure, the congestion</p>
+<p>19<br>00:01:58,480 –&gt; 00:02:05,920<br>window size W is shown on the graph down here varying as a function of time. So this is a C-wind,</p>
+<p>20<br>00:02:06,480 –&gt; 00:02:12,640<br>the congestion window, and this is the same as the value here at the source. So this is the source,</p>
+<p>21<br>00:02:13,280 –&gt; 00:02:19,920<br>this is the destination, and this is the router in between. The router has a buffer, and it’s going to</p>
+<p>22<br>00:02:19,920 –&gt; 00:02:26,479<br>buffer packets that are waiting to go onto the egress link. The egress link is this one here, and this is</p>
+<p>23<br>00:02:26,479 –&gt; 00:02:33,120<br>the bottleneck link between the source and the destination. This link here on the left is running</p>
+<p>24<br>00:02:33,120 –&gt; 00:02:38,159<br>faster than the link on the right, which is why every now and again there’s a build up of packets</p>
+<p>25<br>00:02:38,159 –&gt; 00:02:43,599<br>in this buffer because they’re arriving faster than they are departing. The reason that the packets</p>
+<p>26<br>00:02:43,599 –&gt; 00:02:47,840<br>look little or on the left than they do on the right is just supposed to represent the fact that the</p>
+<p>27<br>00:02:47,840 –&gt; 00:02:52,800<br>link on the left is running faster than the one on the right. In other words, I have a higher data</p>
+<p>28<br>00:02:52,800 –&gt; 00:02:59,599<br>rate, and so the packetization delay is shorter, and so the packets appear a little bit shorter on</p>
+<p>29<br>00:02:59,599 –&gt; 00:03:04,400<br>the left. So packets are going to flow from the source to the destination. They’re the blue ones,</p>
+<p>30<br>00:03:05,039 –&gt; 00:03:10,639<br>and then for each packet there is an acknowledgement coming back to the source. That’s what the red ones</p>
+<p>31<br>00:03:10,639 –&gt; 00:03:18,400<br>are at the top, and you can see that the arrival of the acknowledgments is clocking the transmission</p>
+<p>32<br>00:03:18,400 –&gt; 00:03:24,159<br>of the next packet. So we often say that an algorithm like this is self-clocking, and we’ll see later</p>
+<p>33<br>00:03:24,240 –&gt; 00:03:30,319<br>the TCP is self-clocking. The packets are triggered by an acknowledgement coming back.</p>
+<p>34<br>00:03:31,439 –&gt; 00:03:35,120<br>Okay, now that I’ve explained this, I’m going to restart it so that we can look at some of the</p>
+<p>35<br>00:03:35,120 –&gt; 00:03:41,039<br>some of the dynamics. I’m actually going to give you our URL to this same animation, so you can play</p>
+<p>36<br>00:03:41,039 –&gt; 00:03:51,120<br>around with this on your own time. So starting again, we can see that the</p>
+<p>37<br>00:03:54,159 –&gt; 00:03:59,120<br>window size here is telling us how many packets there can be outstanding in the network.</p>
+<p>38<br>00:03:59,120 –&gt; 00:04:05,199<br>And I like to think of it as there’s a kind of a bag that is representing the network as a whole,</p>
+<p>39<br>00:04:05,199 –&gt; 00:04:10,000<br>and we’re trying to figure out how big that bag is. How many packets can we put into that bag</p>
+<p>40<br>00:04:10,000 –&gt; 00:04:14,560<br>before they overflow and drop on the drop on the floor? And I find this a useful way to think about</p>
+<p>41<br>00:04:14,560 –&gt; 00:04:21,920<br>AIMD. So we’re basically trying to figure out where those packets can be, and how many there can be</p>
+<p>42<br>00:04:21,920 –&gt; 00:04:26,800<br>in the in the link. And really, there’s only a couple of two or three different places that they</p>
+<p>43<br>00:04:26,800 –&gt; 00:04:34,000<br>can be. First of all, the packets can be on this link here, on this fixed capacity pipe. There are</p>
+<p>44<br>00:04:34,000 –&gt; 00:04:38,800<br>a certain number of packets that we could fit under that under that into that pipe. There are a certain</p>
+<p>45<br>00:04:38,800 –&gt; 00:04:43,280<br>number that we could put here, and there are a certain number that are represented by the</p>
+<p>46<br>00:04:43,280 –&gt; 00:04:47,920<br>acknowledgments coming in the opposite direction. So all of those are fixed. The only variable</p>
+<p>47<br>00:04:47,920 –&gt; 00:04:54,400<br>portion is how many that we have currently got in the buffer in the middle. So it’s like a</p>
+<p>48<br>00:04:54,400 –&gt; 00:05:00,080<br>concertina. There’s this concertina that to start with, that concertina is closed, and we’re putting</p>
+<p>49<br>00:05:00,080 –&gt; 00:05:06,000<br>the packets into the network. And then as we as we fill up the links, after the links are full,</p>
+<p>50<br>00:05:06,000 –&gt; 00:05:11,840<br>the only place they can go is into the buffer. And the buffer will absorb for every extra</p>
+<p>51<br>00:05:11,839 –&gt; 00:05:17,519<br>window, every extra time that we open the window, we are essentially putting an extra packet into</p>
+<p>52<br>00:05:17,519 –&gt; 00:05:23,039<br>that packet buffer. So initially, when the window is at its minimum value, all the links are full,</p>
+<p>53<br>00:05:23,039 –&gt; 00:05:29,439<br>but the buffer is empty. If we increase the window by size one, the links are full, so it can’t be</p>
+<p>54<br>00:05:29,439 –&gt; 00:05:35,120<br>placed into the into the link. The only place that it can be placed is into the buffer. So the buffer</p>
+<p>55<br>00:05:35,120 –&gt; 00:05:40,639<br>will increase by one. If we then increase the window by one again, it’ll go into the buffer,</p>
+<p>56<br>00:05:40,639 –&gt; 00:05:44,879<br>increase it by one again, it’ll go into the buffer. Eventually the buffer overflows,</p>
+<p>57<br>00:05:45,919 –&gt; 00:05:53,199<br>we drop a packet, and then the AIMD rules are that we drop the outstanding window size by half,</p>
+<p>58<br>00:05:53,759 –&gt; 00:05:59,839<br>eventually the buffer will go empty again, and then we start again. So really, all we’re doing by</p>
+<p>59<br>00:05:59,839 –&gt; 00:06:05,839<br>changing the window size is modulating the occupancy of the buffer at the bottleneck. If we look here</p>
+<p>60<br>00:06:05,839 –&gt; 00:06:12,239<br>on the simulation, we can see that, we can see that happening. So right now the window size is</p>
+<p>61<br>00:06:12,239 –&gt; 00:06:17,359<br>nine, so that we will see at any instant, there are nine packets and acknowledgments outstanding</p>
+<p>62<br>00:06:17,359 –&gt; 00:06:23,759<br>in the network. But because the links are full, this outgoing link here is full, our bottleneck link is full,</p>
+<p>63<br>00:06:24,639 –&gt; 00:06:31,199<br>the only place that those packets can go once we increase the window size is here. So we filled it up,</p>
+<p>64<br>00:06:31,199 –&gt; 00:06:36,719<br>any additional ones are inside the buffer. And every now and again you’ll see that we’ve received a</p>
+<p>65<br>00:06:36,719 –&gt; 00:06:42,959<br>full window’s worth, and then we increase the, there we go, we will increase the window size by one,</p>
+<p>66<br>00:06:42,959 –&gt; 00:06:48,560<br>it’s currently at 13, in a moment it’ll increase to 14, and every time we increase the window size,</p>
+<p>67<br>00:06:48,560 –&gt; 00:06:55,519<br>the buffer will have one more packet in it. And down here you can see that every time we</p>
+<p>68<br>00:06:56,479 –&gt; 00:07:02,560<br>receive a full window’s worth, it will actually go up by one, and therefore that’s how the window</p>
+<p>69<br>00:07:02,560 –&gt; 00:07:08,319<br>is going to evolve over time. So we’re almost getting to the point where the buffer is full,</p>
+<p>70<br>00:07:08,959 –&gt; 00:07:15,839<br>we’ve got to a point where the the window is 16, and at the moment the rate at which packets are</p>
+<p>71<br>00:07:15,839 –&gt; 00:07:21,519<br>coming in is exactly matching the rate at which they’re going out. In a moment, we’re going to</p>
+<p>72<br>00:07:21,519 –&gt; 00:07:26,479<br>actually put one extra packet into the network and you see it got dropped, and the knowledge of that</p>
+<p>73<br>00:07:26,479 –&gt; 00:07:32,000<br>drop is propagating through the network, it will now go on to the outgoing link, it will come back</p>
+<p>74<br>00:07:32,000 –&gt; 00:07:36,319<br>actually through the absence of it acknowledgement, but that doesn’t matter. And so therefore the window</p>
+<p>75<br>00:07:36,319 –&gt; 00:07:42,639<br>size will be halved, that’s what’s going on over here. The buffer will have will drain because we’re</p>
+<p>76<br>00:07:42,639 –&gt; 00:07:48,240<br>only allowed to have half as many outstanding packets in the network, therefore we stop sending the,</p>
+<p>77<br>00:07:48,720 –&gt; 00:07:54,960<br>the buffer drained because it drains at the full rate, and then we start the whole process off again.</p>
+<p>78<br>00:07:56,800 –&gt; 00:08:02,639<br>The first thing I want you to notice is that the outgoing link is kept busy all the time, 100%</p>
+<p>79<br>00:08:02,639 –&gt; 00:08:08,560<br>of the time, even though this window process is concertinaing, it’s going full up and then</p>
+<p>80<br>00:08:08,560 –&gt; 00:08:13,280<br>full down when we have a drop, full up and then full down. So even though this window is going through</p>
+<p>81<br>00:08:13,359 –&gt; 00:08:19,359<br>this sawtooth motion, the egress that bottleneck link in the network is staying busy all the time.</p>
+<p>82<br>00:08:20,399 –&gt; 00:08:25,839<br>In other words, the rate at which packets are being sent is staying constant, and this is a really</p>
+<p>83<br>00:08:25,839 –&gt; 00:08:32,159<br>important property of AIMD, particularly with a single link. It’s not really adjusting the rate,</p>
+<p>84<br>00:08:32,159 –&gt; 00:08:37,679<br>it’s actually affecting the number of packets that can be outstanding in the network. And this subtle</p>
+<p>85<br>00:08:37,679 –&gt; 00:08:42,079<br>distinction will become very important in a moment when I tell you a little bit more about the dynamics</p>
+<p>86<br>00:08:42,560 –&gt; 00:08:48,560<br>of AIMD. And then it’ll help us understand what’s going on when there are multiple flows in the network.</p>
+<p>87<br>00:08:56,400 –&gt; 00:09:01,280<br>To increase our understanding of what’s going on, let’s look at the dynamics of that single flow.</p>
+<p>88<br>00:09:01,280 –&gt; 00:09:07,840<br>This is from a simulation in a well-known network simulator called NS of a single TCP flow</p>
+<p>89<br>00:09:07,840 –&gt; 00:09:14,000<br>over a bottleneck link. The graph at the top here is telling us the evolution of the congestion</p>
+<p>90<br>00:09:14,000 –&gt; 00:09:19,759<br>window or C-wind like we had before. That’s the red one. The green one is the RTT, the round trip time.</p>
+<p>91<br>00:09:21,040 –&gt; 00:09:26,160<br>This red line here is the utilization of the bottleneck link. In other words, how busy is that bottleneck</p>
+<p>92<br>00:09:26,160 –&gt; 00:09:31,600<br>link kept? And down here is the occupancy of the buffer, and we can see that evolving. So it’s very</p>
+<p>93<br>00:09:31,600 –&gt; 00:09:39,040<br>similar to the simulation that we just saw, the animation that we just saw. So notice that the</p>
+<p>94<br>00:09:40,399 –&gt; 00:09:48,000<br>congestion window is moving in this beautiful sawtooth. But because every time we put one more packet</p>
+<p>95<br>00:09:48,000 –&gt; 00:09:54,800<br>into the network, we increase the occupancy of the buffer. So every time we increase W, the only</p>
+<p>96<br>00:09:54,800 –&gt; 00:09:59,759<br>place that that extra packet can go is in the buffer. So it’s going to move in perfect lock step with</p>
+<p>97<br>00:10:00,319 –&gt; 00:10:06,000<br>with C-wind. But because we’re increasing the occupancy of the buffer, we’re increasing the delay</p>
+<p>98<br>00:10:06,000 –&gt; 00:10:12,159<br>that packets experience as they go through the network. So therefore, the RTT, the round trip time,</p>
+<p>99<br>00:10:12,159 –&gt; 00:10:22,080<br>is also going and following the same, exactly the same shape. So C-wind and the RTT actually follow</p>
+<p>100<br>00:10:22,080 –&gt; 00:10:31,280<br>the same shape. The consequence of this is that the sending rate for a single flow,</p>
+<p>101<br>00:10:32,160 –&gt; 00:10:41,040<br>which we can define to be the number of bytes that we send in one window divided by the round</p>
+<p>102<br>00:10:41,040 –&gt; 00:10:48,960<br>trip time. Because the round trip time is varying with the window size, W over RTT is actually a</p>
+<p>103<br>00:10:48,960 –&gt; 00:10:55,519<br>going to be a constant. This is actually going to be a constant. Why is that? The reason that</p>
+<p>104<br>00:10:55,519 –&gt; 00:11:00,879<br>it’s constant is because W and RTT are moving in lock step, they’re essentially the same.</p>
+<p>105<br>00:11:02,080 –&gt; 00:11:08,240<br>And we saw that in the animation. The Egress link was kept busy at all times. So we’re not really</p>
+<p>106<br>00:11:08,240 –&gt; 00:11:12,480<br>modulating the rate. In fact, we don’t want to modulate the rate when everything is constant and</p>
+<p>107<br>00:11:12,480 –&gt; 00:11:17,600<br>when you’ve got a single flow. We want to keep the outgoing link busy. All that the window is</p>
+<p>108<br>00:11:17,600 –&gt; 00:11:23,360<br>doing is probing to see how big the bag is, how many more bytes we can put into the network without</p>
+<p>109<br>00:11:23,360 –&gt; 00:11:29,680<br>it overflowing. And it’s constantly probing and changing that window size just in case the conditions</p>
+<p>110<br>00:11:29,680 –&gt; 00:11:35,120<br>change and the capacity increases and therefore there’s more room in the bag to put more packets.</p>
+<p>111<br>00:11:37,680 –&gt; 00:11:45,600<br>Just to just to belabor the point a little, the window size is going to move like this. RTT will</p>
+<p>112<br>00:11:45,600 –&gt; 00:11:52,639<br>move like this in lock step and so this rate is a constant. So from this we can also make another</p>
+<p>113<br>00:11:52,639 –&gt; 00:11:59,600<br>observation and that is how big should the buffer be so that the whole system will behave correctly.</p>
+<p>114<br>00:11:59,600 –&gt; 00:12:05,120<br>So we saw last time that the buffer occupancy was moving in lock step with a window size process.</p>
+<p>115<br>00:12:05,120 –&gt; 00:12:10,000<br>This picture down here is essentially the same as our animation. Our bottleneck link over here.</p>
+<p>116<br>00:12:10,320 –&gt; 00:12:18,080<br>Our link here with a faster rate the router buffer between a and b. So if we were to look at that again</p>
+<p>117<br>00:12:18,080 –&gt; 00:12:25,600<br>in our simulation and look at the behavior, the graph on the left are the same as the ones we saw</p>
+<p>118<br>00:12:25,600 –&gt; 00:12:33,120<br>before and in this case the buffer occupancy equals RTT times c. In other words it’s just enough</p>
+<p>119<br>00:12:33,120 –&gt; 00:12:40,720<br>to hold the enough packets that will fit into the round trip when the buffer is empty.</p>
+<p>120<br>00:12:42,720 –&gt; 00:12:47,120<br>If we were to make the buffer a little bit smaller and that’s what we’re doing here so the buffer</p>
+<p>121<br>00:12:47,120 –&gt; 00:12:55,600<br>is smaller then what happens is that the buffer after it’s, well after there’s been a drop which</p>
+<p>122<br>00:12:55,600 –&gt; 00:13:03,519<br>is taking place here when the window size decreases and is halved according to the AMD rules</p>
+<p>123<br>00:13:04,399 –&gt; 00:13:12,399<br>the buffer will fall because we have fewer outstanding bytes in the network. Therefore the source will</p>
+<p>124<br>00:13:12,399 –&gt; 00:13:19,440<br>stop sending packets the buffer will drain but it’s draining an empty for some period. So if the</p>
+<p>125<br>00:13:19,440 –&gt; 00:13:24,879<br>router buffer is empty it means the egress link our bottleneck link our precious resource is actually</p>
+<p>126<br>00:13:24,879 –&gt; 00:13:32,399<br>not being used and so the utilization will drop from 100% during that time. So if we want to prevent</p>
+<p>127<br>00:13:32,399 –&gt; 00:13:37,439<br>this from happening and have 100% at all times we need to make sure that this doesn’t happen.</p>
+<p>128<br>00:13:38,000 –&gt; 00:13:42,000<br>Therefore we need to make sure that the buffer never goes empty and we need a behavior like this</p>
+<p>129<br>00:13:42,559 –&gt; 00:13:49,840<br>from which we need a buffer of RTT times c. Now why it’s specifically RTT times c you’ll see in a</p>
+<p>130<br>00:13:49,840 –&gt; 00:13:56,160<br>problem set a little bit later but the basic intuition is that the buffer occupancy the size of the</p>
+<p>131<br>00:13:56,160 –&gt; 00:14:02,560<br>buffer must from the peak to the trough must be the same as the distance from the peak to the trough</p>
+<p>132<br>00:14:02,560 –&gt; 00:14:08,639<br>here to be able to ride out the time when the window size is halved and we have fewer outstanding</p>
+<p>133<br>00:14:08,639 –&gt; 00:14:15,040<br>packets placed into the network and that distance there turns out to be RTT times c and we’ll see that</p>
+<p>134<br>00:14:15,120 –&gt; 00:14:22,879<br>later in a problem set. Let’s summarize what we’ve learnt for a single flow. The window is going to</p>
+<p>135<br>00:14:22,879 –&gt; 00:14:29,039<br>expand and contract according to AIMD the additive increase multiplicative decrease which is going to</p>
+<p>136<br>00:14:29,039 –&gt; 00:14:35,599<br>modulate the size of the TCP sliding window in order to determine how many outstanding bytes they</p>
+<p>137<br>00:14:35,599 –&gt; 00:14:41,599<br>can be in the network. Essentially we’re probing how many bytes that the pipe can hold from end to</p>
+<p>138<br>00:14:42,000 –&gt; 00:14:46,000<br>end and we’re constantly going to be probing by changing the size of that window we’re going to</p>
+<p>139<br>00:14:46,000 –&gt; 00:14:51,440<br>carefully increase it see how much space there is if we find that we overfill it we’re going to drop</p>
+<p>140<br>00:14:51,440 –&gt; 00:14:55,680<br>back down again and then we’re going to keep trying to probe it to see if there’s more capacity</p>
+<p>141<br>00:14:55,680 –&gt; 00:15:01,279<br>that’s available. So we’re going to tentatively additively increase and then if we find that we’re</p>
+<p>142<br>00:15:01,279 –&gt; 00:15:07,040<br>going to trouble we’re going to very quickly in a very responsive way drop back down again to be able</p>
+<p>143<br>00:15:07,039 –&gt; 00:15:12,719<br>to reduce the number of outstanding bytes in the network as quickly as we can. So the soar tooth</p>
+<p>144<br>00:15:12,719 –&gt; 00:15:19,120<br>is actually the stable operating point of TCP there’s nothing out of control just because it’s</p>
+<p>145<br>00:15:19,120 –&gt; 00:15:25,759<br>oscillating it’s exactly the behavior that we want under a stable operating condition and the</p>
+<p>146<br>00:15:25,759 –&gt; 00:15:31,360<br>sending rate is in fact constant so long as we have enough buffers in the network which is RTT</p>
+<p>147<br>00:15:32,320 –&gt; 00:15:37,600<br>so these are all the observations for a single flow. In the next video we’re going to see how things</p>
+<p>148<br>00:15:37,600 –&gt; 00:15:47,279<br>are a little bit different when we have many flows in the network.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP554 3CongestionControl</div>
+      <div>http://example.com/2025/10/25/CS144-networkP554-3CongestionControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP584-5TCPTahoe/" title="CS144 NetworkP584 5TCPTahoe">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP584 5TCPTahoe</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP524-0CongestionControl/" title="CS144 NetworkP524 0CongestionControl">
+                        <span class="hidden-mobile">CS144 NetworkP524 0CongestionControl</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

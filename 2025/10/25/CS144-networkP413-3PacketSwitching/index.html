@@ -1,0 +1,801 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:07,759In the first video on packet switching, I told you about what packet switching is and why it was used for the internet. 200:00:07,759 –&gt; 00:00:11,359Packet switching">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP413 3PacketSwitching">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP413-3PacketSwitching/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:07,759In the first video on packet switching, I told you about what packet switching is and why it was used for the internet. 200:00:07,759 –&gt; 00:00:11,359Packet switching">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.781Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.781Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP413 3PacketSwitching - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP413 3PacketSwitching"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP413 3PacketSwitching</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:07,759<br>In the first video on packet switching, I told you about what packet switching is and why it was used for the internet.</p>
+<p>2<br>00:00:07,759 –&gt; 00:00:11,359<br>Packet switching is going to feature very prominently throughout this course.</p>
+<p>3<br>00:00:11,359 –&gt; 00:00:13,200<br>So we’re going to spend quite a bit of time on it.</p>
+<p>4<br>00:00:13,200 –&gt; 00:00:18,960<br>And many of the properties of the internet followed directly from the choice of packet switching.</p>
+<p>5<br>00:00:20,960 –&gt; 00:00:26,719<br>So in this video I’m going to give you some useful definitions for propagation delay and packetization delay.</p>
+<p>6<br>00:00:26,879 –&gt; 00:00:32,799<br>And we’re going to use those definitions to come up with an expression for the end to end delay of a packet across a network.</p>
+<p>7<br>00:00:32,799 –&gt; 00:00:38,320<br>I’m also going to tell you about queuing delay and how it makes the end to end delay unpredictable.</p>
+<p>8<br>00:00:39,280 –&gt; 00:00:42,000<br>So let’s start with some useful definitions.</p>
+<p>9<br>00:00:43,280 –&gt; 00:00:45,920<br>We’ll start with the definition of propagation delay.</p>
+<p>10<br>00:00:46,879 –&gt; 00:00:52,159<br>So the propagation delay is the time that it takes a single bit of information to travel over a link</p>
+<p>11<br>00:00:52,239 –&gt; 00:01:00,959<br>at propagation speed c. So look in the picture here and you’ll see we have the computer on the left</p>
+<p>12<br>00:01:00,959 –&gt; 00:01:05,679<br>and we’re going to consider the time that it takes for a bit to propagate from the one on the left to the one</p>
+<p>13<br>00:01:05,679 –&gt; 00:01:11,280<br>on the right. That time the propagation delay or TsoL is simply L over c.</p>
+<p>14<br>00:01:14,479 –&gt; 00:01:19,840<br>So the propagation delay is simply determined by how long the link is, L in our case,</p>
+<p>15<br>00:01:19,840 –&gt; 00:01:26,799<br>and the speed that a bit travels c. We use the variable c in most of the links we’re interested in</p>
+<p>16<br>00:01:27,120 –&gt; 00:01:32,480<br>because c is, or the speed of propagation is very close to the speed of light.</p>
+<p>17<br>00:01:33,600 –&gt; 00:01:40,320<br>For example in a twisted pair of electrical cables a bit propagates at about 70% of the speed of light</p>
+<p>18<br>00:01:40,320 –&gt; 00:01:43,760<br>and then an optical fiber the speed of propagation is a tiny bit slower.</p>
+<p>19<br>00:01:44,640 –&gt; 00:01:49,680<br>In most of our examples we’ll assume that the bit propagates at two times 10 to the eight meters per</p>
+<p>20<br>00:01:49,680 –&gt; 00:01:54,160<br>second which is which is close enough. There you go there’s the bit going along the link. Let’s</p>
+<p>21<br>00:01:54,160 –&gt; 00:02:00,880<br>have a look at that again. So it’s the speed at the time at which it takes to to propagate over the link.</p>
+<p>22<br>00:02:02,800 –&gt; 00:02:08,800<br>So for example if we were considering how long it would take a bit to travel a thousand kilometers</p>
+<p>23<br>00:02:08,800 –&gt; 00:02:14,080<br>or a million meters in an optical fiber where the propagation speed was two times 10 to the eight meters</p>
+<p>24<br>00:02:14,080 –&gt; 00:02:21,760<br>per second. Well TsoL is 1000 times 10 to the three divided by two times 10 to the eight or five</p>
+<p>25<br>00:02:21,760 –&gt; 00:02:26,960<br>milliseconds. In a little bit we’re going to look at some examples and you’re going to do some</p>
+<p>26<br>00:02:26,960 –&gt; 00:02:33,840<br>examples in the multiple choice exercises embedded in the video. Notice that the propagation delay</p>
+<p>27<br>00:02:33,840 –&gt; 00:02:38,000<br>doesn’t depend on the data rate of the link. It doesn’t matter if the link is running at one</p>
+<p>28<br>00:02:38,000 –&gt; 00:02:44,400<br>kilobits per second or or at 10 gigabits per second. The propagation delay is just a function of the</p>
+<p>29<br>00:02:44,400 –&gt; 00:02:55,280<br>speed of propagation of each bit and the length of the cable. Another useful definition is the</p>
+<p>30<br>00:02:55,280 –&gt; 00:03:02,000<br>packetization delay. This is the time from when the first bit of a packet is put onto the link</p>
+<p>31<br>00:03:02,000 –&gt; 00:03:07,920<br>until the last bit is put onto the link. Let’s take a look at an example here. So see that</p>
+<p>32<br>00:03:07,919 –&gt; 00:03:14,479<br>packet there going onto the link. The time that it takes to put all of the bits onto the link is</p>
+<p>33<br>00:03:14,479 –&gt; 00:03:19,439<br>going to be a function of the number of bits we’re putting onto the link and the distance between</p>
+<p>34<br>00:03:19,439 –&gt; 00:03:25,359<br>them or the number of bits per second that we can put onto the link. So essentially the data</p>
+<p>35<br>00:03:25,359 –&gt; 00:03:31,039<br>rate of a link is determined by how close together we can pack the bits. If for example the link</p>
+<p>36<br>00:03:31,039 –&gt; 00:03:36,560<br>runs at one gigabit per second we can put onto we can put one bit onto the link every now and a second.</p>
+<p>37<br>00:03:37,360 –&gt; 00:03:42,640<br>We’ll see in a later video about physical links what actually limits the data rate of a link.</p>
+<p>38<br>00:03:45,439 –&gt; 00:03:50,640<br>So the packetization delay is determined by how fast we can put bits on the link or the data rate</p>
+<p>39<br>00:03:50,640 –&gt; 00:03:56,080<br>are. If a link runs at one kilobits per second we can put a thousand new bits onto the link every</p>
+<p>40<br>00:03:56,080 –&gt; 00:04:01,759<br>second. If it runs at 10 gigabits per second then we can put 10 billion bits onto the link every</p>
+<p>41<br>00:04:01,759 –&gt; 00:04:09,759<br>second. There we go a couple of examples. If we had a 64 byte packet that’s 512 bits it would take</p>
+<p>42<br>00:04:09,759 –&gt; 00:04:16,480<br>5.12 microseconds to be transmitted onto a hundred megabits per second link. Why is that? Well T sub</p>
+<p>43<br>00:04:16,480 –&gt; 00:04:26,959<br>P equals P over R. So P in our case is 64 times 8 512 divided by R and R would be 100 times 10 to</p>
+<p>44<br>00:04:26,959 –&gt; 00:04:37,599<br>the 6. Another example a kilobit packet takes 1.024 seconds to be transmitted onto a 1 kilobit per</p>
+<p>45<br>00:04:37,599 –&gt; 00:04:46,000<br>second link. So where did this 1.024 come from? Well this is useful example here because the 1 kilobit</p>
+<p>46<br>00:04:46,000 –&gt; 00:04:53,759<br>per second, sorry the 1 kilobit packet that we see here, 1 kilobit when we’re measuring a number of</p>
+<p>47<br>00:04:53,759 –&gt; 00:04:59,839<br>bits in a packet or in memory, 1 kilobit as you know is a thousand and 24 or two to the power of 10.</p>
+<p>48<br>00:05:01,039 –&gt; 00:05:08,560<br>So that’s why we have 1.024 seconds in order to transmit it onto a 1 kilobit per second link.</p>
+<p>49<br>00:05:08,560 –&gt; 00:05:13,920<br>So in this case it’s a little bit confusing. 1 kilobit per second means 1000 bits per second</p>
+<p>50<br>00:05:13,920 –&gt; 00:05:20,560<br>whereas the 1 kilobit in the packet is 1,024 bits. This is standard throughout networking and we’ll</p>
+<p>51<br>00:05:20,560 –&gt; 00:05:30,160<br>see this happen over and over again. So notice that the packetization delay is only a function of</p>
+<p>52<br>00:05:30,160 –&gt; 00:05:40,160<br>the length of the packet that’s P here and the rate at which we can put bits onto the link or</p>
+<p>53<br>00:05:40,160 –&gt; 00:05:48,160<br>R bits per second. Makes no difference how long the link is or how fast bits propagate along it.</p>
+<p>54<br>00:05:51,120 –&gt; 00:05:59,839<br>So next we’re going to see how we can use our two different types of delay to determine the overall end to end delay.</p>
+<p>55<br>00:06:01,040 –&gt; 00:06:05,199<br>That’s the time it takes a packet to go across a network from the source to the destination.</p>
+<p>56<br>00:06:08,399 –&gt; 00:06:15,519<br>So the end to end delay is the time from when we send the first bit on the first link that would be over here</p>
+<p>57<br>00:06:16,000 –&gt; 00:06:21,839<br>until the last bit of the packet arrives at the destination B.</p>
+<p>58<br>00:06:26,079 –&gt; 00:06:31,599<br>So we can calculate the end to end delay by adding up the propagation and packetization delays</p>
+<p>59<br>00:06:31,599 –&gt; 00:06:38,639<br>on every link along the path. That is we can look at those numbers that we calculated before</p>
+<p>60<br>00:06:38,639 –&gt; 00:06:44,240<br>for how long it takes a packet from the first bit until the first bit is sent until the last bit</p>
+<p>61<br>00:06:44,240 –&gt; 00:06:50,800<br>arrives on this link here. And then we can add it to the time on here, on here and on here.</p>
+<p>62<br>00:06:53,439 –&gt; 00:06:59,680<br>So in our case that’s going to depend on the length of the first link and the rate at which it runs.</p>
+<p>63<br>00:07:01,280 –&gt; 00:07:06,480<br>And then we can use our expressions to calculate the end to end delay. And we’re going to come up with</p>
+<p>64<br>00:07:06,480 –&gt; 00:07:13,920<br>an expression that looks like this. The end to end delay t equals the sum of the first of all the</p>
+<p>65<br>00:07:17,280 –&gt; 00:07:23,920<br>delay here which is the packetization delay, the time that it takes to put the packet onto the link.</p>
+<p>66<br>00:07:23,920 –&gt; 00:07:28,720<br>And then the time it takes for one bit to propagate along that link. So we’re going to sum up all</p>
+<p>67<br>00:07:28,720 –&gt; 00:07:35,920<br>of those to get the end to end delay. Let’s look at this in a little bit more example because I think</p>
+<p>68<br>00:07:35,920 –&gt; 00:07:42,080<br>it’ll become a bit clearer. So in our example here the packet is going to traverse four links.</p>
+<p>69<br>00:07:45,120 –&gt; 00:07:49,759<br>So we’re going to repeat the process on every link along the path and it’s going to look something</p>
+<p>70<br>00:07:49,759 –&gt; 00:07:55,680<br>like this. Here we’re taking a closer look by stretching out the links and the switches and</p>
+<p>71<br>00:07:55,680 –&gt; 00:08:03,200<br>remove the rest of the network just to make a little bit clearer. This here is a timeline and this</p>
+<p>72<br>00:08:03,199 –&gt; 00:08:09,680<br>timeline with time increasing from the left to the right is going to show how bits propagate and how</p>
+<p>73<br>00:08:09,680 –&gt; 00:08:22,959<br>the whole packet propagates from A over to B. So the first bit is going to take L1 over C.</p>
+<p>74<br>00:08:23,919 –&gt; 00:08:29,279<br>That’s the length of that first link divided by the propagation speed. It’s going to take that</p>
+<p>75<br>00:08:29,279 –&gt; 00:08:36,319<br>number of seconds to propagate from A to S1. So here we can see the bit starting from here and</p>
+<p>76<br>00:08:36,319 –&gt; 00:08:43,600<br>then propagating along the link. L1 over C is the time and this is it propagating the distance from A</p>
+<p>77<br>00:08:43,600 –&gt; 00:08:57,600<br>to S1. After we sent the first bit it’s going to take P over R1 seconds until we can put the last</p>
+<p>78<br>00:08:57,600 –&gt; 00:09:05,200<br>bit of the packet under the link. So after P over R1 we’ve put the last bit under the link and then</p>
+<p>79<br>00:09:05,200 –&gt; 00:09:18,399<br>at the time L1C plus P over R1 that last bit will arrive at switch S1. Okay so at this point by the</p>
+<p>80<br>00:09:18,399 –&gt; 00:09:29,120<br>time we get to this point here the entire packet has arrived at S1. So internet routers are what we</p>
+<p>81<br>00:09:29,120 –&gt; 00:09:37,840<br>call store and forward devices. What that means is that the switch S1 is going to wait until the whole</p>
+<p>82<br>00:09:37,840 –&gt; 00:09:45,600<br>packet arrives until it looks up the address and decides where to send it next. It could instead start</p>
+<p>83<br>00:09:45,600 –&gt; 00:09:49,840<br>forwarding the packet after it had just seen the header and not wait for the whole packet to arrive.</p>
+<p>84<br>00:09:49,840 –&gt; 00:09:54,639<br>That’s something we call cut through switching but internet routers generally don’t do that. In a</p>
+<p>85<br>00:09:54,639 –&gt; 00:09:59,759<br>later video and in some of the exercises we’ll see examples of cut through packet switches. But</p>
+<p>86<br>00:09:59,759 –&gt; 00:10:05,279<br>getting back to our example which is a store on forward network where every switch is going to store</p>
+<p>87<br>00:10:05,279 –&gt; 00:10:12,399<br>and forward the packets. Switch S1 is going to look at the packet after it’s completely arrived and</p>
+<p>88<br>00:10:12,399 –&gt; 00:10:17,759<br>then it’s going to send it onto the next link. It’s going to send it onto S2. So here we can see</p>
+<p>89<br>00:10:17,759 –&gt; 00:10:29,039<br>that packet going onto S2. So just as before it takes L2 over C for the first bit to arrive at S2</p>
+<p>90<br>00:10:29,039 –&gt; 00:10:35,360<br>and then the last bit will arrive P over R2 seconds later. And we can just repeat this whole process</p>
+<p>91<br>00:10:35,360 –&gt; 00:10:43,120<br>for each of the links in turn until we get to B. So the overall end to end delay expression is</p>
+<p>92<br>00:10:43,120 –&gt; 00:10:48,800<br>just the sum of those from end to end which is the same expression we had before.</p>
+<p>93<br>00:10:53,680 –&gt; 00:10:58,639<br>Okay so it turns out I’ve only told you part of the story. Let me tell you the rest of the story.</p>
+<p>94<br>00:10:58,639 –&gt; 00:11:04,000<br>See the thing about packet switching is that your packets share the links with packets from other</p>
+<p>95<br>00:11:04,000 –&gt; 00:11:13,440<br>users. When several packets show up at the same time wanting to go on the same link and you can see</p>
+<p>96<br>00:11:13,440 –&gt; 00:11:19,360<br>this here we’ve got packets coming from here maybe from another link entering the packet switch</p>
+<p>97<br>00:11:19,360 –&gt; 00:11:24,960<br>and from here coming into the packet switch from another link all wanting to go on this outgoing</p>
+<p>98<br>00:11:24,960 –&gt; 00:11:31,679<br>link from S2 to S3. When this happens all of the packets are going to have to fight or contend for</p>
+<p>99<br>00:11:31,679 –&gt; 00:11:39,599<br>that outgoing link. So when several packets show up at the same time wanting to go on the same</p>
+<p>100<br>00:11:39,599 –&gt; 00:11:45,759<br>link in this case from S2 to S3 then some of the packets have to wait in the router’s queue and this</p>
+<p>101<br>00:11:45,759 –&gt; 00:11:51,759<br>little symbol here, see this little red symbol here is the picture that I’m going to draw for a queue.</p>
+<p>102<br>00:11:54,479 –&gt; 00:11:58,959<br>Some people call that a packet buffer. In general let’s say first come first serve queue in which</p>
+<p>103<br>00:11:58,960 –&gt; 00:12:04,000<br>the packets are going to depart in the same order that they arrive. We’re going to say that the</p>
+<p>104<br>00:12:04,000 –&gt; 00:12:10,080<br>link from S2 to S3 is congested because there are lots of packets queued waiting to travel along it.</p>
+<p>105<br>00:12:10,879 –&gt; 00:12:15,120<br>The packet buffer helps prevent us from having to drop any packets. The bigger the buffer is</p>
+<p>106<br>00:12:15,120 –&gt; 00:12:19,600<br>the less likely we are to have to drop a packet that wants to travel across the link.</p>
+<p>107<br>00:12:20,800 –&gt; 00:12:27,040<br>So these packet buffers they’re going to be in all of the switches. Every packet switch has</p>
+<p>108<br>00:12:27,039 –&gt; 00:12:32,240<br>buffers and they’re fundamental to packets switching. If we didn’t have packet buffers then we’d</p>
+<p>109<br>00:12:32,240 –&gt; 00:12:37,839<br>lose a packet every time two packets showed up at the same time wanting to travel across a link.</p>
+<p>110<br>00:12:38,719 –&gt; 00:12:43,199<br>So packet buffers are our friends but the packet buffers themselves are going to change our</p>
+<p>111<br>00:12:43,199 –&gt; 00:12:51,679<br>expression for the end to end delay. If our packet arrives and the queue has some packets in it then</p>
+<p>112<br>00:12:51,679 –&gt; 00:12:56,879<br>it’s going to delay the time that it can be forwarded onto the next link because it can have</p>
+<p>113<br>00:12:56,879 –&gt; 00:13:01,599<br>to wait for the packets that are ahead of it to leave first before our packet gets to go.</p>
+<p>114<br>00:13:03,279 –&gt; 00:13:09,359<br>So I’ve just shown this here as queue 2 of t meaning it’s going over the link from S2</p>
+<p>115<br>00:13:09,919 –&gt; 00:13:14,000<br>and I’ve said it’s queue 2 of t because it’s going to vary with time. It’s going to depend on how</p>
+<p>116<br>00:13:14,000 –&gt; 00:13:21,439<br>many other packets are showing up from other users. So if there are three packets ahead of us we’ll</p>
+<p>117<br>00:13:21,440 –&gt; 00:13:28,880<br>have to wait for three packetization delays before it’s our turn to go. I’ve shown this just in</p>
+<p>118<br>00:13:28,880 –&gt; 00:13:33,760<br>one queue of course this can be in all of the switches along the way just makes the figure a bit</p>
+<p>119<br>00:13:33,760 –&gt; 00:13:41,040<br>more complicated so I’ve just shown it in queue 2. So we’re into end delay now has a third component</p>
+<p>120<br>00:13:41,040 –&gt; 00:13:49,040<br>to it. It has in it the packetization delay that we saw before that’s P over R sub i then it has the</p>
+<p>121<br>00:13:49,279 –&gt; 00:13:58,319<br>propagation delay over the link and then it has this new expression qi of t which is the delay</p>
+<p>122<br>00:13:58,319 –&gt; 00:14:02,799<br>of the packet in the queue waiting for other packets and this could be zero if there are no other</p>
+<p>123<br>00:14:02,799 –&gt; 00:14:09,039<br>packets of course but in general it’s going to be some non-deterministic value because we don’t</p>
+<p>124<br>00:14:09,039 –&gt; 00:14:17,839<br>know whoever else is sending packets at the same time. So the most important thing to note here is</p>
+<p>125<br>00:14:17,840 –&gt; 00:14:24,960<br>everything is deterministic except the queueing delay. P over R sub i lie over c they’re both</p>
+<p>126<br>00:14:24,960 –&gt; 00:14:31,040<br>deterministic it’s qi sub qi of t the queueing delay that is the variable component and it</p>
+<p>127<br>00:14:31,040 –&gt; 00:14:37,600<br>convinced you that really in practice there is variability I’m going to show you an example in a</p>
+<p>128<br>00:14:37,600 –&gt; 00:14:44,560<br>moment one last thing so you may have noticed that I that I use the the British spelling for</p>
+<p>129<br>00:14:44,559 –&gt; 00:14:50,159<br>queuing that’s not because I’m English but it’s very common in when talking about the internet</p>
+<p>130<br>00:14:50,159 –&gt; 00:14:56,479<br>to spell queuing qeueueue ing seems like too many vowels I know but this was the convention</p>
+<p>131<br>00:14:56,479 –&gt; 00:15:02,239<br>adopted by Kleinrock one of the pioneers and inventors of the internet back in the 1960s but you’ll see</p>
+<p>132<br>00:15:02,239 –&gt; 00:15:09,439<br>both both the uk and the u rs spelling and that’s just fine. So in summary here’s our overall expression</p>
+<p>133<br>00:15:09,440 –&gt; 00:15:16,240<br>for the end to end delay it’s taking into consideration the queuing delay at each packet switch</p>
+<p>134<br>00:15:16,240 –&gt; 00:15:20,400<br>along the way it’s really important to remember that the queuing delay is unpredictable it depends</p>
+<p>135<br>00:15:20,400 –&gt; 00:15:25,520<br>on the traffic sent by other users in the network as far as we’re concerned the queuing delay is a</p>
+<p>136<br>00:15:25,520 –&gt; 00:15:30,560<br>random variable it’s the only random variable in our expression for end to end delay everything</p>
+<p>137<br>00:15:30,560 –&gt; 00:15:36,480<br>else is deterministic. So in case you don’t believe me that the end to end delay is unpredictable we’re</p>
+<p>138<br>00:15:36,480 –&gt; 00:15:42,960<br>going to measure it. I’m going to use a very widely used tool called ping png to measure the end</p>
+<p>139<br>00:15:42,960 –&gt; 00:15:49,039<br>to end delay between my computer and other computers in the internet. Ping is going to measure this</p>
+<p>140<br>00:15:49,039 –&gt; 00:15:53,200<br>end to end delay in fact it’s going to measure the round trip time which is the end to end it’s</p>
+<p>141<br>00:15:53,200 –&gt; 00:15:57,680<br>some of the end to end delay in both directions you’ll find the ping command on your computer and you</p>
+<p>142<br>00:15:57,680 –&gt; 00:16:02,639<br>can use it to repeat the measurements I’m about to do on your own computer and it’s kind of a fun thing</p>
+<p>143<br>00:16:02,639 –&gt; 00:16:10,480<br>to do. We can measure the delay of packets across the internet using the ping command. I’m going to</p>
+<p>144<br>00:16:10,480 –&gt; 00:16:15,919<br>show you an example of the ping command right now so I’m going to ping from my computer to</p>
+<p>145<br>00:16:16,960 –&gt; 00:16:24,159<br>Princeton.edu. Princeton is university in New Jersey in the United States it’s about 4000 kilometers</p>
+<p>146<br>00:16:24,159 –&gt; 00:16:31,840<br>or two and a half thousand miles from where I am and as I do this you can see over on the right hand</p>
+<p>147<br>00:16:31,840 –&gt; 00:16:38,639<br>side it’s showing me the time that it takes for the packets that I send to go to Princeton and back</p>
+<p>148<br>00:16:38,639 –&gt; 00:16:45,680<br>again so let’s say if I can highlight these so if you see them like here these are the times of the</p>
+<p>149<br>00:16:45,680 –&gt; 00:16:51,200<br>packets to go there and back again. So those numbers there are about a hundred milliseconds</p>
+<p>150<br>00:16:51,200 –&gt; 00:16:55,519<br>corresponding to the time that it takes for a packet to go there and back over the round trip time.</p>
+<p>151<br>00:16:55,519 –&gt; 00:17:04,000<br>Let’s see how that compares with by ping to let’s try the university of Shinghua University in</p>
+<p>152<br>00:17:05,039 –&gt; 00:17:10,720<br>in Beijing in China. So we’re going to see that’s a lot further away that’s about 10,000 kilometers</p>
+<p>153<br>00:17:10,720 –&gt; 00:17:17,200<br>away from me for about 6000 miles and you can see that the ping times are much greater so if I can</p>
+<p>154<br>00:17:17,200 –&gt; 00:17:27,920<br>just highlight those we can see those there more like 200 milliseconds. So I use ping to measure</p>
+<p>155<br>00:17:27,920 –&gt; 00:17:35,840<br>a few hundred RTT values from my computer at Stanford to Princeton and as I said earlier it’s about</p>
+<p>156<br>00:17:35,840 –&gt; 00:17:44,000<br>4000 kilometers or two and a half thousand miles away. The graph shows the CDF that’s the cumulative</p>
+<p>157<br>00:17:44,000 –&gt; 00:17:53,359<br>distribution function for the values that I measured. So 0% this means that none of the values were</p>
+<p>158<br>00:17:53,359 –&gt; 00:18:00,720<br>below this value here which is about a hundred milliseconds and a hundred percent of them were</p>
+<p>159<br>00:18:01,599 –&gt; 00:18:09,039<br>less than let’s say 300 milliseconds little hard to tell on this graph here. So this shows the</p>
+<p>160<br>00:18:09,039 –&gt; 00:18:17,440<br>range and also the variation in the values that I measured. And the overall variance is about</p>
+<p>161<br>00:18:18,159 –&gt; 00:18:30,000<br>variation is about 50 milliseconds and the 90% of the samples fell between 100 and 120 milliseconds.</p>
+<p>162<br>00:18:30,639 –&gt; 00:18:35,119<br>Now let’s look what happened when I repeated the experiment from Stanford to</p>
+<p>163<br>00:18:35,759 –&gt; 00:18:42,239<br>Jinghua University which is in Beijing in China. It’s a lot further away it’s about 10,000 kilometers</p>
+<p>164<br>00:18:42,239 –&gt; 00:18:48,959<br>away or 6000 miles and as I would expect the RTT values are much larger because the propagation</p>
+<p>165<br>00:18:48,959 –&gt; 00:18:57,599<br>delay is much higher. But also notice that the RTT samples have much greater variance. They vary</p>
+<p>166<br>00:18:57,599 –&gt; 00:19:03,199<br>by a lot more. Look at this value over here, this range of values, they’re varying by a lot more than</p>
+<p>167<br>00:19:03,279 –&gt; 00:19:10,880<br>the ones over the shorter length from Stanford to Princeton. So that variation here comes from the</p>
+<p>168<br>00:19:10,880 –&gt; 00:19:17,120<br>queuing delay. My packets are encountering more cues, more congestion, more other users, more</p>
+<p>169<br>00:19:17,120 –&gt; 00:19:26,080<br>other users traffic when they’re going across the Pacific to China. My packets meet the other</p>
+<p>170<br>00:19:26,080 –&gt; 00:19:30,400<br>packets in the route above as along the way and so they get held up they have to wait for longer.</p>
+<p>171<br>00:19:30,400 –&gt; 00:19:34,160<br>And I guess probably because there are more hops and more likely to encounter other people’s</p>
+<p>172<br>00:19:34,160 –&gt; 00:19:42,560<br>packets along the way. With a range of about 200 milliseconds, it’s about 320 down here and maybe</p>
+<p>173<br>00:19:42,560 –&gt; 00:19:48,560<br>they’re going up to about 520. With a range of about 200 milliseconds the queuing delay is making up</p>
+<p>174<br>00:19:48,560 –&gt; 00:19:53,280<br>almost half of the overall end to end delay. That’s pretty high. In fact that’s kind of unusually</p>
+<p>175<br>00:19:53,280 –&gt; 00:19:57,280<br>high which is why I showed you this as an example just to get the point across.</p>
+<p>176<br>00:19:57,839 –&gt; 00:20:04,160<br>In summary, the end to end delay is determined by three components. The first is the propagation</p>
+<p>177<br>00:20:04,160 –&gt; 00:20:08,399<br>delay along the links which are determined by the lengths of the links and the propagation speed.</p>
+<p>178<br>00:20:08,960 –&gt; 00:20:13,839<br>The second is the packetization delay which is determined by the length of the packet and the</p>
+<p>179<br>00:20:13,839 –&gt; 00:20:18,879<br>data rate of each link. The third is the queuing delay which is determined by the congestion and</p>
+<p>180<br>00:20:18,879 –&gt; 00:20:25,519<br>the queuing delay and the buffers and the routers along the path. This is the end of the video on</p>
+<p>181<br>00:20:25,519 –&gt; 00:20:30,720<br>end to end delay in packet switching. In the next video I will be explaining what some of the</p>
+<p>182<br>00:20:30,720 –&gt; 00:20:35,279<br>consequences are of this variable queuing delay, particularly on real-time applications which</p>
+<p>183<br>00:20:35,279 –&gt; 00:20:44,720<br>frequently use playback buffers to absorb this variation.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP413 3PacketSwitching</div>
+      <div>http://example.com/2025/10/25/CS144-networkP413-3PacketSwitching/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP473-8PacketSwitching/" title="CS144 NetworkP473 8PacketSwitching">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP473 8PacketSwitching</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP443-5aSimpleQueueingModelExample/" title="CS144 NetworkP443 5aSimpleQueueingModelExample">
+                        <span class="hidden-mobile">CS144 NetworkP443 5aSimpleQueueingModelExample</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

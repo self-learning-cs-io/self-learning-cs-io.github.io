@@ -1,0 +1,1589 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:28,080Come here, Gordon! 200:00:28,080 –&gt; 00:00:29,080Videpage 1 300:00:29,079 –&gt; 00:00:34,079So real quick, sorry. 400:00:34,079 –&gt; 00:00:36,079Some girl in my offi">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15445 P8F202307 HashTables">
+<meta property="og:url" content="http://example.com/2025/10/25/CMU15445%20P8F202307-HashTables/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:28,080Come here, Gordon! 200:00:28,080 –&gt; 00:00:29,080Videpage 1 300:00:29,079 –&gt; 00:00:34,079So real quick, sorry. 400:00:34,079 –&gt; 00:00:36,079Some girl in my offi">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.742Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.743Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15445 P8F202307 HashTables - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15445 P8F202307 HashTables"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          9.8k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          82 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15445 P8F202307 HashTables</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:28,080<br>Come here, Gordon!</p>
+<p>2<br>00:00:28,080 –&gt; 00:00:29,080<br>Videpage 1</p>
+<p>3<br>00:00:29,079 –&gt; 00:00:34,079<br>So real quick, sorry.</p>
+<p>4<br>00:00:34,079 –&gt; 00:00:36,079<br>Some girl in my office hours looking for you today.</p>
+<p>5<br>00:00:36,079 –&gt; 00:00:37,079<br>What?</p>
+<p>6<br>00:00:37,079 –&gt; 00:00:38,079<br>Yeah.</p>
+<p>7<br>00:00:38,079 –&gt; 00:00:45,079<br>I just, she was trying to find where you were.</p>
+<p>8<br>00:00:45,079 –&gt; 00:00:46,079<br>That’s weird.</p>
+<p>9<br>00:00:46,079 –&gt; 00:00:47,079<br>I should find a better hide.</p>
+<p>10<br>00:00:47,079 –&gt; 00:00:53,079<br>So real quick, actually, the facility to be</p>
+<p>11<br>00:00:53,079 –&gt; 00:00:55,079<br>what actually just came to be, and they said that the</p>
+<p>12<br>00:00:55,079 –&gt; 00:00:57,079<br>governor is here.</p>
+<p>13<br>00:00:57,079 –&gt; 00:01:01,079<br>Shapiro, I vote for him because he’s not a Trump supporter.</p>
+<p>14<br>00:01:01,079 –&gt; 00:01:04,079<br>But the main interest is blocked off.</p>
+<p>15<br>00:01:04,079 –&gt; 00:01:06,079<br>So when the class is over, you can’t go through that entrance.</p>
+<p>16<br>00:01:06,079 –&gt; 00:01:08,079<br>You got to take the elevator and go upstairs.</p>
+<p>17<br>00:01:08,079 –&gt; 00:01:09,079<br>Okay?</p>
+<p>18<br>00:01:09,079 –&gt; 00:01:11,079<br>That’s why all the federalities and the cops are out there.</p>
+<p>19<br>00:01:11,079 –&gt; 00:01:14,079<br>All right.</p>
+<p>20<br>00:01:14,079 –&gt; 00:01:15,079<br>All right.</p>
+<p>21<br>00:01:15,079 –&gt; 00:01:18,079<br>So again, for the class, again, we had the</p>
+<p>22<br>00:01:18,079 –&gt; 00:01:21,079<br>the recitation on Monday that’s been posted on piata as a</p>
+<p>23<br>00:01:21,079 –&gt; 00:01:23,079<br>video.</p>
+<p>24<br>00:01:23,079 –&gt; 00:01:26,079<br>Project one is still due on October 7th, or sorry, October 2nd.</p>
+<p>25<br>00:01:26,079 –&gt; 00:01:29,079<br>And then we will have, again, the special office hours on</p>
+<p>26<br>00:01:29,079 –&gt; 00:01:31,079<br>Saturday on the first, and then homework two has been</p>
+<p>27<br>00:01:31,079 –&gt; 00:01:33,079<br>bumped to be due on October 4th.</p>
+<p>28<br>00:01:33,079 –&gt; 00:01:35,079<br>And that’s a Wednesday and out of Sunday.</p>
+<p>29<br>00:01:35,079 –&gt; 00:01:36,079<br>Okay?</p>
+<p>30<br>00:01:36,079 –&gt; 00:01:40,079<br>Any questions about the homework of the projects?</p>
+<p>31<br>00:01:40,079 –&gt; 00:01:41,079<br>Yes.</p>
+<p>32<br>00:01:41,079 –&gt; 00:01:44,079<br>The Sunday is October 1st, yeah.</p>
+<p>33<br>00:01:44,079 –&gt; 00:01:45,079<br>All right.</p>
+<p>34<br>00:01:45,079 –&gt; 00:01:50,079<br>So it’s due on the Sunday, and then the office hours are</p>
+<p>35<br>00:01:50,079 –&gt; 00:01:51,079<br>on the Saturday.</p>
+<p>36<br>00:01:51,079 –&gt; 00:01:53,079<br>So whatever that really, what are those real dates are?</p>
+<p>37<br>00:01:53,079 –&gt; 00:01:56,079<br>Yes.</p>
+<p>38<br>00:01:56,079 –&gt; 00:01:59,079<br>The website and grade school should be correct.</p>
+<p>39<br>00:01:59,079 –&gt; 00:02:00,079<br>I’m not.</p>
+<p>40<br>00:02:00,079 –&gt; 00:02:03,079<br>Other questions?</p>
+<p>41<br>00:02:03,079 –&gt; 00:02:04,079<br>All right.</p>
+<p>42<br>00:02:04,079 –&gt; 00:02:05,079<br>Cool.</p>
+<p>43<br>00:02:05,079 –&gt; 00:02:08,079<br>So then two sort of sort of, or one sort of fun thing to bring up.</p>
+<p>44<br>00:02:08,079 –&gt; 00:02:11,079<br>Someone said, hey, what about internships on these companies hiring?</p>
+<p>45<br>00:02:11,079 –&gt; 00:02:12,079<br>The answer is yes.</p>
+<p>46<br>00:02:12,079 –&gt; 00:02:18,079<br>And actually, somebody posted out on Twitter that, you know,</p>
+<p>47<br>00:02:18,080 –&gt; 00:02:21,080<br>if you take in my class, they’re hiring.</p>
+<p>48<br>00:02:21,080 –&gt; 00:02:26,080<br>And so space time BP is a, I think it’s another time series database system.</p>
+<p>49<br>00:02:26,080 –&gt; 00:02:27,080<br>I think it’s out of Europe.</p>
+<p>50<br>00:02:27,080 –&gt; 00:02:28,080<br>All right.</p>
+<p>51<br>00:02:28,080 –&gt; 00:02:29,080<br>I don’t know this dude.</p>
+<p>52<br>00:02:29,080 –&gt; 00:02:31,080<br>You can contact him if you want.</p>
+<p>53<br>00:02:31,080 –&gt; 00:02:35,080<br>But we’ll post on Piotta how we can, you know, how you can,</p>
+<p>54<br>00:02:35,080 –&gt; 00:02:37,080<br>how you can get me your CV.</p>
+<p>55<br>00:02:37,080 –&gt; 00:02:40,080<br>And then we can send it to the various database companies that we know.</p>
+<p>56<br>00:02:40,080 –&gt; 00:02:41,080<br>And that are friends with us.</p>
+<p>57<br>00:02:41,080 –&gt; 00:02:44,080<br>And again, if you haven’t yet, please apply to single store.</p>
+<p>58<br>00:02:44,080 –&gt; 00:02:46,080<br>And there’s that special email address that’s just for senior students.</p>
+<p>59<br>00:02:46,080 –&gt; 00:02:49,080<br>And that’ll go directly to the hiring people and not the recruiters.</p>
+<p>60<br>00:02:49,080 –&gt; 00:02:55,080<br>I’m sorry, if you don’t want to do an internship, another way to make money through databases is that</p>
+<p>61<br>00:02:55,080 –&gt; 00:02:57,080<br>somebody actually posted on an upwork.</p>
+<p>62<br>00:02:57,080 –&gt; 00:03:06,080<br>And this is real that they’re looking for someone to basically design database projects that are basically bus tub and the class projects.</p>
+<p>63<br>00:03:06,080 –&gt; 00:03:14,080<br>So if you like this stuff you’re doing, you can get paid $100 by this guy to go, go, implement that.</p>
+<p>64<br>00:03:15,080 –&gt; 00:03:21,080<br>And the way we found this was somebody actually emailed Chi the TA and he was like, hey, I can do this job for you.</p>
+<p>65<br>00:03:21,080 –&gt; 00:03:22,080<br>And he’s like, what are you talking about?</p>
+<p>66<br>00:03:22,080 –&gt; 00:03:24,080<br>Because he thought we posted this.</p>
+<p>67<br>00:03:24,080 –&gt; 00:03:25,080<br>This is not us.</p>
+<p>68<br>00:03:25,080 –&gt; 00:03:26,080<br>This is some rando.</p>
+<p>69<br>00:03:26,080 –&gt; 00:03:28,080<br>$100 is definitely not enough.</p>
+<p>70<br>00:03:28,080 –&gt; 00:03:34,080<br>Like again, like you should be making $100 an hour in databases, if not more.</p>
+<p>71<br>00:03:34,080 –&gt; 00:03:35,080<br>Okay.</p>
+<p>72<br>00:03:35,080 –&gt; 00:03:37,080<br>All right.</p>
+<p>73<br>00:03:37,080 –&gt; 00:03:40,080<br>So, what, so where we at in the class?</p>
+<p>74<br>00:03:41,080 –&gt; 00:03:51,080<br>Right. We spent the last week or so talking again about the storage layer and then putting the buffer pool on top of it to actually manage memory as we get pages in and out of of disk.</p>
+<p>75<br>00:03:51,080 –&gt; 00:04:04,080<br>And so now we’re continuing up the stack and are now going to talk about different parts of the system that can operate and execute and process those pages that we brought into our buffer pool that we were retrieving disk.</p>
+<p>76<br>00:04:05,080 –&gt; 00:04:07,080<br>And so we’re sort of in this middle layer here in the access methods.</p>
+<p>77<br>00:04:07,080 –&gt; 00:04:14,080<br>And now we’re going to start talking about how do we construct the execution engine that’s going to be responsible for exiting these queries.</p>
+<p>78<br>00:04:14,080 –&gt; 00:04:19,080<br>And so the access method is going to be the mechanisms for actually accessing the data.</p>
+<p>79<br>00:04:19,080 –&gt; 00:04:25,080<br>And it can either be through an index or through the tables themselves and potentially other mechanisms.</p>
+<p>80<br>00:04:25,080 –&gt; 00:04:32,080<br>So to do that, we need to talk about what kind of data structures we would have at these honor, these sort of this part of the system.</p>
+<p>81<br>00:04:33,079 –&gt; 00:04:38,079<br>And so this class will be on hash tables, which is an unordered data structure.</p>
+<p>82<br>00:04:38,079 –&gt; 00:04:44,079<br>And then we’ll spend all of next week talking about tree data structures, which will give you ordering data.</p>
+<p>83<br>00:04:44,079 –&gt; 00:04:46,079<br>We’ll give you ordering on keys.</p>
+<p>84<br>00:04:46,079 –&gt; 00:04:53,079<br>Right. And so we’re just slowly building up making our way to the top to actually produce results for our queries.</p>
+<p>85<br>00:04:53,079 –&gt; 00:04:59,079<br>So, I mean, it goes without saying I’m assuming everyone here is taking a data structure class or algorithms class.</p>
+<p>86<br>00:04:59,079 –&gt; 00:05:02,079<br>Data structures are going to use all throughout the system.</p>
+<p>87<br>00:05:02,079 –&gt; 00:05:08,079<br>And we’ve already covered in some ways and some parts of the system so far where we’re going to use these things.</p>
+<p>88<br>00:05:08,079 –&gt; 00:05:18,079<br>But there’ll be other parts that we need to have high performance, safe and correct data structures to represent state of the system or the data of the system.</p>
+<p>89<br>00:05:18,079 –&gt; 00:05:21,079<br>So we’ve already seen how we can use this for internal metadata.</p>
+<p>90<br>00:05:21,079 –&gt; 00:05:24,079<br>Right. We talked about the page directory or the page table.</p>
+<p>91<br>00:05:24,079 –&gt; 00:05:32,079<br>Right. That’s more or less a hash table being used to map page IDs to some location on disk or some location in memory.</p>
+<p>92<br>00:05:32,079 –&gt; 00:05:36,079<br>We could use the data structures for the core storage of the tables themselves.</p>
+<p>93<br>00:05:36,079 –&gt; 00:05:44,079<br>Remember we talked about the index organized tables where the actual tuples themselves would be in the leaf nodes of the B plus tree.</p>
+<p>94<br>00:05:44,079 –&gt; 00:05:51,079<br>So you could have your tables actually just be represented directly in a data structure rather than unordered heat files.</p>
+<p>95<br>00:05:51,079 –&gt; 00:06:01,079<br>We could also use these data structures for query execution to generate a femoral or temporary collections of data that allows execute queries more efficiently.</p>
+<p>96<br>00:06:01,079 –&gt; 00:06:06,079<br>This is basically how we’re going to implement hash joins very fast or how implement joins very quickly using hash joins.</p>
+<p>97<br>00:06:06,079 –&gt; 00:06:15,079<br>So we’ll build a hash table on the fly, populate it with the data from the tables we’re scanning, do the join and then throw the hash table away.</p>
+<p>98<br>00:06:15,079 –&gt; 00:06:19,079<br>Right. So just because we’re building hash up it doesn’t mean it’s going to stick around for a long time.</p>
+<p>99<br>00:06:19,079 –&gt; 00:06:24,079<br>And then probably the one you’re most familiar with is using these data structures for table indexes.</p>
+<p>100<br>00:06:24,079 –&gt; 00:06:35,079<br>Like when you call create index that’s essentially going to create one of these data structures and populate it with the keys and map them to the tuples so you do faster lookups like a glossary in a textbook.</p>
+<p>101<br>00:06:35,079 –&gt; 00:06:45,079<br>Right. So again, we’ll see we’ll see these data structures being used throughout the rest of the semester in different scenarios that are covered in this list here.</p>
+<p>102<br>00:06:45,079 –&gt; 00:06:56,079<br>So now what do we care about when we design our data structures like what are the things we need to be cognizant of to make sure that we have an efficient database system that actually is also correct, which is very important.</p>
+<p>103<br>00:06:56,079 –&gt; 00:07:09,079<br>Right. So the first thing we got to worry about is how we’re actually going to organize the data structure itself in either in memory or pages that will be a memory but backed by by disk and the buffer pool.</p>
+<p>104<br>00:07:09,079 –&gt; 00:07:15,079<br>And remember I said in the beginning we want to make design choices in how we implement our system.</p>
+<p>105<br>00:07:15,079 –&gt; 00:07:21,079<br>If we know it’s going to be backed by pages on disk that we maximize the amount of sequential IO.</p>
+<p>106<br>00:07:21,079 –&gt; 00:07:31,079<br>So maybe we’ll lay out the pages in such a way the data structure in such a way that we have long strides of data that we can read right through multiple pages instead of doing random IO.</p>
+<p>107<br>00:07:32,079 –&gt; 00:07:35,079<br>And then we’ll talk about how do we actually make our data structures thread safe.</p>
+<p>108<br>00:07:35,079 –&gt; 00:07:42,079<br>And so for this class we won’t really worry about it but we’ll spend a whole lecture next week on Thursday or Wednesday next week.</p>
+<p>109<br>00:07:42,079 –&gt; 00:07:55,079<br>Talk about how do we make sure that the data structure is correct and sound if we have multiple worker threads or processes coming in and reading, writing or modifying the data structure at the same time.</p>
+<p>110<br>00:07:56,079 –&gt; 00:08:03,079<br>And this last one is going to be tricky because we’re going to care sort of two kinds of correctness in our data structures.</p>
+<p>111<br>00:08:03,079 –&gt; 00:08:12,079<br>If you want to make them multi threaded there’s obviously the physical correctness of making sure we don’t have a pointer that goes nowhere or a page ID that doesn’t exist.</p>
+<p>112<br>00:08:12,079 –&gt; 00:08:24,079<br>If we have one thread accessing a page another thread is updating it and that the accessing thread reads something that the guy wrote but it hasn’t been, you know, it’s not safely committed yet or it’s not safe correctness.</p>
+<p>113<br>00:08:25,079 –&gt; 00:08:30,079<br>Then we may end up, you know, falling a pointer to nowhere and the system would crash so we have to avoid that.</p>
+<p>114<br>00:08:31,079 –&gt; 00:08:46,079<br>But then there’s another kind of correctness that we’ll get to after the midterm at sort of the logical level to make sure that if we make changes to our data structures that our own thread can see those changes or that it looks correct to it.</p>
+<p>115<br>00:08:47,080 –&gt; 00:08:55,080<br>Meaning like if my thread deletes a key from an index, if I then go back in that same thread and read, try to read that key in that index, I shouldn’t still see it.</p>
+<p>116<br>00:08:56,080 –&gt; 00:09:02,080<br>The bits may still physically be there, right, because maybe we haven’t run garbage collection and maybe there’s a little flag that says this thing’s been deleted.</p>
+<p>117<br>00:09:03,080 –&gt; 00:09:07,080<br>So physically it’s still there but logically it’s not. We need to make sure that we don’t see things we shouldn’t be seeing.</p>
+<p>118<br>00:09:08,080 –&gt; 00:09:24,080<br>Again, so we won’t focus too much on currency in this week but we’ll cover this in more detail next week and this will be a big issue also too when we talk about the critical at the logical level having transactions and making sure we provide asset guarantees.</p>
+<p>119<br>00:09:25,080 –&gt; 00:09:26,080<br>That’ll be after the bitter.</p>
+<p>120<br>00:09:27,080 –&gt; 00:09:37,080<br>So today’s class we’re focusing on hash tables. Again, this is a low level building blocks that we can reuse throughout the rest of the system.</p>
+<p>121<br>00:09:38,080 –&gt; 00:09:45,080<br>And again, this shouldn’t be news to anyone here. A hash table is just going to be an associated array that can map keys to values.</p>
+<p>122<br>00:09:46,080 –&gt; 00:09:50,080<br>You guys okay? Are you good? What’s that?</p>
+<p>123<br>00:09:51,080 –&gt; 00:09:52,080<br>I’m just going to have a delay on fly.</p>
+<p>124<br>00:09:53,080 –&gt; 00:09:56,080<br>Oh yeah, a delay on fly. Okay, sorry. I think you started the fire. I was like, okay, that’s even worse.</p>
+<p>125<br>00:09:59,080 –&gt; 00:10:00,080<br>Second time.</p>
+<p>126<br>00:10:01,080 –&gt; 00:10:03,080<br>Oh, today, wow. It was a fire element engaged. Yeah.</p>
+<p>127<br>00:10:04,080 –&gt; 00:10:06,080<br>Which I didn’t cause. I called one last year, not this year.</p>
+<p>128<br>00:10:07,080 –&gt; 00:10:19,080<br>All right, so with the last DJ. All right, so the way the hash table is going to work is that there’s going to be, it’s going to be this mapping from keys to values and we’re going to use a hash function that’s going to allow us to</p>
+<p>129<br>00:10:20,080 –&gt; 00:10:35,080<br>actually compute some offset within an array. And then it’s basically reducing down the, the, an arbitrary key to this integer domain that we can then jump to some location in our hash table to find out things that we’re looking for.</p>
+<p>130<br>00:10:36,080 –&gt; 00:10:43,080<br>Right. And that the hash function has to take any possible key because again, take any column type you can define in your database system.</p>
+<p>131<br>00:10:44,080 –&gt; 00:10:51,080<br>Also, any internal metadata we’d have in the system itself, we need to about take that, you know, hash function needs to reduce that down to an integer.</p>
+<p>132<br>00:10:52,080 –&gt; 00:11:03,080<br>So in hash able to space complexity is going to be roughly big n or big o n because we’re going to have to store a slot for for every possible key we want to have.</p>
+<p>133<br>00:11:04,080 –&gt; 00:11:16,080<br>Right. The time complexity is nice because on average we’re going to get oh one book ups meaning we hash a key jump to some location in this hash table array and then ideally there’s the thing that we’re still there.</p>
+<p>134<br>00:11:17,080 –&gt; 00:11:24,080<br>Here just kill it. All right. So that’s why two kills for the semester. That’s not bad.</p>
+<p>135<br>00:11:25,080 –&gt; 00:11:35,080<br>All right. So again, no average is going to be one because it’s going to be like, again, hash, take your key, hash some location and then you land the thing that exactly what you’re looking for.</p>
+<p>136<br>00:11:36,080 –&gt; 00:11:47,080<br>Worst case will will be big o n because because what we’ll have to deal with collisions. It may be the case that we hash our key land in some location and then the thing we’re looking for is not there.</p>
+<p>137<br>00:11:48,080 –&gt; 00:12:01,080<br>And we’ve got to scan along on our hash table till we find the thing we’re looking for and in maybe the case that all the slots in our hash table are full and we have to wrap around it’s basically the one above the one where we land or the hash function, but we had to loop around to find it.</p>
+<p>138<br>00:12:02,080 –&gt; 00:12:08,080<br>And so the way you sort of handle this and we’ll see as we go along is you size the hash table to be roughly two n the number of keys you expect.</p>
+<p>139<br>00:12:09,080 –&gt; 00:12:20,080<br>Now you may say, okay, Andy, how do you know how do you know what n is? Well, this this is what we’ll get through that semester. Like the daily system is going to try to make a decision or try to predict how many keys you’re actually going to have and size it accordingly.</p>
+<p>140<br>00:12:21,080 –&gt; 00:12:28,080<br>So oh one sounds great. And if you’re going to take an algorithm class, this is the whole the grow you want this right you want to know when because it’s constant time.</p>
+<p>141<br>00:12:29,080 –&gt; 00:12:48,080<br>But in actuality again in a real system the the constants actually matter a lot. So even though it’s oh one you could have one hash function that maybe takes 10 milliseconds to compute another hash function takes one millisecond of you and obviously the one millisecond ones meet a lot faster if you think in large scale tables like billions of keys.</p>
+<p>142<br>00:12:49,080 –&gt; 00:12:58,080<br>So again, just because the algorithm of the complexity is is ideal on averages one we have to still care about the implementation and make sure we’re as efficient as possible.</p>
+<p>143<br>00:13:00,080 –&gt; 00:13:12,080<br>So let’s look at a sort of sort of the sort of toy example what a hash table looks like and we’ll see all the problems that you can have with it and then we’ll build up this look at more sophisticated schemes that actually used in real world database systems.</p>
+<p>144<br>00:13:13,080 –&gt; 00:13:24,080<br>So the easiest hash table to build is a static hash table where you just call Malak generate a giant array where you have one slot in your in your array for every key I could possibly have.</p>
+<p>145<br>00:13:25,080 –&gt; 00:13:33,080<br>And then to find an entry for a given key you just take the you mod the key by the number elements you have and you land some offset in the array.</p>
+<p>146<br>00:13:34,080 –&gt; 00:13:48,080<br>So here’s my offsets and then any key shows up I know exactly where to go find it right and you don’t start the keys in this array it’s essentially just a pointer to some of the location that’s going to have the key and the value together.</p>
+<p>147<br>00:13:49,080 –&gt; 00:14:04,080<br>Right. The reason why you need to store the original keys because since the hash may you could have collisions with the second like you need to check whether the key you’re looking that you land on through your hash table is actually the key you’re trying to find.</p>
+<p>148<br>00:14:05,080 –&gt; 00:14:13,080<br>And the value here could be a pointer to the two pull to get like a record ID or could actually be some some additional values for our purpose today we don’t actually care.</p>
+<p>149<br>00:14:14,080 –&gt; 00:14:20,080<br>So what are some problems with this approach. Yes.</p>
+<p>150<br>00:14:21,080 –&gt; 00:14:25,080<br>What happens if you have the only key that’s open and how do you have?</p>
+<p>151<br>00:14:26,080 –&gt; 00:14:28,080<br>What do you have what do you have?</p>
+<p>152<br>00:14:29,080 –&gt; 00:14:38,080<br>Well I’m assuming it’s static but so what if you have n plus one keys how do you resize this thing right you have basically in this scenario you have to rehash everything so that that sucks.</p>
+<p>153<br>00:14:39,080 –&gt; 00:14:40,080<br>What’s the other problems yes.</p>
+<p>154<br>00:14:40,080 –&gt; 00:14:43,080<br>Does it handle collisions what is collision.</p>
+<p>155<br>00:14:44,080 –&gt; 00:15:00,080<br>Yes that’s correct yes you’re two keys that have the same value they’re going to land the same location in the in in in our array even though they’re not the same but I’m assuming that you know that everyone has to be unique and you can’t have collisions in this example doesn’t handle that.</p>
+<p>156<br>00:15:01,080 –&gt; 00:15:03,080<br>There’s one more problem.</p>
+<p>157<br>00:15:03,080 –&gt; 00:15:20,080<br>I’m assuming that the keys are unique right I can have key value equals one and key value equals to like same key but different values in my in my my sort of toy example here doesn’t handle this.</p>
+<p>158<br>00:15:21,080 –&gt; 00:15:26,080<br>Right so this is unrealistic again for these three assumptions so the first one is like you have to know all the keys ahead of time.</p>
+<p>159<br>00:15:26,080 –&gt; 00:15:44,080<br>In some cases you do other cases you don’t in the case of the buffer pool and then we talked about last class that if you assume that the you know the size of your buffer pool is fixed you’re going to have a fixed number of frames in your buffer pool therefore you know the exact number of slots or you need in your hash table.</p>
+<p>160<br>00:15:45,080 –&gt; 00:15:52,080<br>But if I’m if I build a hash table index and I keep inserting tuples now my number keys is growing as I insert new tuples.</p>
+<p>161<br>00:15:52,080 –&gt; 00:16:02,080<br>Every key is unique in this scenario here again how do you need a way to handle keys that you know you can have duplicate keys we have different values got to handle that.</p>
+<p>162<br>00:16:03,080 –&gt; 00:16:12,080<br>And then the thing the he brought up is that we’re assuming here we have what it’s called a perfect hash function that guarantees no collisions which does not exist in the real world.</p>
+<p>163<br>00:16:13,080 –&gt; 00:16:20,080<br>Well it isn’t a real world but it’s basically toy invitations no database system can actually do this because again you need to know the key domain ahead of time.</p>
+<p>164<br>00:16:20,080 –&gt; 00:16:28,080<br>Right there’s no magical hash function that guarantees for any given key you can generate a unique unique hash value.</p>
+<p>165<br>00:16:29,080 –&gt; 00:16:32,080<br>Right the way to actually implement implement one of those is through a hash table.</p>
+<p>166<br>00:16:33,080 –&gt; 00:16:42,080<br>You basically need a hash table for your hash table to do this which for some systems do do that but not for a perfect hash function.</p>
+<p>167<br>00:16:43,080 –&gt; 00:16:49,080<br>Right so we got to be smarter and we got to make sure that we deal with the environment that we’re operating in with databases.</p>
+<p>168<br>00:16:50,080 –&gt; 00:16:56,080<br>All right so there’s two decisions we have to make when we have people in a better hash table so someone says they basically have a hash table it’s sort of two parts.</p>
+<p>169<br>00:16:57,080 –&gt; 00:17:06,079<br>There is the hash function itself again had a map a large key space down to a finite smaller domain right based on the number of slots I’m going to have in my array.</p>
+<p>170<br>00:17:07,079 –&gt; 00:17:15,079<br>And there will be this trade-off between how fast we want our hash function to be versus the how likely it is that two keys two distinct keys will collide.</p>
+<p>171<br>00:17:16,079 –&gt; 00:17:20,079<br>Right what’s the hash is what’s the fastest hash function I could I could build.</p>
+<p>172<br>00:17:22,079 –&gt; 00:17:23,079<br>What’s that?</p>
+<p>173<br>00:17:24,079 –&gt; 00:17:29,079<br>So Danny you can go faster than that so he says for a given key you spit out the same key but if you have a string key and I got to make it an integer how do I do that?</p>
+<p>174<br>00:17:30,079 –&gt; 00:17:33,079<br>So you take the first bit.</p>
+<p>175<br>00:17:34,079 –&gt; 00:17:36,079<br>Yeah that would be pretty fast too.</p>
+<p>176<br>00:17:38,079 –&gt; 00:17:46,079<br>I was saying you just can turn one right that’ll sit in the stack and read it will be super fast.</p>
+<p>177<br>00:17:47,079 –&gt; 00:17:52,079<br>Now it’s the worst hash function in terms of collision because everything is going to map to one but it’ll be fast.</p>
+<p>178<br>00:17:53,079 –&gt; 00:18:02,079<br>So it’s this trade-off trying to figure out and you sort of think of the perfect hash function is the other other end the collision rate is zero but it’s super slow because you have to do this extra look on.</p>
+<p>179<br>00:18:03,079 –&gt; 00:18:06,079<br>So you want something in the middle that’s going to be fast and have a low collision rate.</p>
+<p>180<br>00:18:07,079 –&gt; 00:18:13,079<br>And then the hashing scheme is going to be the mechanism we’re going to use to handle collisions after we don’t our hashing.</p>
+<p>181<br>00:18:14,079 –&gt; 00:18:37,079<br>And the way the trade-off here is going to be again sort of the classic storage versus compute in computer science like I could I could allocate a two terabyte hash table and I’m pretty unlikely going to have I’m not likely going to have collisions for my key set is super small but I allocated this massive hash table or going to have a smaller one but I have a lot of collisions and therefore I had to spend more compute to handle those collisions.</p>
+<p>182<br>00:18:37,079 –&gt; 00:18:46,079<br>So again it’s trying to figure out how to do the right get the right trade-off between not over allocating but then also not waiting wasting a lot of instructions to deal with with collisions.</p>
+<p>183<br>00:18:47,079 –&gt; 00:18:56,079<br>All right so today’s talk we’ll talk a little bit about hash functions just to sort of show you what the state of there it is. I’m not going to say how they work just tell you that they exist.</p>
+<p>184<br>00:18:56,079 –&gt; 00:19:00,079<br>Again we’re data people we’re not in the business writing hash functions will let other people do that for us.</p>
+<p>185<br>00:19:01,079 –&gt; 00:19:13,079<br>And then we’ll talk about the sort of the classic static hashing schemes where you know the number of keys ahead of time and then we’ll talk about dynamic hashing schemes where you the hash table can actually grow and shrink based on the number of keys.</p>
+<p>186<br>00:19:13,079 –&gt; 00:19:25,079<br>All right so again we’re not in the business of writing hash functions other people that are smarter than us in this space have done it for us so we’re just going to rely on them.</p>
+<p>187<br>00:19:25,079 –&gt; 00:19:34,079<br>Again the basic idea of a hash function is that we have some input key any arbitrary number of bytes of any type and we need to return a integer that represents that key.</p>
+<p>188<br>00:19:34,079 –&gt; 00:19:42,079<br>Typically 64 bits there are 120 bit hash functions but I don’t think the database is used those there are 32 bit hash functions as well.</p>
+<p>189<br>00:19:43,079 –&gt; 00:19:58,079<br>So it’s a one return to integer so in this scheme or in this in a database system we don’t care about any sort of protection privacy mechanisms for a hash function meaning we’re not going to use anything that has cryptographic guarantees.</p>
+<p>190<br>00:19:59,079 –&gt; 00:20:05,079<br>So we’re not using shot 256 or whatever like we don’t we don’t care about those things because we’re running on the inside of the system.</p>
+<p>191<br>00:20:05,079 –&gt; 00:20:15,079<br>It’s it’s we’re not worried about leaking anything while we can build a hash table to do a joint because no one on the outside of the system can see that data structure.</p>
+<p>192<br>00:20:15,079 –&gt; 00:20:21,079<br>So we don’t care about any of those things and as a result we can actually run a lot faster.</p>
+<p>193<br>00:20:22,079 –&gt; 00:20:27,079<br>Right shot 256 will be really slow versus something like like you know murmur hash or XX hash.</p>
+<p>194<br>00:20:28,079 –&gt; 00:20:32,079<br>As I already said before we want something that’s fast and it has a low collision rate.</p>
+<p>195<br>00:20:32,079 –&gt; 00:20:40,079<br>So this is just a quick quick overview of what other hash or cash function systems are using.</p>
+<p>196<br>00:20:41,079 –&gt; 00:20:52,079<br>Some senses like postgres roll the own hash function but a lot of the more modern systems they’re going to use something off the shelf like XX hash or murmur hash or the spooky hash.</p>
+<p>197<br>00:20:52,079 –&gt; 00:21:01,079<br>So basically the main takeaway from this is that the state of art one is XX hash from Facebook with the third version XX hash three.</p>
+<p>198<br>00:21:01,079 –&gt; 00:21:08,079<br>This one is shown to have the some of the fastest performance and also the lowest collision rate.</p>
+<p>199<br>00:21:09,079 –&gt; 00:21:20,079<br>There are some systems that use CRC 32 or 64 for passion link integers because they actually see few instructions in x86 to do that in a few number of cycles.</p>
+<p>200<br>00:21:20,079 –&gt; 00:21:26,079<br>So that’s there’s some systems that do that but in terms of like random strings you typically want to use this.</p>
+<p>201<br>00:21:26,079 –&gt; 00:21:30,079<br>So remember hashes is because remember hashes written by this like random dude on the internet.</p>
+<p>202<br>00:21:31,079 –&gt; 00:21:41,079<br>He had a good fast general purpose hash function. Google took that and made city hash by forking it and then they have a newer version called farm hash that has even better collision rates.</p>
+<p>203<br>00:21:41,079 –&gt; 00:21:47,079<br>There’s a bunch of different sort of hash functions out there but XX hash three is what you want to use.</p>
+<p>204<br>00:21:47,079 –&gt; 00:21:59,079<br>And so there’s a bunch of these repositories on GitHub or people have written basically torture chambers or benchmarks to run all possible hash functions that are out there and see what the collision rate is, see what the performance is.</p>
+<p>205<br>00:22:00,079 –&gt; 00:22:11,079<br>So this is this M hasher SM hasher. There’s another one written by the member hash guy and there’s another one that’s a fork of this that’s only for the original of cryptography stuff.</p>
+<p>206<br>00:22:11,079 –&gt; 00:22:18,079<br>But for this repository here they had this like nice summary here that says these are the ones that work the best and have good good collision rates.</p>
+<p>207<br>00:22:18,079 –&gt; 00:22:23,079<br>And then the the top one here is XX hash three the Facebook one.</p>
+<p>208<br>00:22:24,079 –&gt; 00:22:32,079<br>Right. So again we don’t care. It’s a hash function keys in integer out what is used whatever they have.</p>
+<p>209<br>00:22:32,079 –&gt; 00:22:38,079<br>And then there’s the full list of all the hash functions. Some are tailored to arm some until turn to X86 or whatever.</p>
+<p>210<br>00:22:38,079 –&gt; 00:22:46,079<br>Like you can you can get you know more low level details based on the environment but XX hash three is going to be a good default choice.</p>
+<p>211<br>00:22:47,079 –&gt; 00:22:50,079<br>Okay. So now.</p>
+<p>212<br>00:22:51,079 –&gt; 00:22:58,079<br>So we’re you know see where you’re running XX hash three we want to talk about what the hash table is going to look like and how to be handled collisions.</p>
+<p>213<br>00:22:58,079 –&gt; 00:23:07,079<br>So for this lecture I’m going to focus on the public the two most common ones but number one is actually going to be the most common one of all the systems linear pro passion.</p>
+<p>214<br>00:23:07,079 –&gt; 00:23:17,079<br>It’s the simplest and it seems kind of brain dead in some ways but because it’s so simple it is actually the fastest.</p>
+<p>215<br>00:23:17,079 –&gt; 00:23:22,079<br>Right. And then cook or hashing is a variant of this that basically does multiple has functions.</p>
+<p>216<br>00:23:22,079 –&gt; 00:23:27,079<br>So there’s a bunch of other techniques Robinhood hashing hops got hashing Swiss tables from Google.</p>
+<p>217<br>00:23:27,079 –&gt; 00:23:31,079<br>We will cover that in this semester but if you take me a mass class we will cover those things.</p>
+<p>218<br>00:23:32,079 –&gt; 00:23:44,079<br>And I would say that the current research basically shows that the linear probing stuff and the Swiss tables are the fastest ones all these sort of extra fancy versions are.</p>
+<p>219<br>00:23:45,079 –&gt; 00:24:01,079<br>They’re trying to be they try to be more performance because they avoid having to spend longer time looking for for keys by moving things around when we when you insert but all that work moving things around is a performance penalty and you’re better off just kind of doing the the naive thing in your hashing.</p>
+<p>220<br>00:24:01,079 –&gt; 00:24:04,079<br>Yes.</p>
+<p>221<br>00:24:04,079 –&gt; 00:24:09,079<br>There’s a reason why we’re not so much chain hashing because that’s dynamic that’ll be next.</p>
+<p>222<br>00:24:09,079 –&gt; 00:24:10,079<br>Yeah.</p>
+<p>223<br>00:24:10,079 –&gt; 00:24:17,079<br>Because chain hashings can grow this is fixed size that will cover that later this month or later this class.</p>
+<p>224<br>00:24:17,079 –&gt; 00:24:21,079<br>Right. These are all static hashing schemes.</p>
+<p>225<br>00:24:21,079 –&gt; 00:24:28,079<br>There’s variations of linear probing the new quadrat quadratic probing we get another that final let’s keep a simple.</p>
+<p>226<br>00:24:29,079 –&gt; 00:24:42,079<br>All right. So linear prob hashing is is is really simple to giant array of of slots and we’re going to hash into it.</p>
+<p>227<br>00:24:42,079 –&gt; 00:24:57,079<br>You know we want to answer we hash into it if the slot is free we insert the thing we’re looking for if the slot is not free we just look at the next slot and and and certain there if we can or we keep looking until we have a free slot potentially wrapping around.</p>
+<p>228<br>00:24:57,079 –&gt; 00:25:15,079<br>Until we find a free location and then if we you know loop background realize we’re at the slot where we started that we know the hash tables full and we have a board and you know board it double the size and rehash everything right it’s a simple way to grow it.</p>
+<p>229<br>00:25:15,079 –&gt; 00:25:21,079<br>So the state implementation for this or one is here in the station is this avisal thing from from Google.</p>
+<p>230<br>00:25:21,079 –&gt; 00:25:33,079<br>And they have the flash hash flash hash map type for data structure and they have pretty good documentation describe how actually how it works and some of the organizations they do will cover.</p>
+<p>231<br>00:25:33,079 –&gt; 00:25:50,079<br>So this is sometimes called open addressing open addressing hashing because the ideas that it’s no guarantee that for a given key it’s going to always be in the same address or same location in the slot depending on what what got inserted before it and make it make it moved around.</p>
+<p>232<br>00:25:50,079 –&gt; 00:25:56,079<br>Right. If you get a dictionary and Python this is essentially what you’re getting as well.</p>
+<p>233<br>00:25:56,079 –&gt; 00:26:25,079<br>Right. So let’s see how it works. So say we want to insert key a right so we hash it mod it by the number of slots we have and then we hit land on this location here so we insert our key along with the value together right again the reason why we need the key because if we go to a look up again for looking for a we need you know what has to the same location but now we got to do an equality check to see whether the key that we’re looking for is the key in a given slot.</p>
+<p>234<br>00:26:25,079 –&gt; 00:26:32,079<br>Same thing so we want to hash be same thing hashed here mod by the number of slots we end up here and we sort of the top.</p>
+<p>235<br>00:26:32,079 –&gt; 00:26:47,079<br>So now we want to start insert C so we hash see it lands at the same location where a is but with that slot is occupied so we can’t insert it there so we just follow down to the next slot and insert our key there.</p>
+<p>236<br>00:26:47,079 –&gt; 00:27:06,079<br>Right. Same thing with D. D. Once ago where C is we can’t because that slot is occupied so just move down the next one and start it there right and we just keep going down for all the other keys we want to store right and in this case here if it’s say if F1 and then this space is occupied.</p>
+<p>237<br>00:27:06,079 –&gt; 00:27:13,079<br>Yeah F kind of wrapped around start at the beginning and the start the top right think of it as a giant circular buffer.</p>
+<p>238<br>00:27:13,079 –&gt; 00:27:18,079<br>Pretty simple right.</p>
+<p>239<br>00:27:18,079 –&gt; 00:27:21,079<br>What are some potential problems with this.</p>
+<p>240<br>00:27:21,079 –&gt; 00:27:26,079<br>He says, the least stocks. He loses the whole chain. What do you mean?</p>
+<p>241<br>00:27:26,079 –&gt; 00:27:33,079<br>Like if you delete C and then you look at something that got like accidentally pushed down like.</p>
+<p>242<br>00:27:33,079 –&gt; 00:27:39,079<br>And you know like we’ve heard somewhere see it so you don’t like things at the same.</p>
+<p>243<br>00:27:39,079 –&gt; 00:27:50,079<br>Right so he says. I don’t think so slides ahead of time but I’m sorry what happens if you delete C right so delete C we hash it we land where a is.</p>
+<p>244<br>00:27:50,079 –&gt; 00:28:04,079<br>Right now we do that quality check to see this is a equals C no so we know that’s not the key we’re looking for and then we keep going until we find empty slot or the key we’re looking for so in this case here after jumping down we find C and now we need to delete it.</p>
+<p>245<br>00:28:04,079 –&gt; 00:28:10,079<br>But now we have an empty space as he said so if I try to go do a look up on something like D.</p>
+<p>246<br>00:28:10,079 –&gt; 00:28:24,079<br>D is going to hash to this empty spot and it’s going to say oh well nothing’s here right but it really is the you know it’s the next slot down but because the way the protocol works the scheme works if I see an empty slot then I know I’m done.</p>
+<p>247<br>00:28:24,079 –&gt; 00:28:28,079<br>Right so let’s only handle this.</p>
+<p>248<br>00:28:28,079 –&gt; 00:28:31,079<br>Gravestone.</p>
+<p>249<br>00:28:31,079 –&gt; 00:28:37,079<br>Gravestone that’s one approach yes we’ll get we’ll get to there which that is the correct answer.</p>
+<p>250<br>00:28:37,079 –&gt; 00:28:42,079<br>So you could do this you could just like rehash or move it right off right.</p>
+<p>251<br>00:28:42,079 –&gt; 00:28:49,079<br>Is that a good idea or bad idea well clear it’s a bad idea because that said no one does this right but why is it a bad idea.</p>
+<p>252<br>00:28:49,079 –&gt; 00:29:00,079<br>It’s a move everything again thank you so I have a billion keys I can go rehash everyone that’d be terrible right so that so it’s super expensive and no one does this.</p>
+<p>253<br>00:29:00,079 –&gt; 00:29:23,079<br>Let’s give you this right so yeah this is not the sense you don’t want to do this the correct solution is what he was saying is what it’s called a tombstone and the idea here is that I delete C but instead again set it setting it as empty I’m going to put a little marker here to say this slot there was a key here and now it’s been deleted.</p>
+<p>254<br>00:29:23,079 –&gt; 00:29:41,079<br>So that way if anybody comes along like doing a look up and D it sees the tombstone says well it’s not empty something was here but there’s nothing here that I’m looking for so let me let me then look down and keep scanning along until I find nothing I’m looking for right.</p>
+<p>255<br>00:29:41,079 –&gt; 00:30:07,079<br>So you can reuse these these you can reuse the slot with the market of tombstone for new keys because you just insert over top of it and that doesn’t break the flow or break break anything else in the hash table right now maybe the case you want to peer out of anyone garbage question because you can start accumulating much of these tombstones and it’s just wasted space if you’re not using them but for purposes we you know we can ignore that.</p>
+<p>256<br>00:30:07,079 –&gt; 00:30:30,079<br>So I want to put say G G can go right here and that’s fine now I’m not going to discuss this too much details but like there is a challenge though how you actually want to represent these tombstones and also represent something that’s that that it’s empty and potentially also represent that I have a null key which you can do in a database system right.</p>
+<p>257<br>00:30:30,079 –&gt; 00:30:31,079<br>So we can do the trick we talked about before with slot pages where we could have a bit map in front of at the top of every header of every page in our hash table like I’m not showing the division here between pages but think of like for simplicity every page is to these slots so in the header that page I can keep track of like okay here’s the slots that are empty here’s the slots that are null or here’s the slots that are that are marked with the tombstone right so I need some additional metadata to keep track of these things and you obviously don’t want to do it on the</p>
+<p>258<br>00:31:00,079 –&gt; 00:31:29,079<br>perky basis because that that can mess up with the alignment of things and waste space. So the other thing we got to deal with now is is not unique keys right so there’s two approaches to do this one is that instead of storing the value in our our giant hash array or it or array along with the keys instead the value would just be a pointer like I said I’m going to do that.</p>
+<p>259<br>00:31:30,079 –&gt; 00:31:59,079<br>So I’m going to do a page ID to some other location that will store my list of keys or sorry yeah list of values right so for the key xyz there’s a pointer to some some basically a link list that houses all the possible values and then for the other key the same thing right what’s nice about this is as I insert new keys or it’s insert good the keys I’m ever again I’m not really changing the main hash table I’m sort of pending to this sort of link list.</p>
+<p>260<br>00:32:00,079 –&gt; 00:32:29,079<br>It’s like the chain hash table that I talked about before or he asked about before we’ll get in a second. The more common approach is to just store the time keys together right and again this doesn’t break the open addressing of the linear profession scheme is that I I always hash you know hash on the key I landed some location and I find a you know I just find a free slot and I started thinking looking for this does make a little bit more tricky when you would do look up like give me all the give me all the keys of xyz key.</p>
+<p>261<br>00:32:30,079 –&gt; 00:32:59,079<br>So I’m going to do a value pairs because now I got I know like I got to keep I got to keep scanning to I find an empty location empty slot to know that I’m not going to see xyz ever again whereas in the first the first scenario I find xyz in my hash table then I and I landed the you know I follow the pointer to the list of values and I know that’s all the possible values I could have for that given key right but for simplicity reasons instead of having maintained the sort of separate link list for non-unique keys and the non-unique key.</p>
+<p>262<br>00:32:59,079 –&gt; 00:33:13,079<br>And then the non the in the in line version for for unique keys most systems to store the use the redundant key approach because you don’t you don’t have to you don’t have to have multiple invitations.</p>
+<p>263<br>00:33:13,079 –&gt; 00:33:24,079<br>Yes. How would you differentiate between and how would you differentiate between.</p>
+<p>264<br>00:33:24,079 –&gt; 00:33:39,079<br>So it’s questions how how would you differentiate an update of a value versus a insert of a value.</p>
+<p>265<br>00:33:39,079 –&gt; 00:33:45,079<br>Yeah, for hash tables you really don’t do updates or be a delete followed by an insert right.</p>
+<p>266<br>00:33:45,079 –&gt; 00:34:01,079<br>And of course now the tricky thing is like if I want to delete key xyz with value to like I can’t look sorry if I just say delete if I don’t want to delete one of these like I have to know what the value is and to make sure I only do that one.</p>
+<p>267<br>00:34:01,079 –&gt; 00:34:06,079<br>I you know I’m only all xyz which may not be what I want yes.</p>
+<p>268<br>00:34:06,079 –&gt; 00:34:13,079<br>This way like if you have multiple thing like sorry I keep with multiple values you just ask the entire like people.</p>
+<p>269<br>00:34:13,079 –&gt; 00:34:20,079<br>The question if you have so if you have a key with multiple values you just hashed entire table what do you mean by that.</p>
+<p>270<br>00:34:20,079 –&gt; 00:34:30,079<br>Because at this point like you’re you’re searching for specific key and value so consider both of them as if you have it at a set.</p>
+<p>271<br>00:34:30,079 –&gt; 00:34:50,079<br>Yes so like yes so David is like if I’m looking if I’m looking for exact match in that case like I don’t need to hash table because I have right but like if I’m trying to remove it from the data structure like it’s exact like key value pair right then you basically like how does this you.</p>
+<p>272<br>00:34:50,079 –&gt; 00:35:04,079<br>You you need to find that exact pair you need to have it at the time so it’s just maintaining the data structure.</p>
+<p>273<br>00:35:04,079 –&gt; 00:35:16,079<br>Question what why do this so like if I’m doing a join the relationship between the two joint tables is that one side might not be unique right.</p>
+<p>274<br>00:35:16,079 –&gt; 00:35:31,079<br>So I need to have this and so I want to get all of the like you have basically an iterator says give me all the values or key equals xyz and it starts spinning this thing out as I’m as I’m traversing the hash table because I’m doing the join.</p>
+<p>275<br>00:35:31,079 –&gt; 00:35:41,079<br>So question is would you be hash when it’s completely full or 80% full so the different systems have different.</p>
+<p>276<br>00:35:41,079 –&gt; 00:35:53,079<br>There’s like a threshold and say if I go above this I know I’m going to overflow or run out of space so we go ahead and trigger a rehash.</p>
+<p>277<br>00:35:53,079 –&gt; 00:36:16,079<br>So at this point yes like the you get closer to that worst case scenario where like if it gets it starts to get full so rather than waiting to it’s like 100% full maybe go to 80% because that it’s better off to pay the penalty to resize the hash table which is doubling you to resize hash table double size of it go through all your keys and rehash them put them into the new hash table and then throw away the old one that’s not that’s expensive.</p>
+<p>278<br>00:36:16,079 –&gt; 00:36:28,079<br>So there’s a trade off like okay if I’m at 80% full I rather pay that penalty to double the size rather than all the additional operations that I need to do spend a long time searching through.</p>
+<p>279<br>00:36:28,079 –&gt; 00:36:31,079<br>There’s no there’s no one answer.</p>
+<p>280<br>00:36:31,079 –&gt; 00:36:45,079<br>That’s why there’s usually a tunable threshold whether or not they expose that to you as like a user of the system it depends on the implementation but there usually a threshold say when do you want to go ahead and resize.</p>
+<p>281<br>00:36:45,079 –&gt; 00:37:05,079<br>So some other conversations we can do that one is you could have different hash table implementations that have these different mechanisms are like you know the decisions about when to split how to store things and whatnot based on the data type you’re storing.</p>
+<p>282<br>00:37:05,079 –&gt; 00:37:31,079<br>So an obvious thing would be like if I have I want to be on hash tables that support string keys if my strings are very small like 64 bits or 64 bits or 64 bytes or 64 bits or bytes less the magnets are that in line my hash table but it’s a really large string I don’t want to store that in my hash table maybe I just want to have a pointer to the actual string itself so now I could have a 64 bit pointer.</p>
+<p>283<br>00:37:31,079 –&gt; 00:37:45,079<br>But now it’s going to be expensive to do that look up to see whether I have a match or maybe I actually want to store the hash of that string as part of the key in my hash table so void having to do that that look up right.</p>
+<p>284<br>00:37:45,079 –&gt; 00:38:02,079<br>We talked about storing the metadata like it’s something a tombstone or something a no value or a or an in a slot you throw that in the page header because now you have a bunch of packed bits you actually throw that in an entire hash table itself right.</p>
+<p>285<br>00:38:02,079 –&gt; 00:38:18,079<br>So the Google hash map does this where they have a separate hash table just for the metadata that’s much smaller and compact you do a look up on that to tell you what is the thing you’re about to go look up in the real hash table is that thing you know no or or or empty or not.</p>
+<p>286<br>00:38:19,079 –&gt; 00:38:26,079<br>And then this one is interesting this is from this one comes from click house the OLAP system that came out of the index in Russia.</p>
+<p>287<br>00:38:26,079 –&gt; 00:38:41,079<br>So they talk about how they want to be wrote since it’s so expensive to allocate the memory for a hash table you don’t want to just you know allocate a bunch of memory use it once and then throw it away which you actually want to just reuse that memory over and over again but you need a fast way to clear it out.</p>
+<p>288<br>00:38:41,079 –&gt; 00:39:10,079<br>So instead of going through and marking all the slots as deleted you just maintain a virgin counter a virgin ID and whenever you say I want to delete the contents of this table you just increment that that virgin counter on the table and then now any look up you do inside of a slot inside that table if the virgin IDs don’t match then you if you’re this the slot version number is less than the table version number you know it’s been deleted and you ignore everything in there that clears it out and then.</p>
+<p>289<br>00:39:10,079 –&gt; 00:39:13,079<br>And you can implement the version ID.</p>
+<p>290<br>00:39:13,079 –&gt; 00:39:27,079<br>So the bunch of different tricks you can do in different scenarios to make these things one more efficiently and the very systems do different things click house in my opinion there’s a that link there with taking the blog article they claim they have 30 different implementations of hash tables.</p>
+<p>291<br>00:39:27,079 –&gt; 00:39:48,079<br>A lot of it’s templatized based in C++ based on the data type and you do a bunch of compiler tricks to remove code you don’t need if you know like something cannot be known or is this string of certain size they probably in my opinion of all the other systems I looked at they’re probably most sophisticated one that I have the most sophisticated hash tables.</p>
+<p>292<br>00:39:48,079 –&gt; 00:40:17,079<br>So one variant of linear hash linear prep hashing is a technique called kuku hashing and the idea here is that instead of having a single patch function to do a look up to one location in my in my hash table what if I had multiple hash functions and I hash up multiple locations and I find whatever one has a free look free slot and I use that one instead of having to scan through now until I find a free slot.</p>
+<p>293<br>00:40:17,079 –&gt; 00:40:27,079<br>For my key. So this is going to guarantee that all my look ups and deletions will be oh one because.</p>
+<p>294<br>00:40:27,079 –&gt; 00:40:30,079<br>No matter how many hash functions I have.</p>
+<p>295<br>00:40:30,079 –&gt; 00:40:39,079<br>You know I don’t have to scan through I’m going to land some location in my in my hash map or my hash table that has the data that I’m looking for or doesn’t exist.</p>
+<p>296<br>00:40:39,079 –&gt; 00:40:45,079<br>Insert to be more expensive because we’ll see in a second you may start moving things around and reorganizing stuff.</p>
+<p>297<br>00:40:45,079 –&gt; 00:40:59,079<br>So there’s only one system I know that does kuku hashing that the public talks about it and that’s this O lap accelerator from IBM called blue BLU and in their paper they talk about how they make heavy use of kuku hashing.</p>
+<p>298<br>00:40:59,079 –&gt; 00:41:06,079<br>And as far as you know the best open source invitation of a kuku hash table is actually from Dave Anderson from from the CEO.</p>
+<p>299<br>00:41:06,079 –&gt; 00:41:10,079<br>I think Google you said Dave claims Google uses a lot of it.</p>
+<p>300<br>00:41:10,079 –&gt; 00:41:15,079<br>So the name has to do with the kuku has to do with like awesome.</p>
+<p>301<br>00:41:15,079 –&gt; 00:41:17,079<br>Okay let’s head Google.</p>
+<p>302<br>00:41:17,079 –&gt; 00:41:20,079<br>Yeah.</p>
+<p>303<br>00:41:20,079 –&gt; 00:41:23,079<br>So where was it?</p>
+<p>304<br>00:41:23,079 –&gt; 00:41:30,079<br>So the name kuku has to do with this bird where they lay their eggs they can lay their eggs on another bird’s nest.</p>
+<p>305<br>00:41:30,079 –&gt; 00:41:38,079<br>And so the idea is again my key may end up make end up stealing somebody else’s slot in my hash table if I try to go there and they’re using it.</p>
+<p>306<br>00:41:38,079 –&gt; 00:41:45,079<br>So let’s see examples have say we have a game we have a same same hash table but now when it and tell me we do an operation when I have two hash functions.</p>
+<p>307<br>00:41:45,079 –&gt; 00:41:57,079<br>So it’s going to be the same hash function implementation that we talked about for like XX hash murmur hash spooky hash it doesn’t matter but we’ll just give it a different seed to the hash function that guarantees for giving key.</p>
+<p>308<br>00:41:57,079 –&gt; 00:42:04,079<br>It doesn’t guarantee but it’s very likely that for a given key it’s going to it’s going to produce two different hash values.</p>
+<p>309<br>00:42:04,079 –&gt; 00:42:09,079<br>So I hash a and I have these two locations here and send the very beginning my hash tables empty.</p>
+<p>310<br>00:42:09,079 –&gt; 00:42:17,079<br>So I can either flip a coin or pick the first one it doesn’t matter and so I’ll slide that for inserting a goes in this the first slot here.</p>
+<p>311<br>00:42:17,079 –&gt; 00:42:20,079<br>Now I want to put I want to put be in.</p>
+<p>312<br>00:42:20,079 –&gt; 00:42:32,079<br>And so the first hash function hash is to where a is the second hash function goes to an empty slot so because the other one is occupied I’m going to always choose the empty one and I’ll put be at the top like that.</p>
+<p>313<br>00:42:32,079 –&gt; 00:42:43,079<br>Now where things get tricky is that we have multiple or two hash functions or multiple hash functions hashed to two locations that both have better both are being occupied.</p>
+<p>314<br>00:42:43,079 –&gt; 00:42:50,079<br>So in this case here for whatever you know whatever protocol whatever scheme you want to use say we can flip a coin we decide we want to a big B.</p>
+<p>315<br>00:42:50,079 –&gt; 00:42:59,079<br>So we’ll go ahead and bash B on the head take its location put C in there but now we got it now we got to put B back in.</p>
+<p>316<br>00:42:59,079 –&gt; 00:43:10,079<br>So because B landed on this using the second hash function after we after we take it out and put it back in we need to use the first hash function.</p>
+<p>317<br>00:43:10,079 –&gt; 00:43:21,079<br>But then that takes us to the location where a is located so B is allowed to steal from a so B goes there a comes out we hash a with the second hash function and then we land to another location.</p>
+<p>318<br>00:43:21,079 –&gt; 00:43:39,079<br>And again just like before in linear per passing you need to keep track of if you’re stuck in a loop right so you just got to keep track is this is the key I’m putting in they same key I try to first put it in the very beginning and I just loop back around and I’m stuck in an infinite loop and therefore I need a board double the size of the hash table and rehash everything.</p>
+<p>319<br>00:43:40,079 –&gt; 00:43:53,079<br>So now when I want to do look up on B right I take B hash it twice and I get two different locations and now you might check to see is the key stored in this slot the key I’m looking for if yes and I had the thing I’m looking for.</p>
+<p>320<br>00:43:53,079 –&gt; 00:44:05,079<br>Again now and I don’t need to do that linear probe scanning of looking for an empty slot or key I’m looking for because I’m guaranteed either the keys going to be there after hashing or does not exist in the table.</p>
+<p>321<br>00:44:09,079 –&gt; 00:44:16,079<br>This is a good idea bad idea.</p>
+<p>322<br>00:44:20,079 –&gt; 00:44:29,079<br>It seems like there be more collisions.</p>
+<p>323<br>00:44:29,079 –&gt; 00:44:34,079<br>Well no right because if.</p>
+<p>324<br>00:44:34,079 –&gt; 00:44:48,079<br>But so like there’s trade-offs right so like yes could be more collisions but like these in linear per passing you’re guaranteed always put something in there right it may be the worst slot maybe the slot right above the one you try to go into and you’ll</p>
+<p>325<br>00:44:48,079 –&gt; 00:44:55,079<br>get a lot of time to go back around but at least there’s a free slot you’ll get it.</p>
+<p>326<br>00:44:55,079 –&gt; 00:44:58,079<br>Yes.</p>
+<p>327<br>00:44:58,079 –&gt; 00:45:02,079<br>This does random I.O.</p>
+<p>328<br>00:45:02,079 –&gt; 00:45:07,079<br>Yeah absolutely right so this is doing random I.O.s because I’m jumping around well the hash table is doing essentially random I.O.s but once I land somewhere doing a random look up then it’s a</p>
+<p>329<br>00:45:07,079 –&gt; 00:45:14,079<br>good idea. This is always random right yes.</p>
+<p>330<br>00:45:14,079 –&gt; 00:45:20,079<br>I think your friend she said to please the repot.</p>
+<p>331<br>00:45:20,079 –&gt; 00:45:23,079<br>Oh.</p>
+<p>332<br>00:45:23,079 –&gt; 00:45:30,079<br>Yeah.</p>
+<p>333<br>00:45:30,079 –&gt; 00:45:33,079<br>What?</p>
+<p>334<br>00:45:33,079 –&gt; 00:45:36,079<br>Yeah I mean that’s this is what I’m saying.</p>
+<p>335<br>00:45:36,079 –&gt; 00:45:41,079<br>Do you have a girlfriend?</p>
+<p>336<br>00:45:41,079 –&gt; 00:45:48,079<br>This is the this is the conversation I’ve been explaining to her is the most I mean.</p>
+<p>337<br>00:45:48,079 –&gt; 00:45:51,079<br>That’s the life.</p>
+<p>338<br>00:45:51,079 –&gt; 00:45:54,079<br>It’s impressive.</p>
+<p>339<br>00:45:54,079 –&gt; 00:45:57,079<br>Yeah.</p>
+<p>340<br>00:45:57,079 –&gt; 00:46:03,079<br>Okay I mean you’re a good DJ and you do database and so it makes sense.</p>
+<p>341<br>00:46:03,079 –&gt; 00:46:06,079<br>Yeah.</p>
+<p>342<br>00:46:06,079 –&gt; 00:46:11,079<br>Congrats.</p>
+<p>343<br>00:46:11,079 –&gt; 00:46:20,079<br>All right so your question was.</p>
+<p>344<br>00:46:20,079 –&gt; 00:46:27,079<br>Data this is yeah.</p>
+<p>345<br>00:46:27,079 –&gt; 00:46:33,079<br>Yeah so this question is is it possible to paralyze the access to different locations so.</p>
+<p>346<br>00:46:33,079 –&gt; 00:46:36,079<br>Yes you could do that.</p>
+<p>347<br>00:46:36,079 –&gt; 00:46:39,079<br>Like there’s two different ways of paralyze what we’ll mention get to that.</p>
+<p>348<br>00:46:39,079 –&gt; 00:46:47,079<br>Yeah like you have multiple threads or single threads but do vectorized instructions, simd instructions like.</p>
+<p>349<br>00:46:47,079 –&gt; 00:46:55,079<br>And for simd this won’t you could do this but it requires you moving data around a bit much because you have to make sure things are aligned.</p>
+<p>350<br>00:46:55,079 –&gt; 00:47:00,079<br>But so you may introduce it with a single thread with vectorized instructions.</p>
+<p>351<br>00:47:00,079 –&gt; 00:47:02,079<br>I know there’s techniques exist.</p>
+<p>352<br>00:47:02,079 –&gt; 00:47:05,079<br>I don’t know about kuku hashing though.</p>
+<p>353<br>00:47:05,079 –&gt; 00:47:11,079<br>But for make this multi threaded it’d be so much work or just too much work to.</p>
+<p>354<br>00:47:11,079 –&gt; 00:47:17,079<br>Tell to threads okay we’re looking this key you have to this way I’ll have to this way and then.</p>
+<p>355<br>00:47:17,079 –&gt; 00:47:23,079<br>To then synchronize on who produces back result that is just not worth it.</p>
+<p>356<br>00:47:23,079 –&gt; 00:47:30,079<br>Yes.</p>
+<p>357<br>00:47:30,079 –&gt; 00:47:37,079<br>Yes.</p>
+<p>358<br>00:47:37,079 –&gt; 00:47:46,079<br>So your question is do you have the guarantee that the hash functions always go differently.</p>
+<p>359<br>00:47:46,079 –&gt; 00:47:53,079<br>So for example if a is all like the output of the hatches.</p>
+<p>360<br>00:47:53,079 –&gt; 00:47:58,079<br>Yes.</p>
+<p>361<br>00:47:58,079 –&gt; 00:48:03,079<br>So do you have to guarantee your hash function can’t do that.</p>
+<p>362<br>00:48:03,079 –&gt; 00:48:15,079<br>You can’t right that’s why again that’s why I’m saying like you want to choose a hash function that has a low collision rate so the like you can’t guarantee that won’t happen but the likelihood that that that will happen is low.</p>
+<p>363<br>00:48:15,079 –&gt; 00:48:21,079<br>The only thing you can get is a perfect hash function.</p>
+<p>364<br>00:48:21,079 –&gt; 00:48:28,079<br>This question does it fall to the leaner program after that what do you mean.</p>
+<p>365<br>00:48:28,079 –&gt; 00:48:29,079<br>Yes.</p>
+<p>366<br>00:48:29,079 –&gt; 00:48:30,079<br>Yes.</p>
+<p>367<br>00:48:30,079 –&gt; 00:48:37,079<br>Yes.</p>
+<p>368<br>00:48:37,079 –&gt; 00:48:50,079<br>If I run out of locations for this either because all the slots are full or I get a wrap around when I try to do this the cook with the thing I’m taking right you double the size of it.</p>
+<p>369<br>00:48:50,079 –&gt; 00:48:51,079<br>Yes.</p>
+<p>370<br>00:48:51,079 –&gt; 00:48:57,079<br>So does it increase the cost of getting like the general cases of crazy because we have a check multiple slots.</p>
+<p>371<br>00:48:57,079 –&gt; 00:49:04,079<br>Or is there like a defined order specifically where like to check this one and that only if there was a collision with the component.</p>
+<p>372<br>00:49:04,079 –&gt; 00:49:15,079<br>So the question is is there a defined order such that like you can maybe just always check the first hash like I’m showing two lines coming out of it but in a in a assume it’s not parallel it is.</p>
+<p>373<br>00:49:15,079 –&gt; 00:49:16,079<br>Excuse me.</p>
+<p>374<br>00:49:16,079 –&gt; 00:49:18,079<br>Like could I.</p>
+<p>375<br>00:49:18,079 –&gt; 00:49:21,079<br>Is there some protocol say check this.</p>
+<p>376<br>00:49:21,079 –&gt; 00:49:26,079<br>And then only fetch the page for the second one if I know it’s not going to be there.</p>
+<p>377<br>00:49:26,079 –&gt; 00:49:29,079<br>I mean you can do much of things you can pre-fetch the second page.</p>
+<p>378<br>00:49:29,079 –&gt; 00:49:30,079<br>Right.</p>
+<p>379<br>00:49:30,079 –&gt; 00:49:33,079<br>And then the thing is actually cheap it’s the look up is expensive right.</p>
+<p>380<br>00:49:33,079 –&gt; 00:49:40,079<br>So maybe I I could choose one that I have two page IDs I went into a look up on.</p>
+<p>381<br>00:49:40,079 –&gt; 00:49:45,079<br>So if I have a way to go peak with one actually exists first maybe go check that one pre-fetched the other one.</p>
+<p>382<br>00:49:45,079 –&gt; 00:49:47,079<br>Again it depends on the implementation.</p>
+<p>383<br>00:49:47,079 –&gt; 00:49:53,079<br>Maybe it’s like I think it’s like you always try to get catch one first and then only that fails.</p>
+<p>384<br>00:49:53,079 –&gt; 00:49:57,079<br>And then you always get to look at that one first.</p>
+<p>385<br>00:49:57,079 –&gt; 00:50:02,079<br>But depending on what got inserted and how things are moving around like.</p>
+<p>386<br>00:50:02,079 –&gt; 00:50:03,079<br>Right.</p>
+<p>387<br>00:50:03,079 –&gt; 00:50:07,079<br>But the fact of coming up sort of so many.</p>
+<p>388<br>00:50:07,079 –&gt; 00:50:12,079<br>Is there another woman.</p>
+<p>389<br>00:50:12,079 –&gt; 00:50:14,079<br>Is it going to bathroom?</p>
+<p>390<br>00:50:14,079 –&gt; 00:50:15,079<br>What’s he doing?</p>
+<p>391<br>00:50:15,079 –&gt; 00:50:18,079<br>All right.</p>
+<p>392<br>00:50:18,079 –&gt; 00:50:23,079<br>Anyway, so the fact of coming up with different ways to do this that’s sure how complicated it is where is like Lena</p>
+<p>393<br>00:50:23,079 –&gt; 00:50:26,079<br>prepashing you just kind of rip through it.</p>
+<p>394<br>00:50:26,079 –&gt; 00:50:27,079<br>All right.</p>
+<p>395<br>00:50:27,079 –&gt; 00:50:28,079<br>Quick question.</p>
+<p>396<br>00:50:28,079 –&gt; 00:50:31,079<br>I do the general production.</p>
+<p>397<br>00:50:31,079 –&gt; 00:50:33,079<br>It’s always like through how many.</p>
+<p>398<br>00:50:33,079 –&gt; 00:50:34,079<br>It’s questions in a general system.</p>
+<p>399<br>00:50:34,079 –&gt; 00:50:39,079<br>What is the default actually I don’t know like I don’t we can go look up on Dave’s code and the default it might be three.</p>
+<p>400<br>00:50:39,079 –&gt; 00:50:40,079<br>I have no idea.</p>
+<p>401<br>00:50:40,079 –&gt; 00:50:41,079<br>Yeah.</p>
+<p>402<br>00:50:41,079 –&gt; 00:50:43,079<br>All right.</p>
+<p>403<br>00:50:43,079 –&gt; 00:50:50,079<br>I want to get through the chain hashing and hashing and external hashing because you know we’ll need this for one of the projects.</p>
+<p>404<br>00:50:50,079 –&gt; 00:50:55,079<br>So again, all of these protocols that showed so far these are all static hashing schemes.</p>
+<p>405<br>00:50:55,079 –&gt; 00:51:03,079<br>Again, if we run out of space or we we loop back around then we we need to double the size of the hash table and repopulate it in this expensive.</p>
+<p>406<br>00:51:03,079 –&gt; 00:51:10,079<br>So we want to talk about different techniques to incrementally resize the hash table without having to rebuild the entire thing.</p>
+<p>407<br>00:51:10,079 –&gt; 00:51:16,079<br>So the most common one is going to be chain hashing and again this is what most people think of when you think about hash table sometimes.</p>
+<p>408<br>00:51:16,079 –&gt; 00:51:24,079<br>And then but they will look at two more advanced techniques that actually are used in real systems.</p>
+<p>409<br>00:51:24,079 –&gt; 00:51:32,079<br>So chain hashing the basic idea is that instead of having this giant array of all the slots where we actually insert keys.</p>
+<p>410<br>00:51:32,079 –&gt; 00:51:47,079<br>Our array is just going to be pointers to essentially link lists or chains or buckets where all the keys that map to that slot in our hash table will be found in that in that link list.</p>
+<p>411<br>00:51:47,079 –&gt; 00:51:48,079<br>Right.</p>
+<p>412<br>00:51:48,079 –&gt; 00:51:52,079<br>If you allocate a hash map in Java, this is essentially what you get.</p>
+<p>413<br>00:51:52,079 –&gt; 00:51:59,079<br>So the link list part can essentially grow infinitely because again, in worst case scenario, all my keys hash are the same slot.</p>
+<p>414<br>00:51:59,079 –&gt; 00:52:05,079<br>I’m just depending to this giant list and I’m falling down or basically end up with a sequential scan.</p>
+<p>415<br>00:52:05,079 –&gt; 00:52:12,079<br>But again, ideally if I have a hash function that’s good, I won’t I’ll have a good distribution of keys.</p>
+<p>416<br>00:52:12,079 –&gt; 00:52:21,079<br>The way to think about this is that we’re essentially partitioning our giant hash table we have before into to smaller hash tables themselves or smaller tables.</p>
+<p>417<br>00:52:21,079 –&gt; 00:52:24,079<br>We can get unique keys to the same tricks we did before.</p>
+<p>418<br>00:52:24,079 –&gt; 00:52:27,079<br>Right. Just keep appending the redundant keys to this giant list.</p>
+<p>419<br>00:52:27,079 –&gt; 00:52:34,079<br>Right. We can still use tombstones, but oftentimes compaction is just faster in this case.</p>
+<p>420<br>00:52:34,079 –&gt; 00:52:37,079<br>All right. So now again, we have here we have our bucket pointers.</p>
+<p>421<br>00:52:37,079 –&gt; 00:52:40,079<br>And this is where hash functions are going to hash into.</p>
+<p>422<br>00:52:40,079 –&gt; 00:52:44,079<br>And then these are just be pointers to the different buckets that exist.</p>
+<p>423<br>00:52:44,079 –&gt; 00:52:49,079<br>Right. So if we want to put a in, we hash it mod in by the number of bucket pointers we have.</p>
+<p>424<br>00:52:49,079 –&gt; 00:52:54,079<br>And then we land on that bucket. We find the first free slot and we just insert it.</p>
+<p>425<br>00:52:54,079 –&gt; 00:52:59,079<br>All right. Say thing we’re going to put b, b goes the top here just just as before.</p>
+<p>426<br>00:52:59,079 –&gt; 00:53:05,079<br>And then now in case of c, c, hash it to the same bucket where a is located.</p>
+<p>427<br>00:53:05,079 –&gt; 00:53:12,079<br>We just scan through squentially till we find the first free slot.</p>
+<p>428<br>00:53:12,079 –&gt; 00:53:15,079<br>You got to call.</p>
+<p>429<br>00:53:15,079 –&gt; 00:53:19,079<br>All right. You put d in.</p>
+<p>430<br>00:53:19,079 –&gt; 00:53:23,079<br>D goes where a is. It’s scans through all the slots empty.</p>
+<p>431<br>00:53:23,079 –&gt; 00:53:26,079<br>You can put something in the page editor and say I have no more free slots.</p>
+<p>432<br>00:53:26,079 –&gt; 00:53:29,079<br>Therefore, always expand me when you get to me. It doesn’t matter.</p>
+<p>433<br>00:53:29,079 –&gt; 00:53:35,079<br>And then basically the this page here would then point to another page where you can find d.</p>
+<p>434<br>00:53:35,079 –&gt; 00:53:39,079<br>And then we want to put e and follow through to find find e here.</p>
+<p>435<br>00:53:39,079 –&gt; 00:53:43,079<br>All right. And f can go here.</p>
+<p>436<br>00:53:43,079 –&gt; 00:53:54,079<br>So again, the nice thing about this is that I can grow the key list within a bucket without affecting other parts of the table.</p>
+<p>437<br>00:53:54,079 –&gt; 00:54:01,079<br>But you can have a sort of like two level, two level hash tables were like this is a hash table that takes you into these buckets.</p>
+<p>438<br>00:54:01,079 –&gt; 00:54:06,079<br>Another hash table or simplicity we’re just showing it as a link list like this.</p>
+<p>439<br>00:54:06,079 –&gt; 00:54:12,079<br>But doing that. Yes, question.</p>
+<p>440<br>00:54:12,079 –&gt; 00:54:17,079<br>Question is when you create a new bucket, how do you determine the size of it?</p>
+<p>441<br>00:54:17,079 –&gt; 00:54:24,079<br>So we’re not talking about whether for this lecture, we haven’t talked about whether something is like backed by pages on on disk or in memory.</p>
+<p>442<br>00:54:24,079 –&gt; 00:54:29,079<br>But like if it is a assume it’s backed by pages that are on disk and are buffer pool.</p>
+<p>443<br>00:54:29,079 –&gt; 00:54:34,079<br>So if whatever the page size in the database, that’ll be the page size of a bucket.</p>
+<p>444<br>00:54:34,079 –&gt; 00:54:40,079<br>So in post-curses 8 kilobytes, my SQL is 16 kilobytes.</p>
+<p>445<br>00:54:40,079 –&gt; 00:54:46,079<br>Yeah, I mean, I’m showing within one page two keys because it’s powerpoint.</p>
+<p>446<br>00:54:46,079 –&gt; 00:54:53,079<br>So again, if I have a lot of keys hash in the same location, this linear scan here can be expensive.</p>
+<p>447<br>00:54:53,079 –&gt; 00:55:04,079<br>So actually a really simple optimization you can do is in your bucket pointer list, you also store a bloom filter that just tells you whether a key exists in my link list.</p>
+<p>448<br>00:55:04,079 –&gt; 00:55:09,079<br>So if I want to look up now in G, I first check the bloom filter. I ask it whether it exists or not.</p>
+<p>449<br>00:55:09,079 –&gt; 00:55:14,079<br>If yes, then I’ll keep following the pointer and go then scan along to I find the thing I’m looking for.</p>
+<p>450<br>00:55:14,079 –&gt; 00:55:18,079<br>If not, if it says no, then I don’t do that scan.</p>
+<p>451<br>00:55:18,079 –&gt; 00:55:22,079<br>So that avoids that having to do that extra traversal.</p>
+<p>452<br>00:55:23,079 –&gt; 00:55:27,079<br>So if I know what a bloom filter is, no, okay.</p>
+<p>453<br>00:55:27,079 –&gt; 00:55:29,079<br>So I ask, go it up.</p>
+<p>454<br>00:55:29,079 –&gt; 00:55:35,079<br>Bloom filters are awesome and there’ll be useful for a bunch of things.</p>
+<p>455<br>00:55:35,079 –&gt; 00:55:37,079<br>All right, quickly.</p>
+<p>456<br>00:55:37,079 –&gt; 00:55:42,079<br>A bloom filter is a probabilistic data structure that can tell you that can answer set membership queries.</p>
+<p>457<br>00:55:42,079 –&gt; 00:55:45,079<br>So a filter is different than an index.</p>
+<p>458<br>00:55:45,079 –&gt; 00:55:48,079<br>An index tells you for a given key, where is it?</p>
+<p>459<br>00:55:49,079 –&gt; 00:55:54,079<br>In this record idea or in this page, a filter can only say does the key exist yes or no?</p>
+<p>460<br>00:55:54,079 –&gt; 00:55:58,079<br>Can’t tell you where it is, it just tells you where there exists.</p>
+<p>461<br>00:55:58,079 –&gt; 00:56:05,079<br>So a bloom filter, the guy was named Bloom, I think from the 70s.</p>
+<p>462<br>00:56:05,079 –&gt; 00:56:15,079<br>So the bloom filter is a probabilistic data structure, meaning like it can tell you with absolute 100% correctness that a key does not exist.</p>
+<p>463<br>00:56:16,079 –&gt; 00:56:20,079<br>But if you say it can tell you that a key does exist and it might actually be wrong.</p>
+<p>464<br>00:56:20,079 –&gt; 00:56:23,079<br>So it can give you false positives.</p>
+<p>465<br>00:56:23,079 –&gt; 00:56:26,079<br>And you can only do two operations on the basic bloom filter.</p>
+<p>466<br>00:56:26,079 –&gt; 00:56:28,079<br>You can do an insert and you can do a look up.</p>
+<p>467<br>00:56:28,079 –&gt; 00:56:30,079<br>You can’t do the leads.</p>
+<p>468<br>00:56:30,079 –&gt; 00:56:32,079<br>We’ll see what.</p>
+<p>469<br>00:56:32,079 –&gt; 00:56:36,079<br>So it’s basically just like most of them, it’s just a bit map.</p>
+<p>470<br>00:56:36,079 –&gt; 00:56:42,079<br>And a bit will reset based on the keys that get inserted.</p>
+<p>471<br>00:56:42,079 –&gt; 00:56:45,079<br>I started inserting members of the Wu-Tang Clam.</p>
+<p>472<br>00:56:45,079 –&gt; 00:56:46,079<br>So I insert Rizm.</p>
+<p>473<br>00:56:46,079 –&gt; 00:56:50,079<br>And so I’ll have the hash functions.</p>
+<p>474<br>00:56:50,079 –&gt; 00:56:51,079<br>I’ll hash it again.</p>
+<p>475<br>00:56:51,079 –&gt; 00:56:53,079<br>Same hash implementation, just a different seed.</p>
+<p>476<br>00:56:53,079 –&gt; 00:56:55,079<br>I get some hash value out.</p>
+<p>477<br>00:56:55,079 –&gt; 00:57:00,079<br>And then I mod it by the number of bits that I have in my bloom filter.</p>
+<p>478<br>00:57:00,079 –&gt; 00:57:04,079<br>And then whatever that number is, I set those bits to one.</p>
+<p>479<br>00:57:04,079 –&gt; 00:57:06,079<br>Flip it from zero to one.</p>
+<p>480<br>00:57:06,079 –&gt; 00:57:08,079<br>I insert just the same thing.</p>
+<p>481<br>00:57:08,079 –&gt; 00:57:12,079<br>Hash it, mod it by the number of bits, and set those bits to one.</p>
+<p>482<br>00:57:12,079 –&gt; 00:57:16,079<br>Now if I want to do a look up, like on Rizm, same thing.</p>
+<p>483<br>00:57:16,079 –&gt; 00:57:21,079<br>I just do a hash the key I’m looking for, mod it by the number.</p>
+<p>484<br>00:57:21,079 –&gt; 00:57:24,079<br>And then I go check to see whether all the bits,</p>
+<p>485<br>00:57:24,079 –&gt; 00:57:28,079<br>bit locations that I’ve hashed to, if they’re set to one,</p>
+<p>486<br>00:57:28,079 –&gt; 00:57:32,079<br>if they’re set to one, then I know that this was set.</p>
+<p>487<br>00:57:32,079 –&gt; 00:57:34,079<br>I know that, sorry.</p>
+<p>488<br>00:57:34,079 –&gt; 00:57:38,079<br>If it’s set to one, then I think it could exist.</p>
+<p>489<br>00:57:38,079 –&gt; 00:57:42,079<br>But I could be wrong because something else might have set those bits.</p>
+<p>490<br>00:57:42,079 –&gt; 00:57:44,079<br>So I’ll get back true for this.</p>
+<p>491<br>00:57:44,079 –&gt; 00:57:48,079<br>If I do a look up on Rekwon, the chef, again, when I do a look up,</p>
+<p>492<br>00:57:48,079 –&gt; 00:57:50,079<br>one of the bits is set to zero.</p>
+<p>493<br>00:57:50,079 –&gt; 00:57:53,079<br>So I know that cannot have been inserted because otherwise there’s one of those bits,</p>
+<p>494<br>00:57:53,079 –&gt; 00:57:55,079<br>all those bits would have been set.</p>
+<p>495<br>00:57:55,079 –&gt; 00:57:56,079<br>So I get false.</p>
+<p>496<br>00:57:56,079 –&gt; 00:57:58,079<br>But I look up ODB, rest in peace.</p>
+<p>497<br>00:57:58,079 –&gt; 00:58:01,079<br>Again, now I can get a false positive because I never inserted it.</p>
+<p>498<br>00:58:01,079 –&gt; 00:58:03,079<br>His bits were set to one.</p>
+<p>499<br>00:58:03,079 –&gt; 00:58:08,079<br>So therefore it’s true, but it’s actually wrong.</p>
+<p>500<br>00:58:08,079 –&gt; 00:58:12,079<br>So you can put that Bloomfotter in front of your bucket chain.</p>
+<p>501<br>00:58:12,079 –&gt; 00:58:17,079<br>And it’ll be popular with the bits set for the keys that were actually inserted into it.</p>
+<p>502<br>00:58:17,079 –&gt; 00:58:20,079<br>And I can maintain it incrementally because every time I add a new,</p>
+<p>503<br>00:58:20,079 –&gt; 00:58:24,079<br>insert a new key into that bucket list, I update my Bloomfotter.</p>
+<p>504<br>00:58:24,079 –&gt; 00:58:27,079<br>There’s different variations of Bloomfotters.</p>
+<p>505<br>00:58:27,079 –&gt; 00:58:28,079<br>You can have different levels of them.</p>
+<p>506<br>00:58:28,079 –&gt; 00:58:30,079<br>You have decaying ones.</p>
+<p>507<br>00:58:30,079 –&gt; 00:58:32,079<br>The size of the Bloomfotter can vary their hash functions.</p>
+<p>508<br>00:58:32,079 –&gt; 00:58:33,079<br>There’s a whole bunch of different things.</p>
+<p>509<br>00:58:33,079 –&gt; 00:58:36,079<br>But this data structure is super useful as we use all throughout the system.</p>
+<p>510<br>00:58:36,079 –&gt; 00:58:37,079<br>Yes.</p>
+<p>511<br>00:58:37,079 –&gt; 00:58:40,079<br>How does the rate of false positive change in the case of the hash function?</p>
+<p>512<br>00:58:40,079 –&gt; 00:58:42,079<br>Its question is how does the rate of false positive change at G-Sundale?</p>
+<p>513<br>00:58:42,079 –&gt; 00:58:46,079<br>There’s some formula that says like if you want a 1% false positive rate,</p>
+<p>514<br>00:58:46,079 –&gt; 00:58:50,079<br>you need to have a Bloomfotter this size and with this number of hash functions.</p>
+<p>515<br>00:58:50,079 –&gt; 00:58:52,079<br>Is it really exponential?</p>
+<p>516<br>00:58:52,079 –&gt; 00:58:54,079<br>Is the expression is an exponential linear?</p>
+<p>517<br>00:58:54,079 –&gt; 00:58:55,079<br>I don’t know.</p>
+<p>518<br>00:58:55,079 –&gt; 00:58:56,079<br>I remember.</p>
+<p>519<br>00:58:57,079 –&gt; 00:58:59,079<br>This website here, the Bloomfotter calculator,</p>
+<p>520<br>00:58:59,079 –&gt; 00:59:02,079<br>you say what false positive rate you want, how many keys you have,</p>
+<p>521<br>00:59:02,079 –&gt; 00:59:04,079<br>and it’ll tell you the size of the Bloomfotter you want,</p>
+<p>522<br>00:59:04,079 –&gt; 00:59:07,079<br>and then the number of hash functions.</p>
+<p>523<br>00:59:07,079 –&gt; 00:59:08,079<br>Yes.</p>
+<p>524<br>00:59:08,079 –&gt; 00:59:10,079<br>How does Bloomfotter tend to deletion?</p>
+<p>525<br>00:59:10,079 –&gt; 00:59:13,079<br>The question is how does Bloomfotter tend to deletion?</p>
+<p>526<br>00:59:13,079 –&gt; 00:59:14,079<br>They don’t.</p>
+<p>527<br>00:59:14,079 –&gt; 00:59:16,079<br>Right?</p>
+<p>528<br>00:59:16,079 –&gt; 00:59:20,079<br>There are variations of them that with multiple levels you can do it.</p>
+<p>529<br>00:59:20,079 –&gt; 00:59:23,079<br>For the basic one, they don’t.</p>
+<p>530<br>00:59:23,079 –&gt; 00:59:25,079<br>And Bloomfotters are super useful.</p>
+<p>531<br>00:59:25,079 –&gt; 00:59:27,079<br>We’ll use this throughout the system in a bunch of ways.</p>
+<p>532<br>00:59:27,079 –&gt; 00:59:29,079<br>We’ll use it for hash joins.</p>
+<p>533<br>00:59:29,079 –&gt; 00:59:33,079<br>Because again, it’s a lot cheaper to go look up to say is it in my Bloomfotter</p>
+<p>534<br>00:59:33,079 –&gt; 00:59:36,079<br>than go look up, you know, actually follow a page and look on this</p>
+<p>535<br>00:59:36,079 –&gt; 00:59:40,079<br>because you weather something exists or not.</p>
+<p>536<br>00:59:40,079 –&gt; 00:59:41,079<br>Okay.</p>
+<p>537<br>00:59:44,079 –&gt; 00:59:47,079<br>So a most sophisticated scheme is called extendable hashing.</p>
+<p>538<br>00:59:47,079 –&gt; 00:59:49,079<br>And this is going to be like chain hashing,</p>
+<p>539<br>00:59:49,079 –&gt; 00:59:53,079<br>but we’re going to allow the,</p>
+<p>540<br>00:59:53,079 –&gt; 00:59:57,079<br>we’re going to split the buckets to avoid these infinitely long bucket lists.</p>
+<p>541<br>00:59:57,079 –&gt; 01:00:00,079<br>And we’re going to split it in such a way that we only,</p>
+<p>542<br>01:00:00,079 –&gt; 01:00:06,079<br>we only need to do it incrementally in a small part of the hash table rather than having to rehash everything.</p>
+<p>543<br>01:00:06,079 –&gt; 01:00:11,079<br>And the key idea of this is going to work is that we’re going to expand the number of bits we have to look at</p>
+<p>544<br>01:00:11,079 –&gt; 01:00:17,079<br>when we do lookups in our bucket list or bucket hash table to go find the bucket chain that we’re looking for.</p>
+<p>545<br>01:00:17,079 –&gt; 01:00:25,079<br>And we can vary this per sort of per per value or per key type, not key type.</p>
+<p>546<br>01:00:25,079 –&gt; 01:00:30,079<br>We can vary this based on what bucket list we’re looking at.</p>
+<p>547<br>01:00:30,079 –&gt; 01:00:35,079<br>So it may be the case that two different locations or multiple locations in our bucket array</p>
+<p>548<br>01:00:35,079 –&gt; 01:00:41,079<br>will point to the same bucket list, but then that can expand and break up as we need it as we go along.</p>
+<p>549<br>01:00:41,079 –&gt; 01:00:44,079<br>So I didn’t actually think this is, this is bit complicated.</p>
+<p>550<br>01:00:44,079 –&gt; 01:00:48,079<br>And I didn’t think actually any system actually uses it, but it turns out GDBM,</p>
+<p>551<br>01:00:48,079 –&gt; 01:00:52,079<br>which is a new database manager, think of like, you know,</p>
+<p>552<br>01:00:52,079 –&gt; 01:00:56,079<br>a key value store, like sort of like rocks DB or SQLite,</p>
+<p>553<br>01:00:56,079 –&gt; 01:00:58,079<br>you can run this embedded in your system.</p>
+<p>554<br>01:00:58,079 –&gt; 01:01:01,079<br>That’s based on you on a set of hash tables.</p>
+<p>555<br>01:01:01,079 –&gt; 01:01:05,079<br>And then Asterix DB is a big data project at a UC Irvine,</p>
+<p>556<br>01:01:05,079 –&gt; 01:01:09,079<br>and they’re using a set of my hashing in their implementation.</p>
+<p>557<br>01:01:09,079 –&gt; 01:01:12,079<br>Let’s see how this works.</p>
+<p>558<br>01:01:12,079 –&gt; 01:01:15,079<br>Right, so the first thing we’re going to have is that we have our, again, our slot array</p>
+<p>559<br>01:01:15,079 –&gt; 01:01:17,079<br>and it’s going to point to our bucket list.</p>
+<p>560<br>01:01:17,079 –&gt; 01:01:22,079<br>And then we’re going to have this global identifier that tells us how many bits we need to look at</p>
+<p>561<br>01:01:22,079 –&gt; 01:01:28,079<br>for our hash values to determine how we do our lookups in our bucket array.</p>
+<p>562<br>01:01:28,079 –&gt; 01:01:32,079<br>And then for sort of bookkeeping reasons, every bucket list as well will also have</p>
+<p>563<br>01:01:32,079 –&gt; 01:01:36,079<br>with our local bit, bit sizes, number of bits we need to look at.</p>
+<p>564<br>01:01:36,079 –&gt; 01:01:40,079<br>So you see in the case here, these first two slots here,</p>
+<p>565<br>01:01:40,079 –&gt; 01:01:43,079<br>they’re both going to be pointing to the same bucket list,</p>
+<p>566<br>01:01:43,079 –&gt; 01:01:46,079<br>whereas these two ones at the bottom, they’re going to be pointing to different locations.</p>
+<p>567<br>01:01:46,079 –&gt; 01:01:52,079<br>Right, and this is because we need to look at globally,</p>
+<p>568<br>01:01:52,079 –&gt; 01:01:57,079<br>we’re going to look at two bits, but for the first two entries,</p>
+<p>569<br>01:01:57,079 –&gt; 01:02:00,079<br>when the, when the certificate bit is zero,</p>
+<p>570<br>01:02:00,079 –&gt; 01:02:06,079<br>they’re going to reuse the same bucket list identified by the local identifier appear.</p>
+<p>571<br>01:02:06,079 –&gt; 01:02:09,079<br>Right, so let’s say now I want to do a lookup</p>
+<p>572<br>01:02:09,079 –&gt; 01:02:14,079<br>on this key here, I hash it, I then look at the top two bits,</p>
+<p>573<br>01:02:14,079 –&gt; 01:02:18,079<br>because that’s what set my global identifier, a global counter.</p>
+<p>574<br>01:02:18,079 –&gt; 01:02:21,079<br>And then I hash it this location, I just follow the pointer,</p>
+<p>575<br>01:02:21,079 –&gt; 01:02:27,079<br>and I land in that bucket, and I can just do the linear search to find the thing I’m looking for.</p>
+<p>576<br>01:02:27,079 –&gt; 01:02:30,079<br>Say now I want to put B,</p>
+<p>577<br>01:02:30,079 –&gt; 01:02:33,079<br>B again, globally, I know I need to look at the top two bits.</p>
+<p>578<br>01:02:33,079 –&gt; 01:02:38,079<br>I do a lookup in my bucket list based on those two bits,</p>
+<p>579<br>01:02:38,079 –&gt; 01:02:42,079<br>then I land to this location here, and I go ahead and insert it.</p>
+<p>580<br>01:02:42,079 –&gt; 01:02:44,079<br>But now I want to put C in,</p>
+<p>581<br>01:02:44,079 –&gt; 01:02:47,079<br>and if I look at the last two bits,</p>
+<p>582<br>01:02:47,079 –&gt; 01:02:49,079<br>it lands in the same location when I insert a B,</p>
+<p>583<br>01:02:49,079 –&gt; 01:02:53,079<br>but now this bucket is full, I can’t put any more entries in,</p>
+<p>584<br>01:02:53,079 –&gt; 01:02:59,079<br>so I need to expand the number of bits I’m looking at to now expand the number of options that I have.</p>
+<p>585<br>01:02:59,079 –&gt; 01:03:02,079<br>So I’m going to increment the global counter from two to three.</p>
+<p>586<br>01:03:02,079 –&gt; 01:03:07,079<br>I’m going to double the size of the number of pointers I have in my bucket array,</p>
+<p>587<br>01:03:07,079 –&gt; 01:03:11,079<br>my bucket array, but then the, and create the new entry,</p>
+<p>588<br>01:03:11,079 –&gt; 01:03:15,079<br>but then when the bit is set to zero,</p>
+<p>589<br>01:03:15,079 –&gt; 01:03:18,079<br>they’re all still going to point to the first bucket here,</p>
+<p>590<br>01:03:18,079 –&gt; 01:03:20,079<br>because I haven’t that one yet,</p>
+<p>591<br>01:03:20,079 –&gt; 01:03:22,079<br>so I only need to look at one bit for that.</p>
+<p>592<br>01:03:22,079 –&gt; 01:03:25,079<br>For the next, when the bits are 1,1,</p>
+<p>593<br>01:03:25,079 –&gt; 01:03:28,079<br>that points to this other bucket down here,</p>
+<p>594<br>01:03:28,079 –&gt; 01:03:31,079<br>and the same thing with these other ones.</p>
+<p>595<br>01:03:31,079 –&gt; 01:03:34,079<br>So now when I’m going to do a lookup to put C in,</p>
+<p>596<br>01:03:34,079 –&gt; 01:03:36,079<br>I need to look at three bits,</p>
+<p>597<br>01:03:36,079 –&gt; 01:03:38,079<br>and I need to look at all the pointers here,</p>
+<p>598<br>01:03:38,079 –&gt; 01:03:41,079<br>and that then takes me to this bucket location.</p>
+<p>599<br>01:03:41,079 –&gt; 01:03:45,079<br>So going back here, when I did my split, I had a resize.</p>
+<p>600<br>01:03:45,079 –&gt; 01:03:48,079<br>These guys just slid down,</p>
+<p>601<br>01:03:48,079 –&gt; 01:03:51,079<br>and I only had to insert one new bucket,</p>
+<p>602<br>01:03:51,079 –&gt; 01:03:54,079<br>but I took what was here, because this one was full,</p>
+<p>603<br>01:03:54,079 –&gt; 01:03:57,079<br>and I just split that one and created a new bucket for it.</p>
+<p>604<br>01:03:57,079 –&gt; 01:03:59,079<br>I didn’t have to touch the one at the bottom,</p>
+<p>605<br>01:03:59,079 –&gt; 01:04:02,079<br>and they didn’t have to touch the one at the top.</p>
+<p>606<br>01:04:02,079 –&gt; 01:04:06,079<br>But like that’s, you have to take a latch on it,</p>
+<p>607<br>01:04:06,079 –&gt; 01:04:08,079<br>when you do it, because you have to make a copy,</p>
+<p>608<br>01:04:08,079 –&gt; 01:04:11,079<br>and resize it, but it’s not that big of a deal.</p>
+<p>609<br>01:04:11,079 –&gt; 01:04:14,079<br>You can do that pretty quickly.</p>
+<p>610<br>01:04:18,079 –&gt; 01:04:20,079<br>Any questions about this?</p>
+<p>611<br>01:04:20,079 –&gt; 01:04:21,079<br>Yes?</p>
+<p>612<br>01:04:21,079 –&gt; 01:04:23,079<br>Is this good?</p>
+<p>613<br>01:04:23,079 –&gt; 01:04:29,079<br>So, resizing this lot of rays relatively cheap,</p>
+<p>614<br>01:04:29,079 –&gt; 01:04:32,079<br>it’s clever, it’s a good idea.</p>
+<p>615<br>01:04:32,079 –&gt; 01:04:36,079<br>Sorry, it’s a clever idea, whether or not it’s good or not.</p>
+<p>616<br>01:04:36,079 –&gt; 01:04:41,079<br>It, engineering-wise, it’s a bit tricky to keep track of all the metadata,</p>
+<p>617<br>01:04:41,079 –&gt; 01:04:44,079<br>where like, you know, what, you know,</p>
+<p>618<br>01:04:44,079 –&gt; 01:04:48,079<br>what bits I need to be looking at as a hash into it.</p>
+<p>619<br>01:04:48,079 –&gt; 01:04:50,079<br>But it’s basically just chain-hashing.</p>
+<p>620<br>01:04:50,079 –&gt; 01:04:53,079<br>So all the benefits I get from chain-hashing are applicable here.</p>
+<p>621<br>01:04:53,079 –&gt; 01:04:56,079<br>I have an extra mechanism now to split things up,</p>
+<p>622<br>01:04:56,079 –&gt; 01:05:02,079<br>so I don’t have this infinitely growing, you know, linked list.</p>
+<p>623<br>01:05:02,079 –&gt; 01:05:05,079<br>So it’s just a way to handle resizing,</p>
+<p>624<br>01:05:05,079 –&gt; 01:05:10,079<br>in a way you couldn’t do in regular chain-hashing.</p>
+<p>625<br>01:05:10,079 –&gt; 01:05:11,079<br>Yes?</p>
+<p>626<br>01:05:11,079 –&gt; 01:05:14,079<br>Why don’t you use it to start the process?</p>
+<p>627<br>01:05:14,079 –&gt; 01:05:18,079<br>I think, yeah, again, linear probing is probably the easiest thing to do,</p>
+<p>628<br>01:05:18,079 –&gt; 01:05:25,079<br>and the lock the whole tail and double the size of it is sometimes good enough.</p>
+<p>629<br>01:05:26,079 –&gt; 01:05:28,079<br>Right.</p>
+<p>630<br>01:05:28,079 –&gt; 01:05:31,079<br>So the last one is linear-hashing.</p>
+<p>631<br>01:05:31,079 –&gt; 01:05:34,079<br>And this is actually what Postgres does,</p>
+<p>632<br>01:05:34,079 –&gt; 01:05:36,079<br>or something very close to this.</p>
+<p>633<br>01:05:36,079 –&gt; 01:05:38,079<br>And the reason why Postgres,</p>
+<p>634<br>01:05:38,079 –&gt; 01:05:42,079<br>well, the notes that’s not Berkeley-DB that also does this,</p>
+<p>635<br>01:05:42,079 –&gt; 01:05:46,079<br>the company that built Berkeley-DB was company called Sleepycat software.</p>
+<p>636<br>01:05:46,079 –&gt; 01:05:49,079<br>So the people that build wire-tiger,</p>
+<p>637<br>01:05:49,079 –&gt; 01:05:52,079<br>they originally started Sleepycat,</p>
+<p>638<br>01:05:52,079 –&gt; 01:05:55,079<br>that got sold to Oracle, so Oracle owns Berkeley-DB,</p>
+<p>639<br>01:05:55,079 –&gt; 01:05:57,079<br>and then they went out and started the new company,</p>
+<p>640<br>01:05:57,079 –&gt; 01:05:58,079<br>and instead of calling it Sleepycat,</p>
+<p>641<br>01:05:58,079 –&gt; 01:06:01,079<br>they called it a wire-tiger,</p>
+<p>642<br>01:06:01,079 –&gt; 01:06:03,079<br>like a tie-iron cocaine or whatever.</p>
+<p>643<br>01:06:03,079 –&gt; 01:06:05,079<br>It was trying to be the opposite.</p>
+<p>644<br>01:06:05,079 –&gt; 01:06:09,079<br>But the woman that wrote the linear-hashing implementation in Postgres</p>
+<p>645<br>01:06:09,079 –&gt; 01:06:12,079<br>in the early 90s was the founder of Berkeley-DB.</p>
+<p>646<br>01:06:12,079 –&gt; 01:06:16,079<br>So she wrote it for Postgres and then wrote it for Berkeley-DB.</p>
+<p>647<br>01:06:16,079 –&gt; 01:06:20,079<br>And she was one of Stonebreakers PG students at Berkeley.</p>
+<p>648<br>01:06:20,079 –&gt; 01:06:24,079<br>So the linear-hashing will be more complicated than</p>
+<p>649<br>01:06:24,079 –&gt; 01:06:26,079<br>the XML-hashing potentially,</p>
+<p>650<br>01:06:26,079 –&gt; 01:06:32,079<br>but the basic idea is that we’re going to keep track of</p>
+<p>651<br>01:06:32,079 –&gt; 01:06:37,079<br>the next bucket list we want to split,</p>
+<p>652<br>01:06:37,079 –&gt; 01:06:41,079<br>and that when any time there’s an overflow in our bucket list chain,</p>
+<p>653<br>01:06:41,079 –&gt; 01:06:43,079<br>and anywhere in our hash table,</p>
+<p>654<br>01:06:43,079 –&gt; 01:06:45,079<br>whatever we’re pointing at with our split pointer,</p>
+<p>655<br>01:06:45,079 –&gt; 01:06:47,079<br>that’s the one we’re going to split.</p>
+<p>656<br>01:06:48,079 –&gt; 01:06:51,079<br>And the idea here is that again, we want to do this incrementally</p>
+<p>657<br>01:06:51,079 –&gt; 01:06:53,079<br>and not have to lock the whole table while we resize,</p>
+<p>658<br>01:06:53,079 –&gt; 01:06:56,079<br>so we can make small changes as we go along.</p>
+<p>659<br>01:06:56,079 –&gt; 01:06:59,079<br>And the idea here is again, you’re amortizing the cost of resizing,</p>
+<p>660<br>01:06:59,079 –&gt; 01:07:01,079<br>so it’s sort of shared across multiple workers.</p>
+<p>661<br>01:07:01,079 –&gt; 01:07:04,079<br>So there’s not like one worker who’s the unlucky one that shows up,</p>
+<p>662<br>01:07:04,079 –&gt; 01:07:06,079<br>tries to insert something,</p>
+<p>663<br>01:07:06,079 –&gt; 01:07:10,079<br>and then they draw the short straw and they’re responsible for resizing the whole thing.</p>
+<p>664<br>01:07:10,079 –&gt; 01:07:12,079<br>And incrementally, as you go along,</p>
+<p>665<br>01:07:12,079 –&gt; 01:07:14,079<br>and that sort of smooths out performance.</p>
+<p>666<br>01:07:14,079 –&gt; 01:07:22,079<br>So again, the idea here is that we’re going to split whatever the next one</p>
+<p>667<br>01:07:22,079 –&gt; 01:07:23,079<br>we need to split,</p>
+<p>668<br>01:07:23,079 –&gt; 01:07:25,079<br>which may not be the one that overflowed,</p>
+<p>669<br>01:07:25,079 –&gt; 01:07:28,079<br>it’s just be whatever the next one is in our incremental order,</p>
+<p>670<br>01:07:28,079 –&gt; 01:07:33,079<br>and then we’ll have maintain multiple hash functions that are going to help us determine</p>
+<p>671<br>01:07:33,079 –&gt; 01:07:39,079<br>which location within our bucket list we should be looking at.</p>
+<p>672<br>01:07:39,079 –&gt; 01:07:42,079<br>Let me show the diagram, and this makes more sense.</p>
+<p>673<br>01:07:43,079 –&gt; 01:07:46,079<br>So again, just look at what we have our bucket list here,</p>
+<p>674<br>01:07:46,079 –&gt; 01:07:49,079<br>and that’s going to map to bucket chains.</p>
+<p>675<br>01:07:49,079 –&gt; 01:07:52,079<br>And then we’re going to have a split pointer that’s going to say,</p>
+<p>676<br>01:07:52,079 –&gt; 01:07:54,079<br>here’s the next thing we want to split any time,</p>
+<p>677<br>01:07:54,079 –&gt; 01:07:56,079<br>anything overflows in our hash table.</p>
+<p>678<br>01:07:56,079 –&gt; 01:07:58,079<br>And then we have, at the very beginning,</p>
+<p>679<br>01:07:58,079 –&gt; 01:08:01,079<br>we assume we have one hash function that’s just the key,</p>
+<p>680<br>01:08:01,079 –&gt; 01:08:06,079<br>say it’s the, you know, the identity, the key mod by the end,</p>
+<p>681<br>01:08:06,079 –&gt; 01:08:07,079<br>for simplicity reasons.</p>
+<p>682<br>01:08:07,079 –&gt; 01:08:10,079<br>But again, assuming like it’s taking any arbitrary string,</p>
+<p>683<br>01:08:10,079 –&gt; 01:08:13,079<br>or arbitrary byte sequence, and spitting out integer.</p>
+<p>684<br>01:08:13,079 –&gt; 01:08:16,079<br>So say I want to get six,</p>
+<p>685<br>01:08:16,079 –&gt; 01:08:20,079<br>I do my lookup, and at two, and I follow along,</p>
+<p>686<br>01:08:20,079 –&gt; 01:08:22,079<br>and I find the key I’m looking for.</p>
+<p>687<br>01:08:22,079 –&gt; 01:08:24,079<br>That looks just like before, nothing special.</p>
+<p>688<br>01:08:24,079 –&gt; 01:08:26,079<br>But now I want to put 17,</p>
+<p>689<br>01:08:26,079 –&gt; 01:08:29,079<br>and it should go into this bucket here,</p>
+<p>690<br>01:08:29,079 –&gt; 01:08:31,079<br>but that thing’s full.</p>
+<p>691<br>01:08:31,079 –&gt; 01:08:33,079<br>So we’re just going to do an overflow,</p>
+<p>692<br>01:08:33,079 –&gt; 01:08:36,079<br>just like chain hashing, we’re going to extend it with another bucket,</p>
+<p>693<br>01:08:36,079 –&gt; 01:08:42,079<br>and insert it into the, insert it into that new page.</p>
+<p>694<br>01:08:42,079 –&gt; 01:08:45,079<br>But now, because we overflowed,</p>
+<p>695<br>01:08:45,079 –&gt; 01:08:48,079<br>we need to split whatever the split pointer was pointing at.</p>
+<p>696<br>01:08:48,079 –&gt; 01:08:52,079<br>So in this case here, it’s pointing to bucket zero,</p>
+<p>697<br>01:08:52,079 –&gt; 01:08:53,079<br>a bucket list zero.</p>
+<p>698<br>01:08:53,079 –&gt; 01:08:55,079<br>Even though that didn’t overflow.</p>
+<p>699<br>01:08:55,079 –&gt; 01:08:59,079<br>So what we need to do now is look at all the entries inside this bucket list,</p>
+<p>700<br>01:08:59,079 –&gt; 01:09:03,079<br>and we’re going to rehash them based on the,</p>
+<p>701<br>01:09:03,079 –&gt; 01:09:05,079<br>based now on two n,</p>
+<p>702<br>01:09:05,079 –&gt; 01:09:10,079<br>because we’re going to incrementally grow the size of the bucket list by one each time.</p>
+<p>703<br>01:09:10,079 –&gt; 01:09:12,079<br>So we had four entries,</p>
+<p>704<br>01:09:12,079 –&gt; 01:09:15,079<br>now after we got to split, now we’ll have five.</p>
+<p>705<br>01:09:15,079 –&gt; 01:09:18,079<br>So we go through, and this points there,</p>
+<p>706<br>01:09:18,079 –&gt; 01:09:21,079<br>for every single key, we’re going to rehash it based on,</p>
+<p>707<br>01:09:21,079 –&gt; 01:09:23,079<br>instead of mod n, but mod two n.</p>
+<p>708<br>01:09:23,079 –&gt; 01:09:25,079<br>So eight, mod eight is zero,</p>
+<p>709<br>01:09:25,079 –&gt; 01:09:26,079<br>so that stays where it was.</p>
+<p>710<br>01:09:26,079 –&gt; 01:09:28,079<br>20, mod eight is now four,</p>
+<p>711<br>01:09:28,079 –&gt; 01:09:32,079<br>so that’s going to get moved down to this new page down here.</p>
+<p>712<br>01:09:32,079 –&gt; 01:09:36,079<br>And then now the split pointer just moves down by one,</p>
+<p>713<br>01:09:36,079 –&gt; 01:09:39,079<br>and we continue doing whatever, you know,</p>
+<p>714<br>01:09:39,079 –&gt; 01:09:41,079<br>continue operating on the hash table.</p>
+<p>715<br>01:09:41,079 –&gt; 01:09:43,079<br>Right?</p>
+<p>716<br>01:09:43,079 –&gt; 01:09:45,079<br>So now I do a get 20.</p>
+<p>717<br>01:09:45,079 –&gt; 01:09:49,079<br>When I first hash it, I would get zero,</p>
+<p>718<br>01:09:49,079 –&gt; 01:09:51,079<br>but then I know that the,</p>
+<p>719<br>01:09:51,079 –&gt; 01:09:57,079<br>that location in my bucket list here is above where the split pointer is pointing at.</p>
+<p>720<br>01:09:57,079 –&gt; 01:10:00,079<br>So I’ve known I’ve already split everything up above it.</p>
+<p>721<br>01:10:00,079 –&gt; 01:10:02,079<br>So after I mod it by four,</p>
+<p>722<br>01:10:02,079 –&gt; 01:10:05,079<br>I got to mod it by eight now to figure out where it really is.</p>
+<p>723<br>01:10:05,079 –&gt; 01:10:10,079<br>And then that’s how I can find it down here at the bottom.</p>
+<p>724<br>01:10:10,079 –&gt; 01:10:11,079<br>So I want to get nine.</p>
+<p>725<br>01:10:11,079 –&gt; 01:10:14,079<br>In this case here, it’s pointing to exactly where the bucket,</p>
+<p>726<br>01:10:14,079 –&gt; 01:10:15,079<br>the split pointer is pointing at.</p>
+<p>727<br>01:10:15,079 –&gt; 01:10:17,079<br>So I know I haven’t split it yet,</p>
+<p>728<br>01:10:17,079 –&gt; 01:10:19,079<br>so I can just only hash it once,</p>
+<p>729<br>01:10:19,079 –&gt; 01:10:25,079<br>and I scan along the link list until I find the thing I’m looking for.</p>
+<p>730<br>01:10:25,079 –&gt; 01:10:27,079<br>Right?</p>
+<p>731<br>01:10:27,079 –&gt; 01:10:30,079<br>And at some point, the split pointer will get to the bottom,</p>
+<p>732<br>01:10:30,079 –&gt; 01:10:32,079<br>and I’ll have eight slots,</p>
+<p>733<br>01:10:32,079 –&gt; 01:10:37,079<br>and I just loop back around and start all over again.</p>
+<p>734<br>01:10:37,079 –&gt; 01:10:39,079<br>So this seems kind of counter-tuitive,</p>
+<p>735<br>01:10:39,079 –&gt; 01:10:41,079<br>that like I’m not splitting the thing that overflowed,</p>
+<p>736<br>01:10:41,079 –&gt; 01:10:43,079<br>I’m splitting to whatever the split pointer points at.</p>
+<p>737<br>01:10:43,079 –&gt; 01:10:46,079<br>But the idea is again that like if, you know,</p>
+<p>738<br>01:10:46,079 –&gt; 01:10:49,079<br>say this location, or this, you know, slot one,</p>
+<p>739<br>01:10:49,079 –&gt; 01:10:50,079<br>this thing is super hot,</p>
+<p>740<br>01:10:50,079 –&gt; 01:10:52,079<br>and I keep overflowing and overflowing,</p>
+<p>741<br>01:10:52,079 –&gt; 01:10:55,079<br>I’m eventually going to split it.</p>
+<p>742<br>01:10:55,079 –&gt; 01:10:56,079<br>Right?</p>
+<p>743<br>01:10:56,079 –&gt; 01:10:59,079<br>So eventually everything gets split out</p>
+<p>744<br>01:10:59,079 –&gt; 01:11:01,079<br>and sort of re-size correctly.</p>
+<p>745<br>01:11:04,079 –&gt; 01:11:05,079<br>Yes?</p>
+<p>746<br>01:11:05,079 –&gt; 01:11:07,079<br>One thing I’m confused about is,</p>
+<p>747<br>01:11:07,079 –&gt; 01:11:09,079<br>it seems like every time we overscore it by one,</p>
+<p>748<br>01:11:09,079 –&gt; 01:11:11,079<br>the split pointer moves down by one,</p>
+<p>749<br>01:11:11,079 –&gt; 01:11:13,079<br>and then we add one to take the when,</p>
+<p>750<br>01:11:13,079 –&gt; 01:11:15,079<br>which is the split pointer after the round.</p>
+<p>751<br>01:11:15,079 –&gt; 01:11:18,079<br>Because the move down by one is the same time you had it.</p>
+<p>752<br>01:11:18,079 –&gt; 01:11:21,079<br>So the question is when would it actually wrap around?</p>
+<p>753<br>01:11:21,079 –&gt; 01:11:23,079<br>Because you each have one.</p>
+<p>754<br>01:11:23,079 –&gt; 01:11:25,079<br>So you would get to the point where like,</p>
+<p>755<br>01:11:25,079 –&gt; 01:11:27,079<br>so we’d be like five, six, seven,</p>
+<p>756<br>01:11:27,079 –&gt; 01:11:29,079<br>and then you’d be seven,</p>
+<p>757<br>01:11:29,079 –&gt; 01:11:30,079<br>and then you’d have to,</p>
+<p>758<br>01:11:30,079 –&gt; 01:11:32,079<br>you’d loop back around to zero,</p>
+<p>759<br>01:11:32,079 –&gt; 01:11:33,079<br>because you’d know that like,</p>
+<p>760<br>01:11:33,079 –&gt; 01:11:36,079<br>from when it’s here,</p>
+<p>761<br>01:11:36,079 –&gt; 01:11:38,079<br>when it’s only from zero to three,</p>
+<p>762<br>01:11:38,079 –&gt; 01:11:42,079<br>you’d want to get past seven,</p>
+<p>763<br>01:11:42,079 –&gt; 01:11:44,079<br>you’d know where you start at the starting point</p>
+<p>764<br>01:11:44,079 –&gt; 01:11:46,079<br>that that’s two n from where you started at.</p>
+<p>765<br>01:11:46,079 –&gt; 01:11:48,079<br>So then you’d loop back around.</p>
+<p>766<br>01:11:48,079 –&gt; 01:11:53,079<br>But don’t we add a new page every time we do that?</p>
+<p>767<br>01:11:53,079 –&gt; 01:11:55,079<br>You add a new page, but like,</p>
+<p>768<br>01:11:55,079 –&gt; 01:11:58,079<br>I know that I should wrap around when I go to eight,</p>
+<p>769<br>01:11:58,079 –&gt; 01:12:00,079<br>position eight,</p>
+<p>770<br>01:12:00,079 –&gt; 01:12:01,079<br>because when I started,</p>
+<p>771<br>01:12:01,079 –&gt; 01:12:04,079<br>I had four, so two times four is eight,</p>
+<p>772<br>01:12:04,079 –&gt; 01:12:05,079<br>so when I get past eight,</p>
+<p>773<br>01:12:05,079 –&gt; 01:12:06,079<br>I’d loop back around.</p>
+<p>774<br>01:12:06,079 –&gt; 01:12:08,079<br>Then you do that until you get sixteen,</p>
+<p>775<br>01:12:08,079 –&gt; 01:12:09,079<br>and then loop back around.</p>
+<p>776<br>01:12:15,079 –&gt; 01:12:17,079<br>Good idea or bad idea?</p>
+<p>777<br>01:12:23,079 –&gt; 01:12:24,079<br>It’s clever, right?</p>
+<p>778<br>01:12:24,079 –&gt; 01:12:28,079<br>Again, it’s a nice technique to do this incrementally,</p>
+<p>779<br>01:12:28,079 –&gt; 01:12:30,079<br>but again, there’s a lot more bookkeeping,</p>
+<p>780<br>01:12:30,079 –&gt; 01:12:31,079<br>a lot more machinery,</p>
+<p>781<br>01:12:31,079 –&gt; 01:12:33,079<br>in order to actually implement those.</p>
+<p>782<br>01:12:33,079 –&gt; 01:12:34,079<br>Yes?</p>
+<p>783<br>01:12:34,079 –&gt; 01:12:36,079<br>When you do a look up to zero,</p>
+<p>784<br>01:12:36,079 –&gt; 01:12:38,079<br>do you do the top and the top?</p>
+<p>785<br>01:12:38,079 –&gt; 01:12:40,079<br>And this question is,</p>
+<p>786<br>01:12:40,079 –&gt; 01:12:41,079<br>if you only do a look up,</p>
+<p>787<br>01:12:41,079 –&gt; 01:12:42,079<br>you only have a hash at most twice,</p>
+<p>788<br>01:12:42,079 –&gt; 01:12:44,079<br>in this scenario, yes.</p>
+<p>789<br>01:12:45,079 –&gt; 01:12:47,079<br>Like if this thing is massive,</p>
+<p>790<br>01:12:47,079 –&gt; 01:12:48,079<br>I could have like,</p>
+<p>791<br>01:12:48,079 –&gt; 01:12:50,079<br>yes, so actually what happens is,</p>
+<p>792<br>01:12:50,079 –&gt; 01:12:52,079<br>once I get to, say I got to eight,</p>
+<p>793<br>01:12:52,079 –&gt; 01:12:53,079<br>and I wrap back around,</p>
+<p>794<br>01:12:53,079 –&gt; 01:12:55,079<br>I can drop the first hash function.</p>
+<p>795<br>01:12:55,079 –&gt; 01:12:58,079<br>In this case, you’re even at most two, yes.</p>
+<p>796<br>01:13:02,079 –&gt; 01:13:03,079<br>Yes?</p>
+<p>797<br>01:13:03,079 –&gt; 01:13:06,079<br>Do you look in the next slide?</p>
+<p>798<br>01:13:06,079 –&gt; 01:13:08,079<br>About deletes?</p>
+<p>799<br>01:13:08,079 –&gt; 01:13:11,079<br>I guess you start showing there only five reasons,</p>
+<p>800<br>01:13:11,079 –&gt; 01:13:12,079<br>but you’re on what,</p>
+<p>801<br>01:13:12,079 –&gt; 01:13:14,079<br>how do you make the next slide,</p>
+<p>802<br>01:13:14,079 –&gt; 01:13:17,079<br>five, two, and three?</p>
+<p>803<br>01:13:17,079 –&gt; 01:13:19,079<br>So what do you get, seven?</p>
+<p>804<br>01:13:20,079 –&gt; 01:13:21,079<br>Yes, question is,</p>
+<p>805<br>01:13:22,079 –&gt; 01:13:25,079<br>and here, like I’m trying to mod by eight,</p>
+<p>806<br>01:13:25,079 –&gt; 01:13:28,079<br>but what if I get into seven and I don’t have it?</p>
+<p>807<br>01:13:28,079 –&gt; 01:13:30,079<br>But again, you wouldn’t be able to get seven</p>
+<p>808<br>01:13:30,079 –&gt; 01:13:35,079<br>because you’d be below the split pointer,</p>
+<p>809<br>01:13:35,079 –&gt; 01:13:38,079<br>and you’d only hash by four, not eight.</p>
+<p>810<br>01:13:39,079 –&gt; 01:13:41,079<br>So this demarcation line says,</p>
+<p>811<br>01:13:41,079 –&gt; 01:13:43,079<br>I’ve split everything above,</p>
+<p>812<br>01:13:43,079 –&gt; 01:13:45,079<br>and nothing below avoids that problem.</p>
+<p>813<br>01:13:45,079 –&gt; 01:13:47,079<br>Like you don’t land here,</p>
+<p>814<br>01:13:47,079 –&gt; 01:13:50,079<br>and you really, like, you don’t hash first and land here,</p>
+<p>815<br>01:13:50,079 –&gt; 01:13:53,079<br>but if you hash by two and you land something here,</p>
+<p>816<br>01:13:53,079 –&gt; 01:13:55,079<br>then you have a split cap.</p>
+<p>817<br>01:13:55,079 –&gt; 01:13:58,079<br>The split pointer waterline avoids that problem.</p>
+<p>818<br>01:14:04,079 –&gt; 01:14:06,079<br>All right, so,</p>
+<p>819<br>01:14:06,079 –&gt; 01:14:08,079<br>splitting bucket space on the flip pointer</p>
+<p>820<br>01:14:08,079 –&gt; 01:14:11,079<br>eventually gets you all a little bit buckets.</p>
+<p>821<br>01:14:11,079 –&gt; 01:14:13,079<br>Again, when everybody’s had this,</p>
+<p>822<br>01:14:13,079 –&gt; 01:14:14,079<br>when you reach the bottom,</p>
+<p>823<br>01:14:14,079 –&gt; 01:14:16,079<br>you just drop the first hash function and loop back around.</p>
+<p>824<br>01:14:17,079 –&gt; 01:14:21,079<br>In this technique, also allows you to do contraction</p>
+<p>825<br>01:14:23,079 –&gt; 01:14:25,079<br>or coalescing as well,</p>
+<p>826<br>01:14:25,079 –&gt; 01:14:30,079<br>because you could identify that a bucket list is empty,</p>
+<p>827<br>01:14:30,079 –&gt; 01:14:32,079<br>and you could do the reverse.</p>
+<p>828<br>01:14:32,079 –&gt; 01:14:34,079<br>You could throw it away,</p>
+<p>829<br>01:14:34,079 –&gt; 01:14:37,079<br>consolidate the, well, one bucket’s empty,</p>
+<p>830<br>01:14:37,079 –&gt; 01:14:39,079<br>so you could throw it away,</p>
+<p>831<br>01:14:39,079 –&gt; 01:14:41,079<br>and you move the split pointer back up,</p>
+<p>832<br>01:14:41,079 –&gt; 01:14:44,079<br>and that allows you actually shrink the size of the hash table.</p>
+<p>833<br>01:14:45,079 –&gt; 01:14:48,079<br>So going back here, say I delete 20,</p>
+<p>834<br>01:14:48,079 –&gt; 01:14:50,079<br>I mod it by four,</p>
+<p>835<br>01:14:50,079 –&gt; 01:14:53,079<br>but then I realize that’s below the split pointer,</p>
+<p>836<br>01:14:53,079 –&gt; 01:14:55,079<br>and I gotta get down to the bottom here,</p>
+<p>837<br>01:14:55,079 –&gt; 01:14:56,079<br>and I go ahead and delete it,</p>
+<p>838<br>01:14:56,079 –&gt; 01:14:58,079<br>but now this page is empty,</p>
+<p>839<br>01:14:58,079 –&gt; 01:14:59,079<br>so if I wanted to,</p>
+<p>840<br>01:14:59,079 –&gt; 01:15:01,079<br>I could just move the split pointer back up,</p>
+<p>841<br>01:15:01,079 –&gt; 01:15:05,079<br>and then drop that last entry and drop the last hash table.</p>
+<p>842<br>01:15:05,079 –&gt; 01:15:06,079<br>Right?</p>
+<p>843<br>01:15:06,079 –&gt; 01:15:08,079<br>And obviously, you need to be clever,</p>
+<p>844<br>01:15:08,079 –&gt; 01:15:09,079<br>and make sure that, like,</p>
+<p>845<br>01:15:09,079 –&gt; 01:15:11,079<br>I don’t oscillate, like, insert 20, delete 20, insert 20,</p>
+<p>846<br>01:15:11,079 –&gt; 01:15:13,079<br>and like, I keep splitting it and coalescing.</p>
+<p>847<br>01:15:13,079 –&gt; 01:15:15,079<br>That would be bad,</p>
+<p>848<br>01:15:15,079 –&gt; 01:15:19,079<br>but you could contract the data structure based on this.</p>
+<p>849<br>01:15:19,079 –&gt; 01:15:20,079<br>Right?</p>
+<p>850<br>01:15:20,079 –&gt; 01:15:21,079<br>You don’t want to insert 21,</p>
+<p>851<br>01:15:21,079 –&gt; 01:15:23,079<br>then overflow, and split all over again.</p>
+<p>852<br>01:15:23,079 –&gt; 01:15:24,079<br>Right?</p>
+<p>853<br>01:15:26,079 –&gt; 01:15:31,079<br>I don’t think Postgres supports shrinking the size of the hash table.</p>
+<p>854<br>01:15:31,079 –&gt; 01:15:32,079<br>As far as I know,</p>
+<p>855<br>01:15:32,079 –&gt; 01:15:34,079<br>without this re-building the whole thing.</p>
+<p>856<br>01:15:36,079 –&gt; 01:15:37,079<br>Okay?</p>
+<p>857<br>01:15:38,079 –&gt; 01:15:40,079<br>All right, so, hash tables.</p>
+<p>858<br>01:15:40,079 –&gt; 01:15:41,079<br>Again, super useful.</p>
+<p>859<br>01:15:41,079 –&gt; 01:15:44,079<br>Most systems are going to just implement the linear-proven hashing,</p>
+<p>860<br>01:15:44,079 –&gt; 01:15:46,079<br>but again, you can still specialize in based on the data type</p>
+<p>861<br>01:15:46,079 –&gt; 01:15:49,079<br>and other aspects of how it’s going to be used,</p>
+<p>862<br>01:15:49,079 –&gt; 01:15:52,079<br>and click houses, probably the best example of this.</p>
+<p>863<br>01:15:52,079 –&gt; 01:15:54,079<br>For a lot of commercial systems,</p>
+<p>864<br>01:15:54,079 –&gt; 01:15:56,079<br>it’s very hard to know what hatchable they’re actually using,</p>
+<p>865<br>01:15:56,079 –&gt; 01:15:58,079<br>unless there’s a paper talking about it,</p>
+<p>866<br>01:15:58,079 –&gt; 01:16:01,079<br>or we know people that work there that can tell us.</p>
+<p>867<br>01:16:01,079 –&gt; 01:16:03,079<br>You know, this is not something you,</p>
+<p>868<br>01:16:03,079 –&gt; 01:16:04,079<br>as, like, you know,</p>
+<p>869<br>01:16:04,079 –&gt; 01:16:06,079<br>someone using SQL and application developer,</p>
+<p>870<br>01:16:06,079 –&gt; 01:16:08,079<br>you should know or care.</p>
+<p>871<br>01:16:08,079 –&gt; 01:16:09,079<br>But it’s nice to know what,</p>
+<p>872<br>01:16:09,079 –&gt; 01:16:12,079<br>sometimes, what, how these systems are implemented.</p>
+<p>873<br>01:16:12,079 –&gt; 01:16:14,079<br>Nice thing about hatch functions, again,</p>
+<p>874<br>01:16:14,079 –&gt; 01:16:15,079<br>it’ll be fast,</p>
+<p>875<br>01:16:15,079 –&gt; 01:16:17,079<br>but it’s for O1 lookups in the best case scenario.</p>
+<p>876<br>01:16:17,079 –&gt; 01:16:20,079<br>But again, we need to be able to make sure that we can,</p>
+<p>877<br>01:16:20,079 –&gt; 01:16:25,079<br>you know, we may need to grow efficiently if we estimate the size</p>
+<p>878<br>01:16:25,079 –&gt; 01:16:27,079<br>incorrectly,</p>
+<p>879<br>01:16:27,079 –&gt; 01:16:30,079<br>and we’ll see how we do those estimations later on.</p>
+<p>880<br>01:16:30,079 –&gt; 01:16:35,079<br>So, some systems will give you hash tables when you call Create Index.</p>
+<p>881<br>01:16:35,079 –&gt; 01:16:36,079<br>Postgres will let you do this.</p>
+<p>882<br>01:16:36,079 –&gt; 01:16:37,079<br>Postgres will be called Create Index.</p>
+<p>883<br>01:16:37,079 –&gt; 01:16:39,079<br>You can say using hash,</p>
+<p>884<br>01:16:39,079 –&gt; 01:16:40,079<br>and you’ll get a hash table.</p>
+<p>885<br>01:16:40,079 –&gt; 01:16:43,079<br>You’ll get their linear hash table implementation.</p>
+<p>886<br>01:16:43,079 –&gt; 01:16:46,079<br>But this is not the default.</p>
+<p>887<br>01:16:46,079 –&gt; 01:16:50,079<br>For almost all systems when you call Create Index.</p>
+<p>888<br>01:16:50,079 –&gt; 01:16:52,079<br>There may be no Y.</p>
+<p>889<br>01:16:52,079 –&gt; 01:16:56,079<br>No range against, yes.</p>
+<p>890<br>01:16:56,079 –&gt; 01:16:58,079<br>The only thing you can do with the hash table</p>
+<p>891<br>01:16:58,079 –&gt; 01:17:00,079<br>is a quality lookups,</p>
+<p>892<br>01:17:00,079 –&gt; 01:17:02,079<br>and you need to have the entire key.</p>
+<p>893<br>01:17:02,079 –&gt; 01:17:04,079<br>If my key is on,</p>
+<p>894<br>01:17:05,079 –&gt; 01:17:06,079<br>you can see,</p>
+<p>895<br>01:17:06,079 –&gt; 01:17:07,079<br>column A and column B,</p>
+<p>896<br>01:17:07,079 –&gt; 01:17:08,079<br>I can do composite keys.</p>
+<p>897<br>01:17:08,079 –&gt; 01:17:10,079<br>If I don’t have A,</p>
+<p>898<br>01:17:10,079 –&gt; 01:17:11,079<br>or I don’t have B,</p>
+<p>899<br>01:17:11,079 –&gt; 01:17:13,079<br>I can’t do a lookup.</p>
+<p>900<br>01:17:13,079 –&gt; 01:17:14,079<br>In a B plus tree,</p>
+<p>901<br>01:17:14,079 –&gt; 01:17:16,079<br>which we’ll discuss next class,</p>
+<p>902<br>01:17:16,079 –&gt; 01:17:18,079<br>you can do these prefix lookups.</p>
+<p>903<br>01:17:18,079 –&gt; 01:17:22,079<br>And it is the best data structure of all time for databases.</p>
+<p>904<br>01:17:22,079 –&gt; 01:17:24,079<br>Tries are actually pretty good too,</p>
+<p>905<br>01:17:24,079 –&gt; 01:17:27,079<br>but you can put tries in your B plus trees.</p>
+<p>906<br>01:17:27,079 –&gt; 01:17:29,079<br>Do you have a bunch of things like that?</p>
+<p>907<br>01:17:29,079 –&gt; 01:17:32,079<br>So, so the default choice of most of these systems</p>
+<p>908<br>01:17:32,079 –&gt; 01:17:34,079<br>are going to be a B plus tree,</p>
+<p>909<br>01:17:34,079 –&gt; 01:17:36,079<br>and that’s what we’ll discuss next week.</p>
+<p>910<br>01:17:36,079 –&gt; 01:17:39,079<br>But again, we’ll assume it’s single threaded</p>
+<p>911<br>01:17:39,079 –&gt; 01:17:40,079<br>on Monday,</p>
+<p>912<br>01:17:40,079 –&gt; 01:17:41,079<br>and then on Wednesday,</p>
+<p>913<br>01:17:41,079 –&gt; 01:17:43,079<br>we’ll see how to make it multi threaded.</p>
+<p>914<br>01:17:43,079 –&gt; 01:17:44,079<br>Okay?</p>
+<p>915<br>01:17:44,079 –&gt; 01:17:46,079<br>All right, hit it.</p>
+<p>916<br>01:17:47,079 –&gt; 01:17:49,079<br>I’m gonna go to the next class.</p>
+<p>917<br>01:17:49,079 –&gt; 01:17:51,079<br>I’m gonna go to the next class.</p>
+<p>918<br>01:17:51,079 –&gt; 01:17:53,079<br>I’m gonna go to the next class.</p>
+<p>919<br>01:17:53,079 –&gt; 01:17:55,079<br>I’m gonna go to the next class.</p>
+<p>920<br>01:17:55,079 –&gt; 01:17:57,079<br>I’m gonna go to the next class.</p>
+<p>921<br>01:17:57,079 –&gt; 01:17:59,079<br>I’m gonna go to the next class.</p>
+<p>922<br>01:17:59,079 –&gt; 01:18:01,079<br>I’m gonna go to the next class.</p>
+<p>923<br>01:18:01,079 –&gt; 01:18:03,079<br>I’m gonna go to the next class.</p>
+<p>924<br>01:18:03,079 –&gt; 01:18:05,079<br>I’m gonna go to the next class.</p>
+<p>925<br>01:18:05,079 –&gt; 01:18:07,079<br>I’m gonna go to the next class.</p>
+<p>926<br>01:18:07,079 –&gt; 01:18:09,079<br>I’m gonna go to the next class.</p>
+<p>927<br>01:18:09,079 –&gt; 01:18:11,079<br>I’m gonna go to the next class.</p>
+<p>928<br>01:18:11,079 –&gt; 01:18:12,079<br>I’m gonna go to the next class.</p>
+<p>929<br>01:18:12,079 –&gt; 01:18:13,079<br>I’m gonna go to the next class.</p>
+<p>930<br>01:18:13,079 –&gt; 01:18:14,079<br>I’m gonna go to the next class.</p>
+<p>931<br>01:18:14,079 –&gt; 01:18:15,079<br>I’m gonna go to the next class.</p>
+<p>932<br>01:18:15,079 –&gt; 01:18:17,079<br>I’m gonna go to the next class.</p>
+<p>933<br>01:18:17,079 –&gt; 01:18:18,079<br>I’m gonna go to the next class.</p>
+<p>934<br>01:18:18,079 –&gt; 01:18:19,079<br>I’m gonna go to the next class.</p>
+<p>935<br>01:18:19,079 –&gt; 01:18:20,079<br>I’m gonna go to the next class.</p>
+<p>936<br>01:18:20,079 –&gt; 01:18:21,079<br>I’m gonna go to the next class.</p>
+<p>937<br>01:18:21,079 –&gt; 01:18:22,079<br>I’m gonna go to the next class.</p>
+<p>938<br>01:18:22,079 –&gt; 01:18:23,079<br>I’m gonna go to the next class.</p>
+<p>939<br>01:18:23,079 –&gt; 01:18:24,079<br>I’m gonna go to the next class.</p>
+<p>940<br>01:18:24,079 –&gt; 01:18:25,079<br>I’m gonna go to the next class.</p>
+<p>941<br>01:18:25,079 –&gt; 01:18:26,079<br>I’m gonna go to the next class.</p>
+<p>942<br>01:18:26,079 –&gt; 01:18:27,079<br>I’m gonna go to the next class.</p>
+<p>943<br>01:18:27,079 –&gt; 01:18:28,079<br>I’m gonna go to the next class.</p>
+<p>944<br>01:18:28,079 –&gt; 01:18:29,079<br>I’m gonna go to the next class.</p>
+<p>945<br>01:18:29,079 –&gt; 01:18:30,079<br>I’m gonna go to the next class.</p>
+<p>946<br>01:18:30,079 –&gt; 01:18:31,079<br>I’m gonna go to the next class.</p>
+<p>947<br>01:18:31,079 –&gt; 01:18:32,079<br>I’m gonna go to the next class.</p>
+<p>948<br>01:18:32,079 –&gt; 01:18:33,079<br>I’m gonna go to the next class.</p>
+<p>949<br>01:18:33,079 –&gt; 01:18:34,079<br>I’m gonna go to the next class.</p>
+<p>950<br>01:18:34,079 –&gt; 01:18:35,079<br>I’m gonna go to the next class.</p>
+<p>951<br>01:18:35,079 –&gt; 01:18:36,079<br>I’m gonna go to the next class.</p>
+<p>952<br>01:18:36,079 –&gt; 01:18:37,079<br>I’m gonna go to the next class.</p>
+<p>953<br>01:18:37,079 –&gt; 01:18:38,079<br>I’m gonna go to the next class.</p>
+<p>954<br>01:18:38,079 –&gt; 01:18:39,079<br>I’m gonna go to the next class.</p>
+<p>955<br>01:18:39,079 –&gt; 01:18:40,079<br>I’m gonna go to the next class.</p>
+<p>956<br>01:18:40,079 –&gt; 01:18:41,079<br>I’m gonna go to the next class.</p>
+<p>957<br>01:18:41,079 –&gt; 01:18:42,079<br>I’m gonna go to the next class.</p>
+<p>958<br>01:18:42,079 –&gt; 01:18:43,079<br>I’m gonna go to the next class.</p>
+<p>959<br>01:18:43,079 –&gt; 01:18:44,079<br>I’m gonna go to the next class.</p>
+<p>960<br>01:18:44,079 –&gt; 01:18:45,079<br>I’m gonna go to the next class.</p>
+<p>961<br>01:18:45,079 –&gt; 01:18:46,079<br>I’m gonna go to the next class.</p>
+<p>962<br>01:18:46,079 –&gt; 01:18:47,079<br>I’m gonna go to the next class.</p>
+<p>963<br>01:18:47,079 –&gt; 01:18:48,079<br>I’m gonna go to the next class.</p>
+<p>964<br>01:18:48,079 –&gt; 01:18:49,079<br>I’m gonna go to the next class.</p>
+<p>965<br>01:18:49,079 –&gt; 01:18:50,079<br>I’m gonna go to the next class.</p>
+<p>966<br>01:18:50,079 –&gt; 01:18:51,079<br>I’m gonna go to the next class.</p>
+<p>967<br>01:18:51,079 –&gt; 01:18:52,079<br>I’m gonna go to the next class.</p>
+<p>968<br>01:18:52,079 –&gt; 01:18:53,079<br>I’m gonna go to the next class.</p>
+<p>969<br>01:18:53,079 –&gt; 01:18:54,079<br>I’m gonna go to the next class.</p>
+<p>970<br>01:18:54,079 –&gt; 01:18:55,079<br>I’m gonna go to the next class.</p>
+<p>971<br>01:18:55,079 –&gt; 01:18:56,079<br>I’m gonna go to the next class.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15445 P8F202307 HashTables</div>
+      <div>http://example.com/2025/10/25/CMU15445 P8F202307-HashTables/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CMU15445%20P9F202308-B+TreeIndexes/" title="CMU15445 P9F202308 B+TreeIndexes">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15445 P9F202308 B+TreeIndexes</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CMU15445%20P5F202304-DatabaseStoragePart2/" title="CMU15445 P5F202304 DatabaseStoragePart2">
+                        <span class="hidden-mobile">CMU15445 P5F202304 DatabaseStoragePart2</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

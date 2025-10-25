@@ -1,0 +1,1510 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:14,300Brad Paulson, DJ, 2PO! 200:00:14,300 –&gt; 00:00:21,0000-0… 300:00:21,000 –&gt; 00:00:24,40010 or 8 L. 400:00:24,400 –&gt; 00:00:25,400David EmilyLittle 500:00:25,399 –">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CMU15445 P10F202309 IndexConcurrencyControl">
+<meta property="og:url" content="http://example.com/2025/10/25/CMU15445%20P10F202309-IndexConcurrencyControl/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:14,300Brad Paulson, DJ, 2PO! 200:00:14,300 –&gt; 00:00:21,0000-0… 300:00:21,000 –&gt; 00:00:24,40010 or 8 L. 400:00:24,400 –&gt; 00:00:25,400David EmilyLittle 500:00:25,399 –">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.725Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.726Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CMU15445 P10F202309 IndexConcurrencyControl - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CMU15445 P10F202309 IndexConcurrencyControl"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          85 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CMU15445 P10F202309 IndexConcurrencyControl</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:14,300<br>Brad Paulson, DJ, 2PO!</p>
+<p>2<br>00:00:14,300 –&gt; 00:00:21,000<br>0-0…</p>
+<p>3<br>00:00:21,000 –&gt; 00:00:24,400<br>10 or 8 L.</p>
+<p>4<br>00:00:24,400 –&gt; 00:00:25,400<br>David EmilyLittle</p>
+<p>5<br>00:00:25,399 –&gt; 00:00:26,399<br>Balthus Rats.</p>
+<p>6<br>00:00:26,399 –&gt; 00:00:27,399<br>Balthus Rats.</p>
+<p>7<br>00:00:27,399 –&gt; 00:00:28,399<br>Hi, I’m Luke.</p>
+<p>8<br>00:00:28,399 –&gt; 00:00:31,399<br>I’m sorry, Ram Balthus and DJ TPL.</p>
+<p>9<br>00:00:31,399 –&gt; 00:00:33,399<br>Recipes 5thog, right?</p>
+<p>10<br>00:00:33,399 –&gt; 00:00:34,399<br>How’s life?</p>
+<p>11<br>00:00:34,399 –&gt; 00:00:35,399<br>Good?</p>
+<p>12<br>00:00:35,399 –&gt; 00:00:36,399<br>You going with him?</p>
+<p>13<br>00:00:36,399 –&gt; 00:00:37,399<br>Yeah.</p>
+<p>14<br>00:00:37,399 –&gt; 00:00:43,399<br>Did you know that Jizzah, before the age of 27 had gang and his solo album under his belt already?</p>
+<p>15<br>00:00:43,399 –&gt; 00:00:46,399<br>I mean, yeah, the Wu-Tang clan people were pretty young.</p>
+<p>16<br>00:00:46,399 –&gt; 00:00:47,399<br>Yeah.</p>
+<p>17<br>00:00:47,399 –&gt; 00:00:49,399<br>But like, Rizzah’s older, I think.</p>
+<p>18<br>00:00:49,399 –&gt; 00:00:50,399<br>Yeah.</p>
+<p>19<br>00:00:50,399 –&gt; 00:00:52,399<br>And yeah, his first album was Prince Rakeem.</p>
+<p>20<br>00:00:52,399 –&gt; 00:00:53,399<br>That was kind of goofy.</p>
+<p>21<br>00:00:53,399 –&gt; 00:00:54,399<br>But then you got to **** with Wu-Tang.</p>
+<p>22<br>00:00:54,399 –&gt; 00:00:55,399<br>Yeah.</p>
+<p>23<br>00:00:55,399 –&gt; 00:00:56,399<br>Yeah.</p>
+<p>24<br>00:00:56,399 –&gt; 00:00:58,399<br>There’s no Wu-Tang questions on the exam this year.</p>
+<p>25<br>00:00:58,399 –&gt; 00:00:59,399<br>Previous years have been.</p>
+<p>26<br>00:00:59,399 –&gt; 00:01:01,399<br>So don’t feel like you need to know these things.</p>
+<p>27<br>00:01:01,399 –&gt; 00:01:02,399<br>All right.</p>
+<p>28<br>00:01:02,399 –&gt; 00:01:03,399<br>Again, awesome.</p>
+<p>29<br>00:01:03,399 –&gt; 00:01:04,400<br>Thank you, DJ TPL.</p>
+<p>30<br>00:01:04,400 –&gt; 00:01:07,400<br>You guys, not to go over.</p>
+<p>31<br>00:01:07,400 –&gt; 00:01:08,400<br>The list is getting longer.</p>
+<p>32<br>00:01:08,400 –&gt; 00:01:11,400<br>So project one is do this Sunday at midnight.</p>
+<p>33<br>00:01:11,400 –&gt; 00:01:15,400<br>Again, we’re having the special office hours on Saturday.</p>
+<p>34<br>00:01:15,400 –&gt; 00:01:16,400<br>That’s in person.</p>
+<p>35<br>00:01:16,400 –&gt; 00:01:18,400<br>I think Nounson on Piazza.</p>
+<p>36<br>00:01:18,400 –&gt; 00:01:20,400<br>I think it’s on the 5th floor.</p>
+<p>37<br>00:01:20,400 –&gt; 00:01:21,400<br>And one of the carols.</p>
+<p>38<br>00:01:21,400 –&gt; 00:01:24,400<br>Homework 2 is then bumped out to October 4th.</p>
+<p>39<br>00:01:24,400 –&gt; 00:01:26,400<br>It’s a Wednesday.</p>
+<p>40<br>00:01:26,400 –&gt; 00:01:30,400<br>Make sure it’s making out have to be the same due date as project one.</p>
+<p>41<br>00:01:30,400 –&gt; 00:01:32,400<br>Homework 3 will be out this week.</p>
+<p>42<br>00:01:32,400 –&gt; 00:01:34,400<br>That’s going to do four days later.</p>
+<p>43<br>00:01:34,400 –&gt; 00:01:35,400<br>And again, all right, that kind of sucks.</p>
+<p>44<br>00:01:35,400 –&gt; 00:01:36,400<br>That it kind of cram it so quickly.</p>
+<p>45<br>00:01:36,400 –&gt; 00:01:41,400<br>But because the midterm exam, which will cover things.</p>
+<p>46<br>00:01:41,400 –&gt; 00:01:47,400<br>The will cover things that in homework 3, we want to get that back to you guys and graded.</p>
+<p>47<br>00:01:47,400 –&gt; 00:01:50,400<br>Before the midterm exam on Wednesday.</p>
+<p>48<br>00:01:50,400 –&gt; 00:01:54,400<br>So midterm is going to be in class here on October 11th.</p>
+<p>49<br>00:01:54,400 –&gt; 00:01:55,400<br>It’s a Wednesday.</p>
+<p>50<br>00:01:55,400 –&gt; 00:01:57,400<br>And we’re in the regular class time.</p>
+<p>51<br>00:01:57,400 –&gt; 00:01:59,400<br>If you need accommodations, please email us.</p>
+<p>52<br>00:01:59,400 –&gt; 00:02:03,400<br>And so we can start organizing and taking care of the logistics.</p>
+<p>53<br>00:02:03,400 –&gt; 00:02:04,400<br>Don’t post on Piazza.</p>
+<p>54<br>00:02:04,400 –&gt; 00:02:05,400<br>Yes.</p>
+<p>55<br>00:02:05,400 –&gt; 00:02:08,400<br>Is it possible to work 3 absolutely a bit earlier?</p>
+<p>56<br>00:02:08,400 –&gt; 00:02:10,400<br>I’m trying to get homework 3 out now.</p>
+<p>57<br>00:02:10,400 –&gt; 00:02:11,400<br>It should be out today.</p>
+<p>58<br>00:02:11,400 –&gt; 00:02:12,400<br>I don’t know if it’s about today.</p>
+<p>59<br>00:02:12,400 –&gt; 00:02:13,400<br>Yes.</p>
+<p>60<br>00:02:13,400 –&gt; 00:02:14,400<br>That’s the plan.</p>
+<p>61<br>00:02:14,400 –&gt; 00:02:16,400<br>But the trouble is like it doesn’t cover things.</p>
+<p>62<br>00:02:16,400 –&gt; 00:02:19,400<br>It’s going to cover like sorting and joins, which will cover like next week.</p>
+<p>63<br>00:02:19,400 –&gt; 00:02:22,400<br>Any questions about any of these things?</p>
+<p>64<br>00:02:22,400 –&gt; 00:02:23,400<br>Yes.</p>
+<p>65<br>00:02:23,400 –&gt; 00:02:27,400<br>Is there any idea of what to work to object?</p>
+<p>66<br>00:02:27,400 –&gt; 00:02:29,400<br>It will be in the future.</p>
+<p>67<br>00:02:29,400 –&gt; 00:02:31,400<br>It’s whatever it says on the website now.</p>
+<p>68<br>00:02:31,400 –&gt; 00:02:33,400<br>Is the current plan.</p>
+<p>69<br>00:02:33,400 –&gt; 00:02:34,400<br>Yes.</p>
+<p>70<br>00:02:34,400 –&gt; 00:02:35,400<br>Yes.</p>
+<p>71<br>00:02:35,400 –&gt; 00:02:41,400<br>The only thing about it is that it’s going to work for the end of fall break.</p>
+<p>72<br>00:02:41,400 –&gt; 00:02:42,400<br>At the end of fall break?</p>
+<p>73<br>00:02:42,400 –&gt; 00:02:43,400<br>All right.</p>
+<p>74<br>00:02:43,400 –&gt; 00:02:45,400<br>We’ll go double check that.</p>
+<p>75<br>00:02:45,400 –&gt; 00:02:46,400<br>I thought we moved it.</p>
+<p>76<br>00:02:46,400 –&gt; 00:02:48,400<br>So we didn’t have to do it over in fall break.</p>
+<p>77<br>00:02:48,400 –&gt; 00:02:49,400<br>Yes.</p>
+<p>78<br>00:02:49,400 –&gt; 00:02:51,400<br>We will take care of that.</p>
+<p>79<br>00:02:51,400 –&gt; 00:02:52,400<br>Other questions?</p>
+<p>80<br>00:02:52,400 –&gt; 00:02:55,400<br>All right.</p>
+<p>81<br>00:02:55,400 –&gt; 00:02:56,400<br>Cool.</p>
+<p>82<br>00:02:56,400 –&gt; 00:02:57,400<br>All right.</p>
+<p>83<br>00:02:57,400 –&gt; 00:03:00,400<br>So the last two classes we’ve talked about data structures.</p>
+<p>84<br>00:03:00,400 –&gt; 00:03:03,400<br>We talked about hash tables and then we talked about B plus trees.</p>
+<p>85<br>00:03:03,400 –&gt; 00:03:08,400<br>And I prefaced our conversation going into discussing the hash tables B plus trees</p>
+<p>86<br>00:03:08,400 –&gt; 00:03:15,400<br>stuff to say that to simplify the discussion and the explanation of these data structures</p>
+<p>87<br>00:03:15,400 –&gt; 00:03:20,400<br>and the algorithms that are used to manipulate them or work with them.</p>
+<p>88<br>00:03:20,400 –&gt; 00:03:25,400<br>We’re going to assume that it’s single threaded because that just makes your life easier.</p>
+<p>89<br>00:03:25,400 –&gt; 00:03:34,400<br>But of course in any modern system in today’s hardware, you need to support multiple threads or multiple workers running at the same time.</p>
+<p>90<br>00:03:34,400 –&gt; 00:03:38,400<br>Again, I’m going to try to use the word workers because that can mean either thread or process.</p>
+<p>91<br>00:03:38,400 –&gt; 00:03:39,400<br>Postgres is not multi-threaded.</p>
+<p>92<br>00:03:39,400 –&gt; 00:03:40,400<br>It’s multi-process.</p>
+<p>93<br>00:03:40,400 –&gt; 00:03:43,400<br>Most modern systems are multi-threaded but the idea is the same.</p>
+<p>94<br>00:03:43,400 –&gt; 00:03:48,400<br>But still again, we want to be able to have multiple workers running at the same time,</p>
+<p>95<br>00:03:48,400 –&gt; 00:03:54,400<br>be able to access these data structures so that if one of them has to stall because they’re going to disk,</p>
+<p>96<br>00:03:54,400 –&gt; 00:03:58,400<br>we can have other workers run at the same time and do useful things.</p>
+<p>97<br>00:03:58,400 –&gt; 00:03:59,400<br>Right?</p>
+<p>98<br>00:03:59,400 –&gt; 00:04:01,400<br>The system will look very unresponsive.</p>
+<p>99<br>00:04:01,400 –&gt; 00:04:04,400<br>If you only have a single worker, again, assuming it’s a thread,</p>
+<p>100<br>00:04:04,400 –&gt; 00:04:07,400<br>and then I’m going to go access and run some query.</p>
+<p>101<br>00:04:07,400 –&gt; 00:04:11,400<br>And then as soon as I have to go my page table and the thing I don’t need is the page I need isn’t there,</p>
+<p>102<br>00:04:11,400 –&gt; 00:04:14,400<br>I have to stall because I have to go to disk and get it.</p>
+<p>103<br>00:04:14,400 –&gt; 00:04:16,399<br>Well, why that while we’re stalled, the CPU essentially stalled,</p>
+<p>104<br>00:04:16,399 –&gt; 00:04:19,399<br>we can have other threads, other workers do useful things.</p>
+<p>105<br>00:04:19,399 –&gt; 00:04:25,399<br>So that’s the goal of what we’re going to talk about today is how do you actually make these data structures thread safe.</p>
+<p>106<br>00:04:25,399 –&gt; 00:04:29,399<br>And so while I’ll say is that this is how most systems are going to be implemented,</p>
+<p>107<br>00:04:29,399 –&gt; 00:04:33,399<br>most systems will try to take advantage of multiple threads.</p>
+<p>108<br>00:04:33,399 –&gt; 00:04:38,399<br>There’s a sort of category of systems that actually don’t do any of the things we’re going to talk about today.</p>
+<p>109<br>00:04:39,399 –&gt; 00:04:43,399<br>And the most famous one is play a redis that it’s a single process, single thread.</p>
+<p>110<br>00:04:43,399 –&gt; 00:04:49,399<br>So all the latching stuff we’re going to talk about today, they don’t have to do because they know no other threads running at the same time.</p>
+<p>111<br>00:04:49,399 –&gt; 00:04:54,399<br>There’ll be other systems, although they’ll still be multi-threaded,</p>
+<p>112<br>00:04:54,399 –&gt; 00:04:59,399<br>but they’ll maybe have only one writer thread, but multiple reader threads running at the same time.</p>
+<p>113<br>00:04:59,399 –&gt; 00:05:03,399<br>And that simplifies a bunch of things, but you still need the latching protections that we’re going to talk about today.</p>
+<p>114<br>00:05:03,399 –&gt; 00:05:04,399<br>Okay?</p>
+<p>115<br>00:05:05,399 –&gt; 00:05:14,399<br>So the thing that we’re going to use to enforce the threads or workers to behave a certain way</p>
+<p>116<br>00:05:14,399 –&gt; 00:05:21,399<br>so that we don’t end up with corrupted data and invalid data structures is going to be called a concurrency tool protocol.</p>
+<p>117<br>00:05:21,399 –&gt; 00:05:25,399<br>And again, for today’s class, we’re going to see how we do this for workers.</p>
+<p>118<br>00:05:25,399 –&gt; 00:05:31,399<br>After the midterm we’ll discuss how we use concurrency tool to coordinate transactions.</p>
+<p>119<br>00:05:31,399 –&gt; 00:05:43,399<br>And so you can sort of think of this currency tool protocol as the traffic cop of the system that allows you to tell different workers who’s allowed to do what at what given time.</p>
+<p>120<br>00:05:43,399 –&gt; 00:05:50,399<br>Right? And the idea is that we’re going to be operating on some shared object or some critical section, and we don’t want to have them interfering with each other and cause problems.</p>
+<p>121<br>00:05:50,399 –&gt; 00:05:55,399<br>And the two types of problems we could have are logical correctness and physical correctness.</p>
+<p>122<br>00:05:55,399 –&gt; 00:05:58,399<br>And I think I mentioned this last week as well.</p>
+<p>123<br>00:05:58,399 –&gt; 00:06:10,399<br>So the logical correctness, the idea is that if I insert a key into my B plus tree, I insert key five, and then if I come back and try to look for key five, I should see it.</p>
+<p>124<br>00:06:10,399 –&gt; 00:06:16,399<br>What the other thing I said was if I delete key five, and I come back and try to look for key five again, I shouldn’t see it.</p>
+<p>125<br>00:06:16,399 –&gt; 00:06:22,399<br>So at a logical level, we want to make sure that we’re seeing the things we should see in our data structures.</p>
+<p>126<br>00:06:22,399 –&gt; 00:06:38,399<br>The thing that we care about in today’s class is the physical correctness, meaning how do we ensure that if we’re walking through a hash table or traversing the B plus tree, and at some point we’ve got to follow a pointer, like a page ID to take us somewhere else, that page ID is correct.</p>
+<p>127<br>00:06:38,399 –&gt; 00:06:43,399<br>Like it’s not going to take us to a table page that has a bunch of garbage in it.</p>
+<p>128<br>00:06:43,399 –&gt; 00:06:55,399<br>Because what happens if you go follow page and you start looking at data that doesn’t look like you expect to look like, you’re going to have a seg fall because you’re going to try to read back past some buffer or things things are going to break or you get corrupted data.</p>
+<p>129<br>00:06:55,399 –&gt; 00:06:58,399<br>So again, logical correctness, we’ll worry about later at the midterm.</p>
+<p>130<br>00:06:58,399 –&gt; 00:07:01,399<br>Today’s class is really about physical correctness.</p>
+<p>131<br>00:07:01,399 –&gt; 00:07:09,399<br>So I first want to describe, go every quickly of what, what latches are again, and how do you actually implement them inside of a database system.</p>
+<p>132<br>00:07:09,399 –&gt; 00:07:16,399<br>And again, the takeaway here is that we don’t want to ideally, we don’t want to rely on the operating system, gives us in terms of latches.</p>
+<p>133<br>00:07:16,399 –&gt; 00:07:20,399<br>Then we’ll see a simplified example of how do you hash table latching.</p>
+<p>134<br>00:07:20,399 –&gt; 00:07:26,399<br>As I said, most of our time doing B plus tree latching, and we’ll see a sort of a basic version and an optimized version.</p>
+<p>135<br>00:07:26,399 –&gt; 00:07:31,399<br>And then we’ll finish off talking about how to handle leaf node scans.</p>
+<p>136<br>00:07:31,399 –&gt; 00:07:34,399<br>Okay.</p>
+<p>137<br>00:07:34,399 –&gt; 00:07:38,399<br>All right, so I think I showed this slide before, and again, I just want to revisit it again.</p>
+<p>138<br>00:07:38,399 –&gt; 00:07:41,399<br>This destates between locks and latches.</p>
+<p>139<br>00:07:41,399 –&gt; 00:07:50,399<br>And again, if you’re coming from the OS world or distributed world, they might mean when I say latch, they might think lock.</p>
+<p>140<br>00:07:50,399 –&gt; 00:07:55,399<br>But in database, that’s what we care about mostly in my life, and in this course.</p>
+<p>141<br>00:07:55,399 –&gt; 00:07:59,399<br>So we need to make sure we understand what we’re talking about when we say lock versus the latch.</p>
+<p>142<br>00:07:59,399 –&gt; 00:08:10,399<br>So locks going to be this high level protection primitive that allows us to protect the logical contents of our database, like a tuple, a database, a table.</p>
+<p>143<br>00:08:10,399 –&gt; 00:08:21,399<br>Right. And the when we acquire one of these locks, the transaction will hold that lock for the duration of that transaction.</p>
+<p>144<br>00:08:21,399 –&gt; 00:08:28,399<br>It’s not always true. We’ll see examples where we can release locks maybe early, but for our purposes today, we’ll assume that’s the case.</p>
+<p>145<br>00:08:28,399 –&gt; 00:08:36,399<br>And then there’ll be some higher level mechanism within our concurrently protocol that’s going to ensure that we don’t have any deadlocks.</p>
+<p>146<br>00:08:36,399 –&gt; 00:08:47,399<br>And then if a deadlock does arise, then the database is how a mechanism to be able to roll back the changes that the transaction made to make it look as if it didn’t make any changes.</p>
+<p>147<br>00:08:47,399 –&gt; 00:08:51,399<br>So we don’t we don’t have any partial updates.</p>
+<p>148<br>00:08:51,399 –&gt; 00:09:02,399<br>Today, we’re focused on latches. And so the latches are going to be the low level parameters that were used to protect critical sections in our data structures from one worker versus, you know, against another.</p>
+<p>149<br>00:09:02,399 –&gt; 00:09:14,399<br>And so the duration of the lifetime that we’re going to hold a latch is going to be very short. Like go like finger critical section. I’m going to go take a latch on a page, make some change and then release that latch immediately.</p>
+<p>150<br>00:09:14,399 –&gt; 00:09:26,399<br>And because it’s going to be very simple, we know when we minimize amount of bookkeeping we’re taking for these latches, we don’t want to have we don’t the database is not going to be automatically rolled back any changes for us.</p>
+<p>151<br>00:09:26,399 –&gt; 00:09:38,399<br>We don’t avoid deadlocks and try to not make any changes unless we quiet a latch for something. So that we don’t have the roll things back. We’re going to have sort of minimal coordination between the between the different workers running at the same time.</p>
+<p>152<br>00:09:38,399 –&gt; 00:09:47,399<br>Whereas in the lot case, I mean, I’m jumping ahead of it. There will be a table literally internally called a lock table and you go look in there, you can see who holds locks for different objects.</p>
+<p>153<br>00:09:47,399 –&gt; 00:09:56,399<br>In latches, we don’t want to maintain any of that because that’s so expensive relative to the amount of work we want to do within a critical section in our data structures.</p>
+<p>154<br>00:09:56,399 –&gt; 00:10:06,399<br>So there’s this table I also like from the book I recommended last time from this guy, Gritz graphy, the B tree book. When he again, he shows this this changed between the locks versus latches.</p>
+<p>155<br>00:10:06,399 –&gt; 00:10:15,399<br>And the way to sort of to read this table is within a column, you read down and say, you know, what the thing is protecting how it’s protecting it and the different ways is protecting things.</p>
+<p>156<br>00:10:15,399 –&gt; 00:10:24,399<br>So for example, a lock is going to separate transactions from each other and it’s going to protect the logical database contents pages or sorry, tuples, tables, databases.</p>
+<p>157<br>00:10:24,399 –&gt; 00:10:36,399<br>And we can hold them for the entire length of the transaction. We’ll talk about modes in a second. We can take a lock for an object in different modes like exclusive shared and attention updates. We’ll get with it later.</p>
+<p>158<br>00:10:36,399 –&gt; 00:10:45,399<br>And then the data system provide you know, deadlock detection or deadlock prevention mechanisms built in to avoid these problems. And then again, these are the mechanisms to do this.</p>
+<p>159<br>00:10:45,399 –&gt; 00:10:52,399<br>And then the information that we’re going to keep track of what locks are being held is being kept in a lock manager, a centralized data structure.</p>
+<p>160<br>00:10:53,399 –&gt; 00:11:04,399<br>Today again, we’re focused on latches. So latches are going to protect workers from each other. This will be only for in memory data structures. So like this is literally for like the you know B plus trees in memory.</p>
+<p>161<br>00:11:04,399 –&gt; 00:11:14,399<br>But once is I you know if a page within our B plus tree gets flush out the disk, I wouldn’t hold the latch for that thing when it goes out to disk because it’s meaningless.</p>
+<p>162<br>00:11:15,399 –&gt; 00:11:28,399<br>It’s protecting the critical sections. There’s only two modes. We can hold our latches in reading right. And the way we’re going to handle deadlocks is through coding discipline, but us as the systems developers have to write good code to make sure there’s no deadlocks.</p>
+<p>163<br>00:11:28,399 –&gt; 00:11:35,399<br>It’s easier set and then done sure, but like there’s not going to be something some other part of the system that’s going to bail us out.</p>
+<p>164<br>00:11:35,399 –&gt; 00:11:44,399<br>And we’re going to keep the information about these latches are actually embedded in the data structure itself. So there won’t be a centralized centralized thing.</p>
+<p>165<br>00:11:44,399 –&gt; 00:11:53,399<br>Again, this make more sense when we start walking through the different data structure types. And so the lock stuff will color in after the term in lecture 15.</p>
+<p>166<br>00:11:54,399 –&gt; 00:12:09,399<br>All right, so our latches only have two modes. It can be their read mode or a right mode. So read mode are their commutative operations where you can have multiple workers take a latch in your read mode at the same time because you know whatever they’re doing isn’t going to.</p>
+<p>167<br>00:12:10,399 –&gt; 00:12:21,399<br>It isn’t going to break the whatever the data structure is or calls any conflicts. If I need to, if two workers need to read the same page, I can take that in read mode.</p>
+<p>168<br>00:12:21,399 –&gt; 00:12:27,399<br>Well, that doesn’t they’re not doing right. So it doesn’t break anything. So I can go ahead and have them both run at the same time.</p>
+<p>169<br>00:12:28,399 –&gt; 00:12:35,399<br>Right mode or exclusive mode is when you know one thread is is wants to access the object and actually make changes to it.</p>
+<p>170<br>00:12:35,399 –&gt; 00:12:47,399<br>And I don’t want any other threads to run the same to operate on my object at the same time. So only one only one worker can hold the latch in and right mode and that blocks everyone else out.</p>
+<p>171<br>00:12:48,399 –&gt; 00:12:57,399<br>And a really simple compatibility matrix will look like this. If I have a read mode, if I have a latch in a read mode, someone wants to get a latch in read mode, I can do that. That’s allowed.</p>
+<p>172<br>00:12:57,399 –&gt; 00:13:06,399<br>But any other combination where at least one of the latches either holds in a right mode or wants to get it in right mode, I have to deny that.</p>
+<p>173<br>00:13:06,399 –&gt; 00:13:20,399<br>So again, going back to what I said before coding discipline, like the stupidest thing to do is to take every latch in right mode, even though you’re only going to read it, it’ll protect all your data structures, but like you, you know, it’s basically going to get relegated to a single thread system.</p>
+<p>174<br>00:13:20,399 –&gt; 00:13:30,399<br>And likewise, if I take my latch in read mode, but I start making changes to whatever it’s protecting, then that’s that’s our fault. That’s the programmer’s fault and it’s just crashes. That’s on us.</p>
+<p>175<br>00:13:31,399 –&gt; 00:13:44,399<br>And there isn’t any without getting into like verifiable languages, there isn’t really any mechanism in see-pump slots or rust that’s going to protect us for these things.</p>
+<p>176<br>00:13:44,399 –&gt; 00:13:47,399<br>Right? Because the compiler can’t know.</p>
+<p>177<br>00:13:47,399 –&gt; 00:13:52,399<br>All right, so let’s look at how you want implement latches.</p>
+<p>178<br>00:13:52,399 –&gt; 00:14:04,399<br>So ideally, we want to latch that has a small memory footprint because we don’t want to store a lot of a lot of additional metadata for a latch because we’re again, these are being embedded in the data structure itself.</p>
+<p>179<br>00:14:04,399 –&gt; 00:14:16,399<br>And ideally, we want to have it be when there’s no contention in the system, meaning there’s no two threads or workers trying to acquire latch at the same time, we want to go as fast as possible, minimum, minimum overhead.</p>
+<p>180<br>00:14:16,399 –&gt; 00:14:27,399<br>Now, I acquired the latch and do my thing right away. If we can’t get the latch we need, then we have to make a decision of how long we should wait and how we want to wait.</p>
+<p>181<br>00:14:27,399 –&gt; 00:14:32,399<br>And we’ll see different scenarios how we want to do this.</p>
+<p>182<br>00:14:32,399 –&gt; 00:14:45,399<br>And ideally, also, too, we don’t want to have a bunch of metadata per latch about like who’s waiting for this latch because that’s now basically a queue for every single latch you could have in your data structure.</p>
+<p>183<br>00:14:45,399 –&gt; 00:14:54,399<br>And I think of like a giant D plus tree with a billion entries, how many pages you’re going to have in there, each of those could have now their own priority queue.</p>
+<p>184<br>00:14:55,399 –&gt; 00:15:07,399<br>So again, coming from the database world, we say we don’t want to align the OS to do any of these things, but then the OS people say the data don’t know what they’re doing and they should not be implementing their own latches.</p>
+<p>185<br>00:15:07,399 –&gt; 00:15:21,399<br>And you can see this in the Linux mailing list. So here’s a post from Linus saying like, oh yeah, like, you know, don’t you should not be writing your own latching thing and basically says here, like, you should not use spin locks, but I’ll clean that into the second in user space.</p>
+<p>186<br>00:15:21,399 –&gt; 00:15:29,399<br>That’s us where the data system running user space says you should not be using spin locks, you roll yourself unless you know what you’re doing and the chances are you know what you’re doing is low.</p>
+<p>187<br>00:15:29,399 –&gt; 00:15:34,399<br>He’s wrong despite being Linus, right?</p>
+<p>188<br>00:15:34,399 –&gt; 00:15:40,399<br>So I’ll go through three basic implementations of how to implement latches.</p>
+<p>189<br>00:15:40,399 –&gt; 00:15:49,399<br>There’s more advanced ones like the parking lot stuff from Apple. This is probably the best one to use right now. And then there’s the MCS locks, which is a queuing thing.</p>
+<p>190<br>00:15:49,399 –&gt; 00:15:57,399<br>We’ll cover this in the advanced class, but for our purpose here, we don’t need to know this, but we need to understand the basic implementation of what latches are actually doing.</p>
+<p>191<br>00:15:57,399 –&gt; 00:16:02,399<br>So that when you start sprinkling them in your code, you understand the ramifications of them. Yes.</p>
+<p>192<br>00:16:02,399 –&gt; 00:16:06,399<br>What’s the question? What’s the question?</p>
+<p>193<br>00:16:06,399 –&gt; 00:16:11,399<br>I mean, P thread mute taxes? We’ll get to that in a second. Yes. Her question is, what’s wrong with C++ mute taxes?</p>
+<p>194<br>00:16:11,399 –&gt; 00:16:15,399<br>So if you call mute tax in C++, what do you actually get?</p>
+<p>195<br>00:16:15,399 –&gt; 00:16:17,399<br>What?</p>
+<p>196<br>00:16:17,399 –&gt; 00:16:21,399<br>Yeah, but like, but like, who’s implementing that?</p>
+<p>197<br>00:16:21,399 –&gt; 00:16:25,399<br>P thread. But how does the P thread work?</p>
+<p>198<br>00:16:25,399 –&gt; 00:16:28,399<br>Two more slides. Okay.</p>
+<p>199<br>00:16:28,399 –&gt; 00:16:33,399<br>Okay.</p>
+<p>200<br>00:16:33,399 –&gt; 00:16:38,399<br>All right. So, actually, maybe there’s just a slide. All right. So the most basic, all right.</p>
+<p>201<br>00:16:38,399 –&gt; 00:16:41,399<br>I take that. This is this is Davis World, which is probably the OS one next.</p>
+<p>202<br>00:16:41,399 –&gt; 00:16:47,399<br>So the most basic latch you can implement is called a test and set spin lock.</p>
+<p>203<br>00:16:47,399 –&gt; 00:16:52,399<br>It’s called a spin lock. And I realize I’m calling it spin locks when they’re really latches, right?</p>
+<p>204<br>00:16:52,399 –&gt; 00:16:59,399<br>But this is the most simplest way to implement this is because it literally is a 64-bit memory address</p>
+<p>205<br>00:16:59,399 –&gt; 00:17:04,400<br>that you’re just going to do an atomic compare and swap on to see whether you can set it.</p>
+<p>206<br>00:17:04,400 –&gt; 00:17:07,400<br>And if you can’t set it, then you spin and keep trying to set it over and over again.</p>
+<p>207<br>00:17:07,400 –&gt; 00:17:11,400<br>Like, the code would literally look like this. I declare a ontonic bullion.</p>
+<p>208<br>00:17:11,400 –&gt; 00:17:15,400<br>This is just a syntactic sugar for declaring something as atomic.</p>
+<p>209<br>00:17:15,400 –&gt; 00:17:18,400<br>And then now I have this my latch here, and I call it test and set.</p>
+<p>210<br>00:17:18,400 –&gt; 00:17:23,400<br>And literally is just trying to set a check to see whether it’s set current value zero.</p>
+<p>211<br>00:17:23,400 –&gt; 00:17:29,400<br>If yes, then I can set it to one. And I can do that in a single instruction automatically.</p>
+<p>212<br>00:17:29,400 –&gt; 00:17:34,400<br>So it’s not like if then this, then that and somebody else can come and swoop in and change it before I can.</p>
+<p>213<br>00:17:34,400 –&gt; 00:17:38,400<br>Before I can. It literally is one instruction to go and apply this change.</p>
+<p>214<br>00:17:38,400 –&gt; 00:17:42,400<br>And if I can’t get it, then I just spin. Because we’re doing this in the database level.</p>
+<p>215<br>00:17:42,400 –&gt; 00:17:50,400<br>And user space, we get aside whether how many times you want to retried, whether you want to yield the threat to the OS or abort ourselves and restart.</p>
+<p>216<br>00:17:50,400 –&gt; 00:17:56,400<br>All right. Why is this bad?</p>
+<p>217<br>00:17:56,400 –&gt; 00:18:01,400<br>What’s that? Wait. Sorry, I had, I had, I had, I had, you said, you’re busy waiting.</p>
+<p>218<br>00:18:01,400 –&gt; 00:18:06,400<br>Yeah, so you’re basically spinning the cycle, spinning the CPU. Check, check, check, check over and over again.</p>
+<p>219<br>00:18:06,400 –&gt; 00:18:12,400<br>But I can put maybe like, I could put a, you know, exponential back off to say, okay, I try to get it. I couldn’t get it.</p>
+<p>220<br>00:18:12,400 –&gt; 00:18:17,400<br>Wait, one millisecond, two milliseconds, four milliseconds, right?</p>
+<p>221<br>00:18:17,400 –&gt; 00:18:22,400<br>Actually, the, the, that’s a challenge that you’re just spinning over and over again.</p>
+<p>222<br>00:18:22,400 –&gt; 00:18:31,400<br>Another problem is going to be cash coherence traffic, right? So again, assuming I have a two-stock at CPU, the, the latch I’m trying to acquire is over here on this, this Numa region.</p>
+<p>223<br>00:18:31,400 –&gt; 00:18:44,400<br>That way, I know what Numa is. Not uniform memory access. Basically, like if I have two sockets in my C, or two, two sockets or more, two or more sockets in my motherboard, each CPU socket is going to have DRAM that’s close to it.</p>
+<p>224<br>00:18:44,400 –&gt; 00:18:52,400<br>And it’s really fast to talk to that. But I can also talk to memory that’s on, that’s over on another socket, they call it a Numa region.</p>
+<p>225<br>00:18:52,400 –&gt; 00:18:57,400<br>But that, that traffic is much slower because I got to go over this interconnect between one socket to the other, right?</p>
+<p>226<br>00:18:58,400 –&gt; 00:19:06,400<br>And so, Intel, they do a lot of work to make sure like you, when you write programs, you don’t know and, and don’t technically have to know where memory actually is physically located.</p>
+<p>227<br>00:19:06,400 –&gt; 00:19:11,400<br>But of course, now you could have your program access something that’s on another socket and it gets really, really slow.</p>
+<p>228<br>00:19:11,400 –&gt; 00:19:16,400<br>And the whole world tries to play games and move things around for you to try to speed things up. We can ignore that for now.</p>
+<p>229<br>00:19:16,400 –&gt; 00:19:26,400<br>And for this class, we don’t have to worry about Numa. I just want to explain that like this, this, this, there’s a worker running on this pot, this CPU over here wants to acquire the latch on this, in this, this other socket,</p>
+<p>230<br>00:19:26,400 –&gt; 00:19:33,400<br>CPU memory. So it’s going to keep spinning it over again. But now like it’s, it’s all this traffic over this interconnect.</p>
+<p>231<br>00:19:33,400 –&gt; 00:19:44,400<br>That’s going to slow my, my entire database system down, right? So this is inefficient because I’m spinning, but also like the traffic on the actual hardware itself is, is expensive.</p>
+<p>232<br>00:19:44,400 –&gt; 00:19:51,400<br>So now her question is, you know, why, what’s wrong or how does actually the, the C++ view text actually work?</p>
+<p>233<br>00:19:51,400 –&gt; 00:20:03,400<br>So this is called a blocking mutex. It’s the easiest thing to use because it’s going to fill in C++. And it basically you acquire and release it’s, there’s not a lot of mechanisms in it.</p>
+<p>234<br>00:20:03,400 –&gt; 00:20:09,400<br>And the way you use it is sort of like this, like you lock it and unlock, do whatever you want in the middle.</p>
+<p>235<br>00:20:09,400 –&gt; 00:20:14,400<br>So I asked her how, how is this thing actually implemented? Does anybody know?</p>
+<p>236<br>00:20:14,400 –&gt; 00:20:18,400<br>So if you call it SD mutex, what do you get into the C++?</p>
+<p>237<br>00:20:19,400 –&gt; 00:20:25,400<br>Pthread mutex. What is how is Pthread mutex implemented?</p>
+<p>238<br>00:20:25,400 –&gt; 00:20:31,400<br>It’s got a few text, it’s in Linux. Anybody heard of a few texts before?</p>
+<p>239<br>00:20:31,400 –&gt; 00:20:41,400<br>Fast user space mutex. So the way it works is, it has the spin lock that I just showed in the last slide. In user space, they’ll have their own little test and set thing you can do.</p>
+<p>240<br>00:20:41,400 –&gt; 00:20:49,400<br>But if you can’t, if you try to acquire it and you can’t, then you fall back to a heavy, heavy weight mutex inside the kernel.</p>
+<p>241<br>00:20:49,400 –&gt; 00:21:01,400<br>So, so if the, if the, no one holds the latch with a few text, I try to acquire it. If no one holds it, then I just do a compare and swap real, real fast in user space and I’m done it and I, my program or my thread keeps running.</p>
+<p>242<br>00:21:01,400 –&gt; 00:21:12,400<br>If I can’t get it, then the OS takes control of us and we go down now into the kernel and then we get descheduled because it knows that I can’t run until the thing I’m waiting for is available.</p>
+<p>243<br>00:21:12,400 –&gt; 00:21:18,400<br>But what’s down in the kernel? How they keep track of threads? What’s that?</p>
+<p>244<br>00:21:18,400 –&gt; 00:21:19,400<br>Sorry to say that?</p>
+<p>245<br>00:21:19,400 –&gt; 00:21:32,400<br>Blocking queue, but like what is like there’s also a, wait no, there’s a schedule has its own hash table to keep track of like what threads are running. So like and they have to be using their own latches to protect that data structure.</p>
+<p>246<br>00:21:32,400 –&gt; 00:21:38,400<br>So if I can’t acquire this, I go down to the kernel and I get descheduled and that’s very expensive. Cis calls are expensive. We want to avoid them.</p>
+<p>247<br>00:21:38,400 –&gt; 00:21:46,400<br>Right? Right. So actually this is just the diagram like this. So again, I have two my two two workers running different sockets. They both try to quiet at the same time.</p>
+<p>248<br>00:21:46,400 –&gt; 00:21:52,400<br>One of them will get the user space latch. The other guy tries to go down to the OS latch and they get desched. Right?</p>
+<p>249<br>00:21:52,400 –&gt; 00:21:59,400<br>And again, this is this is slow because any time you involve the OS, this is bad.</p>
+<p>250<br>00:21:59,400 –&gt; 00:22:05,400<br>So the last two, first two latches I showed you, they didn’t really have modes. It was just like all or nothing.</p>
+<p>251<br>00:22:05,400 –&gt; 00:22:19,400<br>And so the way you implement this in a, in, in C++ with the reader writer latch, you can use shared mutex. I think we do the read write lock in bus tub, which is just a p thread rewrite lock.</p>
+<p>252<br>00:22:19,400 –&gt; 00:22:33,400<br>And the way this basically works is that the latch itself is going to have its own priority queues, its own counters, keep track of like how many threads are waiting. You actually can find the scheduling policy for the latch itself.</p>
+<p>253<br>00:22:33,400 –&gt; 00:22:45,400<br>So the idea here is that if I have a, a reader thread comes along and wants to acquire the latch, I go check to see whether anybody’s waiting for the read latch or the right, the latch reading the read mode or write mode.</p>
+<p>254<br>00:22:45,400 –&gt; 00:22:52,400<br>If it’s available, then I increment my counter to say somebody’s holding the read latch now and I go ahead and do whatever I want.</p>
+<p>255<br>00:22:52,400 –&gt; 00:23:01,400<br>And now if anybody else comes along also wants to acquire the read mode, the system knows I’m, the latch knows I’m in read mode right now, so it can let the other guy run as well.</p>
+<p>256<br>00:23:01,400 –&gt; 00:23:09,400<br>But now for, for a write, write worker comes along, tries to acquire the latch where we have to read, read workers already holding the latch and read mode.</p>
+<p>257<br>00:23:09,400 –&gt; 00:23:15,400<br>So it’s going to have to stall and they maintain an internal priority queue to keep track of like what threads are waiting for this.</p>
+<p>258<br>00:23:15,400 –&gt; 00:23:27,400<br>So then depending on the policy you can figure in the latch, if another thread comes along, then once I get in read mode, and in theory, I could, I could acquire it because it’s commutative with all the other latches or the workers that hold it in read mode.</p>
+<p>259<br>00:23:27,400 –&gt; 00:23:37,400<br>I could acquire it right away, but you can set the policy to say I know another thread is waiting for it in write mode, so let me go ahead and put it to sleep.</p>
+<p>260<br>00:23:37,400 –&gt; 00:23:51,400<br>And in C++, I think they’re doing this all in user space, not down on the kernel, but when you have to then block and wait for the choir to latch your looking for, then that’s going to be an OS, or OS, new text, which we don’t want to do.</p>
+<p>261<br>00:23:51,400 –&gt; 00:24:03,400<br>So the, just getting to show you a high level overview of the test and set operation, the compare and swap is the basing built and block we used to build more complicated latch primitives.</p>
+<p>262<br>00:24:03,400 –&gt; 00:24:15,400<br>And depending on not where you want the OS to do it or not, most systems, most, most, most bigger database systems, the enterprise ones will not rely on the OS for anything.</p>
+<p>263<br>00:24:15,400 –&gt; 00:24:22,400<br>And it’s a combination for portability and also it’s just faster to avoid the OS and line us as wrong.</p>
+<p>264<br>00:24:22,400 –&gt; 00:24:27,400<br>Okay. So now let’s, sorry, yes.</p>
+<p>265<br>00:24:27,400 –&gt; 00:24:34,400<br>The question is, is parking mute text, Apple, is that bell on the set all the more? Yes.</p>
+<p>266<br>00:24:34,400 –&gt; 00:24:38,400<br>Yeah, like that’s the, do you ever know what compare and swap is?</p>
+<p>267<br>00:24:38,400 –&gt; 00:24:42,400<br>No, okay. I have slides.</p>
+<p>268<br>00:24:42,400 –&gt; 00:24:57,400<br>One slide. All right. So compare and swap is this atomic destruction that, that modern CPUs provide that allow you to check a memory location to see whether it’s a current, whether the current value of that memory address is what you expected to be.</p>
+<p>269<br>00:24:57,400 –&gt; 00:25:03,400<br>And if it is, then I can go ahead and overwrite it with my new value and again, in a single instruction.</p>
+<p>270<br>00:25:03,400 –&gt; 00:25:09,400<br>And think if you had to do this in C++ code to be like, if the value equals this, then set it to that.</p>
+<p>271<br>00:25:09,400 –&gt; 00:25:18,400<br>But again, if that was just the actual instructions to do that, that would be multiple instructions. And by the time you go check to see whether it’s that value is, you know, is a full, the flag set the true.</p>
+<p>272<br>00:25:18,400 –&gt; 00:25:24,400<br>By the time you go and then go update it, somebody else might have squeaked in, and sneak in before you did and updated before before.</p>
+<p>273<br>00:25:24,400 –&gt; 00:25:32,400<br>And so on modern CPUs, you can do this in a single instruction that’s atomic to guarantee that, but when you check it and set it, no one else can get in before you do.</p>
+<p>274<br>00:25:32,400 –&gt; 00:25:40,400<br>And then that’s the basic perimeter allows to do more complicated things. So there’s a bunch of different trends in C++. You can use for this.</p>
+<p>275<br>00:25:40,400 –&gt; 00:25:50,400<br>They have different versions of this, like someone, like if the test and set can succeed, or the parents opposite seed, they’ll return back the old value or the new value or true and false.</p>
+<p>276<br>00:25:50,400 –&gt; 00:25:57,400<br>They’re all basically doing the same thing. So let’s say in this case here, for this in trends, I’m saying, here’s the address I want to check and assume it’s a 64 bit integer.</p>
+<p>277<br>00:25:57,400 –&gt; 00:26:04,400<br>Here’s the value that I want to see whether it’s currently set to. And then if it is, here’s the value I want you to set it to right now.</p>
+<p>278<br>00:26:04,400 –&gt; 00:26:11,400<br>So we jumped to this memory address here. It’s 20, just 20 equal 20. Yes, then I can go ahead and overwrite it with 30.</p>
+<p>279<br>00:26:11,400 –&gt; 00:26:19,400<br>Pretty simple. But that’s again, that’s the building block we need to have all, you know, to build our all our more complicated latches.</p>
+<p>280<br>00:26:20,400 –&gt; 00:26:26,400<br>I don’t know when this comparison swap stuff was added. I think it was like the late 90s, at least in x86.</p>
+<p>281<br>00:26:26,400 –&gt; 00:26:31,400<br>So we good? Okay, cool. All right.</p>
+<p>282<br>00:26:31,400 –&gt; 00:26:36,400<br>So let’s see how we can do this for hash tables now or use latch and hash tables.</p>
+<p>283<br>00:26:36,400 –&gt; 00:26:46,400<br>So hash tables are going to be easy to sport because assuming we’re going to linear pro-passion is that there’s only certain many ways you can actually access the hash table.</p>
+<p>284<br>00:26:46,400 –&gt; 00:26:59,400<br>I have, assuming linear linear pro-passion, I hashed some location into my hash array or hash table and then I scanned down from top to down looking for the entries I’m looking, you know, that I need.</p>
+<p>285<br>00:26:59,400 –&gt; 00:27:14,400<br>And in this case here, because the threads are all moving in the same direction, like going top down, even though they may start at different locations in the hash table, I can’t have any deadlocks because there isn’t one thread going top down, I thought thread going bottom up.</p>
+<p>286<br>00:27:14,400 –&gt; 00:27:26,400<br>Right? So the question is going to be to what granularity do we want to have our latch to protect our data structure because that’s going to determine the amount of parallelism will be it’ll support.</p>
+<p>287<br>00:27:26,400 –&gt; 00:27:39,400<br>For this lecture, we’re going to ignore how to handle resizing the table. The way, the simplest way to handle that is you have a sort of a right latch that protects the access to the data structure itself.</p>
+<p>288<br>00:27:39,400 –&gt; 00:27:51,400<br>So if I get full when I need to double the size of it, I just switch that latch into right mode and then do my resizing and that prevents everybody else from coming in. That’s the easiest way to do this.</p>
+<p>289<br>00:27:51,400 –&gt; 00:27:58,400<br>So the scopes are our latches can either be within a page or slot. And again, this is going to determine amount of parallelism we have.</p>
+<p>290<br>00:27:58,400 –&gt; 00:28:09,400<br>So obviously, when a page latch is going to protect the entire page itself with a latch, and no matter whether you want to read one entry or all the entries in the page, you would you would hold a latch on the entire thing.</p>
+<p>291<br>00:28:09,400 –&gt; 00:28:22,400<br>The alternative would be the you would have a latch for every single slot in a page. And this is going to have you allow more fine grain access, but again, now the the challenges that I can take more space because every single slot needs to have a latch.</p>
+<p>292<br>00:28:22,400 –&gt; 00:28:29,400<br>And now as I’m scanning through my my hash table, I got to acquire the latch for every single slot as I’m going along.</p>
+<p>293<br>00:28:29,400 –&gt; 00:28:38,400<br>So again, there’s no free lunch in systems or computer science. It’s either I have a single latch per page, which I don’t have to acquire once for the page.</p>
+<p>294<br>00:28:38,400 –&gt; 00:28:46,400<br>And it doesn’t take a lot of space, but then it blocks a run-else out from a deep entire page or I have it for every single slot.</p>
+<p>295<br>00:28:46,400 –&gt; 00:28:55,400<br>So say real simple hash table like this. T1 wants to come along, thread 1 wants to come along and find D. If we hash D, we land a little location here.</p>
+<p>296<br>00:28:55,400 –&gt; 00:29:05,400<br>We get the entire page in in in right mode. Look, try to find the the entries we’re looking for by just scanning down, but at the same time another thread wants to come along once the insert E.</p>
+<p>297<br>00:29:05,400 –&gt; 00:29:14,400<br>Same thing I hashed to this page, but the latch is already the page is already latched in in read mode. And that’s not commutative with the right mode latch needs to do the insert.</p>
+<p>298<br>00:29:14,400 –&gt; 00:29:23,400<br>So we’ll have to stall thread 2. I think whether it’s spinning in user space or got to schedule by the kernel, that depends on your latch implementation.</p>
+<p>299<br>00:29:23,400 –&gt; 00:29:36,400<br>So now when the when thread 1 is done scanning this page, it can jump to the next page. It still holds the latch the page it started at because it needs to know how to where to look at next.</p>
+<p>300<br>00:29:36,400 –&gt; 00:29:50,400<br>Right, to make sure nobody’s moving things around. And so we can then release the latch on page number one, I acquired a latch on page number two, and then now thread 2 can start running and try to figure out where was the insert.</p>
+<p>301<br>00:29:50,400 –&gt; 00:30:04,400<br>And the same thing once it once come down here to do the right, the read latch is not commutable with the right latch. So therefore it has to wait. And then once thread 1 is done thread 2 can then acquired a latch and do the update to the service entry.</p>
+<p>302<br>00:30:04,400 –&gt; 00:30:09,400<br>Right. Yes, question.</p>
+<p>303<br>00:30:09,400 –&gt; 00:30:21,400<br>If we have a read latch acquired and write latch away, then we decide to read again. The order we schedule things in, isn’t that sort of a race condition?</p>
+<p>304<br>00:30:21,400 –&gt; 00:30:28,400<br>Your question is if I hold it, if I hold the I have a read latch, say it’s an area again, sorry.</p>
+<p>305<br>00:30:28,400 –&gt; 00:30:39,400<br>I guess more broadly, I’m trying to ask you, don’t remember the race condition is like based on whether the writer happens to be before the reader or wherever it’s given to the one policy.</p>
+<p>306<br>00:30:39,400 –&gt; 00:30:41,400<br>So going back to like the very beginning here.</p>
+<p>307<br>00:30:41,400 –&gt; 00:30:51,400<br>Yeah, I was sorry, like a race condition in terms of like what, what are output is like, if we have something trying to read the same time, right?</p>
+<p>308<br>00:30:51,400 –&gt; 00:30:58,400<br>Sorry, sorry, say again, say this in our hero, say T2 shows up before T1.</p>
+<p>309<br>00:30:58,400 –&gt; 00:31:02,400<br>And what’s the race condition you’re on deal with?</p>
+<p>310<br>00:31:02,400 –&gt; 00:31:12,400<br>Like, if you read, then write, then read again. But the scheduling policy has the two reads happen before the write.</p>
+<p>311<br>00:31:12,400 –&gt; 00:31:20,400<br>So when you say read, write, you read, and then write, then read, like that second read is that like another find a key?</p>
+<p>312<br>00:31:20,400 –&gt; 00:31:23,400<br>So say you find and then insert that to find again.</p>
+<p>313<br>00:31:23,400 –&gt; 00:31:30,400<br>Yes. And what’s the scheduling policy puts the find before the write, then one of that create a data read.</p>
+<p>314<br>00:31:30,400 –&gt; 00:31:32,400<br>Is it wrong?</p>
+<p>315<br>00:31:32,400 –&gt; 00:31:33,400<br>Yeah.</p>
+<p>316<br>00:31:33,400 –&gt; 00:31:40,400<br>We don’t know if we’re going to get the old value before the write, or the new value after the write necessarily, right?</p>
+<p>317<br>00:31:40,400 –&gt; 00:31:42,400<br>Yes. So.</p>
+<p>318<br>00:31:42,400 –&gt; 00:31:44,400<br>So what did you find the uncertainty?</p>
+<p>319<br>00:31:44,400 –&gt; 00:31:46,400<br>Find the again?</p>
+<p>320<br>00:31:46,400 –&gt; 00:31:48,400<br>So yes.</p>
+<p>321<br>00:31:48,400 –&gt; 00:31:54,400<br>So there’s a, this is the logical correctist thing, right?</p>
+<p>322<br>00:31:54,400 –&gt; 00:32:04,400<br>Like, if say I do select, I run a, run a little select query that doesn’t look up in this hash table, and I find D, right?</p>
+<p>323<br>00:32:04,400 –&gt; 00:32:06,400<br>And I get back the answer.</p>
+<p>324<br>00:32:06,400 –&gt; 00:32:11,400<br>Now the, the, some other transaction, another thread comes along and deletes D, right?</p>
+<p>325<br>00:32:11,400 –&gt; 00:32:17,400<br>And roots of the hash table, then, then the first thread again, now runs another select query that finds D and it doesn’t come back with it, right?</p>
+<p>326<br>00:32:17,400 –&gt; 00:32:18,400<br>Yeah.</p>
+<p>327<br>00:32:18,400 –&gt; 00:32:22,400<br>And the data structure perspective, that’s fine for what we’re talking about today.</p>
+<p>328<br>00:32:22,400 –&gt; 00:32:31,400<br>When we talk about it from the midterm, that’s a, that’s an anomaly of inconsistent reads, and that’s something that the</p>
+<p>329<br>00:32:31,400 –&gt; 00:32:34,400<br>cultural mechanism for the system will handle in transaction level.</p>
+<p>330<br>00:32:34,400 –&gt; 00:32:37,400<br>The low level of the data structure, we don’t care.</p>
+<p>331<br>00:32:37,400 –&gt; 00:32:38,400<br>It’s correct.</p>
+<p>332<br>00:32:38,400 –&gt; 00:32:45,400<br>Who decides what, in the order what, what, what, what rights we should see or not see, that’s a higher level thing that comes later.</p>
+<p>333<br>00:32:45,400 –&gt; 00:32:54,400<br>Yes. And the great thing about databases or these transactions is like, there’s multiple answers that are all technically correct potentially.</p>
+<p>334<br>00:32:54,400 –&gt; 00:32:55,400<br>But we’ll get that later.</p>
+<p>335<br>00:32:55,400 –&gt; 00:33:06,400<br>No, there’s, well, in the specification of SQL, there’s a, there’s a, there’s a description about what is considered correct or not correct at different</p>
+<p>336<br>00:33:06,400 –&gt; 00:33:08,400<br>isolation levels, which we haven’t covered yet.</p>
+<p>337<br>00:33:08,400 –&gt; 00:33:15,400<br>Right? And the, the, the, the, the, the, the, the, the most strictest correctness level would be isolation level, be called strict,</p>
+<p>338<br>00:33:15,400 –&gt; 00:33:17,400<br>strict, sterilizable or strong, sterilizable.</p>
+<p>339<br>00:33:17,400 –&gt; 00:33:25,400<br>Basically, it means that like, whoever comes first should, should see the system as if it was running by itself and it changes,</p>
+<p>340<br>00:33:25,400 –&gt; 00:33:28,400<br>get applied first, right?</p>
+<p>341<br>00:33:28,400 –&gt; 00:33:30,400<br>And then everything else comes after that.</p>
+<p>342<br>00:33:30,400 –&gt; 00:33:35,400<br>But getting way ahead of ourselves from the data structure perspective, I don’t care that your thread came in and,</p>
+<p>343<br>00:33:35,400 –&gt; 00:33:40,400<br>and deleted deep fat, look for D, then D got lit it and you go to look for again, it’s missing.</p>
+<p>344<br>00:33:40,400 –&gt; 00:33:42,400<br>That’s not the data structure problem.</p>
+<p>345<br>00:33:42,400 –&gt; 00:33:43,400<br>That’s somebody else’s problem.</p>
+<p>346<br>00:33:43,400 –&gt; 00:33:46,400<br>And it’s our problem, but like not, not today’s lecture.</p>
+<p>347<br>00:33:46,400 –&gt; 00:33:48,400<br>Future problem.</p>
+<p>348<br>00:33:48,400 –&gt; 00:33:49,400<br>Future problem.</p>
+<p>349<br>00:33:49,400 –&gt; 00:33:50,400<br>Future problem. And it’s really hard.</p>
+<p>350<br>00:33:50,400 –&gt; 00:33:51,400<br>Yeah.</p>
+<p>351<br>00:33:51,400 –&gt; 00:33:56,400<br>Oh, it’s why all the no SQL guys did new transactions at the beginning, because it’s shit’s hard.</p>
+<p>352<br>00:33:56,400 –&gt; 00:33:57,400<br>Right?</p>
+<p>353<br>00:33:57,400 –&gt; 00:33:59,400<br>All right, we’ll come back later.</p>
+<p>354<br>00:33:59,400 –&gt; 00:34:02,400<br>There’s a lot of things they didn’t do because it’s hard.</p>
+<p>355<br>00:34:02,400 –&gt; 00:34:04,400<br>And then they didn’t you had to do it later.</p>
+<p>356<br>00:34:04,400 –&gt; 00:34:05,400<br>All right.</p>
+<p>357<br>00:34:05,400 –&gt; 00:34:09,400<br>So again, let me just show how to do slot latches.</p>
+<p>358<br>00:34:09,400 –&gt; 00:34:12,400<br>Again, now I have a latch on every single slot itself at my hash table.</p>
+<p>359<br>00:34:12,400 –&gt; 00:34:17,400<br>So now when I do a find D, I get the latch on the read latch on the slot itself.</p>
+<p>360<br>00:34:17,400 –&gt; 00:34:21,400<br>I go ahead and read what I’m looking for and say this guy now wants to jump to this page.</p>
+<p>361<br>00:34:21,400 –&gt; 00:34:26,400<br>He wants to get the read latch on C.</p>
+<p>362<br>00:34:26,400 –&gt; 00:34:29,400<br>Ignore how he found that because he hashed there.</p>
+<p>363<br>00:34:29,400 –&gt; 00:34:38,400<br>The now when the first thread tries to get the read latch on the next slot, he can’t because the other thread has the latch.</p>
+<p>364<br>00:34:38,400 –&gt; 00:34:40,400<br>So he has to stall.</p>
+<p>365<br>00:34:40,400 –&gt; 00:34:49,400<br>But at this point, even though he’s going to stall and wait, it’s safe for him to release the latch on the previous slot because he has his.</p>
+<p>366<br>00:34:49,400 –&gt; 00:34:52,400<br>There’s no issue.</p>
+<p>367<br>00:34:52,400 –&gt; 00:34:55,400<br>There’s no reason for him to keep holding this latch, right?</p>
+<p>368<br>00:34:55,400 –&gt; 00:34:59,400<br>Because he’s just going to spin and wait for this thing here and everything still can sit against the rack.</p>
+<p>369<br>00:34:59,400 –&gt; 00:35:04,400<br>Now like there’s the, I mentioned like the reorganization of the hash table itself.</p>
+<p>370<br>00:35:04,400 –&gt; 00:35:09,400<br>Like if you have to resize it, assume that there’s some other latch protecting the entire thing that’s in like read mode.</p>
+<p>371<br>00:35:09,400 –&gt; 00:35:11,400<br>So that’s okay.</p>
+<p>372<br>00:35:11,400 –&gt; 00:35:13,400<br>And we only set that to right mode if we have to resize all things.</p>
+<p>373<br>00:35:13,400 –&gt; 00:35:19,400<br>So so the global latch for threat T2 would have the global latch in read mode.</p>
+<p>374<br>00:35:19,400 –&gt; 00:35:20,400<br>Yes.</p>
+<p>375<br>00:35:20,400 –&gt; 00:35:23,400<br>So these are the slot and page.</p>
+<p>376<br>00:35:23,400 –&gt; 00:35:29,400<br>No, this is just thinking like it’s like some offset and some page for our hash table.</p>
+<p>377<br>00:35:29,400 –&gt; 00:35:31,400<br>So it means all fixed length.</p>
+<p>378<br>00:35:31,400 –&gt; 00:35:32,400<br>Yeah.</p>
+<p>379<br>00:35:32,400 –&gt; 00:35:33,400<br>So like this.</p>
+<p>380<br>00:35:33,400 –&gt; 00:35:35,400<br>Yeah, correct.</p>
+<p>381<br>00:35:35,400 –&gt; 00:35:36,400<br>Yes.</p>
+<p>382<br>00:35:36,400 –&gt; 00:35:37,400<br>Yeah.</p>
+<p>383<br>00:35:37,400 –&gt; 00:35:39,400<br>And like basically do you want five grain fine grain latches or coarse grain latches?</p>
+<p>384<br>00:35:39,400 –&gt; 00:35:41,400<br>That’s all it is.</p>
+<p>385<br>00:35:41,400 –&gt; 00:35:43,400<br>Okay.</p>
+<p>386<br>00:35:43,400 –&gt; 00:35:45,400<br>So this should be pretty straightforward.</p>
+<p>387<br>00:35:45,400 –&gt; 00:35:46,400<br>Okay.</p>
+<p>388<br>00:35:46,400 –&gt; 00:35:47,400<br>Let’s get to B plus trees.</p>
+<p>389<br>00:35:47,400 –&gt; 00:35:51,400<br>This is harder and more fun.</p>
+<p>390<br>00:35:51,400 –&gt; 00:35:54,400<br>So again, just like before in our hash table in the B plus tree,</p>
+<p>391<br>00:35:54,400 –&gt; 00:35:57,400<br>we want to have multiple threads read right at the same time.</p>
+<p>392<br>00:35:57,400 –&gt; 00:36:02,400<br>The challenge here is now in the hash table, with at least in linear probing,</p>
+<p>393<br>00:36:02,400 –&gt; 00:36:04,400<br>the number of pages was fixed.</p>
+<p>394<br>00:36:04,400 –&gt; 00:36:08,400<br>And the organization of the data structure was fixed.</p>
+<p>395<br>00:36:08,400 –&gt; 00:36:14,400<br>Meaning like, you know, no matter if I had, if I create my hash table and I have a, say a million slots,</p>
+<p>396<br>00:36:14,400 –&gt; 00:36:18,400<br>it doesn’t matter whether I have a thousand threads going at it or one thread going at it,</p>
+<p>397<br>00:36:18,400 –&gt; 00:36:20,400<br>I’m always going to have a million slots.</p>
+<p>398<br>00:36:20,400 –&gt; 00:36:22,400<br>It doesn’t matter if I have a, you know, a half a million keys in it or not,</p>
+<p>399<br>00:36:22,400 –&gt; 00:36:24,400<br>the data structure is always the same.</p>
+<p>400<br>00:36:24,400 –&gt; 00:36:29,400<br>And at B plus tree, since the data structure is self-organizer, self-balancing,</p>
+<p>401<br>00:36:29,400 –&gt; 00:36:33,400<br>as I insert things into it, I start deleting things from it,</p>
+<p>402<br>00:36:33,400 –&gt; 00:36:36,400<br>it’s going to start reorganizing itself.</p>
+<p>403<br>00:36:36,400 –&gt; 00:36:38,400<br>So I need to make sure that as I’m reorganizing things,</p>
+<p>404<br>00:36:38,400 –&gt; 00:36:43,400<br>you’re doing splits or merges, I make sure that, I have to make sure that the data structure is correct.</p>
+<p>405<br>00:36:44,400 –&gt; 00:36:46,400<br>All right, so let’s see how things can go bad.</p>
+<p>406<br>00:36:46,400 –&gt; 00:36:51,400<br>Say we have our thread here and they want to delete a key 44 at the bottom.</p>
+<p>407<br>00:36:51,400 –&gt; 00:36:52,400<br>So what do I do?</p>
+<p>408<br>00:36:52,400 –&gt; 00:36:56,400<br>I traverse down and I look at the guide post markers to figure out whether I’m going to go left and right</p>
+<p>409<br>00:36:56,400 –&gt; 00:37:01,400<br>and I reach down to my, my leaf node here and I go ahead and delete it.</p>
+<p>410<br>00:37:01,400 –&gt; 00:37:07,400<br>But now I have to rebalance, I have to do a merge because this, this leaf node is less than half full.</p>
+<p>411<br>00:37:07,400 –&gt; 00:37:11,400<br>So maybe I’ll steal an entry from my sibling, right?</p>
+<p>412<br>00:37:12,400 –&gt; 00:37:14,400<br>He’s going to move 41 over, right?</p>
+<p>413<br>00:37:14,400 –&gt; 00:37:20,400<br>But before I can do that, my thread gets descheduled for whatever reason.</p>
+<p>414<br>00:37:20,400 –&gt; 00:37:23,400<br>The OS decided to do something, gamma rays came down, it doesn’t matter.</p>
+<p>415<br>00:37:23,400 –&gt; 00:37:25,400<br>My thread’s not running anymore.</p>
+<p>416<br>00:37:25,400 –&gt; 00:37:30,400<br>So now, while thread 1 is asleep, thread 2 comes along and they want to find 41</p>
+<p>417<br>00:37:30,400 –&gt; 00:37:34,400<br>and they search a person down just like before and they get here, right?</p>
+<p>418<br>00:37:34,400 –&gt; 00:37:40,400<br>And again, now they look at the guide post, they follow the, they realize they want to go down to the right to the node H.</p>
+<p>419<br>00:37:40,400 –&gt; 00:37:43,400<br>But now it gets descheduled for whatever reason.</p>
+<p>420<br>00:37:43,400 –&gt; 00:37:47,400<br>And then thread 1 wakes up, moves 41,</p>
+<p>421<br>00:37:47,400 –&gt; 00:37:54,400<br>T1, T, thread 2 wakes up, goes down to the node, thought it would need to go to, and now the key’s not there.</p>
+<p>422<br>00:37:54,400 –&gt; 00:37:55,400<br>Right?</p>
+<p>423<br>00:37:55,400 –&gt; 00:38:00,400<br>Best case scenario, you get a false negative here, worst case scenario, you crash.</p>
+<p>424<br>00:38:00,400 –&gt; 00:38:04,400<br>And the system fails and you could, you could, you know, corrupt your data.</p>
+<p>425<br>00:38:04,400 –&gt; 00:38:05,400<br>Right?</p>
+<p>426<br>00:38:05,400 –&gt; 00:38:08,400<br>So we need latches to protect this thing.</p>
+<p>427<br>00:38:08,400 –&gt; 00:38:13,400<br>And so the technique we’re going to use is called latch crabbing or latch coupling.</p>
+<p>428<br>00:38:13,400 –&gt; 00:38:15,400<br>I think the textbook calls it latch coupling.</p>
+<p>429<br>00:38:15,400 –&gt; 00:38:17,400<br>I think the Wikipedia calls it latch coupling.</p>
+<p>430<br>00:38:17,400 –&gt; 00:38:18,400<br>Right?</p>
+<p>431<br>00:38:18,400 –&gt; 00:38:25,400<br>But it’s basically the protocol we’re going to use to, to decide as we traverse down to our tree,</p>
+<p>432<br>00:38:25,400 –&gt; 00:38:32,400<br>what latches we want to take, and then when can we release the latches up above us?</p>
+<p>433<br>00:38:32,400 –&gt; 00:38:37,400<br>Because again, the easiest way to protect this to higher data structure is put a giant latch and top the whole thing.</p>
+<p>434<br>00:38:37,400 –&gt; 00:38:41,400<br>And then everyone has to get gatekeep through, but then that becomes a bottleneck.</p>
+<p>435<br>00:38:41,400 –&gt; 00:38:48,400<br>So we want to be more clever and selectively release our latches as we go down when we know it’s okay.</p>
+<p>436<br>00:38:48,400 –&gt; 00:38:57,400<br>So the basic protocol is in order for me to go into B plus 3, I, you always have to last the root, but once I’m in my root,</p>
+<p>437<br>00:38:57,400 –&gt; 00:39:03,400<br>and I figure out whether I want to go left and right, and then I acquire the latch from my child that I’m going to go down from the current parent of that.</p>
+<p>438<br>00:39:03,400 –&gt; 00:39:12,400<br>And then once I’m know I’m okay, and I’m able to go there, I can release my parent latch for that current node of that if I know it’s safe.</p>
+<p>439<br>00:39:12,400 –&gt; 00:39:24,400<br>And the definition of safe is going to be that we know that based on the operation we’re trying to do, like an insert or a delete, if it’s an insert, we know that the child isn’t full.</p>
+<p>440<br>00:39:24,400 –&gt; 00:39:35,400<br>And therefore, if I had to do a split, I’m sorry, when I insert my key, it’s not going to call to do a split at that child node, which may get propagated up to the parent.</p>
+<p>441<br>00:39:35,400 –&gt; 00:39:45,400<br>If I’m going to do a delete, if I know that it’s more than half full, then again, if I remove a key, I know I’m not going to do a merge, which again will propagate things up to my parent node here.</p>
+<p>442<br>00:39:46,400 –&gt; 00:39:57,400<br>So again, the basic protocol is that I started the route, where it’s down, acquire read latches and every child as I’m going down, because again, I’m doing a read operation, I’m not doing updates, and then I just unlatch my parent.</p>
+<p>443<br>00:39:57,400 –&gt; 00:40:12,400<br>For doing insert or delete, I start the route, taking right latches as I go down, and then once I have my child node that I’m going to move to in right mode, then I go check to see whether it’s safe, and if it is safe, then I can go release any latches I have up above me.</p>
+<p>444<br>00:40:15,400 –&gt; 00:40:18,400<br>So let’s go back to our example here, so I want to find key 38.</p>
+<p>445<br>00:40:18,400 –&gt; 00:40:39,400<br>Again, I start at the route, take the route in latch and route node in a right latch mode, then I acquire the read latch on B, then I move down, and at this point here, it’s safe for me to release the latch on A, because again, it’s doing a read operation, I’ve already arrived at B where I need to go, so I’m going to go there.</p>
+<p>446<br>00:40:39,400 –&gt; 00:40:50,400<br>So I can go ahead and release the latch on B, get the latch read latch on D, same thing, it’s safe for me to release the latch on B, so I go ahead and do that, and I get down to H, and so forth, and I finally get the key I’m looking for, and I’m done.</p>
+<p>447<br>00:40:50,400 –&gt; 00:40:54,400<br>All right.</p>
+<p>448<br>00:40:54,400 –&gt; 00:41:23,400<br>So I get the route in right mode latch, I get a right latch on B, and I get this point here, since I don’t know what’s going to happen below me in the tree, below B, because if I know if I had to delete a key from the node I’m currently at on B, I’m going to have to do a merge, so therefore I can’t release the latch on my parent A,</p>
+<p>449<br>00:41:23,400 –&gt; 00:41:49,400<br>because I may have to go make changes to A above. So I’m going to hold the right latch on B and A, get down to D, now at D I see that, no matter what happens to me below in the tree, if I had to remove a key from D, D is not going to do a merge, and therefore it’s not going to make any changes up above it, so I, it’s safe for me to go ahead and release the latch on A and D.</p>
+<p>450<br>00:41:49,400 –&gt; 00:42:11,400<br>Does the order matter? Sorry, question. Which node is the safe node? Whatever you’re at now, whatever, whatever the, like, so if I’m at B, I get the, and I’m, I need to go to D, so I get, I get it in right, I get the latch in right mode, and then now I have in right mode, then I check in my safe, because you can’t check whether you’re safe, and do you hold the latch on it?</p>
+<p>451<br>00:42:11,400 –&gt; 00:42:17,400<br>Is the safe and go ahead and release, release everybody up above me, yes.</p>
+<p>452<br>00:42:17,400 –&gt; 00:42:21,400<br>Is being more than half full the only sort of form?</p>
+<p>453<br>00:42:21,400 –&gt; 00:42:32,400<br>This question is, is it being half full the only check to see whether it’s safe? What else would call, what else would cause a, a, a merge in case of a, a delete?</p>
+<p>454<br>00:42:34,400 –&gt; 00:42:39,400<br>That’s the thing we all care about, like splits emerges, we’re trying to make sure that we don’t screw ourselves at that.</p>
+<p>455<br>00:42:42,400 –&gt; 00:42:54,400<br>All right, so, so, so at this one here at D, we had to release the latches on A and B, because again, D is safe. Does the order in which we release those latches matter?</p>
+<p>456<br>00:42:55,400 –&gt; 00:43:06,400<br>He says it makes more sense to release the latches on A, why?</p>
+<p>457<br>00:43:06,400 –&gt; 00:43:16,400<br>If someone is waiting on A, I’ll be the release and if B is also the release, then it’s not half the way for B.</p>
+<p>458<br>00:43:18,400 –&gt; 00:43:25,400<br>So, if I, so if I, if I release B, and someone’s waiting for A, and like it has to go down the same path as well, yes.</p>
+<p>459<br>00:43:25,400 –&gt; 00:43:30,400<br>So, if the release is B, and then A, then it does not have to wait for B.</p>
+<p>460<br>00:43:31,400 –&gt; 00:43:37,400<br>So, he says if he release B, then it does, sorry, the other thread’s waiting for B or A, sorry.</p>
+<p>461<br>00:43:37,400 –&gt; 00:43:39,400<br>It has to go down the same path.</p>
+<p>462<br>00:43:43,400 –&gt; 00:43:45,400<br>Latch, but yes, yeah.</p>
+<p>463<br>00:43:45,400 –&gt; 00:43:50,400<br>Okay, but if I release it on B, it’s still waiting for A.</p>
+<p>464<br>00:43:51,400 –&gt; 00:44:00,400<br>Right, also too. What if I have a thread that’s waiting for A, but once go down this side of the tree, but I release B, it’s still blocked.</p>
+<p>465<br>00:44:01,400 –&gt; 00:44:06,400<br>So, from a correctness standpoint, it doesn’t actually matter.</p>
+<p>466<br>00:44:06,400 –&gt; 00:44:11,400<br>Like the system, the data structure will still be correct, whether you go from the bottom to the top to the bottom.</p>
+<p>467<br>00:44:11,400 –&gt; 00:44:19,400<br>For performance reasons, we want to go top down, because we want to release, like you wait to think about it as the latch is protecting everything below it.</p>
+<p>468<br>00:44:20,400 –&gt; 00:44:25,400<br>So, if I hold a right latch on the root, I’m protecting the entire data structure in right mode.</p>
+<p>469<br>00:44:28,400 –&gt; 00:44:44,400<br>Now, there may be a bunch of like read threads and other threads doing stuff over here, but that’s okay, because it would, if their modifications would have caused us to do a split or merge, then up the entire to the root, they would have to still hold the right latch on this.</p>
+<p>470<br>00:44:45,400 –&gt; 00:44:57,400<br>So, again, the main takeaway is that we want to release latches as soon as possible, and we want to release latches that will have the most, that would free up the most, the most of our workers in our data structure.</p>
+<p>471<br>00:44:57,400 –&gt; 00:45:00,400<br>So, we always want to release from the top going down.</p>
+<p>472<br>00:45:03,400 –&gt; 00:45:09,400<br>All right, so then we get down here and we get the right latch on H, go ahead and do our delete and we’re done.</p>
+<p>473<br>00:45:10,400 –&gt; 00:45:30,400<br>All right, so let’s look at another example. We’re in certain 45, same idea. I get the right latch on the root, on A, go down to B. At this point here, I know that if, whatever bolt is below me in the tree, if it has to do a split, I have room in B to accommodate another key.</p>
+<p>474<br>00:45:30,400 –&gt; 00:45:40,400<br>So, it’s okay for me to go release the latch on A, get down here on D. Now D is completely full. I don’t know what’s below me in the tree because I haven’t gone there yet.</p>
+<p>475<br>00:45:40,400 –&gt; 00:45:56,400<br>So, at this point here, it’s not safe to release the latch on D until I go down, and now I can see that I’m inserting the I would not cause a split on node I, so I can go ahead and release the latches on B and D, and going top down.</p>
+<p>476<br>00:45:57,400 –&gt; 00:45:59,400<br>And I can start my key.</p>
+<p>477<br>00:46:01,400 –&gt; 00:46:16,400<br>All right, let’s look at one where there is a split. For simplicity, we could ignore sibling pointers. So, I’m doing an insert 25, B is safe. I’m going to release the latch on A. I get down to C, C is safe, release the latch on B.</p>
+<p>478<br>00:46:17,400 –&gt; 00:46:30,400<br>Then I get down to F. F is not safe, so I can’t release the latch on C. Now I need to do a split, and that split’s going to cause me to insert a new entry up into node C.</p>
+<p>479<br>00:46:31,400 –&gt; 00:46:40,400<br>So, I’ll go ahead and do that. Add my new node J, and we’re now at a space because it’s PowerPoint. Again, we’re ignoring sibling pointers for now.</p>
+<p>480<br>00:46:40,400 –&gt; 00:46:50,400<br>Go ahead and now do the update to the C, and now include this pointer. And then once I apply all these changes, then I release the latches going top down.</p>
+<p>481<br>00:46:53,400 –&gt; 00:47:00,400<br>So, I’ve already given this answer before. What was the very first thing I did for all these scenarios when I’m going to do updates and insert some leads? What’s the very first thing you have to do?</p>
+<p>482<br>00:47:01,400 –&gt; 00:47:05,400<br>Get a latch on the root node.</p>
+<p>483<br>00:47:06,400 –&gt; 00:47:14,400<br>And, yeah, get that correct, but this is a bottleneck now because it basically becomes a single threaded data structure.</p>
+<p>484<br>00:47:15,400 –&gt; 00:47:22,400<br>Everybody has to go into the system, start going into our data structure, the first thing you have to do is acquire the latch and right node in the root.</p>
+<p>485<br>00:47:23,400 –&gt; 00:47:26,400<br>In view of doing reads, that’s not going to be compatible, so it’ll block all the readers too.</p>
+<p>486<br>00:47:28,400 –&gt; 00:47:32,400<br>Again, it’s correct, but from a performance reason, it’s not ideal.</p>
+<p>487<br>00:47:33,400 –&gt; 00:47:40,400<br>And so, the common technique everyone uses is this optimistic, a latching scheme I’ll talk about now.</p>
+<p>488<br>00:47:41,400 –&gt; 00:47:47,400<br>I don’t think the algorithm has a name. It’s from this paper from, I think it’s from the 70s. Is there a date on that?</p>
+<p>489<br>00:47:48,400 –&gt; 00:47:51,400<br>It says 77. Yeah, from these guys that I be on bear and schlock neck.</p>
+<p>490<br>00:47:52,400 –&gt; 00:47:54,400<br>Sometimes it’s called the bear schlock neck algorithm, which is kind of commerce in the say.</p>
+<p>491<br>00:47:55,400 –&gt; 00:48:01,400<br>But it’s based on this observation that you know that most of your threads, most of your workers, their operations are not going to be good.</p>
+<p>492<br>00:48:02,400 –&gt; 00:48:07,400<br>So, it’s not going to cause a split emerge into your B plus three nodes.</p>
+<p>493<br>00:48:07,400 –&gt; 00:48:11,400<br>Again, my example is here, I’m showing you nodes with two keys in it because that’s a fit of the PowerPoint.</p>
+<p>494<br>00:48:12,400 –&gt; 00:48:17,400<br>But in a real system, you know, the size window, it’s going to be the page size of your database, like 8 kilobytes, 16 kilobytes.</p>
+<p>495<br>00:48:18,400 –&gt; 00:48:23,400<br>And you can store a lot of keys. So, the most of the times you can do a bunch of inserts, and that’s not going to cause any splits.</p>
+<p>496<br>00:48:24,400 –&gt; 00:48:25,400<br>And likewise for deletes.</p>
+<p>497<br>00:48:26,400 –&gt; 00:48:36,400<br>So, if you assume that splits emerges in me rare, then instead of taking right latches all the way down, even if you’re doing the latch coupling scheme,</p>
+<p>498<br>00:48:37,400 –&gt; 00:48:43,400<br>you’re going to take red latches all the way down until you get to a leaf node right above the wreath node.</p>
+<p>499<br>00:48:44,400 –&gt; 00:48:48,400<br>And then now you check to see whether that assumption that you’re not going to do a split emerge is correct.</p>
+<p>500<br>00:48:49,400 –&gt; 00:48:55,400<br>And if it is, then you go ahead and quiet the leaf node in right mode and then do your change.</p>
+<p>501<br>00:48:55,400 –&gt; 00:49:01,400<br>But if you’re wrong, you just restart and then do the pessimistic approach or just taking right latches all the way down.</p>
+<p>502<br>00:49:02,400 –&gt; 00:49:06,400<br>So, this will be a common theme you see not just in databases in a bunch of different systems in general.</p>
+<p>503<br>00:49:07,400 –&gt; 00:49:11,400<br>This is an optimistic scheme where you assume that you’re not going to be any issues, not any problems.</p>
+<p>504<br>00:49:12,400 –&gt; 00:49:17,400<br>And you do the sort of fast way of making some change or doing something in your system.</p>
+<p>505<br>00:49:18,400 –&gt; 00:49:21,400<br>And then if you’re wrong, you just roll it back and take care of it.</p>
+<p>506<br>00:49:23,400 –&gt; 00:49:25,400<br>Intel actually had this in, it was called TSX.</p>
+<p>507<br>00:49:25,400 –&gt; 00:49:28,400<br>We actually had this in the CPU itself.</p>
+<p>508<br>00:49:28,400 –&gt; 00:49:31,400<br>I think there’s a bug and I think they turned it off.</p>
+<p>509<br>00:49:31,400 –&gt; 00:49:32,400<br>They might have got turned back on.</p>
+<p>510<br>00:49:32,400 –&gt; 00:49:42,400<br>But like, there’s optimistic memory stuff where you could have a critical section where you assume you’re not going to have any conflicts in some critical section.</p>
+<p>511<br>00:49:42,400 –&gt; 00:49:49,400<br>And then when you went to go apply the change, then you just don’t check to see whether that assumption was correct.</p>
+<p>512<br>00:49:49,400 –&gt; 00:49:51,400<br>And if not, it would roll you back automatically.</p>
+<p>513<br>00:49:52,400 –&gt; 00:49:55,400<br>But again, we’ll see this when we do talk about commercial for transactions.</p>
+<p>514<br>00:49:55,400 –&gt; 00:49:57,400<br>This is a very common technique.</p>
+<p>515<br>00:49:57,400 –&gt; 00:50:00,400<br>You do the fast thing because most of the times there won’t be any issues.</p>
+<p>516<br>00:50:00,400 –&gt; 00:50:03,400<br>And if you’re wrong, then you have to roll back and try again.</p>
+<p>517<br>00:50:04,400 –&gt; 00:50:10,400<br>All right, so with this better latching scheme for doing lookups and finds, that’s the same as before.</p>
+<p>518<br>00:50:10,400 –&gt; 00:50:18,400<br>For inserts and deletes, again, we take, we basically do the search, taking right latches, sorry, read latches all the way down,</p>
+<p>519<br>00:50:18,400 –&gt; 00:50:21,400<br>until we’re one level above the leaf node.</p>
+<p>520<br>00:50:21,400 –&gt; 00:50:29,400<br>And we know where we’re in the data structure because, you know, we can keep track of as, you know, how many levels down we are.</p>
+<p>521<br>00:50:30,400 –&gt; 00:50:32,400<br>Either in the page or a simple counter would work too.</p>
+<p>522<br>00:50:34,400 –&gt; 00:50:41,400<br>You go acquire the level right above the leaf node, you acquire the leaf node in right mode, then you check to see where it’s safe.</p>
+<p>523<br>00:50:41,400 –&gt; 00:50:45,400<br>If it is safe, then you release all your read latches that you took from before.</p>
+<p>524<br>00:50:46,400 –&gt; 00:50:48,400<br>Apply your change and you’re done.</p>
+<p>525<br>00:50:48,400 –&gt; 00:50:53,400<br>If you’re wrong, then you just release all your latches and go back and take right latches all the way down.</p>
+<p>526<br>00:50:53,400 –&gt; 00:50:58,400<br>You could take, you know, do the optimistic seam again because you assume the next time you come back around, things will be safe.</p>
+<p>527<br>00:50:59,400 –&gt; 00:51:00,400<br>It depends on the implementation.</p>
+<p>528<br>00:51:00,400 –&gt; 00:51:07,400<br>And this works really well in low-contention environments because you, you obviously assume that it won’t be any conflicts and most of the time you’re correct.</p>
+<p>529<br>00:51:07,400 –&gt; 00:51:09,400<br>And so things run faster.</p>
+<p>530<br>00:51:11,400 –&gt; 00:51:13,400<br>Alright, so let’s go back from the example before.</p>
+<p>531<br>00:51:13,400 –&gt; 00:51:15,400<br>Let’s delete key 38.</p>
+<p>532<br>00:51:15,400 –&gt; 00:51:24,400<br>Again, instead of taking the root node in a right latch mode, taking a read mode, keep going down to I get down to D.</p>
+<p>533<br>00:51:24,400 –&gt; 00:51:27,400<br>Now, D recognizes that it’s one level above the leaf node.</p>
+<p>534<br>00:51:27,400 –&gt; 00:51:32,400<br>So I want to delete a key 38 from node H.</p>
+<p>535<br>00:51:32,400 –&gt; 00:51:35,400<br>So I take the H into right mode, check to see it’s safe.</p>
+<p>536<br>00:51:35,400 –&gt; 00:51:36,400<br>It is.</p>
+<p>537<br>00:51:36,400 –&gt; 00:51:37,400<br>I can go delete it.</p>
+<p>538<br>00:51:37,400 –&gt; 00:51:41,400<br>And I know I’m not going to do any merges.</p>
+<p>539<br>00:51:41,400 –&gt; 00:51:49,400<br>So again, best case scenario, I traverse the data structure almost as if I was doing a read.</p>
+<p>540<br>00:51:50,400 –&gt; 00:51:58,400<br>And therefore, I can have a maximum on a parallelism, but just only at the bottom do I check to see whether that assumption was correct.</p>
+<p>541<br>00:51:58,400 –&gt; 00:52:07,400<br>See how I do insert insert 25 again, take the root in in read mode, take being read mode, do the latch coupling as I release latches as I go down.</p>
+<p>542<br>00:52:07,400 –&gt; 00:52:13,400<br>Now I get down here into F in case of F because we’re trying to do an insert, F doesn’t have any more room.</p>
+<p>543<br>00:52:14,400 –&gt; 00:52:21,400<br>So it’s not safe. So we’re going to restart the whole operation and then just take right latches on the way down.</p>
+<p>544<br>00:52:23,400 –&gt; 00:52:26,400<br>Neat trick, right?</p>
+<p>545<br>00:52:27,400 –&gt; 00:52:29,400<br>Okay.</p>
+<p>546<br>00:52:30,400 –&gt; 00:52:37,400<br>So in all these examples, as I’ve shown so far, we were only going in one direction.</p>
+<p>547<br>00:52:37,400 –&gt; 00:52:39,400<br>We were only going top to the bottom.</p>
+<p>548<br>00:52:40,400 –&gt; 00:52:44,400<br>And as I said, there weren’t any deadlocks because nobody, you know, everyone’s going to the top.</p>
+<p>549<br>00:52:44,400 –&gt; 00:52:46,400<br>They’re already starting at the same point and they’re going down.</p>
+<p>550<br>00:52:46,400 –&gt; 00:52:50,400<br>There’s no, you know, as I said last class, there’s no pointers to your parent.</p>
+<p>551<br>00:52:50,400 –&gt; 00:52:54,400<br>You can’t go back up and then because that’s where you could have conflicts.</p>
+<p>552<br>00:52:54,400 –&gt; 00:52:59,400<br>But again, because we’re at B plus dream, we could have sibling pointers.</p>
+<p>553<br>00:52:59,400 –&gt; 00:53:06,400<br>And now we have a challenge where we could have one thread going one way, another thread going another way.</p>
+<p>554<br>00:53:06,400 –&gt; 00:53:11,400<br>And they both hold latches for what the other person wants with the other thread once.</p>
+<p>555<br>00:53:11,400 –&gt; 00:53:12,400<br>Right?</p>
+<p>556<br>00:53:12,400 –&gt; 00:53:15,400<br>So now we got to deal with that scenario.</p>
+<p>557<br>00:53:15,400 –&gt; 00:53:18,400<br>It took again, the original B plus dream paper, this wasn’t an issue.</p>
+<p>558<br>00:53:18,400 –&gt; 00:53:24,400<br>But the B link stuff that came from CMU, that’s where they added sibling pointers and that’s where you can have deadlocks.</p>
+<p>559<br>00:53:24,400 –&gt; 00:53:26,400<br>So let’s look at simple example here.</p>
+<p>560<br>00:53:26,400 –&gt; 00:53:28,400<br>So I want to, I have a thread one.</p>
+<p>561<br>00:53:28,400 –&gt; 00:53:31,400<br>We want to find all keys less than four.</p>
+<p>562<br>00:53:31,400 –&gt; 00:53:36,400<br>So we’re going to get the root in in read mode and then get the C in read mode.</p>
+<p>563<br>00:53:36,400 –&gt; 00:53:43,400<br>And then let’s say, then once the scan scan across, so it’s going to follow the sibling pointers.</p>
+<p>564<br>00:53:43,400 –&gt; 00:53:51,400<br>So just look at four, I hold whatever node I’m at now, I hold that in the current latch mode that I have it.</p>
+<p>565<br>00:53:51,400 –&gt; 00:53:54,400<br>And then I then try to acquire the latch where I want to go to.</p>
+<p>566<br>00:53:54,400 –&gt; 00:53:58,400<br>So this case here, again, wants to scan, see when we go from C to B.</p>
+<p>567<br>00:53:58,400 –&gt; 00:54:06,400<br>I hold the latch on C, get the latch on B, move over here, and then I can release the latch on C and then do whatever it is that I need to do.</p>
+<p>568<br>00:54:06,400 –&gt; 00:54:07,400<br>Right?</p>
+<p>569<br>00:54:07,400 –&gt; 00:54:13,400<br>So the protocol is basically the same thing, even though we’re now removing horizontally instead of vertically.</p>
+<p>570<br>00:54:13,400 –&gt; 00:54:14,400<br>Yes.</p>
+<p>571<br>00:54:14,400 –&gt; 00:54:19,400<br>I think this might be the same thing for earlier, but if we’re reading this one, then a guy can start writing the other one.</p>
+<p>572<br>00:54:19,400 –&gt; 00:54:21,400<br>Then we move across the read.</p>
+<p>573<br>00:54:21,400 –&gt; 00:54:23,400<br>That’s the same scheduling problem.</p>
+<p>574<br>00:54:23,400 –&gt; 00:54:25,400<br>We’ll get to that in a second.</p>
+<p>575<br>00:54:25,400 –&gt; 00:54:26,400<br>Yes.</p>
+<p>576<br>00:54:26,400 –&gt; 00:54:32,400<br>So again, the remos are so commutives, so I can have two threads doing the same time.</p>
+<p>577<br>00:54:32,400 –&gt; 00:54:38,400<br>First thing that goes down, or goes down to C, second thread goes down to B, and they want to go across each other.</p>
+<p>578<br>00:54:38,400 –&gt; 00:54:46,400<br>And in this case here, the two latches that are holding are commutative, so therefore they can both do whatever they need to do.</p>
+<p>579<br>00:54:46,400 –&gt; 00:54:48,400<br>Right?</p>
+<p>580<br>00:54:48,400 –&gt; 00:54:51,400<br>That’s fine.</p>
+<p>581<br>00:54:51,400 –&gt; 00:54:57,400<br>So let’s now do when we have a one on one to do a write, one to do a read.</p>
+<p>582<br>00:54:57,400 –&gt; 00:55:02,400<br>So T1 was a delete, the key for, and T2 wants to find all keys greater than one.</p>
+<p>583<br>00:55:02,400 –&gt; 00:55:06,400<br>So they both start at the same time, and assume we’re doing the optimistic lock coupling.</p>
+<p>584<br>00:55:06,400 –&gt; 00:55:14,400<br>I just talked about a latch coupling where they start the route, both in read mode.</p>
+<p>585<br>00:55:15,400 –&gt; 00:55:16,400<br>Right?</p>
+<p>586<br>00:55:16,400 –&gt; 00:55:27,400<br>Thread 2 goes down, takes B into read mode, thread C goes down, and takes, sorry, one goes down, takes node C in write mode.</p>
+<p>587<br>00:55:27,400 –&gt; 00:55:29,400<br>And that’s the key that it wants to delete.</p>
+<p>588<br>00:55:29,400 –&gt; 00:55:30,400<br>Right?</p>
+<p>589<br>00:55:30,400 –&gt; 00:55:42,400<br>But now, thread 2 is scanning across the leaf nodes, and it wants to acquire the latch on C in read mode, but it can’t, because T1 holds that in write mode.</p>
+<p>590<br>00:55:43,400 –&gt; 00:55:46,400<br>So we have to decide what we want to do here.</p>
+<p>591<br>00:55:46,400 –&gt; 00:55:47,400<br>Right?</p>
+<p>592<br>00:55:47,400 –&gt; 00:55:56,400<br>And T2 doesn’t know anything about T1, because I said there’s no centralized data structure, just says here’s the threads that are running, here’s what they’re doing.</p>
+<p>593<br>00:55:56,400 –&gt; 00:56:06,400<br>All that C’s, all it knows is that there’s a latch on this other node that I want to go to, and it’s currently in write mode, and that’s not compatible with the mode I want to put it in, so you have to do something.</p>
+<p>594<br>00:56:06,400 –&gt; 00:56:09,400<br>So what can T2 do here?</p>
+<p>595<br>00:56:09,400 –&gt; 00:56:10,400<br>Right?</p>
+<p>596<br>00:56:10,400 –&gt; 00:56:15,400<br>The weight, that’s one option, what else?</p>
+<p>597<br>00:56:15,400 –&gt; 00:56:18,400<br>What’s that?</p>
+<p>598<br>00:56:18,400 –&gt; 00:56:21,400<br>Okay, let’s see, are you reading the slides?</p>
+<p>599<br>00:56:21,400 –&gt; 00:56:22,400<br>Okay.</p>
+<p>600<br>00:56:22,400 –&gt; 00:56:27,400<br>What’s the third option?</p>
+<p>601<br>00:56:28,400 –&gt; 00:56:33,400<br>Ingo, street on the other thread, and try to kill it, right?</p>
+<p>602<br>00:56:33,400 –&gt; 00:56:36,400<br>And take the latch from it.</p>
+<p>603<br>00:56:36,400 –&gt; 00:56:39,400<br>So what do you think is a good idea here?</p>
+<p>604<br>00:56:39,400 –&gt; 00:56:41,400<br>What’s that?</p>
+<p>605<br>00:56:41,400 –&gt; 00:56:45,400<br>Just wait for how long?</p>
+<p>606<br>00:56:45,400 –&gt; 00:56:49,400<br>I heard forever.</p>
+<p>607<br>00:56:50,400 –&gt; 00:56:53,400<br>How long?</p>
+<p>608<br>00:56:53,400 –&gt; 00:56:55,400<br>How do you know?</p>
+<p>609<br>00:56:55,400 –&gt; 00:56:59,400<br>That’s just waiting, right?</p>
+<p>610<br>00:56:59,400 –&gt; 00:57:07,400<br>It’s just spinning until the latch is available, but like, how does this?</p>
+<p>611<br>00:57:07,400 –&gt; 00:57:12,400<br>Do you know what T1 is doing?</p>
+<p>612<br>00:57:12,400 –&gt; 00:57:15,400<br>No, we don’t know anything.</p>
+<p>613<br>00:57:15,400 –&gt; 00:57:18,400<br>What’s that?</p>
+<p>614<br>00:57:18,400 –&gt; 00:57:21,400<br>Do you know that T1 is like editing a week, right?</p>
+<p>615<br>00:57:21,400 –&gt; 00:57:22,400<br>Do you?</p>
+<p>616<br>00:57:22,400 –&gt; 00:57:27,400<br>Well, yeah, you know it’s in write mode, but how long is it going to take?</p>
+<p>617<br>00:57:27,400 –&gt; 00:57:32,400<br>Uh, how?</p>
+<p>618<br>00:57:32,400 –&gt; 00:57:34,400<br>Which one?</p>
+<p>619<br>00:57:34,400 –&gt; 00:57:38,400<br>Like, do you kill yourself from your schedule or do you kill the other guy in your schedule?</p>
+<p>620<br>00:57:38,400 –&gt; 00:57:39,400<br>You kill the other guy.</p>
+<p>621<br>00:57:39,400 –&gt; 00:57:42,400<br>She says kill the other one, fantastic, right?</p>
+<p>622<br>00:57:42,400 –&gt; 00:57:45,400<br>How do you do that?</p>
+<p>623<br>00:57:45,400 –&gt; 00:57:47,400<br>What’s that?</p>
+<p>624<br>00:57:47,400 –&gt; 00:57:50,400<br>Yeah.</p>
+<p>625<br>00:57:50,400 –&gt; 00:57:55,400<br>You have to keep on modding like everything that you’ve done in the past.</p>
+<p>626<br>00:57:55,400 –&gt; 00:57:58,400<br>What do you mean, keep on log everything you’ve done in the past?</p>
+<p>627<br>00:57:58,400 –&gt; 00:58:04,400<br>Like, you look for like all the operations you want to make, and if you want to be scheduled with some go back to the PS3,</p>
+<p>628<br>00:58:04,400 –&gt; 00:58:09,400<br>kill the other guy in the next third, Q, and say that I will come back in the next three or four days.</p>
+<p>629<br>00:58:09,400 –&gt; 00:58:12,400<br>Yeah, that sounds expensive.</p>
+<p>630<br>00:58:12,400 –&gt; 00:58:15,400<br>I’m going to get wait for a normal month of time.</p>
+<p>631<br>00:58:15,400 –&gt; 00:58:23,400<br>I’ve just come for like, uh, he says wait for the average time for a right to happen.</p>
+<p>632<br>00:58:23,400 –&gt; 00:58:32,400<br>Um, but like, you don’t have since in my, my simple example here because I have to fit on PowerPoint.</p>
+<p>633<br>00:58:32,400 –&gt; 00:58:34,400<br>It’s there’s two nodes in the leaf, right?</p>
+<p>634<br>00:58:34,400 –&gt; 00:58:37,400<br>What if there was a bunch of leaf nodes all over here?</p>
+<p>635<br>00:58:37,400 –&gt; 00:58:41,400<br>I got to hold all these guys in everything in write mode, right?</p>
+<p>636<br>00:58:41,400 –&gt; 00:58:43,400<br>Because I want my changes to happen automatically.</p>
+<p>637<br>00:58:43,400 –&gt; 00:58:46,400<br>So I don’t know whether this other thread keep going in the other direction.</p>
+<p>638<br>00:58:46,400 –&gt; 00:58:47,400<br>I don’t like what is a normal time?</p>
+<p>639<br>00:58:47,400 –&gt; 00:58:50,400<br>You don’t know.</p>
+<p>640<br>00:58:50,400 –&gt; 00:58:56,400<br>He says give up your right lock and let the other guy read.</p>
+<p>641<br>00:58:56,400 –&gt; 00:58:57,400<br>But how do you know?</p>
+<p>642<br>00:58:57,400 –&gt; 00:58:59,400<br>How do you know they’re waiting for you?</p>
+<p>643<br>00:58:59,400 –&gt; 00:59:03,400<br>Like if you’re T1, how do you know somebody else is trying to get your latch?</p>
+<p>644<br>00:59:03,400 –&gt; 00:59:04,400<br>Yeah.</p>
+<p>645<br>00:59:04,400 –&gt; 00:59:05,400<br>You know, yes.</p>
+<p>646<br>00:59:05,400 –&gt; 00:59:07,400<br>I don’t know what you think about the other threads.</p>
+<p>647<br>00:59:07,400 –&gt; 00:59:08,400<br>Do you like it?</p>
+<p>648<br>00:59:08,400 –&gt; 00:59:11,400<br>You know, if it’s about ourselves and what you did, you should kill ourselves?</p>
+<p>649<br>00:59:11,400 –&gt; 00:59:12,400<br>I think so.</p>
+<p>650<br>00:59:12,400 –&gt; 00:59:13,400<br>There you go.</p>
+<p>651<br>00:59:13,400 –&gt; 00:59:14,400<br>Excellent.</p>
+<p>652<br>00:59:14,400 –&gt; 00:59:15,400<br>Yes.</p>
+<p>653<br>00:59:15,400 –&gt; 00:59:16,400<br>So you kill yourself, right?</p>
+<p>654<br>00:59:16,400 –&gt; 00:59:17,400<br>The answer.</p>
+<p>655<br>00:59:17,400 –&gt; 00:59:18,400<br>Right.</p>
+<p>656<br>00:59:18,400 –&gt; 00:59:21,400<br>So killing other thread is hard because how, think of how do you implement that?</p>
+<p>657<br>00:59:21,400 –&gt; 00:59:22,400<br>Can you send an interrupt?</p>
+<p>658<br>00:59:22,400 –&gt; 00:59:23,400<br>And then I got an interrupt panel.</p>
+<p>659<br>00:59:23,400 –&gt; 00:59:24,400<br>That’s expensive, right?</p>
+<p>660<br>00:59:24,400 –&gt; 00:59:25,400<br>That’s a syscall.</p>
+<p>661<br>00:59:25,400 –&gt; 00:59:26,400<br>Right?</p>
+<p>662<br>00:59:26,400 –&gt; 00:59:27,400<br>Is there like a flag you say?</p>
+<p>663<br>00:59:27,400 –&gt; 00:59:28,400<br>Like, should I kill myself?</p>
+<p>664<br>00:59:28,400 –&gt; 00:59:30,400<br>I need to check that every so often.</p>
+<p>665<br>00:59:30,400 –&gt; 00:59:31,400<br>How would that work?</p>
+<p>666<br>00:59:31,400 –&gt; 00:59:32,400<br>Right?</p>
+<p>667<br>00:59:32,400 –&gt; 00:59:34,400<br>Uh, that’s not going to check in some other memory location.</p>
+<p>668<br>00:59:34,400 –&gt; 00:59:35,400<br>Right?</p>
+<p>669<br>00:59:35,400 –&gt; 00:59:36,400<br>And what do you get?</p>
+<p>670<br>00:59:36,400 –&gt; 00:59:40,400<br>You get the, you know, you don’t know how much work the other thread is done.</p>
+<p>671<br>00:59:40,400 –&gt; 00:59:46,400<br>And therefore, like, uh, you don’t know whether him aborting a woman back is way more expensive</p>
+<p>672<br>00:59:46,400 –&gt; 00:59:48,400<br>than then you aborting yourself.</p>
+<p>673<br>00:59:48,400 –&gt; 00:59:50,400<br>You know nothing at this point.</p>
+<p>674<br>00:59:50,400 –&gt; 00:59:51,400<br>Right?</p>
+<p>675<br>00:59:51,400 –&gt; 00:59:56,400<br>So the best thing to do is just kill yourself.</p>
+<p>676<br>00:59:56,400 –&gt; 01:00:01,400<br>And then you maybe also could wait a little bit in the beginning and then give up right away,</p>
+<p>677<br>01:00:01,400 –&gt; 01:00:03,400<br>depending on what you know you need to do.</p>
+<p>678<br>01:00:03,400 –&gt; 01:00:04,400<br>Right?</p>
+<p>679<br>01:00:04,400 –&gt; 01:00:06,400<br>And so this is the simplest thing to do.</p>
+<p>680<br>01:00:06,400 –&gt; 01:00:09,400<br>And it’s, it’s, it’s, it’s, it’s not going to be the best thing to do.</p>
+<p>681<br>01:00:09,400 –&gt; 01:00:13,400<br>The most scenarios, almost all scenarios because again, it’s, you don’t know anything about the thread.</p>
+<p>682<br>01:00:13,400 –&gt; 01:00:16,400<br>You can’t communicate with the other thread because that’s expensive.</p>
+<p>683<br>01:00:16,400 –&gt; 01:00:20,400<br>And you’re just better off just aborting and starting over again.</p>
+<p>684<br>01:00:20,400 –&gt; 01:00:21,400<br>Yes?</p>
+<p>685<br>01:00:21,400 –&gt; 01:00:25,400<br>Are these things the same thing when going downwards in the street like when,</p>
+<p>686<br>01:00:25,400 –&gt; 01:00:28,400<br>does it sound like the right cloud from the north to the lower?</p>
+<p>687<br>01:00:28,400 –&gt; 01:00:31,400<br>And have the similar option of the other side?</p>
+<p>688<br>01:00:31,400 –&gt; 01:00:32,400<br>Yes.</p>
+<p>689<br>01:00:32,400 –&gt; 01:00:38,400<br>So what statement is, you would have to wait also to or care itself to like when you’re doing the</p>
+<p>690<br>01:00:38,400 –&gt; 01:00:40,400<br>traversal of the tree going top down.</p>
+<p>691<br>01:00:40,400 –&gt; 01:00:43,400<br>Like if I try to acquire a latch on somebody else on the next node,</p>
+<p>692<br>01:00:43,400 –&gt; 01:00:45,400<br>but that’s already being held, what do I do?</p>
+<p>693<br>01:00:45,400 –&gt; 01:00:47,400<br>It’s the same scenario here.</p>
+<p>694<br>01:00:47,400 –&gt; 01:00:48,400<br>It’s that same scenario.</p>
+<p>695<br>01:00:48,400 –&gt; 01:00:53,400<br>But in that case, it’s not, you’re not, you don’t, you won’t deadlock though, right?</p>
+<p>696<br>01:00:53,400 –&gt; 01:00:57,400<br>The problem is like again, if T2 wants to get the latch on,</p>
+<p>697<br>01:00:57,400 –&gt; 01:01:02,400<br>if T1 wants to get the latch on B and T2 wants to get the latch on C,</p>
+<p>698<br>01:01:02,400 –&gt; 01:01:03,400<br>that’s a deadlock.</p>
+<p>699<br>01:01:03,400 –&gt; 01:01:09,400<br>You don’t know that it’s a deadlock or just contention on trying to some latch, right?</p>
+<p>700<br>01:01:09,400 –&gt; 01:01:13,400<br>So the best thing to do is just immediately give up.</p>
+<p>701<br>01:01:13,400 –&gt; 01:01:16,400<br>Is that mean you could have a scenario where like you hold the latch and I hold the latch</p>
+<p>702<br>01:01:16,400 –&gt; 01:01:21,400<br>and then one of us should only give up, but we end up both giving up and killing ourselves, right?</p>
+<p>703<br>01:01:21,400 –&gt; 01:01:28,400<br>But again, the cost of maintaining metadata about who’s waiting for what and what way,</p>
+<p>704<br>01:01:28,400 –&gt; 01:01:33,400<br>that’s more expensive to do in like the regular case where you assume there isn’t contention.</p>
+<p>705<br>01:01:33,400 –&gt; 01:01:38,400<br>Can I add some cases of both of these points out that the focus is like four hours,</p>
+<p>706<br>01:01:38,400 –&gt; 01:01:42,400<br>so T2, but T1 will not need to go to three days.</p>
+<p>707<br>01:01:42,400 –&gt; 01:01:44,400<br>Yeah, so it was this one here, right?</p>
+<p>708<br>01:01:44,400 –&gt; 01:01:47,400<br>So they’re both doing reads, but assume they’re both doing rights, right?</p>
+<p>709<br>01:01:47,400 –&gt; 01:01:51,400<br>I need to do, I need to update all keys greater than one or something.</p>
+<p>710<br>01:01:51,400 –&gt; 01:01:53,400<br>He needs to update keys less than four, right?</p>
+<p>711<br>01:01:53,400 –&gt; 01:01:55,400<br>I’m going this way, he’s going that way.</p>
+<p>712<br>01:01:55,400 –&gt; 01:01:57,400<br>That’s a deadlock.</p>
+<p>713<br>01:01:57,400 –&gt; 01:02:01,400<br>Updating my two keys in the same type of thing.</p>
+<p>714<br>01:02:01,400 –&gt; 01:02:03,400<br>Think in terms of latches.</p>
+<p>715<br>01:02:03,400 –&gt; 01:02:08,400<br>I’m trying to acquire latch on this direction, trying to question the latch direction, and we’re deadlocked.</p>
+<p>716<br>01:02:08,400 –&gt; 01:02:11,400<br>How do you think that’s not the best thing about the deadlock?</p>
+<p>717<br>01:02:11,400 –&gt; 01:02:13,400<br>The question is how do you prevent both of them killing themselves?</p>
+<p>718<br>01:02:14,400 –&gt; 01:02:20,400<br>So you can’t, because I don’t know you exist, I don’t know what you’re doing, right?</p>
+<p>719<br>01:02:20,400 –&gt; 01:02:27,400<br>If you just think of computers in general, it’s very unlikely that you and I are going to be</p>
+<p>720<br>01:02:27,400 –&gt; 01:02:34,400<br>exact lockstep in our threads and the exact same number of cycles where both are going to try to acquire a latch together</p>
+<p>721<br>01:02:34,400 –&gt; 01:02:36,400<br>that would deadlock and we would kill each other.</p>
+<p>722<br>01:02:36,400 –&gt; 01:02:40,400<br>It’s a race condition, but it’s rare, but you can’t prevent it.</p>
+<p>723<br>01:02:40,400 –&gt; 01:02:43,400<br>Because the end of the cost of preventing it is so expensive.</p>
+<p>724<br>01:02:43,400 –&gt; 01:02:45,400<br>Did I see something?</p>
+<p>725<br>01:02:45,400 –&gt; 01:02:48,400<br>Did I see something you think you killed the other one very quickly?</p>
+<p>726<br>01:02:48,400 –&gt; 01:02:53,400<br>The statement is, for a philosophical standpoint, it would be more efficient to kill the other one.</p>
+<p>727<br>01:02:53,400 –&gt; 01:02:55,400<br>Would that be better?</p>
+<p>728<br>01:02:55,400 –&gt; 01:03:00,400<br>It’s not only philosophical questions, it looks straight up, is it better?</p>
+<p>729<br>01:03:00,400 –&gt; 01:03:08,400<br>You take their wallet, whatever, like, you, like, this is a toy example where it’s only one node.</p>
+<p>730<br>01:03:08,400 –&gt; 01:03:14,400<br>Like, if you think about, I don’t know what the, I don’t know what work you’ve done, I don’t know what work I’ve done.</p>
+<p>731<br>01:03:14,400 –&gt; 01:03:18,400<br>If you can sort of keep checking that, then we may be made out of sight.</p>
+<p>732<br>01:03:18,400 –&gt; 01:03:25,400<br>Okay, well, you hold five latches, I hold one, it’s better to kill me, because you had a way to much time to get those five latches.</p>
+<p>733<br>01:03:25,400 –&gt; 01:03:30,400<br>So that’s sort of a high level what the, what we’ll do when we do transactions.</p>
+<p>734<br>01:03:30,400 –&gt; 01:03:34,400<br>They’ll figure out who gets priority or others based on how much work they’ve done so far.</p>
+<p>735<br>01:03:34,400 –&gt; 01:03:40,400<br>At this lowest level, the latches are meant to be so, like, fine grain and short, it’s better just to carry yourself.</p>
+<p>736<br>01:03:40,400 –&gt; 01:03:42,400<br>Right?</p>
+<p>737<br>01:03:42,400 –&gt; 01:03:47,400<br>So let’s say T2 isn’t waving on C1.</p>
+<p>738<br>01:03:47,400 –&gt; 01:03:48,400<br>Okay.</p>
+<p>739<br>01:03:48,400 –&gt; 01:03:56,400<br>Then, T1 kills itself, tries again, still bad, kills itself again, does it a million times, right?</p>
+<p>740<br>01:03:56,400 –&gt; 01:03:57,400<br>Yes.</p>
+<p>741<br>01:03:57,400 –&gt; 01:03:59,400<br>Who would just say that isn’t possible?</p>
+<p>742<br>01:03:59,400 –&gt; 01:04:04,400<br>The question is, could you basically have, could you starve a thread, is the term you want to use?</p>
+<p>743<br>01:04:04,400 –&gt; 01:04:08,400<br>Could you starve a thread because every single time you try to get something, it can’t because someone else is in there.</p>
+<p>744<br>01:04:08,400 –&gt; 01:04:09,400<br>Could you starve that?</p>
+<p>745<br>01:04:09,400 –&gt; 01:04:10,400<br>Yes.</p>
+<p>746<br>01:04:10,400 –&gt; 01:04:16,400<br>So, I think I have a slide on this.</p>
+<p>747<br>01:04:16,400 –&gt; 01:04:23,400<br>Yeah, so there’s, I’ll answer your question in a second.</p>
+<p>748<br>01:04:23,400 –&gt; 01:04:31,400<br>The latches aren’t going to have anything to handle deluxe for us, and it’s not going to have anything that can prevent starvation.</p>
+<p>749<br>01:04:31,400 –&gt; 01:04:39,400<br>In the read write latches, you can set priorities like writers or readers, or you want to fight foe around ramen scheduling.</p>
+<p>750<br>01:04:39,400 –&gt; 01:04:42,400<br>But there’s a high level construct that’s scheduled that can slide.</p>
+<p>751<br>01:04:42,400 –&gt; 01:04:50,400<br>Oh, this worker is trying to run this query, teach trying to touch this data structure, and it keeps getting aborted.</p>
+<p>752<br>01:04:50,400 –&gt; 01:04:55,400<br>And I know it’s getting aborted because it’s coming back with a retry message.</p>
+<p>753<br>01:04:55,400 –&gt; 01:05:01,400<br>And therefore, maybe I want to deschedule other workers running at the same time to make sure I always get through.</p>
+<p>754<br>01:05:01,400 –&gt; 01:05:04,400<br>That’s how to basically handle that.</p>
+<p>755<br>01:05:04,400 –&gt; 01:05:12,400<br>Most systems basically let, you know, let Jesus take the wheel or whatever phrase you want to use, and just, you just let it go at it, right?</p>
+<p>756<br>01:05:12,400 –&gt; 01:05:16,400<br>Because eventually, you should get through.</p>
+<p>757<br>01:05:16,400 –&gt; 01:05:26,400<br>Now again, if I have like a thousand query trying to run at the same time trying to all update the same key, there’s no magic scheduler that’s going to be able to handle that.</p>
+<p>758<br>01:05:26,400 –&gt; 01:05:31,400<br>Everything’s going to get contended and it ended up being a single thread system.</p>
+<p>759<br>01:05:31,400 –&gt; 01:05:43,400<br>So we want to optimize for the case where we assume that the, we assume content is going to be low, and we want to sort of fast, fail fast, no wait policy, we just check.</p>
+<p>760<br>01:05:43,400 –&gt; 01:05:46,400<br>Can I do it? No, okay, let me retry again.</p>
+<p>761<br>01:05:46,400 –&gt; 01:05:52,400<br>Because by the time, you know, when I go, go retry, then I’ll be able to do what I need to do.</p>
+<p>762<br>01:05:52,400 –&gt; 01:05:55,400<br>Why is sending a sound series over about any changes?</p>
+<p>763<br>01:05:55,400 –&gt; 01:06:00,400<br>Is question, if you, while you’re killing yourself, do you have to roll back any changes that you do? Yes, in the code, yes.</p>
+<p>764<br>01:06:00,400 –&gt; 01:06:10,400<br>So again, if I, going back to the writer example here, like if, if this thread that kills us out, they had updated a bunch of things.</p>
+<p>765<br>01:06:10,400 –&gt; 01:06:16,400<br>That’s why you hold the right latches for those things you’ve updated so you can go back and reverse those changes.</p>
+<p>766<br>01:06:16,400 –&gt; 01:06:37,400<br>So what’s scenario? Is the backwards, because in this scenario, like for a fine key, what’s important is start at the beginning and then go across.</p>
+<p>767<br>01:06:37,400 –&gt; 01:06:42,400<br>So what, in what scenario do you even need backwards?</p>
+<p>768<br>01:06:42,400 –&gt; 01:06:47,400<br>What scenario do you need the backwards pointer in the sibling? Because it seems like it’s causing problems for us.</p>
+<p>769<br>01:06:47,400 –&gt; 01:06:51,400<br>You queries this, fine keys less than four, fine keys greater than one.</p>
+<p>770<br>01:06:51,400 –&gt; 01:06:57,400<br>So for the, because we know everything’s ordered, in this case, we could start at one and go into a fine port.</p>
+<p>771<br>01:06:57,400 –&gt; 01:07:01,400<br>You could start at one and go into a fine port.</p>
+<p>772<br>01:07:02,400 –&gt; 01:07:07,400<br>So in what scenario? I have a billion keys.</p>
+<p>773<br>01:07:07,400 –&gt; 01:07:13,400<br>Right? And I, yeah, that’s just way more sensitive. Nobody does that.</p>
+<p>774<br>01:07:13,400 –&gt; 01:07:14,400<br>Yeah.</p>
+<p>775<br>01:07:14,400 –&gt; 01:07:19,400<br>Essentially, we didn’t talk about skitless.</p>
+<p>776<br>01:07:19,400 –&gt; 01:07:30,400<br>There was a, actually, was single store before, before it was single store with MemSQL, they had these skitless and skitless only have, because it’s a lock free data structure, which is a bad idea.</p>
+<p>777<br>01:07:30,400 –&gt; 01:07:35,400<br>It’s another topic, but like they, they had their skitless can only go in one direction.</p>
+<p>778<br>01:07:35,400 –&gt; 01:07:45,400<br>So they had to do a bunch of tricks of like having ways to jump into the data structure to like try to do reverse and then sort it in reverse after, you know, after you get it out.</p>
+<p>779<br>01:07:45,400 –&gt; 01:07:54,400<br>It just makes life harder. You can do it and avoids this deadlock issue.</p>
+<p>780<br>01:07:54,400 –&gt; 01:08:00,400<br>But it’s still, for example, he’s the boy, if you’re traversing down, if I can’t acquire the latch as I’m going down, it’s not a deadlock.</p>
+<p>781<br>01:08:00,400 –&gt; 01:08:06,400<br>I still want to kill myself, potentially, usually.</p>
+<p>782<br>01:08:06,400 –&gt; 01:08:18,399<br>It’s still, it’s still, you still, you won’t have deadlocks if you do what you’re proposing, but you still could have latch contention where I can’t get the latch, because somebody else holds it.</p>
+<p>783<br>01:08:18,399 –&gt; 01:08:23,399<br>And in that case, again, usually you want to spin for a little bit and then kill yourself.</p>
+<p>784<br>01:08:23,399 –&gt; 01:08:28,399<br>Yeah, you still want to kill yourself. That sounds weird, but you don’t need.</p>
+<p>785<br>01:08:28,399 –&gt; 01:08:29,399<br>Yes.</p>
+<p>786<br>01:08:29,399 –&gt; 01:08:38,399<br>The only issue that we saw was like, the waiting, we don’t know how long we’re using it for, but, for example, if we’re, rather than we know, we’ve done a lot of work, and you see what we’ve constantly seen ourselves up.</p>
+<p>787<br>01:08:38,399 –&gt; 01:08:44,399<br>Would there be like a theoristic where we like want to wait for us in a lot of times, and then like, if you still want the latch, then I don’t know how to do it.</p>
+<p>788<br>01:08:44,399 –&gt; 01:08:50,399<br>He’s right. I don’t know if he already said, so he basically said, it’s, if we’re a threat, we know how much work we’ve done.</p>
+<p>789<br>01:08:50,399 –&gt; 01:08:55,399<br>And we say we did a lot of updates. We know that there were expensive to do.</p>
+<p>790<br>01:08:55,399 –&gt; 01:09:02,399<br>So, could we have a theoristic that says, when we spin, we can determine how long we want to wait based on how much work we’ve done.</p>
+<p>791<br>01:09:02,399 –&gt; 01:09:04,399<br>Yes, you could do that.</p>
+<p>792<br>01:09:04,399 –&gt; 01:09:08,399<br>I don’t think Post-Gust, my sequel, actually do that. It might be wrong.</p>
+<p>793<br>01:09:08,399 –&gt; 01:09:14,399<br>Would the shorter is like, just the kind of, just like, going back and doing that in the connected universe?</p>
+<p>794<br>01:09:14,399 –&gt; 01:09:26,399<br>Would it be beneficial? But you can imagine really simplistic, a counter, I have a counter in my, you know, local address, local memory for my worker, how many pages have I updated?</p>
+<p>795<br>01:09:26,399 –&gt; 01:09:33,399<br>And for each page of updated, wait, maybe an extra, you know, 100 microseconds. Something like that. You get simple heuristics.</p>
+<p>796<br>01:09:33,399 –&gt; 01:09:38,399<br>I don’t know whether it actually makes sense or not to do it. Again, it’s a cop-out. For all cases and databases, it depends on the workload.</p>
+<p>797<br>01:09:38,399 –&gt; 01:09:48,399<br>It depends on like, you know, if everything, everybody’s updating a bunch of stuff, then maybe that’s a bad idea. But you have one thread, one worker that updates a little bit of things, then maybe, yeah, that might make sense.</p>
+<p>798<br>01:09:48,399 –&gt; 01:09:56,399<br>But once again, if everybody’s trying to update the same key, it gets, everything gets bogged, bogged down to a single threaded system. That’s the extreme case stuff.</p>
+<p>799<br>01:09:56,399 –&gt; 01:09:57,399<br>Yes.</p>
+<p>800<br>01:09:57,399 –&gt; 01:10:10,399<br>How do we handle that? They’re dead. I mean, they restart.</p>
+<p>801<br>01:10:10,399 –&gt; 01:10:12,399<br>Yeah.</p>
+<p>802<br>01:10:12,399 –&gt; 01:10:22,399<br>Yeah, so, so very clear. I mean, maybe a set of some slide. The restart mechanism is transparent to the user.</p>
+<p>803<br>01:10:22,399 –&gt; 01:10:34,399<br>Yeah, I don’t have a slide to this. So like, I run a query and I had to traverse a B-plustry. And I, and to go look at the primary key and I can’t get a latch as I’m going down, I don’t want to abort the query and go back to the user.</p>
+<p>804<br>01:10:34,399 –&gt; 01:10:47,399<br>Hey, look, I couldn’t get a latch because they don’t know what a latch is. Right. And then tell it and restart. We do this transparently for you. So like, so like, you submit one query. It may restart the traversal of the B-plustry multiple times.</p>
+<p>805<br>01:10:47,399 –&gt; 01:10:53,399<br>And, but you don’t see that from the end user of the application. We’re doing it internally. It’s just the query got a little bit slower because of that.</p>
+<p>806<br>01:10:53,399 –&gt; 01:11:01,399<br>Yeah, that means a lot of questions. Sorry. Yes.</p>
+<p>807<br>01:11:01,399 –&gt; 01:11:14,399<br>Is there a scenario where someone has a right latch on the root and they’re worried if you restart, you’re going to come back and delete.</p>
+<p>808<br>01:11:14,399 –&gt; 01:11:20,399<br>Yeah, absolutely. Yes. It’s unavoidable.</p>
+<p>809<br>01:11:20,399 –&gt; 01:11:38,399<br>I mean, as the more keys you insert, the the tree gets taller. And therefore the, you know, the likelihood that someone’s going to hold a right latch on the root goes down.</p>
+<p>810<br>01:11:38,399 –&gt; 01:11:51,399<br>Going back to the like the stall stuff too, like, it’s not just how much work is the other thread doing like, you have to sort of wait for.</p>
+<p>811<br>01:11:51,399 –&gt; 01:12:02,399<br>Remember, these, these data structures are backed by pages in the buffer pool that are on a disk. So even though I’m updating one key, the key I need to update might be not in memory.</p>
+<p>812<br>01:12:02,399 –&gt; 01:12:11,399<br>I got to go out to disk and get it. So that’s why like, and you don’t want to stall, you know, spin forever for a long time because you don’t know like, you know, it has to go get the disk.</p>
+<p>813<br>01:12:11,399 –&gt; 01:12:17,399<br>If it’s a really slow disk, and that’s going to be a long time and you can be waiting for 100 milliseconds.</p>
+<p>814<br>01:12:17,399 –&gt; 01:12:27,399<br>You know, 500 milliseconds. So you said like, oh, yeah, do the average time. I mean, depends on so many factors that be impossible to track these things.</p>
+<p>815<br>01:12:27,399 –&gt; 01:12:34,399<br>Again, this is again, this is why this is different than like taking a regular data structure, algorithm slots is going to be things are backed by disk.</p>
+<p>816<br>01:12:34,399 –&gt; 01:12:43,399<br>And we’re having multiple threads around at the same time. And we, there’s a bunch of things we need to do to like, to hide that those distals.</p>
+<p>817<br>01:12:43,399 –&gt; 01:12:54,399<br>SQL server is a whole another beast SQL server. They actually had their own user space cover teams. So like, if you’re traversing the data structure.</p>
+<p>818<br>01:12:54,399 –&gt; 01:13:04,399<br>And the thing I need, I can’t get the latch instead of just spinning, they go back to their own user space schedule and says, I can’t run because I’m waiting for this latch.</p>
+<p>819<br>01:13:04,399 –&gt; 01:13:13,399<br>And then they take your thread away and have it do some other work. And then they may know what latch are waiting for. They’re actually doing some tracking about who’s waiting for what latches inside of it.</p>
+<p>820<br>01:13:13,399 –&gt; 01:13:18,399<br>And they can do that because everything is covered teams in user space.</p>
+<p>821<br>01:13:18,399 –&gt; 01:13:23,399<br>Very few said nobody else does that. SQL server does some really cool things.</p>
+<p>822<br>01:13:23,399 –&gt; 01:13:28,399<br>All right, cool. Any other questions? Yes.</p>
+<p>823<br>01:13:28,399 –&gt; 01:13:33,399<br>Oh, is there like some more? Yeah, I did.</p>
+<p>824<br>01:13:33,399 –&gt; 01:13:35,399<br>Yeah.</p>
+<p>825<br>01:13:35,399 –&gt; 01:13:38,399<br>So I said a pretty basic question about the whole set. Yes.</p>
+<p>826<br>01:13:38,399 –&gt; 01:13:47,399<br>If there’s two threads going into the direction, why do you need to hold the latch on the whole page before it’s been so you require the latch?</p>
+<p>827<br>01:13:47,399 –&gt; 01:13:56,399<br>Yes. So this question is, then go back here. This question is, if I’m traversing along with sibling nodes.</p>
+<p>828<br>01:13:56,399 –&gt; 01:14:11,399<br>This one here, right? If they’re trying to get across, why does so T2 is that B, T1 is that C? Why does T2 need to hold the latch on B in order to get to C?</p>
+<p>829<br>01:14:11,399 –&gt; 01:14:18,399<br>Because you need to know that the sibling pointer is still valid and this is the right node. This is the right node you should be looking to.</p>
+<p>830<br>01:14:18,399 –&gt; 01:14:23,399<br>And you know that if there was an update because you hold this in read mode, nobody can update it.</p>
+<p>831<br>01:14:23,399 –&gt; 01:14:29,399<br>So you know that no one’s going to replace B with something with some other new version other than how it points to something else.</p>
+<p>832<br>01:14:29,399 –&gt; 01:14:34,399<br>But you’re still going to follow the pointer to whatever you thought was there before.</p>
+<p>833<br>01:14:34,399 –&gt; 01:14:39,399<br>So you have to hold the latch until you know you’re safe on the other side, then you can go ahead and release it.</p>
+<p>834<br>01:14:39,399 –&gt; 01:14:47,399<br>Same thing going from top down, you need to know that the thing I’m jumping to next is what I should be jumping into.</p>
+<p>835<br>01:14:47,399 –&gt; 01:14:48,399<br>Yes.</p>
+<p>836<br>01:14:48,399 –&gt; 01:15:01,399<br>So essentially there are two cases that this is from the leads node, both are open with the addition, but you can log from the top and you mentioned that there are seven converges in the main node.</p>
+<p>837<br>01:15:01,399 –&gt; 01:15:02,399<br>Yes.</p>
+<p>838<br>01:15:02,399 –&gt; 01:15:14,399<br>So how do you distinguish that this, you want to want to write and your case will log on the whole strut.</p>
+<p>839<br>01:15:14,399 –&gt; 01:15:24,399<br>Now how do you know that this is not the case where the board of them are going to open the direction for the two cases, how do they distinguish this from that?</p>
+<p>840<br>01:15:24,399 –&gt; 01:15:37,399<br>Yes. So it’s question, save it is a question that like last time I talked about how systems like Postgres have sibling pointers at internodes, even though I’m only showing leaf nodes here.</p>
+<p>841<br>01:15:37,399 –&gt; 01:15:45,399<br>And if I use those internodes sibling pointers to jump again horizontally, how do I take latches on those and make sure things are still correct.</p>
+<p>842<br>01:15:45,399 –&gt; 01:15:49,399<br>So the protocol, everything I’m describing here would still work.</p>
+<p>843<br>01:15:49,399 –&gt; 01:15:56,399<br>If for read that simple, could you just take the read latch across.</p>
+<p>844<br>01:15:56,399 –&gt; 01:16:05,399<br>Because anybody else coming up, coming above you once you are right, they’ll see your read latch and they’ll stop anything below that side of the tree that was doing update, you’ll get blocked.</p>
+<p>845<br>01:16:05,399 –&gt; 01:16:08,399<br>You take the read down. So that’s fine.</p>
+<p>846<br>01:16:08,399 –&gt; 01:16:18,399<br>For doing updates, I think it works the same way as you come across if what you’re trying to do below is not safe, then you still hold latches for those things.</p>
+<p>847<br>01:16:18,399 –&gt; 01:16:23,399<br>So the protocol still works even if you have to go across horizontally and go down.</p>
+<p>848<br>01:16:23,399 –&gt; 01:16:30,399<br>You still have the deadlock if everyone’s trying to go across vertically or horizontally on you too, and then you do the same thing on the strap here.</p>
+<p>849<br>01:16:30,399 –&gt; 01:16:34,399<br>There’s another question, sorry.</p>
+<p>850<br>01:16:34,399 –&gt; 01:16:38,399<br>Okay, cool.</p>
+<p>851<br>01:16:38,399 –&gt; 01:16:40,399<br>So, all right.</p>
+<p>852<br>01:16:40,399 –&gt; 01:16:41,399<br>Just to finish up.</p>
+<p>853<br>01:16:41,399 –&gt; 01:16:44,399<br>So, this is hard.</p>
+<p>854<br>01:16:44,399 –&gt; 01:16:51,399<br>And I’m showing you the most simple version to do latch crapping and that’s detection.</p>
+<p>855<br>01:16:51,399 –&gt; 01:16:56,399<br>We’re not going to cover this in this class, but there’s way more complicated schemes.</p>
+<p>856<br>01:16:56,399 –&gt; 01:16:58,399<br>You can have Virgin latches.</p>
+<p>857<br>01:16:58,399 –&gt; 01:17:01,399<br>You can have delayed updates.</p>
+<p>858<br>01:17:01,399 –&gt; 01:17:03,399<br>You can do the BF salon tree stuff for you to lay things.</p>
+<p>859<br>01:17:03,399 –&gt; 01:17:06,399<br>There’s a bunch of other stuff you can do this.</p>
+<p>860<br>01:17:06,399 –&gt; 01:17:09,399<br>The BW tree is a lock free BF plus tree from Microsoft.</p>
+<p>861<br>01:17:09,399 –&gt; 01:17:11,399<br>That’s a whole other nightmare.</p>
+<p>862<br>01:17:11,399 –&gt; 01:17:23,399<br>But again, this is hard, but this is good because you take this class and this is why you don’t want your random JavaScript program or building your BF plus trees or data structures in your database systems.</p>
+<p>863<br>01:17:23,399 –&gt; 01:17:29,399<br>You want to see new students like you guys that know what the hell they’re doing and make sure that you don’t cause problems.</p>
+<p>864<br>01:17:29,399 –&gt; 01:17:32,399<br>And so, again, we talked about hash tables.</p>
+<p>865<br>01:17:32,399 –&gt; 01:17:39,399<br>We talked about B plus trees today, but these techniques of this idea of like everything’s going the same direction or I kill myself as soon as I can’t get something and restart.</p>
+<p>866<br>01:17:39,399 –&gt; 01:17:46,399<br>Like this is relevant to a bunch of other data structures in systems as well.</p>
+<p>867<br>01:17:46,399 –&gt; 01:17:52,399<br>I feel like we should just call this course, kill yourself, right, which is not.</p>
+<p>868<br>01:17:52,399 –&gt; 01:17:55,399<br>I was asking for CMU to get involved. I don’t need that trouble.</p>
+<p>869<br>01:17:55,399 –&gt; 01:17:59,399<br>One year somebody did complain that I did say, kill yourself a lot.</p>
+<p>870<br>01:17:59,399 –&gt; 01:18:00,399<br>Sorry.</p>
+<p>871<br>01:18:00,399 –&gt; 01:18:05,399<br>All right. So, next class, we’re talking about sorting or sort of aggrautions.</p>
+<p>872<br>01:18:05,399 –&gt; 01:18:09,399<br>So, like this point, like we’re moving up the stack, now we can actually start executing queries.</p>
+<p>873<br>01:18:09,399 –&gt; 01:18:11,399<br>Fantastic, right?</p>
+<p>874<br>01:18:11,399 –&gt; 01:18:15,399<br>So, I won’t be here on Monday or I’m not teaching Tignesh Patel.</p>
+<p>875<br>01:18:15,399 –&gt; 01:18:17,399<br>He’ll be the other professor.</p>
+<p>876<br>01:18:17,399 –&gt; 01:18:19,399<br>He’s going to start teaching on Monday.</p>
+<p>877<br>01:18:19,399 –&gt; 01:18:22,399<br>And then Wednesday next week, P and I are both going to be gone.</p>
+<p>878<br>01:18:22,399 –&gt; 01:18:26,399<br>I’m going to the Post-Ghost Conference in New York. I’m giving a keynote there about databases.</p>
+<p>879<br>01:18:26,399 –&gt; 01:18:30,399<br>I don’t know what Tignesh is. He might have to go talk to his pro officer.</p>
+<p>880<br>01:18:30,399 –&gt; 01:18:32,399<br>But like, what are my PhD students?</p>
+<p>881<br>01:18:32,399 –&gt; 01:18:36,399<br>My number one PhD student, Matt Boucherbitch, will be teaching on Wednesday next week about joints.</p>
+<p>882<br>01:18:36,399 –&gt; 01:18:37,399<br>Okay?</p>
+<p>883<br>01:18:37,399 –&gt; 01:18:44,399<br>And then, yeah, Tignesh is awesome. Tignesh asked him about growing up in India because he, like,</p>
+<p>884<br>01:18:44,399 –&gt; 01:18:48,399<br>before he joined the CME, he was telling me crazy stories. He used to get in fights every morning on the bus going to school.</p>
+<p>885<br>01:18:48,399 –&gt; 01:18:50,399<br>And I think he cared a knife.</p>
+<p>886<br>01:18:50,399 –&gt; 01:18:52,399<br>Ask him about that.</p>
+<p>887<br>01:18:52,399 –&gt; 01:18:56,399<br>And then we’ll talk about the midterm on next week as well.</p>
+<p>888<br>01:18:56,399 –&gt; 01:18:57,399<br>Okay?</p>
+<p>889<br>01:18:57,399 –&gt; 01:18:58,399<br>All right.</p>
+<p>890<br>01:18:58,399 –&gt; 01:18:59,399<br>Good day.</p>
+<p>891<br>01:19:14,399 –&gt; 01:19:16,399<br>Yeah.</p>
+<p>892<br>01:19:44,399 –&gt; 01:19:46,399<br>Yeah.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CMU15445 P10F202309 IndexConcurrencyControl</div>
+      <div>http://example.com/2025/10/25/CMU15445 P10F202309-IndexConcurrencyControl/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CMU15445%20P11F202310-SortingAggregationAlgorithms/" title="CMU15445 P11F202310 SortingAggregationAlgorithms">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CMU15445 P11F202310 SortingAggregationAlgorithms</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/18/6S081-023/" title="操作系统工程 023-Final QA">
+                        <span class="hidden-mobile">操作系统工程 023-Final QA</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

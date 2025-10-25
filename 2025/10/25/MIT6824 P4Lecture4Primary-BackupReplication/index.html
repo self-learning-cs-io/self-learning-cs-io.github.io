@@ -1,0 +1,1519 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,000Okay, good afternoon, good morning or good evening, where you are. 200:00:09,000 –&gt; 00:00:12,000I want to talk today about the primary backup replication. 300:00:12,">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824 P4Lecture4Primary BackupReplication">
+<meta property="og:url" content="http://example.com/2025/10/25/MIT6824%20P4Lecture4Primary-BackupReplication/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,000Okay, good afternoon, good morning or good evening, where you are. 200:00:09,000 –&gt; 00:00:12,000I want to talk today about the primary backup replication. 300:00:12,">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.807Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.807Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>MIT6824 P4Lecture4Primary BackupReplication - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6824 P4Lecture4Primary BackupReplication"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          10k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          87 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MIT6824 P4Lecture4Primary BackupReplication</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,000<br>Okay, good afternoon, good morning or good evening, where you are.</p>
+<p>2<br>00:00:09,000 –&gt; 00:00:12,000<br>I want to talk today about the primary backup replication.</p>
+<p>3<br>00:00:12,000 –&gt; 00:00:16,000<br>We have sort of an introduction to primary backup replication.</p>
+<p>4<br>00:00:16,000 –&gt; 00:00:21,000<br>We’ll come back to this in multiple lectures during semester.</p>
+<p>5<br>00:00:21,000 –&gt; 00:00:26,000<br>But this is the FMT, the virtual memory or VN,</p>
+<p>6<br>00:00:26,000 –&gt; 00:00:31,000<br>the VRFV, the paper is a really nice introduction that brings out a lot of issues</p>
+<p>7<br>00:00:31,000 –&gt; 00:00:36,000<br>that are going to come up throughout the semester.</p>
+<p>8<br>00:00:36,000 –&gt; 00:00:41,000<br>The plan for lecture today is as follows.</p>
+<p>9<br>00:00:41,000 –&gt; 00:00:48,000<br>I’m just going to talk about failures that you might hope to tolerate using primary backup replication</p>
+<p>10<br>00:00:48,000 –&gt; 00:00:52,000<br>and some that you might not be able to.</p>
+<p>11<br>00:00:52,000 –&gt; 00:00:59,000<br>Then I want to talk a little bit about the main challenges in sort of any backup scheme.</p>
+<p>12<br>00:00:59,000 –&gt; 00:01:08,000<br>So we’re also speaking, they talk about two dominant approaches to replication.</p>
+<p>13<br>00:01:08,000 –&gt; 00:01:15,000<br>One is what’s typically called state transfer replication.</p>
+<p>14<br>00:01:15,000 –&gt; 00:01:25,000<br>And the second is typically called replication state machines.</p>
+<p>15<br>00:01:25,000 –&gt; 00:01:29,000<br>And today’s paper is an example of a replicated state machine approach.</p>
+<p>16<br>00:01:29,000 –&gt; 00:01:35,000<br>In fact, you know, a lot of three and a lot four, you know, also will be using replicated state machine approach.</p>
+<p>17<br>00:01:35,000 –&gt; 00:01:42,000<br>And the fact that the GFS paper for replicating chunks was using a replicated state machine approach.</p>
+<p>18<br>00:01:42,000 –&gt; 00:01:52,000<br>So it’s quite a common approach. And then you know, one I sort of make every little bit agreed by looking at this case to the case study.</p>
+<p>19<br>00:01:52,000 –&gt; 00:02:00,000<br>Of the VM, VMware, full tolerance scheme or implementation or system.</p>
+<p>20<br>00:02:00,000 –&gt; 00:02:06,000<br>So any questions before I get started just to put up.</p>
+<p>21<br>00:02:06,000 –&gt; 00:02:10,000<br>I have tried to answer all the questions that you sent by email.</p>
+<p>22<br>00:02:10,000 –&gt; 00:02:18,000<br>The ones that come in before midnight, I generally all answer the ones that come in after midnight, you know, try to answer as many as I can.</p>
+<p>23<br>00:02:18,000 –&gt; 00:02:27,000<br>But if I didn’t answer your question, then you in the topic comes up in lecture at any point of time, you know, two, three to interrupt and ask it.</p>
+<p>24<br>00:02:27,000 –&gt; 00:02:39,000<br>Okay, any questions before we dive in.</p>
+<p>25<br>00:02:39,000 –&gt; 00:02:42,000<br>Okay.</p>
+<p>26<br>00:02:42,000 –&gt; 00:02:46,000<br>So let’s talk about failures in a very broad sense.</p>
+<p>27<br>00:02:46,000 –&gt; 00:02:58,000<br>You get a sense of what we might hope for that the replication scheme can handle.</p>
+<p>28<br>00:02:58,000 –&gt; 00:03:04,000<br>So the first of all, the typically the papers that we’re in the system, they’re going to be a building.</p>
+<p>29<br>00:03:04,000 –&gt; 00:03:14,000<br>We only deal with what some things called or typically called fail stop failures.</p>
+<p>30<br>00:03:14,000 –&gt; 00:03:20,000<br>And the basic idea is that there if there’s a failure or a component of the computer doesn’t really work well.</p>
+<p>31<br>00:03:20,000 –&gt; 00:03:27,000<br>That actually stops the computer.</p>
+<p>32<br>00:03:27,000 –&gt; 00:03:33,000<br>So the assumption is that basically the computer goes from working to not working sort of instantaneously.</p>
+<p>33<br>00:03:33,000 –&gt; 00:03:37,000<br>It doesn’t produce like weird results because the computer’s not working correctly.</p>
+<p>34<br>00:03:37,000 –&gt; 00:03:39,000<br>So it just follows the protocols.</p>
+<p>35<br>00:03:39,000 –&gt; 00:03:45,000<br>You know, when it does to add it adds it to a register value, you know, that produces a correct, you know, add value.</p>
+<p>36<br>00:03:45,000 –&gt; 00:03:53,000<br>And so we’re just assuming that when the computer works, you know, it works correctly and one there’s a failure, it just stops.</p>
+<p>37<br>00:03:53,000 –&gt; 00:04:01,000<br>And this covers in many scenarios, you know, for example, like whatever you fan of the computer fails, you know, the computer overheats.</p>
+<p>38<br>00:04:01,000 –&gt; 00:04:06,000<br>And then the computer shuts down in itself.</p>
+<p>39<br>00:04:06,000 –&gt; 00:04:12,000<br>The other cases are where like, you know, somebody steps over to power court and boom, you know, the whole computer disappears.</p>
+<p>40<br>00:04:12,000 –&gt; 00:04:21,000<br>Or you know, open and you know cuts the network link and you know, the point, you know, the computer might keep you running, but it’s completely disconnected.</p>
+<p>41<br>00:04:21,000 –&gt; 00:04:30,000<br>Sometimes you know, systems or software on the computer cell does it the best, you know, to turn these partial failures into stop fail stop failures.</p>
+<p>42<br>00:04:30,000 –&gt; 00:04:40,000<br>So example, you might, you know, the software might compute checksums on data and then if it sees that the checksum is incorrect, you know, just stop, you know, the computer.</p>
+<p>43<br>00:04:40,000 –&gt; 00:04:43,000<br>And so that’s sort of quite common.</p>
+<p>44<br>00:04:43,000 –&gt; 00:04:49,000<br>So the basic model of the world is, the computer works correctly, then the computer stops.</p>
+<p>45<br>00:04:49,000 –&gt; 00:04:57,000<br>So what does this exclude, you know, there’s a whole bunch of sort of failures that is excludes, for example, it doesn’t really deal well with logic bucks.</p>
+<p>46<br>00:04:57,000 –&gt; 00:05:10,000<br>Like if you have an error in your software, you know, whatever you divide by zero and incorrectly or in the where you shouldn’t have, then there’s very likely that the back of will do exactly the same thing because the software is broken.</p>
+<p>47<br>00:05:10,000 –&gt; 00:05:19,000<br>And so it’s broken on the primary, it’s broken on the back. And so nothing, you know, basically replication really not does not solve that problem for you.</p>
+<p>48<br>00:05:19,000 –&gt; 00:05:23,000<br>Similarly, you know, if you have configuration errors,</p>
+<p>49<br>00:05:26,000 –&gt; 00:05:29,000<br>rendering backup is not going to solve you, not problem for you.</p>
+<p>50<br>00:05:29,000 –&gt; 00:05:38,000<br>You know, the files that specify the replica said are just incorrect, then the system will not work correctly.</p>
+<p>51<br>00:05:38,000 –&gt; 00:05:48,000<br>Similarly, we’re not really in this class, we’ll talk a little bit at the end of the semester, but we’re not dealing with malicious errors.</p>
+<p>52<br>00:05:48,000 –&gt; 00:05:59,000<br>So we’re not dealing with attackers that, you know, try to fake the protocol, you know, have run servers that send incorrect messages and try to sort of spoof the whole system.</p>
+<p>53<br>00:05:59,000 –&gt; 00:06:05,000<br>We’re just not in consideration. So in the, for most of the semester, we’re assuming that the software works correctly.</p>
+<p>54<br>00:06:05,000 –&gt; 00:06:12,000<br>There’s not have logic bugs, the no particular Asian areas, the thing that we’re focusing on is actually handling stop failures.</p>
+<p>55<br>00:06:12,000 –&gt; 00:06:23,000<br>There’s some failures that sort of fall, you know, the could be handled or maybe handled with primary backup replication or not.</p>
+<p>56<br>00:06:23,000 –&gt; 00:06:28,000<br>And as a example, you might think about like an earthquake.</p>
+<p>57<br>00:06:29,000 –&gt; 00:06:50,000<br>Now, if the primary and backup are physically, you know, separated in a completely different parts, you know, in different continents or maybe different parts of the same continent, when I’m not, you might hope that you might have some hope that the backup could take over if the primary fails due to an earthquake, but, you know, some other primary replication schemes.</p>
+<p>58<br>00:06:50,000 –&gt; 00:06:59,000<br>You know, this is not going to be the case, you know, what are the general of the primary and the backup on the same data center and the whole data center disappears, then, you know, sort of end of story.</p>
+<p>59<br>00:07:00,000 –&gt; 00:07:01,000<br>Okay.</p>
+<p>60<br>00:07:01,000 –&gt; 00:07:05,000<br>The whole thing is a little bit of context of sort of the type of failures that we’re trying to shoot for.</p>
+<p>61<br>00:07:06,000 –&gt; 00:07:14,000<br>Now, even with this sort of just focusing on stop to stop failures, turns out to be difficult, they’ll, you know, fault, all of systems.</p>
+<p>62<br>00:07:14,000 –&gt; 00:07:22,000<br>You know, we’re going to talk a little bit about sort of the general issues that will show up, you know, if we’re going to build a primary backup system.</p>
+<p>63<br>00:07:24,000 –&gt; 00:07:30,000<br>And you know, we’ll see concrete exam instances of these problems in the VM FTP paper.</p>
+<p>64<br>00:07:31,000 –&gt; 00:07:38,000<br>So, you know, one challenge is, you know, if a failure happens, you know, has the primary actually failed.</p>
+<p>65<br>00:07:45,000 –&gt; 00:08:04,000<br>An easier year, you know, that makes this challenging is that in a distributed system, you can tell the difference between a network petition and a machine failed. So it might be personally possible that the network that the primary still up, but you know, that some computers cannot talk to the primary because the network expectation.</p>
+<p>66<br>00:08:04,000 –&gt; 00:08:10,000<br>And so, for example, the backup may decide that, you know, the primary is dead because the network’s petition, but that fact the primary is not that.</p>
+<p>67<br>00:08:10,000 –&gt; 00:08:13,000<br>And maybe some of the clients are still able to talk to the primary.</p>
+<p>68<br>00:08:13,000 –&gt; 00:08:20,000<br>And so you have to have some story of making sure that you’re, you don’t end up in the situation where you have two primaries.</p>
+<p>69<br>00:08:21,000 –&gt; 00:08:31,000<br>And again, you know, we talked a little bit about last time that shows up in this paper again, we’ll show up next week too, which is like, we want to avoid that we get into a situation where there’s sort of a split brain system.</p>
+<p>70<br>00:08:35,000 –&gt; 00:08:42,000<br>Where we’re they to live to a primary and like one subset of the client products to one primary and the other subset of the client talks to the other prime.</p>
+<p>71<br>00:08:42,000 –&gt; 00:08:53,000<br>And clearly that’s going to diverge in the state of the system. And when the network heals, we are in an incorrect state. So we have to avoid this at all cost.</p>
+<p>72<br>00:08:54,000 –&gt; 00:09:04,000<br>The second general challenge is, you know, how do we keep the, you know, how do we keep the primary and the backup in sync.</p>
+<p>73<br>00:09:05,000 –&gt; 00:09:06,000<br>Yeah.</p>
+<p>74<br>00:09:14,000 –&gt; 00:09:23,000<br>Our goal is going to be to, if the primary fails, then we can just gracefully fill it over to the backup and the backup just picks up right where the primary left off.</p>
+<p>75<br>00:09:24,000 –&gt; 00:09:38,000<br>And that requires that the backup actually is up to date, we have like the latest things that the primary action is written to state so that an action can pick up seamlessly and don’t return errors from responses to the client that are completely unexpected.</p>
+<p>76<br>00:09:39,000 –&gt; 00:09:47,000<br>And from the client’s perspective, it really should look like the whole thing even though it’s replicated. It’s like a single computer just happens to be a little bit more fall tolerant than a single computer.</p>
+<p>77<br>00:09:48,000 –&gt; 00:09:56,000<br>And that turns out to be difficult, you know, first of all, we have to make sure that we apply all changes. We have to apply to change in the right order.</p>
+<p>78<br>00:10:02,000 –&gt; 00:10:11,000<br>And in a continuous issue and that is that we have to sort of avoid non determinism, where we have the deal with non determinism.</p>
+<p>79<br>00:10:12,000 –&gt; 00:10:25,000<br>And if the same change on the primary, the age of different than on the backup, because for some reason that would be not good, you know, we got to make sure that we make a change in the primary backup, they’re identical effects to the primary and the backup.</p>
+<p>80<br>00:10:27,000 –&gt; 00:10:32,000<br>Similar sort of issue that I want to show up, you know, some challenges fail over.</p>
+<p>81<br>00:10:33,000 –&gt; 00:10:45,000<br>You have actually the primary fails and we need to fail over to the backup. And we have to make sure that the other primary is definitely dead.</p>
+<p>82<br>00:10:46,000 –&gt; 00:10:54,000<br>But the example the primary might have was in the middle of an operation and it was about to send a packet out to the response to the client or maybe not.</p>
+<p>83<br>00:10:55,000 –&gt; 00:11:00,000<br>And so we got to figure out what have that response if you send or not being sent or is the cave for us to send it again.</p>
+<p>84<br>00:11:03,000 –&gt; 00:11:10,000<br>There’s a question here in the chat, like when would fail over need to be happened, no fail need to happen when the primary is gone.</p>
+<p>85<br>00:11:11,000 –&gt; 00:11:14,000<br>Because then we want to fail over to the backup that’s the terminology used.</p>
+<p>86<br>00:11:17,000 –&gt; 00:11:23,000<br>And then often another issue we fail over is like who actually has to know we have multiple backups, which is not the case in today’s paper.</p>
+<p>87<br>00:11:24,000 –&gt; 00:11:36,000<br>And we actually ask the latest state, like for example, maybe they all crash after a few operations, they come back up and and and and we are going to make sure that we actually talking to the one next to the most recent state.</p>
+<p>88<br>00:11:37,000 –&gt; 00:11:43,000<br>This is going to be not an issue today too much, so much. That’s what we’ll see in a second why a bit of will come up later in other replication protocols.</p>
+<p>89<br>00:11:46,000 –&gt; 00:11:48,000<br>Yeah, so basically fail over means the backup takes over.</p>
+<p>90<br>00:11:49,000 –&gt; 00:12:01,000<br>Okay, so that’s sort of the main failure that we hope to handle the main challenges in the will deepen those challenges out as we go.</p>
+<p>91<br>00:12:02,000 –&gt; 00:12:10,000<br>And you know, I want to talk about sort of to the two main approaches that we’ll see in the semester for dealing with primary backup replication.</p>
+<p>92<br>00:12:19,000 –&gt; 00:12:23,000<br>One is a mentioned earlier that is state transfer.</p>
+<p>93<br>00:12:28,000 –&gt; 00:12:32,000<br>I use a regional at a high level very straightforward, you know, we got a primary.</p>
+<p>94<br>00:12:33,000 –&gt; 00:12:43,000<br>It’s you know the clients talk to the primary the primary updated state wants a data stage in response to client request. And once a while it sort of makes a check point.</p>
+<p>95<br>00:12:48,000 –&gt; 00:12:51,000<br>Once a while basically check points state.</p>
+<p>96<br>00:12:56,000 –&gt; 00:12:58,000<br>It’s state to the backup.</p>
+<p>97<br>00:13:01,000 –&gt; 00:13:14,000<br>And of course, if you want to the backup in the primary to be in sync, you know, that means that every time the primary actually performs an operation, I before it responds to the client, it basically has to transfer whatever state changes that were made by that operation to the backup.</p>
+<p>98<br>00:13:15,000 –&gt; 00:13:17,000<br>So that’s one scheme.</p>
+<p>99<br>00:13:18,000 –&gt; 00:13:24,000<br>One high level approach, a second approach is what it’s called replicated state machine.</p>
+<p>100<br>00:13:27,000 –&gt; 00:13:28,000<br>State machine replication.</p>
+<p>101<br>00:13:32,000 –&gt; 00:13:34,000<br>Often shortened to RGM.</p>
+<p>102<br>00:13:35,000 –&gt; 00:13:43,000<br>And here, you know, the picture is, you know, we’ve still got a primary, we’ve got the client talking to the primary. And of course, you know, we’ve got the primary.</p>
+<p>103<br>00:13:44,000 –&gt; 00:13:57,000<br>We have the primary talking to the backup to keep the backup in sync, but instead of sending the state changes, or modifications to the state from the primary to the backup, but we do actually we sent the operations to the backup.</p>
+<p>104<br>00:13:59,000 –&gt; 00:14:13,000<br>So before the primary response to the client, you know, actually getting its operation, you know, we sent the operation that the client sent to us, you know, to the backup to the backup can execute the operation to update state, you know, acknowledge it to the primary primary updates.</p>
+<p>105<br>00:14:14,000 –&gt; 00:14:18,000<br>So we’re going to execute the operation and then sends the response back to the to the client.</p>
+<p>106<br>00:14:20,000 –&gt; 00:14:31,000<br>And sort of in all these sort of in all these in both approaches, you know, the sort of the scheme is like the primary to some particular state, we apply changes to the state.</p>
+<p>107<br>00:14:32,000 –&gt; 00:14:42,000<br>And we do exactly the same thing at the back of the backup is in the start out in the same state as the primary, we apply the same changes to the state where it’s through an operational or state term for we end up in a new state.</p>
+<p>108<br>00:14:42,000 –&gt; 00:14:54,000<br>And that state has to be identical to the state that the primary has. And so we have been ever goes a failure, you know, we know that when we feel over to the backup, it is exactly in the same state as the primary and so it can take over.</p>
+<p>109<br>00:14:57,000 –&gt; 00:15:01,000<br>And we’ll see, you know, this is actually challenging to actually make happen, but that’s sort of the basic plan.</p>
+<p>110<br>00:15:01,000 –&gt; 00:15:14,000<br>The primary, both approach is actually a reasonable popular, the primary disadvantage of the state transfer approach is that like if an operation generates a lot of state, then it’s going to be expensive.</p>
+<p>111<br>00:15:15,000 –&gt; 00:15:21,000<br>Like a single operation right to gigabyte of data, then gigabyte of data needs to be transferred to the primary, to the backup.</p>
+<p>112<br>00:15:22,000 –&gt; 00:15:29,000<br>And it might be much more expensive and much more less expensive to basically just send over the operation through the backup, so the backup, the backup connection to the operation.</p>
+<p>113<br>00:15:29,000 –&gt; 00:15:39,000<br>So many of the systems that were talking about actually there for follow the second approach, you know, where they sent the operation, but not the state transfer.</p>
+<p>114<br>00:15:40,000 –&gt; 00:15:58,000<br>And, in fact, you know, if you think about GFS, the discussion from last week, and we just saw that basically the primary sends the append operations or the right operations to the backups, doesn’t do the append and then sent the result, you know, to the backups that actually sends the backup.</p>
+<p>115<br>00:15:59,000 –&gt; 00:16:19,000<br>So that’s an example of a replicated state machine approach, where we’ll be sending operations and the paper of today also follows this replicated state machine approach where the operations are not, you know, append and write file system append to file system right, but the operations are actually x86 instructions, you know, that’s what we’ll see later.</p>
+<p>116<br>00:16:20,000 –&gt; 00:16:23,000<br>But they both send to operations.</p>
+<p>117<br>00:16:24,000 –&gt; 00:16:35,000<br>In labs, as I mentioned earlier, labs free and poor are also replicated state machine approach, where you know, we’re going to be sending operations from the primary to the backup.</p>
+<p>118<br>00:16:35,000 –&gt; 00:16:41,000<br>As a.</p>
+<p>119<br>00:16:47,000 –&gt; 00:16:57,000<br>Because there’s a question that Chad, why does the client do not send not need to send the data to the backup in our replicated state machine, because the idea is that these operations are deterministic.</p>
+<p>120<br>00:16:57,000 –&gt; 00:17:04,000<br>And so the primary and this, you know, remember the primary, we’ll talk about this in much more detail, but the primary and backup are in the same state same state s.</p>
+<p>121<br>00:17:05,000 –&gt; 00:17:12,000<br>The, if the operation is deterministic and you apply to the same state, you know, they will end up in the same state as prime.</p>
+<p>122<br>00:17:13,000 –&gt; 00:17:22,000<br>And so there’s no reason for the apple to the client sent the data in this case, because by just sending this deterministic operation, it is guaranteed that operation will generate the same data.</p>
+<p>123<br>00:17:22,000 –&gt; 00:17:34,000<br>So subsequent questions, how do you know for all programs in their operations, whether they are just deterministic or non deterministic to know what information need to be sent.</p>
+<p>124<br>00:17:35,000 –&gt; 00:17:44,000<br>So the typical approach is to replicate a state machine approach is to make all operations deterministic, non deterministic operations are not allowed. And we’ll see in a second how you do that.</p>
+<p>125<br>00:17:44,000 –&gt; 00:17:52,000<br>Okay, so before going through a little bit more specific.</p>
+<p>126<br>00:17:53,000 –&gt; 00:18:03,000<br>Under hybrid approaches, yes, you know, there are hardback approaches, you know, for example, you can run sort of by default in a replicated state machine approach.</p>
+<p>127<br>00:18:03,000 –&gt; 00:18:25,000<br>In effect, some ways the paper dust this, then if if the backup fails or primary fails and you go back to a single machine, then you need to create a new replica and I think for the new replica, the way you do it is actually by transferring the state from the existing replica or a copy of the state of the existing replica to the new replica.</p>
+<p>128<br>00:18:26,000 –&gt; 00:18:37,000<br>But as it likes hopefully less frequent operation, then actually, you know, during the, then replicating operations, they’re doing much more frequently.</p>
+<p>129<br>00:18:39,000 –&gt; 00:18:46,000<br>Also free, feel free to ask the questions, you know, in real time, as opposed to chatting type of time in a chat either way is fine, but.</p>
+<p>130<br>00:18:47,000 –&gt; 00:19:00,000<br>Okay, so as I hinted, you know, with this replicate your state machine approach, you know, there’s a question about what level of replication or do you what level of operations.</p>
+<p>131<br>00:19:04,000 –&gt; 00:19:05,000<br>To replicate.</p>
+<p>132<br>00:19:05,000 –&gt; 00:19:18,000<br>So, one, one, one are possibilities sort of application level operations.</p>
+<p>133<br>00:19:36,000 –&gt; 00:19:42,000<br>So what I mean is, you know, think, think back at gfs, like whether it’s a pen file a pen.</p>
+<p>134<br>00:19:47,000 –&gt; 00:19:48,000<br>Or right.</p>
+<p>135<br>00:19:49,000 –&gt; 00:20:04,000<br>Another, and if you’re playing that game sort of replicate state machine game at the level of these sort of application level operations that means that the application has to be involved, you know, because it knows what the semantics of these operations are.</p>
+<p>136<br>00:20:05,000 –&gt; 00:20:17,000<br>And it knows what an append actually supposed to do or what a right is supposed to do. And so if you’re playing a replicate state machine approach at that kind of application level, then the application itself needs to be modified, you know, to.</p>
+<p>137<br>00:20:18,000 –&gt; 00:20:24,000<br>And so, you know, the application is actually performed or played part of the replicate state machine approach.</p>
+<p>138<br>00:20:24,000 –&gt; 00:20:28,000<br>One thing that’s cool about the paper today that we’re looking at to.</p>
+<p>139<br>00:20:28,000 –&gt; 00:20:38,000<br>And looking at today is it, you know, does the operations at the machine level or the processor level or the computer level.</p>
+<p>140<br>00:20:38,000 –&gt; 00:20:46,000<br>And so the state is register, you know, the x86 registers and the memory state.</p>
+<p>141<br>00:20:46,000 –&gt; 00:20:58,000<br>And the applications are just ordinary computer instructions. And by replicating at that level, then you can basically make no replication complete your transparent.</p>
+<p>142<br>00:20:58,000 –&gt; 00:21:05,000<br>Because you can take one computer run the application or an operating system on top of it, but there’s some runs in x86 instructions.</p>
+<p>143<br>00:21:05,000 –&gt; 00:21:19,000<br>And this replicated state machine approach automatically creates a backup of that of that particular execution. So the application doesn’t have to be modified at all. In fact, in this paper, the operating system is not modified.</p>
+<p>144<br>00:21:19,000 –&gt; 00:21:30,000<br>The application is not modified. You can take an ordinary application, not even written with fault tones in mind and using this sort of machine level over instruction level replication.</p>
+<p>145<br>00:21:30,000 –&gt; 00:21:42,000<br>It can be transparently replicated. One of the things that is very cool about the paper of today is it’s just completely transparent.</p>
+<p>146<br>00:21:42,000 –&gt; 00:21:45,000<br>Now,</p>
+<p>147<br>00:21:45,000 –&gt; 00:21:57,000<br>the maker wonder like, you know, how to do that because like what happens to you like a machine and an interrupt happens, you know, that interrupt needs to be propagated in some way directly to the backup.</p>
+<p>148<br>00:21:57,000 –&gt; 00:22:11,000<br>So if you think about the x86 machine, you know, of course, the regular instructions that the applications execute like ads, whatever divide, you know, conditional branch branching, procedure calls, but there are also other events like interrupts.</p>
+<p>149<br>00:22:11,000 –&gt; 00:22:31,000<br>They need to be, you know, handled with. And so how do you do that? And so the traditional way of doing through machine level replication used to be sort of quite expensive in the sense that the, you could be like computers, there were the processors like maybe replicated twice or three times.</p>
+<p>150<br>00:22:31,000 –&gt; 00:22:39,000<br>And the hardware itself will organize, you know, that these processors ran exactly lockstep.</p>
+<p>151<br>00:22:39,000 –&gt; 00:22:49,000<br>And you know, there’s a lot of hardware machinery to actually make this happen. And this paper has a cool observation that you don’t really need to do really hardware replication.</p>
+<p>152<br>00:22:49,000 –&gt; 00:22:58,000<br>Instead, you can actually use virtual machines.</p>
+<p>153<br>00:22:58,000 –&gt; 00:23:00,000<br>That’s the way to do it.</p>
+<p>154<br>00:23:00,000 –&gt; 00:23:23,000<br>The pure hardware replication happens to, you know, example in in in a erinotics or, you know, whatever in more rover, you know, often the hardware modules are just like double duplex replicated or triple replicages and have a hardware voting scheme to keep sure the processors in sync and detect failures.</p>
+<p>155<br>00:23:23,000 –&gt; 00:23:33,000<br>But a sort of a level of fault tolerance that, you know, that’s not what this this level of fault tolerance that this VM FTP paper is not actually shooting for.</p>
+<p>156<br>00:23:33,000 –&gt; 00:23:42,000<br>It’s really thinking about like, you know, you got a, in a business application running on the computer and now you want to make a business application with fault tolerance.</p>
+<p>157<br>00:23:42,000 –&gt; 00:23:48,000<br>And the approach to take this to, you know, exploit the fertilization.</p>
+<p>158<br>00:23:48,000 –&gt; 00:24:04,000<br>For the customer to VM FTP and exploit virtualization. That’s the main big idea that they bring what are going to the problem.</p>
+<p>159<br>00:24:04,000 –&gt; 00:24:17,000<br>And you know, by doing so, they can make this replication transparent to the application.</p>
+<p>160<br>00:24:17,000 –&gt; 00:24:25,000<br>And you don’t have to design as an application design and then replication scheme, you know, for example, the way he’s done in.</p>
+<p>161<br>00:24:25,000 –&gt; 00:24:33,000<br>In gfs at a pier, you know, using the scheme that is replicate scheme that the VM FTP uses.</p>
+<p>162<br>00:24:33,000 –&gt; 00:24:38,000<br>And there’s basically that the beer should recline.</p>
+<p>163<br>00:24:38,000 –&gt; 00:24:45,000<br>But the services are single machine.</p>
+<p>164<br>00:24:45,000 –&gt; 00:24:51,000<br>Meaning it just, you know, we’ll see in second how, but you know, basically they’re going to provide very strong consistency.</p>
+<p>165<br>00:24:51,000 –&gt; 00:24:54,000<br>And I’ll find in the outside can’t even tell.</p>
+<p>166<br>00:24:54,000 –&gt; 00:25:05,000<br>And it actually, you know, the paper should cool paper because it actually is it’s a real product.</p>
+<p>167<br>00:25:05,000 –&gt; 00:25:08,000<br>And it’s still in use.</p>
+<p>168<br>00:25:08,000 –&gt; 00:25:12,000<br>You can, you know, get this.</p>
+<p>169<br>00:25:12,000 –&gt; 00:25:15,000<br>There’s a support. If you want to.</p>
+<p>170<br>00:25:15,000 –&gt; 00:25:20,000<br>I think it’s quite different from the one that we actually read about in the paper.</p>
+<p>171<br>00:25:20,000 –&gt; 00:25:25,000<br>But you know, at the very high level, you know, the issues are very similar.</p>
+<p>172<br>00:25:25,000 –&gt; 00:25:32,000<br>In fact, you know, the one of the big shortcomings as many of you noted into questions.</p>
+<p>173<br>00:25:32,000 –&gt; 00:25:36,000<br>The one that’s got paper, it’s like a single core solution.</p>
+<p>174<br>00:25:36,000 –&gt; 00:25:38,000<br>So there’s no multi core support.</p>
+<p>175<br>00:25:38,000 –&gt; 00:25:42,000<br>So multiple applications and multiple threats on one computer cannot run in parallel.</p>
+<p>176<br>00:25:42,000 –&gt; 00:25:49,000<br>And we’ll talk about in second why that this solution doesn’t really support that in the later later versions of.</p>
+<p>177<br>00:25:49,000 –&gt; 00:25:51,000<br>Ft does actually works.</p>
+<p>178<br>00:25:51,000 –&gt; 00:25:56,000<br>And I think there’s no pay real detail paper that describes it.</p>
+<p>179<br>00:25:56,000 –&gt; 00:26:03,000<br>But I actually think that instead of using actual replicate state machine approach to actually using a state transfer approach.</p>
+<p>180<br>00:26:03,000 –&gt; 00:26:08,000<br>But I really don’t know any really of the details.</p>
+<p>181<br>00:26:08,000 –&gt; 00:26:16,000<br>The focus on the replicate state machine approach because one reason I like this paper is because of sort of illustrates replicate state machine approach in a very clean manner.</p>
+<p>182<br>00:26:16,000 –&gt; 00:26:26,000<br>And all the, you know, all the subsequent replication schemes that we’re going to be looking at are replicate state machine approaches.</p>
+<p>183<br>00:26:26,000 –&gt; 00:26:28,000<br>Okay.</p>
+<p>184<br>00:26:28,000 –&gt; 00:26:31,000<br>So.</p>
+<p>185<br>00:26:31,000 –&gt; 00:26:36,000<br>So let us sketch out the overview.</p>
+<p>186<br>00:26:36,000 –&gt; 00:26:39,000<br>And so the first thing.</p>
+<p>187<br>00:26:39,000 –&gt; 00:26:44,000<br>You sort of need to realize is that there’s a virtual there’s a virtual machine monitor involved.</p>
+<p>188<br>00:26:44,000 –&gt; 00:26:46,000<br>So what is a virtual machine monitor?</p>
+<p>189<br>00:26:46,000 –&gt; 00:26:50,000<br>Well, virtual machine monitor basically takes a piece of hardware and.</p>
+<p>190<br>00:26:50,000 –&gt; 00:26:55,000<br>It makes it appear, you know, basically makes and pieces are hard work out of it.</p>
+<p>191<br>00:26:55,000 –&gt; 00:27:03,000<br>So if we like at the next 86 box, you know, we can take a virtual machine monitor, run it on top of it.</p>
+<p>192<br>00:27:03,000 –&gt; 00:27:08,000<br>And you know, top of it, we can have virtual machines and machine.</p>
+<p>193<br>00:27:08,000 –&gt; 00:27:16,000<br>We’re going to multiple virtual machines, although in most of this paper, we’re going to be talking about running one virtual machine in top of the virtual machine monitor.</p>
+<p>194<br>00:27:16,000 –&gt; 00:27:29,000<br>And so, for example, we might actually have a Linux, you know, operating system running on top of the virtual machine, you know, with its applications.</p>
+<p>195<br>00:27:29,000 –&gt; 00:27:32,000<br>And so here’s actually the actual hardware.</p>
+<p>196<br>00:27:32,000 –&gt; 00:27:42,000<br>And why, you know, and so the VM, the terminal years to years, sometimes called a hypervisor, it’s called a virtual machine monitor.</p>
+<p>197<br>00:27:42,000 –&gt; 00:27:50,000<br>And so in our case, you know, really the hypervisor here, this is actually the VM FT.</p>
+<p>198<br>00:27:50,000 –&gt; 00:27:58,000<br>So it’s a hypervisor modified, you know, to include, you know, the ideas that VM FT has.</p>
+<p>199<br>00:27:58,000 –&gt; 00:28:10,000<br>And so, the reason this is cool, well, the reason this is cool because we’re useful for replicate state machines is because if an hardware, you know, interrupt actually happens that hardware interrupt doesn’t really go straight to Linux.</p>
+<p>200<br>00:28:10,000 –&gt; 00:28:13,000<br>In fact, the hardware interrupt goes through the VM monitor.</p>
+<p>201<br>00:28:13,000 –&gt; 00:28:19,000<br>And the VM monitor actually decides, you know, when to deliver, you know, that interrupt, you know, to Linux.</p>
+<p>202<br>00:28:19,000 –&gt; 00:28:30,000<br>And so, you know, the external events, you know, before to actually sort of observe to, you know, by the virtual machine are actually captured by or can be captured by the hypervisor.</p>
+<p>203<br>00:28:30,000 –&gt; 00:28:40,000<br>And so this gets us out of this mess, you know, like what I mentioned a little bit earlier where, you know, what happens if there’s an external interrupt, you know, how can we sort of replicate that.</p>
+<p>204<br>00:28:40,000 –&gt; 00:28:46,000<br>And the way we can replicate it here is because the virtual machine monitor just gets controlled.</p>
+<p>205<br>00:28:46,000 –&gt; 00:28:56,000<br>So this is going to be an extremely powerful tool to actually make instruction deterministic, you know, handle external operations, et cetera, et cetera.</p>
+<p>206<br>00:28:56,000 –&gt; 00:29:09,000<br>So the basic plan is like if an interrupt comes in, you know, whether there’s an interrupt from the network or from the hardware itself, like a timer interrupt.</p>
+<p>207<br>00:29:09,000 –&gt; 00:29:15,000<br>The timer interrupt is delivered, you know, to the virtual machine monitor, the virtual machine monitor.</p>
+<p>208<br>00:29:15,000 –&gt; 00:29:25,000<br>And then in the case of F and T, just two fix, you know, not only delivers it at some point to the application, it also sends over a logging channel to a backup computer.</p>
+<p>209<br>00:29:25,000 –&gt; 00:29:29,000<br>And the backup user is instructed in the same way, you know, as hardware.</p>
+<p>210<br>00:29:29,000 –&gt; 00:29:49,000<br>So it has the virtual machine monitor sitting at top of it. So there’s another copy of F and F T. And, you know, top of this virtual machine, you know, where identical software running on it, like Linux, same version of Linux, you know, with, you know, whatever some set of applications.</p>
+<p>211<br>00:29:49,000 –&gt; 00:29:58,000<br>And so, like, you know, these machines both on, you know, some networks, we use the logging channel.</p>
+<p>212<br>00:29:58,000 –&gt; 00:30:10,000<br>And maybe years of client, you know, talking basically to the hardware, do you know, sense of packet over the network, the actual hardware, you know, see step packet.</p>
+<p>213<br>00:30:10,000 –&gt; 00:30:22,000<br>And then they’ll, and deliver it, you know, and the virtual machine monitor, just gets control and delivers it in the hardware delivery to the virtual machine monitor or the virtual machine monitor, if you will, picks it up.</p>
+<p>214<br>00:30:22,000 –&gt; 00:30:34,000<br>And so, I should think about it, you know, this packet, you know, Joltz in an interrupt that’s delivered to the virtual machine monitor.</p>
+<p>215<br>00:30:34,000 –&gt; 00:30:46,000<br>The virtual machine monitor will send that interrupt. You know, see in the second, you know, forward to the backup, deliver it, deliver it also to the local virtual machine.</p>
+<p>216<br>00:30:46,000 –&gt; 00:30:57,000<br>The local virtual machine, you know, there’s just Linux running. She saw I got an interrupt. And so it does its normal processing. You’d always were doing interrupt. And so at some point, you know, maybe it will generate a response.</p>
+<p>217<br>00:30:57,000 –&gt; 00:31:10,000<br>And also, for example, right, you know, to the network card, at least it will think it’s writing to the network interface card. But really what it is is a virtual network interface card that is like emulated, you know, by the virtual machine monitor.</p>
+<p>218<br>00:31:10,000 –&gt; 00:31:19,000<br>So when it writes actually, you know, bunch of instructions to this, you know, virtual card, really what it is is actually writing to the virtual machine monitor.</p>
+<p>219<br>00:31:19,000 –&gt; 00:31:36,000<br>And so the virtual machine monitor, you know, can actually send the packet and they have the operating system by programming the real hardware. And then the real hardware sends off, you know, response to the client.</p>
+<p>220<br>00:31:36,000 –&gt; 00:31:44,000<br>So that’s the normal execution for what years the primary years are backup.</p>
+<p>221<br>00:31:44,000 –&gt; 00:31:51,000<br>And basically the backup, the same thing happens, you know, if you know, the machine started exactly in the same stage, you know, they take the interrupt.</p>
+<p>222<br>00:31:51,000 –&gt; 00:32:03,000<br>You know, at the same time and the virtual machine monitor can control when to deliver the interrupt. So it can arrange, you know, to make sure that interrupt is if we delivered exactly at the same time exactly at the same instruction that the primary got it.</p>
+<p>223<br>00:32:03,000 –&gt; 00:32:10,000<br>So we’ll deliver the interrupt, you know, through the, you know, we’ll receive the interrupt from the primary, maybe buffer it for a while until the backup.</p>
+<p>224<br>00:32:10,000 –&gt; 00:32:16,000<br>So we’re seeing the second hits, you know, sort of the same instruction that the primary dot then delivers the interrupt, you know, to Linux.</p>
+<p>225<br>00:32:16,000 –&gt; 00:32:23,000<br>Linux does this usual way. It will be, you know, since it’s exactly in the same state as in the primary, it will do exactly the same thing as the primary dust.</p>
+<p>226<br>00:32:23,000 –&gt; 00:32:31,000<br>So at some point, you know, it will, you know, program the virtual network card to actually send a response packet, you know, all that stuff will happen.</p>
+<p>227<br>00:32:31,000 –&gt; 00:32:36,000<br>And at some point says like, you know, sent that packet, you know, the virtual machine monitor will get control.</p>
+<p>228<br>00:32:36,000 –&gt; 00:32:43,000<br>It knows it’s a backup. And so it doesn’t, it doesn’t do anything. It actually doesn’t send packet on the network because it’s the backup.</p>
+<p>229<br>00:32:43,000 –&gt; 00:32:56,000<br>Okay, that’s the basic plan. Then there’s one more component in this story that is important to realize, which is that there is on the site, on the site.</p>
+<p>230<br>00:32:56,000 –&gt; 00:33:08,000<br>On the same network, there is a storage server.</p>
+<p>231<br>00:33:08,000 –&gt; 00:33:14,000<br>What you can think about this is the hard disk for these two virtual machines.</p>
+<p>232<br>00:33:14,000 –&gt; 00:33:31,000<br>And so when an application here writes to a file, really what it turns into is the kernel will, you know, the file system is maybe mounted on the local Linux operating system, the Linux operating system sees how this is like a remote disk.</p>
+<p>233<br>00:33:31,000 –&gt; 00:33:40,000<br>And so it will form a packet and then we’ll send that packet, you know, to, you know, let me drop it maybe in a slightly different way, send the packet, you know, through the virtual machine monitor.</p>
+<p>234<br>00:33:40,000 –&gt; 00:33:49,000<br>Let’s say place in a virtual machine monitor like send it off the virtual machine monitor, I think I will go off and send nobody network to the storage server.</p>
+<p>235<br>00:33:49,000 –&gt; 00:33:57,000<br>This sort of server will respond at some point in some ways, this communication looks identical as if there’s a client sitting the other side of the network.</p>
+<p>236<br>00:33:57,000 –&gt; 00:34:07,000<br>And so we’re seeing that in the storage server case, the Linux sort of starts the communication while in the other case, the client starts the communication.</p>
+<p>237<br>00:34:07,000 –&gt; 00:34:16,000<br>Green air is represent communication to the storage server. So a network packets being sent from through Linux, through the virtual machine monitor to the storage server.</p>
+<p>238<br>00:34:16,000 –&gt; 00:34:30,000<br>So I’m right by an application through a file basically results in these messages and then it will whatever update any state, you know, persistent state that you know on the on the storage server.</p>
+<p>239<br>00:34:30,000 –&gt; 00:34:44,000<br>Now, as we saw in the paper, the storage server plays an additional role on top of a top of a basically being stored server, namely there’s sort of a spectral flag.</p>
+<p>240<br>00:34:44,000 –&gt; 00:34:56,000<br>So it’s on the site, or there’s a block in the storage server that’s being used to arbitrate who becomes the primary after failure.</p>
+<p>241<br>00:34:56,000 –&gt; 00:35:02,000<br>So, so this all comes down to this is the part of the failure over plan.</p>
+<p>242<br>00:35:02,000 –&gt; 00:35:15,000<br>So let’s say, you know, the logging standard breaks or in the way, you know, this manifests in or through the virtual machine monitor is that didn’t sense periodically packets over it is logging channel.</p>
+<p>243<br>00:35:15,000 –&gt; 00:35:24,000<br>And it doesn’t get any responses from the other site, then it assumes that the other side, there’s a problem.</p>
+<p>244<br>00:35:24,000 –&gt; 00:35:33,000<br>So, of course, you can’t decide whether, you know, just the network is not working or whether it actually the virtual machine monitor, you know, the computer is really crashed.</p>
+<p>245<br>00:35:33,000 –&gt; 00:35:42,000<br>And if it’s really crashed, of course, it should, you know, take over and if it’s really not crashed, then, you know, we have to arbitrate it some way and we make sure that only one of them actually proceeds.</p>
+<p>246<br>00:35:42,000 –&gt; 00:35:45,000<br>So let’s say the network petitions.</p>
+<p>247<br>00:35:45,000 –&gt; 00:35:50,000<br>So this is the harder case when the network petitions instead of like one of them to crash us.</p>
+<p>248<br>00:35:50,000 –&gt; 00:35:53,000<br>So, you’re network petitions.</p>
+<p>249<br>00:35:53,000 –&gt; 00:36:00,000<br>What can you notice that the two can still communicate both the primary and the backup can communicate to the store chart.</p>
+<p>250<br>00:36:00,000 –&gt; 00:36:07,000<br>And so in this particular case, and what will happen is they will notice, you know, both sites will notice the primary and the backup will notice.</p>
+<p>251<br>00:36:07,000 –&gt; 00:36:11,000<br>So, there’s some problem we can’t talk to the primary anymore of these affairs.</p>
+<p>252<br>00:36:11,000 –&gt; 00:36:15,000<br>And so, at some point they said, well, the other guy must probably could be dead.</p>
+<p>253<br>00:36:15,000 –&gt; 00:36:17,000<br>And I want to promote myself to primary.</p>
+<p>254<br>00:36:17,000 –&gt; 00:36:25,000<br>So the backup says, like, I’m going to promote myself to primary or the primary says, like, well, I really want to continue serving client requests.</p>
+<p>255<br>00:36:25,000 –&gt; 00:36:28,000<br>And I just want to ignore the backup from now.</p>
+<p>256<br>00:36:28,000 –&gt; 00:36:33,000<br>And so basically, it says, this is what they call, they want to go live.</p>
+<p>257<br>00:36:33,000 –&gt; 00:36:38,000<br>Basically, go back into single mode and we want to do and we’ve won primary.</p>
+<p>258<br>00:36:38,000 –&gt; 00:36:49,000<br>And so the way that this happens is that, you know, both of them, you know, send try to read the call is a test set operation.</p>
+<p>259<br>00:36:49,000 –&gt; 00:36:58,000<br>Now, talk a little bit about it in more detail, but both basically both reach out to the store server and try to write a flag saying instead of to one.</p>
+<p>260<br>00:36:58,000 –&gt; 00:37:05,000<br>And if the flag was already set to one, they’d amend like the other guy one was earlier.</p>
+<p>261<br>00:37:05,000 –&gt; 00:37:07,000<br>So it goes from zero to one.</p>
+<p>262<br>00:37:07,000 –&gt; 00:37:09,000<br>They both try to do this atomically.</p>
+<p>263<br>00:37:09,000 –&gt; 00:37:16,000<br>One of them is going to go first, you know, that will succeed, you know, setting to one and look at return to old value zero.</p>
+<p>264<br>00:37:16,000 –&gt; 00:37:20,000<br>So it knows that, you know, nobody else succeeded actually writing the flag to one yet.</p>
+<p>265<br>00:37:20,000 –&gt; 00:37:23,000<br>And therefore, you know, I should become the primary to keep running.</p>
+<p>266<br>00:37:23,000 –&gt; 00:37:36,000<br>And the second guy, you know, what if the primary or the backup, you know, that comes in second, you know, we’ll see you will try to set the flag to one is already set to one, the return value be one because that was people value by the time it, you know, data is test set operation.</p>
+<p>267<br>00:37:36,000 –&gt; 00:37:44,000<br>And therefore it will decide, well, I’m just going to give up because, you know, there’s already somebody else to go for.</p>
+<p>268<br>00:37:44,000 –&gt; 00:37:50,000<br>And basically, you know, it’s the paper calls, you know, they terminates itself.</p>
+<p>269<br>00:37:50,000 –&gt; 00:37:56,000<br>Okay. So that’s sort of the high level operation.</p>
+<p>270<br>00:37:56,000 –&gt; 00:37:58,000<br>The high level of operation for failure.</p>
+<p>271<br>00:37:58,000 –&gt; 00:38:01,000<br>You know, there’s a question in the chat, which is a good question.</p>
+<p>272<br>00:38:01,000 –&gt; 00:38:03,000<br>When is the flag reset to zero?</p>
+<p>273<br>00:38:03,000 –&gt; 00:38:08,000<br>Well, there’s not basically a whole separate story that I haven’t talked about yet.</p>
+<p>274<br>00:38:08,000 –&gt; 00:38:15,000<br>And so you’ll get through is that in one, you know, the primary runs on one, we have one server running now.</p>
+<p>275<br>00:38:15,000 –&gt; 00:38:20,000<br>We’d like to make a second backup, you know, and sort of get into position that we’re basically half a backup again.</p>
+<p>276<br>00:38:20,000 –&gt; 00:38:23,000<br>You know, we have to do what’s called repair because we don’t do repair.</p>
+<p>277<br>00:38:23,000 –&gt; 00:38:29,000<br>Then, you know, the we start every two computers, one fails and we have one computer and a little bit later that one computer may fail.</p>
+<p>278<br>00:38:29,000 –&gt; 00:38:30,000<br>No, we have no computers anymore.</p>
+<p>279<br>00:38:30,000 –&gt; 00:38:33,000<br>And so it has to be the case that has to be so repair plan.</p>
+<p>280<br>00:38:33,000 –&gt; 00:38:37,000<br>And in, you know, the empty tea is repair plan is executed manually.</p>
+<p>281<br>00:38:37,000 –&gt; 00:38:47,000<br>So, somebody, you know, monitors where the monitor software sort of notice this and basically creates then a new replica.</p>
+<p>282<br>00:38:47,000 –&gt; 00:38:52,000<br>Or based on the VM image of the first one.</p>
+<p>283<br>00:38:52,000 –&gt; 00:39:02,000<br>Assures as in sync and then, you know, it resets that flag and, you know, and what it’s logging starts again and then the flag is reset.</p>
+<p>284<br>00:39:02,000 –&gt; 00:39:09,000<br>Once that second primary is completely backup and following the protocol, then the flag can be reset.</p>
+<p>285<br>00:39:09,000 –&gt; 00:39:14,000<br>OK.</p>
+<p>286<br>00:39:14,000 –&gt; 00:39:17,000<br>OK.</p>
+<p>287<br>00:39:17,000 –&gt; 00:39:19,000<br>OK, good. There’s a great question.</p>
+<p>288<br>00:39:19,000 –&gt; 00:39:28,000<br>Like, and why it would maybe the logging channel broke, but maybe the, the, the, the, the, the, the, the, the, the, the, the, the channel to the server broke too.</p>
+<p>289<br>00:39:28,000 –&gt; 00:39:32,000<br>And so, you know, we’re not getting to get the response.</p>
+<p>290<br>00:39:32,000 –&gt; 00:39:38,000<br>And that basically that point of system just stops, if you will, until something repairs.</p>
+<p>291<br>00:39:38,000 –&gt; 00:39:43,000<br>Because nothing can be done. So at that point for men on no clients request are actually processed.</p>
+<p>292<br>00:39:43,000 –&gt; 00:39:46,000<br>Because we just don’t know what state we are.</p>
+<p>293<br>00:39:46,000 –&gt; 00:39:53,000<br>And maybe at some point in that work link will get repaired and then point, you know, things get moving forward again.</p>
+<p>294<br>00:39:53,000 –&gt; 00:40:14,000<br>So we can only just use a 1 a.m.</p>
+<p>295<br>00:40:14,000 –&gt; 00:40:16,659<br>is reading from the storage server?</p>
+<p>296<br>00:40:16,659 –&gt; 00:40:18,659<br>The client never reads really from the storage server.</p>
+<p>297<br>00:40:18,659 –&gt; 00:40:22,460<br>It’s the Linux that might or the application running</p>
+<p>298<br>00:40:22,460 –&gt; 00:40:24,619<br>on top of the Linux might be running from the storage server.</p>
+<p>299<br>00:40:24,619 –&gt; 00:40:25,539<br>And that’s the one case.</p>
+<p>300<br>00:40:25,539 –&gt; 00:40:28,619<br>And the second case, the MFT might be running from the storage</p>
+<p>301<br>00:40:28,619 –&gt; 00:40:31,860<br>server to read that flag, where it tests and set that flag.</p>
+<p>302<br>00:40:31,860 –&gt; 00:40:34,179<br>So that green arrow at the bottom from the storage server</p>
+<p>303<br>00:40:34,179 –&gt; 00:40:38,260<br>to see is a.</p>
+<p>304<br>00:40:38,260 –&gt; 00:40:39,139<br>Oh, sorry.</p>
+<p>305<br>00:40:39,139 –&gt; 00:40:40,900<br>Now green.</p>
+<p>306<br>00:40:40,900 –&gt; 00:40:42,059<br>That’s a bad green arrow.</p>
+<p>307<br>00:40:42,059 –&gt; 00:40:43,860<br>That’s just gone like all the way.</p>
+<p>308<br>00:40:43,860 –&gt; 00:40:44,380<br>Oh, OK.</p>
+<p>309<br>00:40:44,380 –&gt; 00:40:45,139<br>Thank you.</p>
+<p>310<br>00:40:45,139 –&gt; 00:40:47,420<br>You just go over to network and not intended to go to see.</p>
+<p>311<br>00:40:47,420 –&gt; 00:40:50,019<br>It was intended to go over to network.</p>
+<p>312<br>00:40:50,019 –&gt; 00:40:52,259<br>Thanks for clarifying that.</p>
+<p>313<br>00:40:52,259 –&gt; 00:40:53,500<br>I hadn’t realized that.</p>
+<p>314<br>00:40:53,500 –&gt; 00:40:54,299<br>OK.</p>
+<p>315<br>00:40:54,299 –&gt; 00:41:02,659<br>So what I like, so I want to maybe take a quick break at this point</p>
+<p>316<br>00:41:02,659 –&gt; 00:41:04,699<br>or do a breakout room.</p>
+<p>317<br>00:41:04,699 –&gt; 00:41:06,420<br>And in particular, would like you to do</p>
+<p>318<br>00:41:06,420 –&gt; 00:41:09,340<br>and stop a little bit about the homework question,</p>
+<p>319<br>00:41:09,340 –&gt; 00:41:12,940<br>which we’re sort of covered at this instance.</p>
+<p>320<br>00:41:12,940 –&gt; 00:41:17,700<br>But I want you to think about understand or argue with each other</p>
+<p>321<br>00:41:17,700 –&gt; 00:41:20,500<br>and convince yourself that the scheme actually</p>
+<p>322<br>00:41:20,500 –&gt; 00:41:26,340<br>provides a voice to sort of a sply brain syndrome in a sense</p>
+<p>323<br>00:41:26,340 –&gt; 00:41:28,780<br>that there’s never going to be two primaries.</p>
+<p>324<br>00:41:28,780 –&gt; 00:41:31,019<br>And the second thing, maybe to debate,</p>
+<p>325<br>00:41:31,019 –&gt; 00:41:33,500<br>is this is a reasonable design because it looks</p>
+<p>326<br>00:41:33,500 –&gt; 00:41:36,700<br>like what we’ve done is we push all the real hard part</p>
+<p>327<br>00:41:36,700 –&gt; 00:41:38,380<br>of the fault towns into the storage server.</p>
+<p>328<br>00:41:38,380 –&gt; 00:41:39,420<br>And it’s not really the case.</p>
+<p>329<br>00:41:39,420 –&gt; 00:41:41,180<br>Where’s that not the case?</p>
+<p>330<br>00:41:41,180 –&gt; 00:41:43,300<br>So that seems like two things I don’t really</p>
+<p>331<br>00:41:43,300 –&gt; 00:41:46,099<br>like you to discuss in these breakout rooms.</p>
+<p>332<br>00:41:46,099 –&gt; 00:41:47,380<br>So I’m going to stop the sharing.</p>
+<p>333<br>00:41:51,220 –&gt; 00:41:56,220<br>And I’m going to participate.</p>
+<p>334<br>00:41:56,220 –&gt; 00:41:59,700<br>And I’m going to make Lily host so that she</p>
+<p>335<br>00:41:59,700 –&gt; 00:42:05,820<br>can set up the breakout rooms and enjoy talking to each other.</p>
+<p>336<br>00:42:08,380 –&gt; 00:42:09,220<br>Lily, you got this?</p>
+<p>337<br>00:42:09,220 –&gt; 00:42:10,820<br>I’m going to control.</p>
+<p>338<br>00:42:38,380 –&gt; 00:42:40,380<br>I’m going to start with the first one.</p>
+<p>339<br>00:42:40,380 –&gt; 00:42:42,380<br>I’m going to start with the first one.</p>
+<p>340<br>00:42:42,380 –&gt; 00:42:44,380<br>I’m going to start with the first one.</p>
+<p>341<br>00:42:44,380 –&gt; 00:42:46,380<br>I’m going to start with the first one.</p>
+<p>342<br>00:42:46,380 –&gt; 00:42:48,380<br>I’m going to start with the first one.</p>
+<p>343<br>00:42:48,380 –&gt; 00:42:50,380<br>I’m going to start with the first one.</p>
+<p>344<br>00:42:50,380 –&gt; 00:42:52,380<br>I’m going to start with the first one.</p>
+<p>345<br>00:42:52,380 –&gt; 00:42:54,380<br>I’m going to start with the first one.</p>
+<p>346<br>00:42:54,380 –&gt; 00:42:56,380<br>I’m going to start with the first one.</p>
+<p>347<br>00:42:56,380 –&gt; 00:42:58,380<br>I’m going to start with the first one.</p>
+<p>348<br>00:42:58,380 –&gt; 00:43:00,380<br>I’m going to start with the first one.</p>
+<p>349<br>00:43:00,380 –&gt; 00:43:02,380<br>I’m going to start with the first one.</p>
+<p>350<br>00:43:02,380 –&gt; 00:43:04,380<br>I’m going to start with the first one.</p>
+<p>351<br>00:43:04,380 –&gt; 00:43:06,380<br>I’m going to start with the first one.</p>
+<p>352<br>00:43:06,380 –&gt; 00:43:08,380<br>I’m going to start with the first one.</p>
+<p>353<br>00:43:08,380 –&gt; 00:43:10,380<br>I’m going to start with the first one.</p>
+<p>354<br>00:43:10,380 –&gt; 00:43:12,380<br>I’m going to start with the first one.</p>
+<p>355<br>00:43:12,380 –&gt; 00:43:14,380<br>I’m going to start with the first one.</p>
+<p>356<br>00:43:14,380 –&gt; 00:43:16,380<br>I’m going to start with the first one.</p>
+<p>357<br>00:43:16,380 –&gt; 00:43:18,380<br>I’m going to start with the first one.</p>
+<p>358<br>00:43:18,380 –&gt; 00:43:20,380<br>I’m going to start with the first one.</p>
+<p>359<br>00:43:20,380 –&gt; 00:43:22,380<br>I’m going to start with the first one.</p>
+<p>360<br>00:43:22,380 –&gt; 00:43:24,380<br>I’m going to start with the first one.</p>
+<p>361<br>00:43:24,380 –&gt; 00:43:26,380<br>I’m going to start with the first one.</p>
+<p>362<br>00:43:26,380 –&gt; 00:43:28,380<br>I’m going to start with the first one.</p>
+<p>363<br>00:43:28,380 –&gt; 00:43:30,380<br>I’m going to start with the first one.</p>
+<p>364<br>00:43:30,380 –&gt; 00:43:32,380<br>I’m going to start with the first one.</p>
+<p>365<br>00:43:32,380 –&gt; 00:43:34,380<br>I’m going to start with the first one.</p>
+<p>366<br>00:43:34,380 –&gt; 00:43:36,380<br>I’m going to start with the first one.</p>
+<p>367<br>00:43:36,380 –&gt; 00:43:38,380<br>I’m going to start with the first one.</p>
+<p>368<br>00:43:38,380 –&gt; 00:43:40,380<br>I’m going to start with the first one.</p>
+<p>369<br>00:43:40,380 –&gt; 00:43:42,380<br>I’m going to start with the first one.</p>
+<p>370<br>00:43:42,380 –&gt; 00:43:44,380<br>I’m going to start with the first one.</p>
+<p>371<br>00:43:44,380 –&gt; 00:43:46,380<br>I’m going to start with the first one.</p>
+<p>372<br>00:43:46,380 –&gt; 00:43:48,380<br>I’m going to start with the first one.</p>
+<p>373<br>00:43:48,380 –&gt; 00:43:50,380<br>I’m going to start with the first one.</p>
+<p>374<br>00:43:50,380 –&gt; 00:43:52,380<br>I’m going to start with the first one.</p>
+<p>375<br>00:43:52,380 –&gt; 00:43:54,380<br>I’m going to start with the first one.</p>
+<p>376<br>00:43:54,380 –&gt; 00:43:56,380<br>I’m going to start with the first one.</p>
+<p>377<br>00:43:56,380 –&gt; 00:43:58,380<br>I’m going to start with the first one.</p>
+<p>378<br>00:43:58,380 –&gt; 00:44:00,380<br>I’m going to start with the first one.</p>
+<p>379<br>00:44:00,380 –&gt; 00:44:02,380<br>I’m going to start with the first one.</p>
+<p>380<br>00:44:02,380 –&gt; 00:44:04,380<br>I’m going to start with the first one.</p>
+<p>381<br>00:44:04,380 –&gt; 00:44:06,380<br>I’m going to start with the first one.</p>
+<p>382<br>00:44:06,380 –&gt; 00:44:08,380<br>I’m going to start with the first one.</p>
+<p>383<br>00:44:08,380 –&gt; 00:44:10,380<br>I’m going to start with the first one.</p>
+<p>384<br>00:44:10,380 –&gt; 00:44:12,380<br>I’m going to start with the first one.</p>
+<p>385<br>00:44:12,380 –&gt; 00:44:14,380<br>I’m going to start with the first one.</p>
+<p>386<br>00:44:14,380 –&gt; 00:44:16,380<br>I’m going to start with the first one.</p>
+<p>387<br>00:44:16,380 –&gt; 00:44:18,380<br>I’m going to start with the first one.</p>
+<p>388<br>00:44:18,380 –&gt; 00:44:20,380<br>I’m going to start with the first one.</p>
+<p>389<br>00:44:20,380 –&gt; 00:44:22,380<br>I’m going to start with the first one.</p>
+<p>390<br>00:44:22,380 –&gt; 00:44:24,380<br>I’m going to start with the first one.</p>
+<p>391<br>00:44:24,380 –&gt; 00:44:26,380<br>I’m going to start with the first one.</p>
+<p>392<br>00:44:26,380 –&gt; 00:44:28,380<br>I’m going to start with the first one.</p>
+<p>393<br>00:44:28,380 –&gt; 00:44:30,380<br>I’m going to start with the first one.</p>
+<p>394<br>00:44:30,380 –&gt; 00:44:32,380<br>I’m going to start with the first one.</p>
+<p>395<br>00:44:32,380 –&gt; 00:44:34,380<br>I’m going to start with the first one.</p>
+<p>396<br>00:44:34,380 –&gt; 00:44:36,380<br>I’m going to start with the first one.</p>
+<p>397<br>00:44:36,380 –&gt; 00:44:38,380<br>I’m going to start with the first one.</p>
+<p>398<br>00:44:38,380 –&gt; 00:44:40,380<br>I’m going to start with the first one.</p>
+<p>399<br>00:44:40,380 –&gt; 00:44:42,380<br>I’m going to start with the first one.</p>
+<p>400<br>00:44:42,380 –&gt; 00:44:44,380<br>I’m going to start with the first one.</p>
+<p>401<br>00:44:44,380 –&gt; 00:44:46,380<br>I’m going to start with the first one.</p>
+<p>402<br>00:44:46,380 –&gt; 00:44:48,380<br>I’m going to start with the first one.</p>
+<p>403<br>00:44:48,380 –&gt; 00:44:50,380<br>I’m going to start with the first one.</p>
+<p>404<br>00:44:50,380 –&gt; 00:44:52,380<br>I’m going to start with the first one.</p>
+<p>405<br>00:44:52,380 –&gt; 00:44:54,380<br>I’m going to start with the first one.</p>
+<p>406<br>00:44:54,380 –&gt; 00:44:56,380<br>I’m going to start with the first one.</p>
+<p>407<br>00:44:56,380 –&gt; 00:44:58,380<br>I’m going to start with the first one.</p>
+<p>408<br>00:44:58,380 –&gt; 00:45:00,380<br>I’m going to start with the first one.</p>
+<p>409<br>00:45:00,380 –&gt; 00:45:02,380<br>I’m going to start with the first one.</p>
+<p>410<br>00:45:02,380 –&gt; 00:45:04,380<br>I’m going to start with the first one.</p>
+<p>411<br>00:45:04,380 –&gt; 00:45:06,380<br>I’m going to start with the first one.</p>
+<p>412<br>00:45:06,380 –&gt; 00:45:08,380<br>I’m going to start with the first one.</p>
+<p>413<br>00:45:08,380 –&gt; 00:45:10,380<br>I’m going to start with the first one.</p>
+<p>414<br>00:45:10,380 –&gt; 00:45:12,380<br>I’m going to start with the first one.</p>
+<p>415<br>00:45:12,380 –&gt; 00:45:14,380<br>I’m going to start with the first one.</p>
+<p>416<br>00:45:14,380 –&gt; 00:45:16,380<br>I’m going to start with the first one.</p>
+<p>417<br>00:45:16,380 –&gt; 00:45:18,380<br>I’m going to start with the first one.</p>
+<p>418<br>00:45:18,380 –&gt; 00:45:20,380<br>I’m going to start with the first one.</p>
+<p>419<br>00:45:20,380 –&gt; 00:45:22,380<br>I’m going to start with the first one.</p>
+<p>420<br>00:45:22,380 –&gt; 00:45:24,380<br>I’m going to start with the first one.</p>
+<p>421<br>00:45:24,380 –&gt; 00:45:26,380<br>I’m going to start with the first one.</p>
+<p>422<br>00:45:26,380 –&gt; 00:45:28,380<br>I’m going to start with the first one.</p>
+<p>423<br>00:45:28,380 –&gt; 00:45:30,380<br>I’m going to start with the first one.</p>
+<p>424<br>00:45:30,380 –&gt; 00:45:32,380<br>I’m going to start with the first one.</p>
+<p>425<br>00:45:32,380 –&gt; 00:45:34,380<br>I’m going to start with the first one.</p>
+<p>426<br>00:45:34,380 –&gt; 00:45:36,380<br>I’m going to start with the first one.</p>
+<p>427<br>00:45:36,380 –&gt; 00:45:38,380<br>I’m going to start with the first one.</p>
+<p>428<br>00:45:38,380 –&gt; 00:45:40,380<br>I’m going to start with the first one.</p>
+<p>429<br>00:45:40,380 –&gt; 00:45:42,380<br>I’m going to start with the first one.</p>
+<p>430<br>00:45:42,380 –&gt; 00:45:44,380<br>I’m going to start with the first one.</p>
+<p>431<br>00:45:44,380 –&gt; 00:45:46,380<br>I’m going to start with the first one.</p>
+<p>432<br>00:45:46,380 –&gt; 00:45:48,380<br>I’m going to start with the first one.</p>
+<p>433<br>00:45:48,380 –&gt; 00:45:50,380<br>I’m going to start with the first one.</p>
+<p>434<br>00:45:50,380 –&gt; 00:45:52,380<br>I’m going to start with the first one.</p>
+<p>435<br>00:45:52,380 –&gt; 00:45:54,380<br>I’m going to start with the first one.</p>
+<p>436<br>00:45:54,380 –&gt; 00:46:10,380<br>up.</p>
+<p>437<br>00:46:10,380 –&gt; 00:46:20,380<br>Up.</p>
+<p>438<br>00:46:20,380 –&gt; 00:46:22,380<br>and not enjoying a different room this time.</p>
+<p>439<br>00:46:27,980 –&gt; 00:46:29,980<br>It’s not looking good though.</p>
+<p>440<br>00:46:50,380 –&gt; 00:47:06,380<br>I guess I’m stuck here.</p>
+<p>441<br>00:48:20,380 –&gt; 00:48:24,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>442<br>00:48:24,380 –&gt; 00:48:28,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>443<br>00:48:28,380 –&gt; 00:48:32,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>444<br>00:48:32,380 –&gt; 00:48:36,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>445<br>00:48:36,380 –&gt; 00:48:40,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>446<br>00:48:40,380 –&gt; 00:48:44,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>447<br>00:48:44,380 –&gt; 00:48:48,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>448<br>00:48:48,380 –&gt; 00:48:52,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>449<br>00:48:52,380 –&gt; 00:48:56,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>450<br>00:48:56,380 –&gt; 00:49:00,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>451<br>00:49:00,380 –&gt; 00:49:04,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>452<br>00:49:04,380 –&gt; 00:49:08,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>453<br>00:49:08,380 –&gt; 00:49:12,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>454<br>00:49:12,380 –&gt; 00:49:16,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>455<br>00:49:16,380 –&gt; 00:49:20,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>456<br>00:49:20,380 –&gt; 00:49:24,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>457<br>00:49:24,380 –&gt; 00:49:28,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>458<br>00:49:28,380 –&gt; 00:49:32,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>459<br>00:49:32,380 –&gt; 00:49:36,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>460<br>00:49:36,380 –&gt; 00:49:40,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>461<br>00:49:40,380 –&gt; 00:49:44,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>462<br>00:49:44,380 –&gt; 00:49:48,380<br>I’m not sure if I’m going to be able to get out of here.</p>
+<p>463<br>00:49:48,380 –&gt; 00:49:52,380<br>It’s too colorful.</p>
+<p>464<br>00:49:52,380 –&gt; 00:49:56,380<br>It’s too colorful.</p>
+<p>465<br>00:49:56,380 –&gt; 00:50:00,380<br>The screen again.</p>
+<p>466<br>00:50:00,380 –&gt; 00:50:04,380<br>Can everyone get more screen?</p>
+<p>467<br>00:50:04,380 –&gt; 00:50:08,380<br>Yes.</p>
+<p>468<br>00:50:08,380 –&gt; 00:50:10,380<br>Okay. Good.</p>
+<p>469<br>00:50:10,380 –&gt; 00:50:16,460<br>you had a good discussion and hopefully that’s some more new students in the class than they knew</p>
+<p>470<br>00:50:16,460 –&gt; 00:50:28,380<br>before. And let’s sort of proceed talking a little bit about the design of the Mpt and it’s like</p>
+<p>471<br>00:50:28,380 –&gt; 00:50:34,140<br>summarized quickly, you know, this. Could you repeat like when the flag is reset to zero? I feel</p>
+<p>472<br>00:50:34,139 –&gt; 00:50:40,460<br>like some of us might have missed explanation. Okay. Okay, so okay, good, good, good, good. Okay, so let</p>
+<p>473<br>00:50:40,460 –&gt; 00:50:46,539<br>the, okay, so here let’s draw the picture again. And that’s sort of simpler way. Here’s our primary</p>
+<p>474<br>00:50:46,539 –&gt; 00:50:51,900<br>with the VM, everything in it. Here’s the backup with the everything in it, you know, and just</p>
+<p>475<br>00:50:51,900 –&gt; 00:50:57,339<br>log in channel in between, connected, you know, to a storage server. And you know, one thing to think</p>
+<p>476<br>00:50:57,339 –&gt; 00:51:02,779<br>about is that the storage server is doing playing tool rolls. So let’s separate the two roles. One is</p>
+<p>477<br>00:51:02,780 –&gt; 00:51:07,100<br>just going to storage, you know, for, you know, a disk basically for, you know, the primary and the</p>
+<p>478<br>00:51:07,100 –&gt; 00:51:12,620<br>backup, and then we can just split that and just attach the disk to the primary and backup. And then</p>
+<p>479<br>00:51:12,620 –&gt; 00:51:15,980<br>we’re basically have the role here is really the arbitration server.</p>
+<p>480<br>00:51:20,460 –&gt; 00:51:27,500<br>And it has a flag. And the flag was initially zero, right? And so now, let’s say there’s a,</p>
+<p>481<br>00:51:28,300 –&gt; 00:51:33,579<br>a petition of primary backup can actually not talk to the, to each other anymore. So they’re going</p>
+<p>482<br>00:51:33,579 –&gt; 00:51:37,900<br>to talk to the arbitration server basically to try to promote themselves through the single,</p>
+<p>483<br>00:51:38,940 –&gt; 00:51:44,219<br>to go live and sort of be the single server, the service, the client request. So they both sent the</p>
+<p>484<br>00:51:44,219 –&gt; 00:51:48,860<br>backup to the test to set operation. One gets a zero back, you got one gets a one back,</p>
+<p>485<br>00:51:48,860 –&gt; 00:51:52,780<br>the one gets a one back knows that it was actually the second to try it. And then,</p>
+<p>486<br>00:51:53,740 –&gt; 00:51:57,900<br>and so the first one will succeed and will go live. So let’s say this guy goes live,</p>
+<p>487<br>00:51:58,700 –&gt; 00:52:05,420<br>and this guy just, you know, disappears. This virtual machine is terminates itself and is done.</p>
+<p>488<br>00:52:06,860 –&gt; 00:52:13,900<br>And so another flag is set to one. And of course, now at this point, there’s no arbitration and</p>
+<p>489<br>00:52:13,900 –&gt; 00:52:18,380<br>necessary anymore because there’s no secondary replica. There’s no backup at all. So really,</p>
+<p>490<br>00:52:18,380 –&gt; 00:52:22,860<br>the question is like, you know, what happens next? And in terms of repair, it has to be decays</p>
+<p>491<br>00:52:22,860 –&gt; 00:52:27,820<br>that the second backup and new backup is brought up to a life, right? And this section 3-1 at the</p>
+<p>492<br>00:52:27,820 –&gt; 00:52:33,180<br>paper talks about this in quite a bit of detail. And the way it works is that, you know, on the</p>
+<p>493<br>00:52:33,180 –&gt; 00:52:37,900<br>user interface, you know, through the system, you know, VMware motion, you basically say like,</p>
+<p>494<br>00:52:37,900 –&gt; 00:52:46,539<br>hey, I want to clone this primary. And the cloning operation basically will, we all basically</p>
+<p>495<br>00:52:46,539 –&gt; 00:52:52,779<br>stop processing client here. You’re including the primary wound X and you’re the one system still</p>
+<p>496<br>00:52:52,779 –&gt; 00:53:01,420<br>running. One X and 0 of any client request. The, the, the, the emotion thing makes an VM clone.</p>
+<p>497<br>00:53:01,420 –&gt; 00:53:06,460<br>And basically copies, you know, the state of this VM up to the backup. And so here, we have an</p>
+<p>498<br>00:53:06,460 –&gt; 00:53:12,219<br>identical copy of the backup of the primary that becomes the backup. So this state of the</p>
+<p>499<br>00:53:12,219 –&gt; 00:53:16,779<br>virtual machine is identical. One thing, you know, the sort of this cloning operation has happened.</p>
+<p>500<br>00:53:17,339 –&gt; 00:53:22,699<br>Then it’s free, you know, the user interface is free to set the action this guy back to 0-2.</p>
+<p>501<br>00:53:24,379 –&gt; 00:53:29,339<br>Client requests are still not being processed. When that has happened, then the system can go</p>
+<p>502<br>00:53:29,339 –&gt; 00:53:34,619<br>sort of live again. But now with two machines, with the primary and backup, and the client requests</p>
+<p>503<br>00:53:34,619 –&gt; 00:53:38,379<br>are being processed, you know, they’re sent over the channel, et cetera, et cetera. So we’re back in</p>
+<p>504<br>00:53:38,380 –&gt; 00:53:52,140<br>business. Is that answered a question? I hope it does. If not, I’m happy to revisit this actually</p>
+<p>505<br>00:53:52,140 –&gt; 00:54:00,220<br>at the end of the lecture if they’re still confusing. Okay, good. Okay, well, I want to go back now to</p>
+<p>506<br>00:54:00,220 –&gt; 00:54:05,019<br>sort of this sort of like the overall architecture graph of the system. I now want to dive into</p>
+<p>507<br>00:54:05,019 –&gt; 00:54:09,659<br>whether they had more and talk. You know, we have decided, I think, you know, that, you know,</p>
+<p>508<br>00:54:09,659 –&gt; 00:54:14,059<br>this arbitration scheme allows you to, it’s for it to split brainstorm room. But, you know,</p>
+<p>509<br>00:54:14,059 –&gt; 00:54:19,259<br>this sort of just still there’s a larger issue that if you know two machines are running, you know,</p>
+<p>510<br>00:54:19,259 –&gt; 00:54:24,619<br>our goal is going to be, you know, basically behave like a single machine.</p>
+<p>511<br>00:54:29,900 –&gt; 00:54:34,699<br>So from the client perspective, it should not be possible to really discern or at least</p>
+<p>512<br>00:54:35,019 –&gt; 00:54:38,939<br>in a sort of a demonstrated bad way that, you know, we actually happen to machines.</p>
+<p>513<br>00:54:39,819 –&gt; 00:54:45,099<br>Great. And so just to stick a step back, you know, we think at a very high level, you know,</p>
+<p>514<br>00:54:45,099 –&gt; 00:54:49,579<br>we have here our primary in the house, you know, like machine registers, the virtual machine,</p>
+<p>515<br>00:54:50,939 –&gt; 00:54:56,939<br>the other series, the memory. And our basic plan is to sort of forward, you know, make sure that</p>
+<p>516<br>00:54:56,940 –&gt; 00:54:59,260<br>basically execute exactly the same structures.</p>
+<p>517<br>00:55:03,099 –&gt; 00:55:09,340<br>Boom, boom, boom. Here’s our own, here’s your backup, here’s your primary. And, you know,</p>
+<p>518<br>00:55:09,340 –&gt; 00:55:15,980<br>basically, you know, when the, you know, when the primary, so we start to mount in the same state,</p>
+<p>519<br>00:55:15,980 –&gt; 00:55:19,340<br>and they start executing structures, you know, so like maybe the first and structures in</p>
+<p>520<br>00:55:19,340 –&gt; 00:55:23,820<br>the name, second, the structures in deck, you know, through the structures of branch.</p>
+<p>521<br>00:55:24,940 –&gt; 00:55:28,700<br>And if they, you know, start all in the same state, correct? Then at the third</p>
+<p>522<br>00:55:28,700 –&gt; 00:55:32,380<br>destruction, this branch, then we’ll branch into the same direction. And so, well, maybe the</p>
+<p>523<br>00:55:32,380 –&gt; 00:55:36,300<br>branch through some instruction and then we get on whatever, the next instructions and divide,</p>
+<p>524<br>00:55:37,340 –&gt; 00:55:41,740<br>et cetera, et cetera, et cetera. Now all these structures are sort of detour monistics.</p>
+<p>525<br>00:55:41,740 –&gt; 00:55:45,420<br>So that’s pretty straightforward, right? Like if, you know, we both start at the same</p>
+<p>526<br>00:55:45,980 –&gt; 00:55:51,019<br>state, they execute exactly these, you know, same set of instructions in the same order,</p>
+<p>527<br>00:55:51,019 –&gt; 00:55:56,300<br>then we’re going to end up in a state S prime. And those two states are going to be identical.</p>
+<p>528<br>00:55:57,579 –&gt; 00:56:05,099<br>Right? Now, the thing that is sort of the challenge in this design where like any sort of</p>
+<p>529<br>00:56:05,099 –&gt; 00:56:10,380<br>replication scheme is there might be sources of divergence, you know, so our goals to actually</p>
+<p>530<br>00:56:10,380 –&gt; 00:56:16,539<br>get them exactly to the same state S prime, but you know, there are sort of sources of divergence.</p>
+<p>531<br>00:56:22,780 –&gt; 00:56:26,619<br>And it’s pretty good. I’ve just great that what those are, you know, for example, instructions</p>
+<p>532<br>00:56:26,619 –&gt; 00:56:28,700<br>that are non-deterministic are a problem.</p>
+<p>533<br>00:56:35,340 –&gt; 00:56:38,700<br>And so, what are, what’s an example of a non-deterministic instruction?</p>
+<p>534<br>00:56:40,460 –&gt; 00:56:46,140<br>Getting the time. Yeah, getting the time. Why is that non-deterministic?</p>
+<p>535<br>00:56:47,340 –&gt; 00:56:54,300<br>Because the machines are not like the backup is not executing.</p>
+<p>536<br>00:56:57,980 –&gt; 00:57:03,260<br>Yeah, the, the, the, the, the, the, the, the, the issue here, correct, is that if, you know, the</p>
+<p>537<br>00:57:03,820 –&gt; 00:57:06,940<br>primary and the backup, you know, at some point they’ll execute this, you know,</p>
+<p>538<br>00:57:07,019 –&gt; 00:57:11,420<br>get time of the instruction, it will. And they might not execute it exactly at the same time.</p>
+<p>539<br>00:57:11,420 –&gt; 00:57:14,619<br>So the value is returned, you know, by that instruction is going to be different.</p>
+<p>540<br>00:57:15,659 –&gt; 00:57:23,579<br>Right? So that’s an source of non-deterministic, a potential source of divergence that we need to control.</p>
+<p>541<br>00:57:24,139 –&gt; 00:57:27,820<br>In fact, we basically have to turn every non-deterministic instruction into the</p>
+<p>542<br>00:57:27,820 –&gt; 00:57:31,579<br>inter-interinistic instruction. And we’ll see you second in how this, how could that be done?</p>
+<p>543<br>00:57:32,539 –&gt; 00:57:39,420<br>Similarly, inputs, right? Or packet inputs. Like when the packet arrives over the network, you know, at the primary,</p>
+<p>544<br>00:57:40,539 –&gt; 00:57:45,659<br>you know, we got to make sure that, you know, the, that packet is executed or processed,</p>
+<p>545<br>00:57:46,139 –&gt; 00:57:51,340<br>or the interrupt that goes along with that packet is exactly delivered at exactly the same point in the</p>
+<p>546<br>00:57:51,340 –&gt; 00:57:56,219<br>instruction steam. Right? So we go back to our previous paper that they page. And like, you know, the</p>
+<p>547<br>00:57:56,219 –&gt; 00:58:01,259<br>backups also executing these instructions. And deck blah, blah, blah, blah, we’re going to</p>
+<p>548<br>00:58:01,259 –&gt; 00:58:05,899<br>eject in the same order. So if the primary, for example, you know, we get the, you know, the interrupt is</p>
+<p>549<br>00:58:05,899 –&gt; 00:58:10,539<br>delivered between instruction one and two, we got to make sure that at the backup, it also is delivered</p>
+<p>550<br>00:58:10,539 –&gt; 00:58:15,819<br>between one and two. Because it’s delivered exactly in the same point in the instruction stream,</p>
+<p>551<br>00:58:15,819 –&gt; 00:58:20,139<br>then the interrupt hand will run and will, you know, do the, they both execute the same instructions</p>
+<p>552<br>00:58:20,139 –&gt; 00:58:27,019<br>again. However, if, you know, example of the backup, you know, we process, you know, this timer</p>
+<p>553<br>00:58:27,019 –&gt; 00:58:30,940<br>interrupt, you know, where this packet arrives interrupt in a little bit later in the different side</p>
+<p>554<br>00:58:30,940 –&gt; 00:58:34,779<br>of the machine, then the state of the system might be different and therefore the result of that,</p>
+<p>555<br>00:58:34,779 –&gt; 00:58:39,339<br>you know, a competition might be different. And so we can’t have that. So it has to be the case that</p>
+<p>556<br>00:58:39,339 –&gt; 00:58:44,379<br>it interrupts when it’s packets at timers, all get delivered exactly at the same time.</p>
+<p>557<br>00:58:45,180 –&gt; 00:58:51,740<br>The same put in the instruction stream. So input packets or timer interrupts.</p>
+<p>558<br>00:58:56,380 –&gt; 00:58:59,180<br>We need to basically be delivered at the same point in the instruction stream.</p>
+<p>559<br>00:59:02,780 –&gt; 00:59:07,980<br>So those are sources of divergence that we need to handle. Any other sources of divergence that</p>
+<p>560<br>00:59:08,860 –&gt; 00:59:15,340<br>I think it was mentioned in the paper that concurrency also can produce non-determinism.</p>
+<p>561<br>00:59:15,340 –&gt; 00:59:20,139<br>But from my understanding here, since the hypervisor actually controls the interrupts and since we</p>
+<p>562<br>00:59:20,139 –&gt; 00:59:26,539<br>have a unique processor, wouldn’t the thread switch be conducted through the hypervisor by interrupts?</p>
+<p>563<br>00:59:26,539 –&gt; 00:59:33,179<br>So if we control the interrupts and we can transmit them exactly at the right location, wouldn’t we also</p>
+<p>564<br>00:59:33,179 –&gt; 00:59:38,379<br>control the non-determinism for concurrency? Yeah, so I think there’s a great oxidation. So let me,</p>
+<p>565<br>00:59:38,379 –&gt; 00:59:42,299<br>it’s a potential devoid. Okay, so first of all, let’s first agree that it’s a potential source of</p>
+<p>566<br>00:59:44,219 –&gt; 00:59:53,099<br>divergence. So multi-core. And let’s say, you know, and basically the way the solution in this</p>
+<p>567<br>00:59:53,099 –&gt; 00:59:56,460<br>particular paper, if you avoid this problem is to say like, well, just disallow.</p>
+<p>568<br>00:59:56,699 –&gt; 01:00:04,380<br>We’re not allowed to have that. And so just only unit processor. Let’s say we had multi-core and</p>
+<p>569<br>01:00:04,380 –&gt; 01:00:09,179<br>you know, just to make sure that we understand what the issue is, the issue here is correct, we have</p>
+<p>570<br>01:00:09,179 –&gt; 01:00:15,179<br>two threads running on the same processor from them, different cores. And they erase, for</p>
+<p>571<br>01:00:15,179 –&gt; 01:00:20,699<br>example, the grab a lock. And one of them is going to win. And so that that’s the front that’s</p>
+<p>572<br>01:00:20,699 –&gt; 01:00:24,860<br>going to run next. And the other one is going to be stopped for a little while. If we want to do</p>
+<p>573<br>01:00:24,860 –&gt; 01:00:28,539<br>this replicated state machine approach at the back of the same thing, we’d have to have happen,</p>
+<p>574<br>01:00:28,539 –&gt; 01:00:33,740<br>right? Where if the two threads run, you know, erase for that lock at the same time, then we got to</p>
+<p>575<br>01:00:33,740 –&gt; 01:00:38,940<br>be arranged that the whatever winner on the primary is also the winner in the back up. And so that</p>
+<p>576<br>01:00:38,940 –&gt; 01:00:44,380<br>requires a whole bunch of machinery that, you know, additional machinery of complexities that</p>
+<p>577<br>01:00:44,380 –&gt; 01:00:48,460<br>the, you know, the paper clearly didn’t want to address or didn’t know how to address. And basically</p>
+<p>578<br>01:00:48,460 –&gt; 01:00:52,620<br>just said like, okay, well, it’s just going to exclude that possibility of divergence. But just</p>
+<p>579<br>01:00:52,619 –&gt; 01:00:57,179<br>declaring that the processor is a unit processor. And so then in Fred switching and all the kind of</p>
+<p>580<br>01:00:57,179 –&gt; 01:01:00,779<br>stuff doesn’t matter anymore. There’s always one, you know, computation running on the computer on</p>
+<p>581<br>01:01:00,779 –&gt; 01:01:05,259<br>the processor. And it will switch, you know, if the primary switch is doing different thread,</p>
+<p>582<br>01:01:05,259 –&gt; 01:01:08,779<br>the back of the switch also to the same thing different thread because it’s like a single</p>
+<p>583<br>01:01:08,779 –&gt; 01:01:12,380<br>instruction state. And they get their external inputs exactly at the same time.</p>
+<p>584<br>01:01:15,500 –&gt; 01:01:20,059<br>Does that make sense? So in some ways, it’s a little bit lame, you know, they’re just give up on</p>
+<p>585<br>01:01:20,059 –&gt; 01:01:27,900<br>multi-core. And as I mentioned, later systems, in the more recent systems of this product,</p>
+<p>586<br>01:01:27,900 –&gt; 01:01:33,579<br>do handle multi-core. And, you know, and I don’t know when I’m talking to you. I don’t really</p>
+<p>587<br>01:01:33,579 –&gt; 01:01:37,659<br>actually understand exactly how they do it. There’s a potential difference, potential different</p>
+<p>588<br>01:01:37,659 –&gt; 01:01:43,179<br>schemes that you can think of doing. Now, people have done multi-core replay, which is really</p>
+<p>589<br>01:01:43,179 –&gt; 01:01:47,099<br>what’s the thing that is necessary. And so, but I don’t really know exactly. So I’m not going to talk</p>
+<p>590<br>01:01:47,179 –&gt; 01:01:50,860<br>about that at all. I’m just going to talk about that focusing on the first three items.</p>
+<p>591<br>01:01:52,139 –&gt; 01:01:53,819<br>And see how they handle it in this case.</p>
+<p>592<br>01:01:58,299 –&gt; 01:01:59,900<br>Okay. Any questions?</p>
+<p>593<br>01:02:02,699 –&gt; 01:02:11,019<br>Oh, sorry, just to make sure it only transmits the instructions that the application makes,</p>
+<p>594<br>01:02:11,099 –&gt; 01:02:16,059<br>right? It doesn’t transmit the instructions that place makes.</p>
+<p>595<br>01:02:16,940 –&gt; 01:02:23,739<br>I certainly use an interesting, we’ll see in a second, but let me make that more clear right away.</p>
+<p>596<br>01:02:25,259 –&gt; 01:02:30,059<br>The, in fact, these instructors in Kentucky and Decker Branch are not sent to the primary back of</p>
+<p>597<br>01:02:30,059 –&gt; 01:02:33,340<br>at all. They basically have their own copy, correct? And we’re just starting them at the same</p>
+<p>598<br>01:02:33,340 –&gt; 01:02:37,420<br>point in the program. And so therefore, they run exactly in the sort of lockstep almost,</p>
+<p>599<br>01:02:37,420 –&gt; 01:02:41,019<br>people up, they know what are in the lockstep, but they actually get them in the same order.</p>
+<p>600<br>01:02:41,820 –&gt; 01:02:46,139<br>Only some special has to happen at these points of the verge, possible divergence.</p>
+<p>601<br>01:02:47,099 –&gt; 01:02:50,460<br>And the assumption that sort of the paper makes is that these are most instructions</p>
+<p>602<br>01:02:50,460 –&gt; 01:02:54,059<br>of Decker monistics, so we don’t really have to do anything. And it’s only if the instruction</p>
+<p>603<br>01:02:54,059 –&gt; 01:02:58,300<br>for things to go potentially go wrong, we have to do something. And so one of those sorts of</p>
+<p>604<br>01:02:58,300 –&gt; 01:03:03,019<br>where something goes wrong is interrupts. So let’s talk a little bit about interrupts.</p>
+<p>605<br>01:03:07,900 –&gt; 01:03:17,340<br>So here, it really makes the virtual machine sort of comes to rescue and really helps</p>
+<p>606<br>01:03:17,340 –&gt; 01:03:21,099<br>you know, solve this problem. So let’s say here we have our hypervisor.</p>
+<p>607<br>01:03:23,500 –&gt; 01:03:27,740<br>An interrupt happens that the interrupt will show up at the hypervisor.</p>
+<p>608<br>01:03:28,860 –&gt; 01:03:35,420<br>And the hypervisor knows exactly at which instruction the application was, or the VM was at this</p>
+<p>609<br>01:03:35,420 –&gt; 01:03:41,099<br>level. So here, Linux is running inside of this VM. The interrupt happens. Of course, the</p>
+<p>610<br>01:03:44,139 –&gt; 01:03:49,340<br>the hypervisor already has taken over control. And it knows where it stopped, you know, Linux actually</p>
+<p>611<br>01:03:49,340 –&gt; 01:03:54,619<br>take the interrupts. So maybe you know, whatever it took it is, it has executed a hundred instructions</p>
+<p>612<br>01:03:54,619 –&gt; 01:04:02,220<br>so far. And then this interrupt comes in and the hypervisor now wants to deliver that interrupt,</p>
+<p>613<br>01:04:02,219 –&gt; 01:04:06,299<br>basically at the instruction hundred. And before doing that, actually, it just sends over the</p>
+<p>614<br>01:04:06,299 –&gt; 01:04:14,699<br>logging channel a message to the backup. Here’s the backup, FT, and in that message it basically says</p>
+<p>615<br>01:04:14,699 –&gt; 01:04:19,500<br>like, okay, add instruction hundred. You know, when you get to the instruction hundred, you know,</p>
+<p>616<br>01:04:19,500 –&gt; 01:04:23,179<br>deliver this interrupt. And you know, maybe some data that’s associated with the interrupt.</p>
+<p>617<br>01:04:24,619 –&gt; 01:04:28,219<br>Right, so this does two things. The interrupt comes in, sees what the instruction number was,</p>
+<p>618<br>01:04:28,219 –&gt; 01:04:32,539<br>and then it sends the backup this message saying like, hey, you know, at some point, when you get to</p>
+<p>619<br>01:04:32,539 –&gt; 01:04:38,139<br>an extra hundred, you know, process, you know, this interrupt. And you know, some point later,</p>
+<p>620<br>01:04:38,139 –&gt; 01:04:44,379<br>you know, this interrupt one, and interrupt two comes in. And so, you know, the hypervisor does exactly</p>
+<p>621<br>01:04:44,379 –&gt; 01:04:52,139<br>the same thing. Again, we’ll send all that, say, this is at the instruction 200. You know, we send</p>
+<p>622<br>01:04:52,139 –&gt; 01:04:56,459<br>the message 200 interrupt, you know, get perhaps for any data associated with the interrupt, you know,</p>
+<p>623<br>01:04:56,460 –&gt; 01:05:05,820<br>to the FT. So when, you know, the backup gets the first message, it just bovers the message.</p>
+<p>624<br>01:05:07,019 –&gt; 01:05:12,699<br>Because it doesn’t know how long it can run after that message until it knows what the next point is</p>
+<p>625<br>01:05:12,699 –&gt; 01:05:17,260<br>that it has to deliver something. So at the point that the second message comes in, you know, for the</p>
+<p>626<br>01:05:17,260 –&gt; 01:05:22,539<br>second interrupt, it knows, you know, it’s perfectly fine to start the computer at instruction</p>
+<p>627<br>01:05:22,539 –&gt; 01:05:26,699<br>100, deliver the interrupt, and basically keep running until instruction 200.</p>
+<p>628<br>01:05:28,219 –&gt; 01:05:32,699<br>And the way it does it is there’s basically most processes have this, but x86 has this too,</p>
+<p>629<br>01:05:32,699 –&gt; 01:05:37,099<br>where you can basically program the x86 and say like, well, you should stop after executing</p>
+<p>630<br>01:05:37,099 –&gt; 01:05:41,980<br>your hundred instructions. And so the process will stop or executing after hundred instructions</p>
+<p>631<br>01:05:41,980 –&gt; 01:05:46,460<br>and it’s give back the role to the operating system, in this case, the virtual machine monitor.</p>
+<p>632<br>01:05:47,420 –&gt; 01:05:54,699<br>And so, you know, and so this is the scheme, this is the scheme that the, the MFT uses to basically,</p>
+<p>633<br>01:05:54,699 –&gt; 01:06:00,139<br>you know, deliver interrupts both at the primary and the backup exactly at the same instruction,</p>
+<p>634<br>01:06:00,139 –&gt; 01:06:04,780<br>so that they sort of stay in this and exactly execute the instructions in exactly the same order.</p>
+<p>635<br>01:06:06,139 –&gt; 01:06:10,139<br>To arrange this, of course, you know, the backup needs to lag next behind one,</p>
+<p>636<br>01:06:10,139 –&gt; 01:06:14,699<br>then, next behind one message.</p>
+<p>637<br>01:06:20,059 –&gt; 01:06:20,299<br>Okay.</p>
+<p>638<br>01:06:23,980 –&gt; 01:06:28,699<br>So just to be clear, so the deterministic operations don’t get communicated through the</p>
+<p>639<br>01:06:28,699 –&gt; 01:06:33,500<br>log-in channel. It’s only the operations that perhaps might diverge.</p>
+<p>640<br>01:06:34,059 –&gt; 01:06:37,819<br>Exactly. You’ve got it. That’s exactly what it does. So let’s look at one more,</p>
+<p>641<br>01:06:37,820 –&gt; 01:06:41,820<br>you know, just to get the flavor, then we’ll talk about it. Yeah, go ahead.</p>
+<p>642<br>01:06:41,820 –&gt; 01:06:48,059<br>Sorry. So deterministic operations, you said, don’t get communicated through the log-in channel.</p>
+<p>643<br>01:06:48,059 –&gt; 01:06:53,019<br>Nope. There’s no need for them because, you know, because both of them, of course, have a copy of</p>
+<p>644<br>01:06:53,019 –&gt; 01:06:57,660<br>all the instructions of like the binary that like whatever Linux runs, correct? But, you know,</p>
+<p>645<br>01:06:57,660 –&gt; 01:07:01,580<br>the instructions are not communicated to over the logging channels. It’s only the numbed-in-derministic</p>
+<p>646<br>01:07:01,580 –&gt; 01:07:06,300<br>watch. So like this interrupt, and we’ll see you in a second. You know, let’s talk about the</p>
+<p>647<br>01:07:06,300 –&gt; 01:07:13,260<br>second one, numbed-in-derministic instructions. Like, you know, get the time, or get time of day.</p>
+<p>648<br>01:07:14,140 –&gt; 01:07:20,060<br>So the way that works is, so years we got our Linux running in the VM. You know, we got our</p>
+<p>649<br>01:07:20,060 –&gt; 01:07:27,180<br>FT running. And basically when, you know, this Linux, you know, use sort of the image, you know,</p>
+<p>650<br>01:07:27,180 –&gt; 01:07:32,700<br>the program image that Linux runs. And maybe, you know, years are numbed-in-derministic instructions.</p>
+<p>651<br>01:07:32,859 –&gt; 01:07:40,939<br>And basically what FT has done before it started Linux, it sort of gone through like the Linux binary</p>
+<p>652<br>01:07:40,939 –&gt; 01:07:45,179<br>and found all the instructions that the numbed-in-derministic like, you know, get time of day. And</p>
+<p>653<br>01:07:45,179 –&gt; 01:07:51,500<br>basically ensure, you know, turn them in sort of an invalid instruction. And so when Linux executes</p>
+<p>654<br>01:07:51,500 –&gt; 01:07:57,099<br>that numbed-in-derministic instruction, it actually controls transfers control through the hypervisor.</p>
+<p>655<br>01:07:57,819 –&gt; 01:08:03,259<br>This is the trap. And now the hypervisor knows, okay, well, this is, you know, whatever instruction</p>
+<p>656<br>01:08:03,259 –&gt; 01:08:09,179<br>free of 141. I know that is a numbed-in-derministic instruction because I wrote, you know, those bits,</p>
+<p>657<br>01:08:09,179 –&gt; 01:08:15,179<br>you know, that cost the trap. And it will emulate, you know, that instruction. And so it will do all</p>
+<p>658<br>01:08:15,179 –&gt; 01:08:20,619<br>the effects that that instruction has, but record what the results of this effects are. So, for example,</p>
+<p>659<br>01:08:20,619 –&gt; 01:08:25,100<br>you know, whatever, and we record what the result, you know, executes instruction, the result says</p>
+<p>660<br>01:08:25,100 –&gt; 01:08:32,220<br>it goes into A0, it records the valid to A0, and then basically sends to the backup, you know,</p>
+<p>661<br>01:08:32,220 –&gt; 01:08:37,020<br>the outcome, you know, of that instruction. So whatever it is like, it’s the value in A0, we ask,</p>
+<p>662<br>01:08:37,020 –&gt; 01:08:41,660<br>you know, whatever, 221, then it will, you know, send back, you know, saying, you know, there’s</p>
+<p>663<br>01:08:41,660 –&gt; 01:08:48,460<br>numbed-in-derministic instruction. The result of it is, you know, 221. And at some point, correct,</p>
+<p>664<br>01:08:48,460 –&gt; 01:08:54,380<br>you know, it’s in the backup lags behind, it will, you know, execute because it’s executing</p>
+<p>665<br>01:08:54,380 –&gt; 01:08:59,180<br>the instructions in the same order in the same way. It will also execute the numbed-in-derministic</p>
+<p>666<br>01:08:59,180 –&gt; 01:09:04,940<br>instruction. That will trap into the kernel. And now you just will wait until, you know, since it</p>
+<p>667<br>01:09:04,940 –&gt; 01:09:09,180<br>likes behind it already has received probably the message. And basically, you make sure that, you</p>
+<p>668<br>01:09:09,180 –&gt; 01:09:13,500<br>know, it sticks the same value, you know, or returns the same value as it did on the primary.</p>
+<p>669<br>01:09:14,380 –&gt; 01:09:17,180<br>Right? So this is how non-deterministic instructions are handled.</p>
+<p>670<br>01:09:17,340 –&gt; 01:09:29,180<br>Sorry. So that happens, like, the modification of the binary, it happens when it creates the</p>
+<p>671<br>01:09:30,860 –&gt; 01:09:34,460<br>Yeah, we think about it, then, when it boots to the end. Okay.</p>
+<p>672<br>01:09:35,579 –&gt; 01:09:44,539<br>So the backup reexecutes the non-deterministic instruction and then just verifies the result?</p>
+<p>673<br>01:09:44,539 –&gt; 01:09:50,140<br>No, what it actually does is if the virtual machine miner executes the instruction,</p>
+<p>674<br>01:09:51,019 –&gt; 01:09:55,420<br>and then, you know, actually, the virtual machine miner doesn’t execute the instruction at all,</p>
+<p>675<br>01:09:56,619 –&gt; 01:10:01,260<br>it knows that this instruction needs to be executed, and it knows what things will be changed,</p>
+<p>676<br>01:10:01,260 –&gt; 01:10:06,619<br>like what registers need to be updated as a result of this instruction, and it sticks the value</p>
+<p>677<br>01:10:06,619 –&gt; 01:10:11,819<br>from the message into the right register so that the, you know, the lineage running on the backup</p>
+<p>678<br>01:10:11,819 –&gt; 01:10:15,579<br>sees exactly the same effect as the, the, the Linux running on the primary.</p>
+<p>679<br>01:10:20,460 –&gt; 01:10:23,899<br>And so like this assumes that the hypervisor will do some work before even,</p>
+<p>680<br>01:10:24,699 –&gt; 01:10:28,619<br>or while booting up to the, just to move where the locations of the non-deterministic.</p>
+<p>681<br>01:10:28,619 –&gt; 01:10:31,019<br>Yeah, yeah, yeah, yeah, we try any hypervisor dust in these days.</p>
+<p>682<br>01:10:32,779 –&gt; 01:10:36,539<br>So this is our standard hypervisor stuff. This is nothing new to FT,</p>
+<p>683<br>01:10:37,500 –&gt; 01:10:41,340<br>other than these guys at the tunnel who are the scares doing hypervisor stuff because it’s being</p>
+<p>684<br>01:10:41,340 –&gt; 01:10:47,579<br>anywhere, and so they understand what it takes and which instructions are non-deterministic.</p>
+<p>685<br>01:10:51,420 –&gt; 01:11:01,579<br>Okay, I had one more question. So if, you know, it’s a program of fully like deterministic instructions,</p>
+<p>686<br>01:11:02,539 –&gt; 01:11:06,859<br>could, could the backup run faster than the primary?</p>
+<p>687<br>01:11:09,260 –&gt; 01:11:12,699<br>Okay, so, you know, there’s a whole discussion in the paper about like the speed of the primary</p>
+<p>688<br>01:11:12,699 –&gt; 01:11:16,059<br>and the backup and making sure that they run the roughly at the same speed because you know,</p>
+<p>689<br>01:11:16,059 –&gt; 01:11:21,340<br>want to get one far ahead and one not far behind. I think you should think about them,</p>
+<p>690<br>01:11:21,340 –&gt; 01:11:24,699<br>they’re running on a sort of identical hardware and so they run roughly at the same speed.</p>
+<p>691<br>01:11:25,579 –&gt; 01:11:31,260<br>It’s also the case that there’s going to be always some communication over this channel.</p>
+<p>692<br>01:11:32,380 –&gt; 01:11:37,180<br>Because interrupts are happened periodically, right? Every, you know, whatever, you know,</p>
+<p>693<br>01:11:37,899 –&gt; 01:11:42,220<br>couple milliseconds, you’re maybe 100 milliseconds or tens of milliseconds depending on what</p>
+<p>694<br>01:11:42,220 –&gt; 01:11:46,699<br>Linux and what RAID Linux program to hardware timer, there will be a timer interrupt.</p>
+<p>695<br>01:11:46,699 –&gt; 01:11:51,100<br>And a timer interrupt will be propagated, you know, to the backup and sort of be a sync point.</p>
+<p>696<br>01:11:53,659 –&gt; 01:11:59,579<br>Right, but my question is like, for example, say you have a bunch of like deterministic</p>
+<p>697<br>01:11:59,579 –&gt; 01:12:02,779<br>instructions, right? Instructions that aren’t sent through the login channel.</p>
+<p>698<br>01:12:04,380 –&gt; 01:12:10,300<br>Which means, you know, the primary and backup can run those instructions at their own pace.</p>
+<p>699<br>01:12:10,300 –&gt; 01:12:15,500<br>Correct? Yes. So, say, I mean, I don’t know if this could happen, but say like,</p>
+<p>700<br>01:12:16,619 –&gt; 01:12:26,220<br>it’s, you know, 100 instructions and the primary goes to like instruction 50 and gets a timer interrupt.</p>
+<p>701<br>01:12:27,100 –&gt; 01:12:31,500<br>But the backup is already a timer like 60 or something. Could that like…</p>
+<p>702<br>01:12:31,500 –&gt; 01:12:35,820<br>No, could not happen, great, because remember, the backup legs behind one of these messages.</p>
+<p>703<br>01:12:38,220 –&gt; 01:12:42,460<br>So the backup won’t start executing the next block until the primary RAID has finished it.</p>
+<p>704<br>01:12:43,020 –&gt; 01:12:43,340<br>Okay.</p>
+<p>705<br>01:12:44,300 –&gt; 01:12:46,860<br>Now this is why this is why the legs behind one.</p>
+<p>706<br>01:12:46,859 –&gt; 01:12:47,899<br>Mm-hmm.</p>
+<p>707<br>01:12:51,420 –&gt; 01:12:56,299<br>Like to ensure that the backup is like lagging behind one instruction, does that mean…</p>
+<p>708<br>01:12:56,299 –&gt; 01:12:59,019<br>No, not one instruction, more message on the channel.</p>
+<p>709<br>01:13:00,219 –&gt; 01:13:05,420<br>But the internet is unexpected, right? So if we have, as you say, if you have 100 lines of instructions</p>
+<p>710<br>01:13:06,139 –&gt; 01:13:09,579<br>and running on the backup as well as on the primary, then…</p>
+<p>711<br>01:13:09,579 –&gt; 01:13:13,739<br>The primary route in the backup would not have started yet, right? So the primary runs the</p>
+<p>712<br>01:13:13,739 –&gt; 01:13:20,139<br>100 instructions. The backup actually waits until the primary has just completed,</p>
+<p>713<br>01:13:20,139 –&gt; 01:13:24,139<br>you know, whatever those 100 instructions before it starts running those 100 instructions.</p>
+<p>714<br>01:13:25,500 –&gt; 01:13:28,859<br>So just one way to think about it is like always runs like one F-Fuck behind.</p>
+<p>715<br>01:13:29,340 –&gt; 01:13:32,380<br>Oh, so it’s kind of a batching kind of scheme.</p>
+<p>716<br>01:13:32,380 –&gt; 01:13:33,819<br>Yep. All right, thank you.</p>
+<p>717<br>01:13:34,779 –&gt; 01:13:37,500<br>Okay, so I want to talk a little bit about failover because there’s a lot of</p>
+<p>718<br>01:13:37,500 –&gt; 01:13:42,219<br>the couple interesting… there’s one more rule that needs to be insured that we actually get the</p>
+<p>719<br>01:13:42,220 –&gt; 01:13:48,780<br>right behavior. And so… so let’s walk through some scenarios. Here’s the primary. Here’s our</p>
+<p>720<br>01:13:48,780 –&gt; 01:13:57,820<br>hypervisor, right? F-T. Here’s our lagging channel. F-T, the boasts it in the network. Here’s a client.</p>
+<p>721<br>01:13:59,500 –&gt; 01:14:06,140<br>And here’s our backup. And I’m going to talk about a couple of all sort of scenarios.</p>
+<p>722<br>01:14:06,860 –&gt; 01:14:15,980<br>So the first scenario is the normal case. You’re a client, you know, sends a message to the primary,</p>
+<p>723<br>01:14:15,980 –&gt; 01:14:21,500<br>or like the server is running on the primary. That’s delivered, of course. To the primary, it’s also</p>
+<p>724<br>01:14:21,500 –&gt; 01:14:29,180<br>sent to the channel. And let’s assume for a second that actually the message arrives at the</p>
+<p>725<br>01:14:30,140 –&gt; 01:14:33,980<br>hypervisor. So it actually knows that there’s also an interrupt and some packets arrived.</p>
+<p>726<br>01:14:34,139 –&gt; 01:14:43,179<br>And so now let’s say the primary sensor responds back in that point to the computer crashes.</p>
+<p>727<br>01:14:44,859 –&gt; 01:14:49,979<br>So if the primary fails, the client has not gotten response yet. Now this turns out to work out</p>
+<p>728<br>01:14:49,979 –&gt; 01:14:55,579<br>perfectly fine, right? Because before the backup XM takes over, it first processes all its</p>
+<p>729<br>01:14:57,419 –&gt; 01:15:01,099<br>messages that hasn’t received yet because the lag’s one behind, you know, as we’ve talked before.</p>
+<p>730<br>01:15:01,579 –&gt; 01:15:06,620<br>So, you know, this thing will be delivered. So it will, sorry.</p>
+<p>731<br>01:15:12,539 –&gt; 01:15:18,220<br>Okay, let me be a little bit more careful. Okay, so it gets delivered to the primary backup does it,</p>
+<p>732<br>01:15:18,220 –&gt; 01:15:23,500<br>but it actually won’t send any response. Because it still sort of, you know, doing exactly what</p>
+<p>733<br>01:15:23,500 –&gt; 01:15:28,460<br>the primary has done, you know, gets through that particular point and stops. Then point, you know,</p>
+<p>734<br>01:15:28,460 –&gt; 01:15:32,939<br>they raise, you know, or like the backup XM comes to primary, you know, from the arbitration server.</p>
+<p>735<br>01:15:32,939 –&gt; 01:15:37,500<br>And the client will just time out and retry, right? Because like TCP packet them, get a response,</p>
+<p>736<br>01:15:37,500 –&gt; 01:15:45,020<br>so the retry. So that’s been more try perfect. The interesting case is what happens in the</p>
+<p>737<br>01:15:45,020 –&gt; 01:15:52,380<br>following scenario where the client sends the request, it becomes arrives at the primary,</p>
+<p>738<br>01:15:52,380 –&gt; 01:15:57,420<br>the primary, uh, dust the operation or whatever process the client request sends the message to the</p>
+<p>739<br>01:15:57,420 –&gt; 01:16:03,340<br>fault tunnel server. In the meantime, okay, it was also sent on the logging channel, but let’s say</p>
+<p>740<br>01:16:03,340 –&gt; 01:16:09,020<br>we got unlucky. The message is actually never made it over the logging channel. And, um,</p>
+<p>741<br>01:16:13,659 –&gt; 01:16:21,180<br>but the primary actually, you know, sends a response before, um, just sends a response and then it fails.</p>
+<p>742<br>01:16:21,659 –&gt; 01:16:26,700<br>Right? And so, for example, like maybe, you know, this request was like increased, you know,</p>
+<p>743<br>01:16:26,700 –&gt; 01:16:33,740<br>the variable from 10, you know, to a lot. So ink, you know, the old state was 10, and now the new state is 11.</p>
+<p>744<br>01:16:36,140 –&gt; 01:16:40,460<br>Right? And is this problematic? The scenario?</p>
+<p>745<br>01:16:41,820 –&gt; 01:16:49,980<br>Um, yeah, because when the backup takes over, it won’t, uh, know about that increase, um,</p>
+<p>746<br>01:16:50,619 –&gt; 01:16:56,619<br>and so it’ll just continue execution as if it didn’t happen, and this provides, um, like,</p>
+<p>747<br>01:16:56,619 –&gt; 01:17:02,379<br>inconsistent, uh, output to the external, um, like, facing world, I guess.</p>
+<p>748<br>01:17:02,379 –&gt; 01:17:06,139<br>Yeah, exactly. Right? Because the primary will take over, the backup will take over the value,</p>
+<p>749<br>01:17:06,139 –&gt; 01:17:10,939<br>we still we 10, uh, and now if the client does an ink, it can actually, uh,</p>
+<p>750<br>01:17:10,939 –&gt; 01:17:16,539<br>gets 11 back instead of 10 over instead of 12. Right? And so this is no good. And so how is this</p>
+<p>751<br>01:17:16,539 –&gt; 01:17:24,619<br>avoided? Is problem? Um, the primary will send things to the backup and then wait for</p>
+<p>752<br>01:17:24,619 –&gt; 01:17:29,100<br>acknowledgement and once that, and, uh, once that acknowledgement is received, it can, uh,</p>
+<p>753<br>01:17:29,979 –&gt; 01:17:35,739<br>send output. Um, and it doesn’t matter whether the backup actually runs the command, it just has to</p>
+<p>754<br>01:17:35,739 –&gt; 01:17:42,140<br>like, have it so that if it ever needs to take over as primary, it has that in its logs, and it will</p>
+<p>755<br>01:17:42,140 –&gt; 01:17:47,740<br>catch up before actually like becoming the primary. This is exactly right. So this is what’s called</p>
+<p>756<br>01:17:47,740 –&gt; 01:17:56,140<br>the output rule, right? And rule is that, you know, before you can output, you got to make sure that</p>
+<p>757<br>01:17:56,140 –&gt; 01:18:01,740<br>the preceding messages that you were sent to the backup actually have been received by the backup.</p>
+<p>758<br>01:18:02,539 –&gt; 01:18:07,579<br>And so the snare that just drew out can actually not happen because, you know, at the point,</p>
+<p>759<br>01:18:07,579 –&gt; 01:18:13,500<br>you know, the primary wants to send the response out on the network, the FT, the primary FT,</p>
+<p>760<br>01:18:13,500 –&gt; 01:18:20,300<br>well, wait until this message actually has been received by the backup. And only when it receives</p>
+<p>761<br>01:18:20,300 –&gt; 01:18:28,779<br>an acknowledgement from the backup FT, uh, and now knows, you know, that basically the backup has,</p>
+<p>762<br>01:18:29,420 –&gt; 01:18:35,579<br>a copy of this input. Uh, and so whatever, you know, whatever it fails, you know, the backup will,</p>
+<p>763<br>01:18:35,579 –&gt; 01:18:40,220<br>you know, process that input and basically get the computer in the same status in the primary.</p>
+<p>764<br>01:18:40,220 –&gt; 01:18:46,539<br>So at that point, it actually saves, you know, to send out the reply. And so this is the output rule</p>
+<p>765<br>01:18:46,539 –&gt; 01:18:53,019<br>is that you don’t output until all preceding messages that you send over the log channel actually</p>
+<p>766<br>01:18:53,019 –&gt; 01:19:00,220<br>have been received by the backup. And so just to clarify, it seems that the output rule is here to</p>
+<p>767<br>01:19:00,940 –&gt; 01:19:06,780<br>resolve the inconsistency that could happen if we have some non-determinism. So like, let’s say that</p>
+<p>768<br>01:19:06,780 –&gt; 01:19:14,060<br>we have the output operation to be instruction 60. And we did not have the output rule. And so the</p>
+<p>769<br>01:19:14,060 –&gt; 01:19:21,820<br>backup actually did not, let’s say for some reason did not receive the output operation, or it did not</p>
+<p>770<br>01:19:21,820 –&gt; 01:19:26,780<br>receive up until the output operation. If the instructions are deterministic between the point</p>
+<p>771<br>01:19:26,779 –&gt; 01:19:32,939<br>where the backup did not receive messages until the point where we have an output operation,</p>
+<p>772<br>01:19:32,939 –&gt; 01:19:37,340<br>do we still write into the problem of the inconsistency? Yeah, because the client might have</p>
+<p>773<br>01:19:37,340 –&gt; 01:19:41,819<br>reserved it, right? The client might have reserved that actually the value is 9.11.</p>
+<p>774<br>01:19:43,579 –&gt; 01:19:49,659<br>And so when it actually talks to the backup after the primary has failed, you know, the value is</p>
+<p>775<br>01:19:49,659 –&gt; 01:19:56,859<br>certainly 10. And it just can’t be true. So that reveals that there’s not behaving like a single</p>
+<p>776<br>01:19:56,859 –&gt; 01:20:03,819<br>system. It’s really the external thing, you know, the external client that will adjourn something</p>
+<p>777<br>01:20:03,819 –&gt; 01:20:08,859<br>wrong. And this is why the output rule exists. And any repopacit system that we’ll see this semester</p>
+<p>778<br>01:20:08,859 –&gt; 01:20:13,819<br>has something like the output rule. It turns out to be, you know, for example, we’ll see in the</p>
+<p>779<br>01:20:14,779 –&gt; 01:20:21,099<br>even in the graph paper, but also in the zookeeper, there’s sort of this notion that, you know,</p>
+<p>780<br>01:20:21,099 –&gt; 01:20:26,299<br>sometimes you want to like respond to reach immediately, but you can’t really do that because</p>
+<p>781<br>01:20:26,299 –&gt; 01:20:30,699<br>you’re on this risk and you’re sort of sort of an equivalent of an output rule that tries to avoid,</p>
+<p>782<br>01:20:30,699 –&gt; 01:20:36,939<br>you know, problems like like that. So does the client</p>
+<p>783<br>01:20:37,659 –&gt; 01:20:45,419<br>execute the command? Like, do they get some sort of signal that because the command was never</p>
+<p>784<br>01:20:45,419 –&gt; 01:20:53,500<br>act by the backup? Okay, okay. So let’s say you did not get the act, right? So I’ve got to the</p>
+<p>785<br>01:20:53,500 –&gt; 01:21:00,139<br>backup, but not to the act. Then the client will have not, you know, this response would have not</p>
+<p>786<br>01:21:00,140 –&gt; 01:21:06,539<br>resent to decline yet, right? The backup will take over, the client presumably will time out and</p>
+<p>787<br>01:21:06,539 –&gt; 01:21:11,500<br>do whatever it needs to do. Either, you know, does nothing, you know, if, you know, that’s part of the</p>
+<p>788<br>01:21:11,500 –&gt; 01:21:15,740<br>there, that’s part of the vertical between the servers and the client. Most likely, the client will</p>
+<p>789<br>01:21:15,740 –&gt; 01:21:22,539<br>reset, right? Like as a TCP connection, the response packet didn’t get received, and so it will,</p>
+<p>790<br>01:21:22,539 –&gt; 01:21:29,100<br>you know, try to reset, and so it will reset to the backup, and then finish the operation.</p>
+<p>791<br>01:21:30,460 –&gt; 01:21:32,300<br>But it won’t observe an old value.</p>
+<p>792<br>01:21:38,460 –&gt; 01:21:40,460<br>Okay.</p>
+<p>793<br>01:21:50,860 –&gt; 01:21:58,860<br>Okay. Now, I want to talk about one thing a little bit. So this system, I think is actually very</p>
+<p>794<br>01:21:58,859 –&gt; 01:22:06,539<br>cool. It’s a very clean version of sort of state machine replication. It brings out this</p>
+<p>795<br>01:22:06,539 –&gt; 01:22:11,819<br>issues of non-determinism. The issues like the output rule that we’ll see in the version of that</p>
+<p>796<br>01:22:11,819 –&gt; 01:22:18,779<br>we’ll see in similar in other systems. But I want to talk a little bit about performance,</p>
+<p>797<br>01:22:19,259 –&gt; 01:22:26,139<br>because one downside of the system is, you know, because you’re doing things at the level of the</p>
+<p>798<br>01:22:26,140 –&gt; 01:22:31,980<br>machine instructions, or like at level of interrupts, you pay performance hit.</p>
+<p>799<br>01:22:33,820 –&gt; 01:22:36,700<br>And so like, you want to point to the two tables that are in the paper.</p>
+<p>800<br>01:22:38,380 –&gt; 01:22:42,460<br>And one, you know, first thing to observe is that actually the left table is extremely good.</p>
+<p>801<br>01:22:43,660 –&gt; 01:22:48,220<br>So the backup and the primary, if you run the backup and primary performance, it’s very close</p>
+<p>802<br>01:22:48,220 –&gt; 01:22:54,300<br>as if you were not running the backup, which is very, very impressive, including the fact that</p>
+<p>803<br>01:22:54,300 –&gt; 01:23:03,420<br>you’re running a virtual machine. The more troublesome part is this side of the things where</p>
+<p>804<br>01:23:04,699 –&gt; 01:23:09,260<br>if you don’t run in a primary backup mode, you know, like you’re bandwidth and receiving and</p>
+<p>805<br>01:23:09,260 –&gt; 01:23:13,579<br>sending actually is pretty high, you know, at least in the particular experiment they did. But,</p>
+<p>806<br>01:23:13,579 –&gt; 01:23:17,900<br>you know, when you run in the backup mode, things are actually not so good. You know, these numbers</p>
+<p>807<br>01:23:17,899 –&gt; 01:23:23,739<br>are quite different. In fact, it’s sort of like a 30% reduction in performance. And where is that</p>
+<p>808<br>01:23:23,739 –&gt; 01:23:26,139<br>30% coming from? Like, why is that the case?</p>
+<p>809<br>01:23:34,539 –&gt; 01:23:38,139<br>Is it because the primary is actually the one receiving inputs from outside?</p>
+<p>810<br>01:23:39,019 –&gt; 01:23:44,859<br>Yeah, I think there’s two cases on the receiving case for it to probably be receiving input from</p>
+<p>811<br>01:23:44,859 –&gt; 01:23:51,259<br>the outside. And where does that need to go? If you see, you should pack it from the client. And so</p>
+<p>812<br>01:23:51,259 –&gt; 01:23:58,139<br>the packet has to be sent to the backup and through the more.</p>
+<p>813<br>01:23:58,139 –&gt; 01:24:04,539<br>Right, but the primary is also the one sending output back to the client. So is that what’s using the</p>
+<p>814<br>01:24:04,539 –&gt; 01:24:11,420<br>bandwidth? Well, that’s one reason, that’s part of the bandwidth. But the real thing, I think it’s</p>
+<p>815<br>01:24:11,420 –&gt; 01:24:18,380<br>the wrong here is that the primary has to wait until it can send a response to the client until</p>
+<p>816<br>01:24:18,380 –&gt; 01:24:23,500<br>the backup actually has acknowledged it. And so it just can’t like process packet at the same</p>
+<p>817<br>01:24:23,500 –&gt; 01:24:29,500<br>speed as it could without actually a backup. And therefore, you know, we should have seen a reduction</p>
+<p>818<br>01:24:29,500 –&gt; 01:24:34,460<br>in performance. Nevertheless, this performance is pretty impressive, but, you know,</p>
+<p>819<br>01:24:35,739 –&gt; 01:24:41,100<br>the result performance cost. And this is one reason that people play this game of</p>
+<p>820<br>01:24:41,100 –&gt; 01:24:46,140<br>replicate state machines not at the instruction level, but at the application level. And you’re</p>
+<p>821<br>01:24:46,140 –&gt; 01:24:50,940<br>basically be able to get higher performance, but that requires modification to the applications</p>
+<p>822<br>01:24:50,940 –&gt; 01:24:59,260<br>if we saw in GFS. Okay, I think I’ve run a little bit over time, so I’m going to stop right now.</p>
+<p>823<br>01:25:00,060 –&gt; 01:25:06,060<br>I hope people that actually needed to leave already left. But I will stick around. And so if people</p>
+<p>824<br>01:25:06,060 –&gt; 01:25:13,900<br>have more questions, I’ll be happy to answer those. And I’ll talk to you on Tuesday.</p>
+<p>825<br>01:25:18,060 –&gt; 01:25:28,300<br>Thank you. I had a question about the previous image that you drew with the, yeah, yeah, that one.</p>
+<p>826<br>01:25:28,619 –&gt; 01:25:37,739<br>I was confused because wasn’t it the case that if that number 10, it just sits in the memory,</p>
+<p>827<br>01:25:37,739 –&gt; 01:25:43,980<br>then when we do an increment, we don’t need to send anything to the backup, right?</p>
+<p>828<br>01:25:45,739 –&gt; 01:25:50,940<br>There are okay, so there’s two things going on here. So we do at the point that the message comes in,</p>
+<p>829<br>01:25:51,019 –&gt; 01:26:00,299<br>like this increment comes in from the client, the rise at the FT, at the primary hypervisor,</p>
+<p>830<br>01:26:01,179 –&gt; 01:26:08,699<br>it needs to forward that message to the backup FT so that it can, you know, process it, it needs to be</p>
+<p>831<br>01:26:08,699 –&gt; 01:26:12,859<br>process, what it needs to be processed, you know, when it, you know, it processes exactly the same</p>
+<p>832<br>01:26:12,859 –&gt; 01:26:19,259<br>point in its instruction street, right? So it sends it off and then, you know, it delivers it to</p>
+<p>833<br>01:26:19,260 –&gt; 01:26:24,300<br>the primary. And then the primary goes off and does its thing, primary, you may respond with a message.</p>
+<p>834<br>01:26:24,860 –&gt; 01:26:29,020<br>And so the, if the primary response with the message, the output, you know, of that message,</p>
+<p>835<br>01:26:29,020 –&gt; 01:26:35,980<br>is stopped or held, on hold, into the backup, actually acknowledge the reception of this increment.</p>
+<p>836<br>01:26:39,739 –&gt; 01:26:43,739<br>We should ensure that if the backup has to take over, you know, whatever it will process,</p>
+<p>837<br>01:26:43,739 –&gt; 01:26:47,820<br>that increment first, and it also will be 11 before it responses sent.</p>
+<p>838<br>01:26:50,140 –&gt; 01:26:53,659<br>Okay. Okay. Thank you.</p>
+<p>839<br>01:26:53,659 –&gt; 01:26:55,659<br>You’re welcome.</p>
+<p>840<br>01:26:55,659 –&gt; 01:27:00,860<br>One thing I was kind of confused about is, is that goal of the system to,</p>
+<p>841<br>01:27:02,780 –&gt; 01:27:07,900<br>to help with like, blocking up an actual server, we’re like, because it’s not easy to handle the</p>
+<p>842<br>01:27:07,900 –&gt; 01:27:15,500<br>interrupts without a hypervisor, or is it actually to help distribute virtual missions themselves?</p>
+<p>843<br>01:27:16,300 –&gt; 01:27:21,420<br>It is purely to make an app, you have a business application that runs on this single machine,</p>
+<p>844<br>01:27:21,420 –&gt; 01:27:28,220<br>and you want to make it more fault tolerant. But this scheme does, it makes it fault-tolerant for</p>
+<p>845<br>01:27:28,220 –&gt; 01:27:34,859<br>you, transparently. You run the business applications and both machines on the FT hypervisor,</p>
+<p>846<br>01:27:34,859 –&gt; 01:27:39,020<br>and FT-havy-artisizer will ensure that, you know, basically these applications more or less,</p>
+<p>847<br>01:27:39,180 –&gt; 01:27:45,580<br>not literally running walkstep, but basically, you know, fault-tolerant really replicated.</p>
+<p>848<br>01:27:46,780 –&gt; 01:27:50,060<br>So using the VM itself was kind of the design decision?</p>
+<p>849<br>01:27:50,060 –&gt; 01:27:55,660<br>Yes. And that is a good design decision, because it allows you to do this sort of replication</p>
+<p>850<br>01:27:55,660 –&gt; 01:27:59,500<br>at a transparent level. Okay. Thanks so much. You’re welcome.</p>
+<p>851<br>01:28:02,620 –&gt; 01:28:07,100<br>Yeah, there’s a question in the chat about the, the output rule is possible,</p>
+<p>852<br>01:28:07,100 –&gt; 01:28:11,740<br>that the client sees the same response twice. And the answer is yes. It’s absolutely possible</p>
+<p>853<br>01:28:11,740 –&gt; 01:28:16,700<br>that the client will see you get the response twice. And basically, what they argue,</p>
+<p>854<br>01:28:17,500 –&gt; 01:28:22,539<br>that’s okay, because in sort of the fault-tolerant model of the network, it is always or</p>
+<p>855<br>01:28:22,539 –&gt; 01:28:28,460<br>shunned the network and actually duplicate messages anyway. And so protocols like TCP are totally</p>
+<p>856<br>01:28:28,460 –&gt; 01:28:36,060<br>designed to deal with duplicate messages. So yes, it’s okay because of TCP, or whatever,</p>
+<p>857<br>01:28:37,740 –&gt; 01:28:41,260<br>replication duplication scheme, the application uses for the client uses.</p>
+<p>858<br>01:28:43,260 –&gt; 01:28:49,500<br>I was curious about Kat’s question, which is, if the primary, like, sort of like goes down for a few</p>
+<p>859<br>01:28:49,500 –&gt; 01:28:59,660<br>minutes, backup goes live, then sets up, it’s a, it’s a tone backup, you know, switches the bit back</p>
+<p>860<br>01:28:59,659 –&gt; 01:29:08,539<br>to like, to zero. And then suddenly, somehow, the first primary goes back, like goes back</p>
+<p>861<br>01:29:08,539 –&gt; 01:29:11,340<br>to the work. Oh yeah, it’s something that has to be decays. The first primary is definitely</p>
+<p>862<br>01:29:11,340 –&gt; 01:29:19,019<br>terminated, cleaned up, cleaned up, and gone. Mm-hmm. Nice. Yep. Thanks.</p>
+<p>863<br>01:29:21,659 –&gt; 01:29:26,059<br>I was going to ask, I think something similar, maybe two questions, but like, will you</p>
+<p>864<br>01:29:26,060 –&gt; 01:29:32,300<br>I really just store more things besides like arbitrations, flag and the server, and</p>
+<p>865<br>01:29:33,260 –&gt; 01:29:40,539<br>decide to flag an arbitration server, if you have like multiple, like, backups.</p>
+<p>866<br>01:29:41,500 –&gt; 01:29:46,460<br>Oh yeah, like, this is the scheme tailored to one backup, not more than one backup. So if you</p>
+<p>867<br>01:29:46,460 –&gt; 01:29:52,539<br>had more backups, you know, the other issues that we need to resolve. And in fact, we’ll come</p>
+<p>868<br>01:29:52,539 –&gt; 01:29:56,699<br>back to this on Tuesday, you know, with more sophisticated protocols that, you know, handle those</p>
+<p>869<br>01:29:56,699 –&gt; 01:30:06,140<br>cases much cleaner. Okay. Very, very close. I have one question about the performance.</p>
+<p>870<br>01:30:06,699 –&gt; 01:30:14,300<br>Yeah. Um, so can you go back to that table? Yeah, so my question is, is it the delay only be</p>
+<p>871<br>01:30:14,300 –&gt; 01:30:19,659<br>viewed on the first packet? Like, after the first packet, it will just flow through the channel,</p>
+<p>872<br>01:30:19,659 –&gt; 01:30:26,220<br>and there is no extra delay on the link. So the bandwidth should be roughly the same, but no,</p>
+<p>873<br>01:30:26,939 –&gt; 01:30:31,260<br>I guess for every packet received, correct? By the primary, you know, that packet has to be forward</p>
+<p>874<br>01:30:31,260 –&gt; 01:30:35,420<br>to the backup. Mm-hmm. Yeah. And for every response, you know, the backup will have to wait.</p>
+<p>875<br>01:30:35,420 –&gt; 01:30:39,739<br>Over the primary has to wait until the output rule is satisfied, and then it can send the response.</p>
+<p>876<br>01:30:42,220 –&gt; 01:30:49,019<br>So there is some like processing on the backups backup server too, before getting back to the</p>
+<p>877<br>01:30:49,020 –&gt; 01:30:52,460<br>primary. Yeah. So again, they talk a little bit about that, correct? Like, if the particular processing</p>
+<p>878<br>01:30:52,460 –&gt; 01:30:57,660<br>that needs to be done is actually acknowledging the, uh, reception of the packet on the logging channel.</p>
+<p>879<br>01:30:58,300 –&gt; 01:31:03,820<br>And they talk a little bit about like how to reduce the delay to make sure that that, uh, sort of,</p>
+<p>880<br>01:31:03,820 –&gt; 01:31:10,940<br>the announcement is very quick. I see, I see. Okay. Thank you. You’re welcome. I have a question</p>
+<p>881<br>01:31:10,940 –&gt; 01:31:17,340<br>about the, uh, the logging channel. So they, they mentioned that they use UDP, um, and I assume that’s</p>
+<p>882<br>01:31:17,340 –&gt; 01:31:23,659<br>mostly for performance. But then, so basically if a single failure happens, the primary,</p>
+<p>883<br>01:31:24,220 –&gt; 01:31:29,980<br>like if a single packet is unacknowledged, then it assumes that the backup failed without any,</p>
+<p>884<br>01:31:29,980 –&gt; 01:31:35,100<br>like, retransmission. No, no, no, no. Uh, because of, there’s a time rate interrupt,</p>
+<p>885<br>01:31:36,300 –&gt; 01:31:41,900<br>and the time rate interrupt goes up like every 10 milliseconds or something. Uh, there’s always</p>
+<p>886<br>01:31:41,899 –&gt; 01:31:46,699<br>sort of multiple, you know, one packet to send. If that packet doesn’t get, uh, uh, there’s no hard</p>
+<p>887<br>01:31:46,699 –&gt; 01:31:52,299<br>beat coming back, then it will do a couple of these time interrupts before it gives up. Okay.</p>
+<p>888<br>01:31:52,299 –&gt; 01:31:58,539<br>And the, the, the hard beats are they’re saving from the primary or it was like sort of implied.</p>
+<p>889<br>01:31:58,539 –&gt; 01:32:01,899<br>It was like from somewhere else in the system. Well, they sort of come from the time,</p>
+<p>890<br>01:32:01,899 –&gt; 01:32:06,619<br>or the hard beats, uh, basically have an indirect side effect, uh, because every 10 milliseconds,</p>
+<p>891<br>01:32:06,619 –&gt; 01:32:09,659<br>you’re going to send an interrupt message to the over-logging channel anyway.</p>
+<p>892<br>01:32:12,379 –&gt; 01:32:13,739<br>I see. Okay.</p>
+<p>893<br>01:32:15,979 –&gt; 01:32:17,979<br>All right. Thank you. Thank you. Welcome.</p>
+<p>894<br>01:32:21,659 –&gt; 01:32:26,779<br>Actually, I wanted to follow up on that. I think it said that it’s going to wait a couple</p>
+<p>895<br>01:32:26,779 –&gt; 01:32:31,979<br>a few seconds to, yeah, yeah, it will wait a while. You know, what they do, a couple hard beats</p>
+<p>896<br>01:32:31,979 –&gt; 01:32:35,339<br>and wait a while, and if there really none of them go through, then it will stop.</p>
+<p>897<br>01:32:36,619 –&gt; 01:32:40,460<br>Okay. And is there, is a few seconds that’s, that’s a lot, right?</p>
+<p>898<br>01:32:41,100 –&gt; 01:32:44,380<br>Yeah, I don’t remember exactly all the numbers. So you could be right in a few seconds.</p>
+<p>899<br>01:32:44,380 –&gt; 01:32:49,579<br>I would imagine it’s a little bit shorter, but maybe it’s not clear. I think is that like something</p>
+<p>900<br>01:32:49,579 –&gt; 01:32:55,579<br>in the order of a few seconds, but is it bad? That was for the cloning.</p>
+<p>901<br>01:32:56,779 –&gt; 01:32:59,500<br>But, you know, I can remiss remember, right?</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6824 P4Lecture4Primary BackupReplication</div>
+      <div>http://example.com/2025/10/25/MIT6824 P4Lecture4Primary-BackupReplication/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P7Lecture7-FaultTolerance-Raft2/" title="MIT6824 P7Lecture7 FaultTolerance Raft2">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6824 P7Lecture7 FaultTolerance Raft2</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P6Lecture6-Lab1QA/" title="MIT6824 P6Lecture6 Lab1QA">
+                        <span class="hidden-mobile">MIT6824 P6Lecture6 Lab1QA</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

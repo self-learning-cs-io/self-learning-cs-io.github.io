@@ -1,0 +1,1768 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,000So the topic for today is raft replication photo of a protocol. 200:00:09,000 –&gt; 00:00:11,000We’ll discuss in quite a bit of detail. 300:00:11,000 –&gt; 00:00:14,000">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824 P5Lecture5FaultToleranceRaft1">
+<meta property="og:url" content="http://example.com/2025/10/25/MIT6824%20P5Lecture5FaultToleranceRaft1/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,000So the topic for today is raft replication photo of a protocol. 200:00:09,000 –&gt; 00:00:11,000We’ll discuss in quite a bit of detail. 300:00:11,000 –&gt; 00:00:14,000">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.807Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.807Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>MIT6824 P5Lecture5FaultToleranceRaft1 - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6824 P5Lecture5FaultToleranceRaft1"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          11k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          93 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MIT6824 P5Lecture5FaultToleranceRaft1</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,000<br>So the topic for today is raft replication photo of a protocol.</p>
+<p>2<br>00:00:09,000 –&gt; 00:00:11,000<br>We’ll discuss in quite a bit of detail.</p>
+<p>3<br>00:00:11,000 –&gt; 00:00:14,000<br>In fact, we’re going to spend multiple lectures on it.</p>
+<p>4<br>00:00:14,000 –&gt; 00:00:19,000<br>And one because it’s sort of one of the core elements of examples of</p>
+<p>5<br>00:00:19,000 –&gt; 00:00:23,000<br>a distributed replication protocol.</p>
+<p>6<br>00:00:23,000 –&gt; 00:00:28,000<br>So today, I’ve been emotionally focusing on, you know,</p>
+<p>7<br>00:00:28,000 –&gt; 00:00:33,000<br>the material that is necessary for labs to A and to B.</p>
+<p>8<br>00:00:33,000 –&gt; 00:00:37,000<br>So the election of the leader as well as pushing the logs around.</p>
+<p>9<br>00:00:37,000 –&gt; 00:00:43,000<br>And then next week.</p>
+<p>10<br>00:00:43,000 –&gt; 00:00:48,000<br>We’re focusing more on to C and to D mainly the snapshots.</p>
+<p>11<br>00:00:48,000 –&gt; 00:00:52,000<br>And the walk compaction and gives us opportunity to do this kind of</p>
+<p>12<br>00:00:52,000 –&gt; 00:00:53,000<br>other aspect of raft.</p>
+<p>13<br>00:00:53,000 –&gt; 00:00:58,000<br>In fact, we’ll talk about wrap one more time in the week after.</p>
+<p>14<br>00:00:58,000 –&gt; 00:01:03,000<br>We’ll have a few in a lecture.</p>
+<p>15<br>00:01:03,000 –&gt; 00:01:06,000<br>On, you know, to A and to B and so on.</p>
+<p>16<br>00:01:06,000 –&gt; 00:01:10,000<br>Talk about the actual solutions to the labs to A and to B.</p>
+<p>17<br>00:01:10,000 –&gt; 00:01:13,000<br>Okay, that’s the point.</p>
+<p>18<br>00:01:13,000 –&gt; 00:01:19,000<br>And so I’m going to just dive in with the starting point for today.</p>
+<p>19<br>00:01:19,000 –&gt; 00:01:28,000<br>The place probably to start is to observe that in some of the previous case studies of replicated systems,</p>
+<p>20<br>00:01:28,000 –&gt; 00:01:32,000<br>we’ve seen this sort of a pattern.</p>
+<p>21<br>00:01:32,000 –&gt; 00:01:36,000<br>You look at GFS, and that produce.</p>
+<p>22<br>00:01:36,000 –&gt; 00:01:41,000<br>From FMFT, they all have a single point of failure.</p>
+<p>23<br>00:01:41,000 –&gt; 00:01:48,000<br>So even though they’re replicated systems and they do replication for fall tolerance.</p>
+<p>24<br>00:01:48,000 –&gt; 00:01:52,000<br>All of them actually have a single point of failure.</p>
+<p>25<br>00:01:52,000 –&gt; 00:01:59,000<br>In the case of the core in the producer versus the coordinator.</p>
+<p>26<br>00:01:59,000 –&gt; 00:02:03,000<br>In the case of GFS, you know, the master.</p>
+<p>27<br>00:02:03,000 –&gt; 00:02:06,000<br>The heads out the leases, for example.</p>
+<p>28<br>00:02:06,000 –&gt; 00:02:09,000<br>And in the.</p>
+<p>29<br>00:02:09,000 –&gt; 00:02:17,000<br>PMFT case is the store server or really the test and set server.</p>
+<p>30<br>00:02:17,000 –&gt; 00:02:37,000<br>The reason, you know, why as we discussed in the previous lecture, the reasons that actually there are, you know, single machines instead of replicated machines is to avoid, you know, displayed brain syndrome.</p>
+<p>31<br>00:02:37,000 –&gt; 00:02:46,000<br>And you know, for many systems, you know, one way in the sort of a bummer, right, we’re building a high performing, you know, we’re building false their fault tolerance systems.</p>
+<p>32<br>00:02:46,000 –&gt; 00:02:55,000<br>And on all these designs, actually, we do actually still have sort of a single point of failure, even though we’re replication is used for many other aspects of these system designs.</p>
+<p>33<br>00:02:55,000 –&gt; 00:03:00,000<br>And for many of the systems that we talk so far about, you know, this.</p>
+<p>34<br>00:03:00,000 –&gt; 00:03:06,000<br>To avoid this is playing to the syndrome and actually introduce a single point of failure or maintain a single point of failure.</p>
+<p>35<br>00:03:06,000 –&gt; 00:03:12,000<br>There’s a perfectly acceptable in many cases, because in many of these cases, like if the.</p>
+<p>36<br>00:03:12,000 –&gt; 00:03:17,000<br>The store server or you know, the master goes down, you know, hopefully.</p>
+<p>37<br>00:03:17,000 –&gt; 00:03:23,000<br>It will, it’s only single machines or the chance of going down the smaller than any out of the chalk servers.</p>
+<p>38<br>00:03:23,000 –&gt; 00:03:33,000<br>And you know, probably there’s somebody ready to be beat up, you know, in the case that the master goes down comes back up and can really make sure there’s only one master online.</p>
+<p>39<br>00:03:33,000 –&gt; 00:03:36,000<br>So, you know, many, many circumstances is perfectly fine.</p>
+<p>40<br>00:03:36,000 –&gt; 00:03:39,000<br>You know, we’ll leave maybe to a very short downtime.</p>
+<p>41<br>00:03:39,000 –&gt; 00:03:47,000<br>But you know, some systems can it’s really nice. It wouldn’t really nice is actually if this we didn’t even have to have to single points of failure.</p>
+<p>42<br>00:03:47,000 –&gt; 00:03:52,000<br>So we could reduce downtime even further and.</p>
+<p>43<br>00:03:52,000 –&gt; 00:03:55,000<br>And and and and and and create uptown.</p>
+<p>44<br>00:03:55,000 –&gt; 00:04:00,000<br>And so, and that’s really where you know the protocols of the style of protocols that raft.</p>
+<p>45<br>00:04:00,000 –&gt; 00:04:03,000<br>You know, fits into coming to play.</p>
+<p>46<br>00:04:03,000 –&gt; 00:04:16,000<br>But just before in diving into or talking about sort of the key ideas in the protocol, let’s remind ourselves why you know this sort of single point of failure leads or why actually replicating.</p>
+<p>47<br>00:04:16,000 –&gt; 00:04:24,000<br>The sort of crucial single point of failure is like a test and set server can lead you know to this split brain problem.</p>
+<p>48<br>00:04:24,000 –&gt; 00:04:34,000<br>And so you might think you know why why just replicate you know the single point of failure to so let’s try to do that and then we’ll quickly see what the problem is.</p>
+<p>49<br>00:04:34,000 –&gt; 00:04:44,000<br>So let’s replicate the test and set server.</p>
+<p>50<br>00:04:44,000 –&gt; 00:04:50,000<br>And so.</p>
+<p>51<br>00:04:50,000 –&gt; 00:04:59,000<br>So let’s do this simple, you know, there’s a straightforward case, you know, we’ll just have one replicated one test and set server as one.</p>
+<p>52<br>00:04:59,000 –&gt; 00:05:04,000<br>And here we have s2 is the other replicated test set server.</p>
+<p>53<br>00:05:04,000 –&gt; 00:05:07,000<br>And just remind correct the like test and set.</p>
+<p>54<br>00:05:07,000 –&gt; 00:05:13,000<br>And it takes an argument new in the return to your value.</p>
+<p>55<br>00:05:13,000 –&gt; 00:05:25,000<br>And the goal is that if two clients at the same time call test and set, you know, one wins, you know, gets a visually falls back as the old value and the other one will lose because it will get true back as the.</p>
+<p>56<br>00:05:25,000 –&gt; 00:05:26,000<br>The old value.</p>
+<p>57<br>00:05:26,000 –&gt; 00:05:36,000<br>So let’s just see how this might work. Play out so we have a client with calls, just and set and you know communicates with the first server.</p>
+<p>58<br>00:05:36,000 –&gt; 00:05:39,000<br>What’s the second server.</p>
+<p>59<br>00:05:39,000 –&gt; 00:05:48,000<br>And we don’t really know actually doesn’t get a response for the second server.</p>
+<p>60<br>00:05:48,000 –&gt; 00:05:57,000<br>And so there’s sort of two cases now, right? We’re going to why if s2 doesn’t respond, you know, there’s two possible reasons why that could be the case.</p>
+<p>61<br>00:05:57,000 –&gt; 00:06:06,000<br>So one case could be s2 didn’t respond because s2 failed.</p>
+<p>62<br>00:06:06,000 –&gt; 00:06:14,000<br>And in some case, and that’s not really what we’d like to be doing is that at that point, basically, c1 just declare victory.</p>
+<p>63<br>00:06:14,000 –&gt; 00:06:23,000<br>You know, since you know, nobody else can actually see or deserve, you know, the value as to, you know, what should be done because you proceed.</p>
+<p>64<br>00:06:23,000 –&gt; 00:06:26,000<br>But the problem is that there’s the second case.</p>
+<p>65<br>00:06:26,000 –&gt; 00:06:32,000<br>And the second case is that there’s a network petition.</p>
+<p>66<br>00:06:32,000 –&gt; 00:06:38,000<br>No, to a network petition between c1 and see an s2.</p>
+<p>67<br>00:06:38,000 –&gt; 00:06:49,000<br>So in that case, really, c1 cannot proceed because there could be another client, you know, c2 and actually communicating with s2.</p>
+<p>68<br>00:06:49,000 –&gt; 00:07:00,000<br>And it would be terrible correct if c1 proceeds in this case, because it might then update s1, get them basically the false value, think it succeeds.</p>
+<p>69<br>00:07:00,000 –&gt; 00:07:05,000<br>But at the same time, s2 communicates with s2 and also succeeds doing the test and set.</p>
+<p>70<br>00:07:05,000 –&gt; 00:07:09,000<br>And so now we’re violating the contract of the test and set.</p>
+<p>71<br>00:07:09,000 –&gt; 00:07:17,000<br>And so this is this issue of this split ring, like one, there’s a network petition. We can end up in a situation where.</p>
+<p>72<br>00:07:17,000 –&gt; 00:07:25,000<br>Both serves an upper running and serve a different subset of the clients and thereby violating the contract with the specification of the system that we’re building.</p>
+<p>73<br>00:07:25,000 –&gt; 00:07:32,000<br>And the real challenging part here is that c1 just cannot tell the difference between these two situations.</p>
+<p>74<br>00:07:32,000 –&gt; 00:07:38,000<br>It doesn’t know where it actually is.</p>
+<p>75<br>00:07:38,000 –&gt; 00:07:43,000<br>You know, s3 is not reachable because it failed or because of the network petition.</p>
+<p>76<br>00:07:43,000 –&gt; 00:07:50,000<br>And so that’s sort of the conundrum that that, you know, that’s behind all this.</p>
+<p>77<br>00:07:50,000 –&gt; 00:07:54,000<br>The previous systems and why they sort of use this single.</p>
+<p>78<br>00:07:54,000 –&gt; 00:08:00,000<br>Why they don’t replicate, you know, these crucial services that need to be up to avoid.</p>
+<p>79<br>00:08:00,000 –&gt; 00:08:05,000<br>To avoid the split frames in your.</p>
+<p>80<br>00:08:05,000 –&gt; 00:08:07,000<br>So.</p>
+<p>81<br>00:08:07,000 –&gt; 00:08:13,000<br>What can be done about this and really the key problem here is what can do, what can we do about network petitions?</p>
+<p>82<br>00:08:13,000 –&gt; 00:08:25,000<br>How could we handle them? And so there’s a key idea that sits in raft and in many other protocols that underwise.</p>
+<p>83<br>00:08:25,000 –&gt; 00:08:30,000<br>Basically, the solution or why those protocols actually might succeed.</p>
+<p>84<br>00:08:30,000 –&gt; 00:08:38,000<br>And really what it is, you know, in sort of the nutshell, it is this majority rule.</p>
+<p>85<br>00:08:38,000 –&gt; 00:08:42,000<br>And just to give the example in the context of the test and sets in your server.</p>
+<p>86<br>00:08:42,000 –&gt; 00:08:47,000<br>Instead of actually running the server with two replicas, which I conveniently did.</p>
+<p>87<br>00:08:47,000 –&gt; 00:08:50,000<br>I’m going to run it with free.</p>
+<p>88<br>00:08:50,000 –&gt; 00:08:55,000<br>So, as a one S two and S three.</p>
+<p>89<br>00:08:55,000 –&gt; 00:09:01,000<br>And the rule that was going to be the like, a server, a client can consider an operation succeeded.</p>
+<p>90<br>00:09:01,000 –&gt; 00:09:04,000<br>If it at least cannot be the majority of the service.</p>
+<p>91<br>00:09:04,000 –&gt; 00:09:09,000<br>So in this case, you know, we can send, you know, messages as long for the doing test and set.</p>
+<p>92<br>00:09:09,000 –&gt; 00:09:11,000<br>We said the message to S two for doing the test and set.</p>
+<p>93<br>00:09:11,000 –&gt; 00:09:15,000<br>Then we get back positive responses, you know, from both of them.</p>
+<p>94<br>00:09:15,000 –&gt; 00:09:18,000<br>And then we also have a file in both of the case.</p>
+<p>95<br>00:09:18,000 –&gt; 00:09:23,000<br>Then we’ll return a false to actually application and application considered the test and set succeeded.</p>
+<p>96<br>00:09:23,000 –&gt; 00:09:29,000<br>And of course, we do it also to defer it one, but the third one made actually, you know, the message actually might not arrive or the server might be down.</p>
+<p>97<br>00:09:29,000 –&gt; 00:09:33,000<br>We don’t really know, but actually we don’t really care.</p>
+<p>98<br>00:09:33,000 –&gt; 00:09:41,000<br>Because consider the following situation scenario where we have the second client also trying to do a test and set.</p>
+<p>99<br>00:09:41,000 –&gt; 00:09:46,000<br>And it’s going to succeed. It has to talk to the majority of the servers.</p>
+<p>100<br>00:09:46,000 –&gt; 00:09:52,000<br>So whatever majority is going to talk to it is going to include either S one or S two.</p>
+<p>101<br>00:09:52,000 –&gt; 00:09:57,000<br>And for S one and a two, both of these operations actually have succeeded by S C one.</p>
+<p>102<br>00:09:57,000 –&gt; 00:10:07,000<br>So S two of C two, well, all the way to observe the result of C once operation because there’s sort of an overlap.</p>
+<p>103<br>00:10:07,000 –&gt; 00:10:27,000<br>And we’ll see basically in raft. This is exactly the same things are just roughly what’s going on.</p>
+<p>104<br>00:10:27,000 –&gt; 00:10:37,000<br>We’re like one of leader accepts or enter the operation in the in a log of the majority of the followers.</p>
+<p>105<br>00:10:37,000 –&gt; 00:10:40,000<br>Then it means that the subsequent leader that’s going to come on the next term.</p>
+<p>106<br>00:10:40,000 –&gt; 00:10:45,000<br>You know, we’ll also try to acquire a majority to get the voted as the leader.</p>
+<p>107<br>00:10:45,000 –&gt; 00:10:55,000<br>And as part of the voting, you know, there’s going to be one server or one follower that actually has seen the last operation performed by the last leader.</p>
+<p>108<br>00:10:55,000 –&gt; 00:11:13,000<br>And so that is going to basically be able to build a building stone on on which we can build these fault tolerance services that can handle network petitions in a failure or servers, well still achieving strong consistency.</p>
+<p>109<br>00:11:14,000 –&gt; 00:11:21,000<br>Another way to think about this majority business is that if the network petitions.</p>
+<p>110<br>00:11:21,000 –&gt; 00:11:25,000<br>There can be only one partition that has a majority.</p>
+<p>111<br>00:11:25,000 –&gt; 00:11:28,000<br>There can be no other partition that has a minority.</p>
+<p>112<br>00:11:28,000 –&gt; 00:11:35,000<br>And so only the partition that actually has the majority can actually proceed.</p>
+<p>113<br>00:11:35,000 –&gt; 00:11:45,000<br>Another way of saying that name another implication of that is it could also be the case that there is a there are multiple petitions and there’s no majority anywhere.</p>
+<p>114<br>00:11:45,000 –&gt; 00:12:04,000<br>And in that particular case, you know, the system can just not proceed and and clients talking to it basically have to wait until you know the network is healed enough that at least there’s one that there’s going to be at least one partition with a majority of servers.</p>
+<p>115<br>00:12:04,000 –&gt; 00:12:18,000<br>The another sort of quick observation here is that of course you may want to get this particular scheme that I just described that preserves only tolerates one server going down correct two servers going down nobody can actually obtain a majority.</p>
+<p>116<br>00:12:18,000 –&gt; 00:12:30,000<br>And so therefore nobody can actually no client can actually get the operation through clearly it’s easy to extend this idea by what’s difficult is called like doing two two F plus one replication.</p>
+<p>117<br>00:12:30,000 –&gt; 00:12:41,000<br>So if you want to tolerate F faults instead of one you need two plus F one for the server server so that at least you have always a minority majority of F fails.</p>
+<p>118<br>00:12:41,000 –&gt; 00:12:51,000<br>And so in the case of you know here at F is one is a we’re running the free service you want F to be two you have five servers etc etc you want F to be free you have seven servers.</p>
+<p>119<br>00:12:52,000 –&gt; 00:13:09,000<br>Okay one other thing that’s maybe important to point out and I came up a lot in the questions you know what is actually the majority and the majority is the majority of all the servers that are there you know both up ones in the downloads.</p>
+<p>120<br>00:13:09,000 –&gt; 00:13:18,000<br>And so when you take a majority you don’t take the majority of the two with their only two alive you take a majority of all the servers in the system.</p>
+<p>121<br>00:13:19,000 –&gt; 00:13:30,000<br>Any questions about this sort of key idea of and there be an even number of servers like if you have four servers with the majority then be 30.</p>
+<p>122<br>00:13:30,000 –&gt; 00:13:45,000<br>Yeah and we’ll see that in a couple cases correct in the graph that you know if you know the number servers is reduced from seven to six and one is down and you still want to proceed you need a majority which you still need in a four server to actually proceed.</p>
+<p>123<br>00:13:45,000 –&gt; 00:13:55,000<br>But if you can get the four servers then you can keep it going.</p>
+<p>124<br>00:13:55,000 –&gt; 00:13:58,000<br>Okay any other questions.</p>
+<p>125<br>00:13:58,000 –&gt; 00:14:08,000<br>So I also have a question about the majority so does the majority consider the server itself so suppose you’re wrapped this like the server itself consider in this.</p>
+<p>126<br>00:14:08,000 –&gt; 00:14:29,000<br>Yeah yeah it’s part of it so like you know often when we see in a rafkreg the leader voted me for the self or the candidate vote for itself and in the leader when it depends you know to its own log it counts that as one so it’s part of it.</p>
+<p>127<br>00:14:29,000 –&gt; 00:14:47,000<br>Okay so there’s quite a number of protocols using this idea and sometimes this ideas refer to as corans or quorum protocols.</p>
+<p>128<br>00:14:47,000 –&gt; 00:15:06,000<br>Yeah for you know these reason and there were sort of two you know the state of the art for a long time until like the early 90s or late 80s was there’s basically there’s no protocol so basically we’re always in the situation of like this single point of failure.</p>
+<p>129<br>00:15:06,000 –&gt; 00:15:24,000<br>And then in early 90s there were two protocols that came we’re in vending roughly at the same time when it’s called paxis which is mentioned in the paper quite a bit and the other one is called view stamp replication.</p>
+<p>130<br>00:15:24,000 –&gt; 00:15:31,000<br>Sometimes called VR and these were these were invented around 1990.</p>
+<p>131<br>00:15:31,000 –&gt; 00:15:42,000<br>So you get much attention at that point in time because people that I’m really have pressing need to be able to sort of completely automatic and a fault all of systems.</p>
+<p>132<br>00:15:42,000 –&gt; 00:15:58,000<br>But I changed in the last 15 years or in the last 15 years was much use of these protocols.</p>
+<p>133<br>00:15:58,000 –&gt; 00:16:06,000<br>In fact, you know sort of interesting to correct that is in the last 15 years.</p>
+<p>134<br>00:16:06,000 –&gt; 00:16:10,000<br>And as basically there were sort of 15 years after these protocols were invented.</p>
+<p>135<br>00:16:10,000 –&gt; 00:16:18,000<br>So basically they set on the table or set on the shelf for 15 years until people actually had a real use case for that.</p>
+<p>136<br>00:16:18,000 –&gt; 00:16:31,000<br>The protocol that we’re going to be mostly we’re going to be implementing in the lab and we’re going to discuss in the lecture and then which the topic of the paper is you know false in this you know lineage of protocol and this gold raft.</p>
+<p>137<br>00:16:31,000 –&gt; 00:16:38,000<br>And it was I think there was came about or was written up in 2013 14 the papers from 2014.</p>
+<p>138<br>00:16:38,000 –&gt; 00:16:48,000<br>And this is one of the more complete descriptions you know touches on a lot of different aspects if you’re going to be able to complete replicate the state machine and explain those clearly.</p>
+<p>139<br>00:16:48,000 –&gt; 00:16:56,000<br>That’s one of a reason why we’re using it for the labs and you know for this particular election.</p>
+<p>140<br>00:16:56,000 –&gt; 00:17:04,000<br>Any any questions about sort of the sort of the history here around protocols.</p>
+<p>141<br>00:17:04,000 –&gt; 00:17:25,000<br>So let me first sort of talk a little bit about how you one would use raft to build the replicate the state machine.</p>
+<p>142<br>00:17:25,000 –&gt; 00:17:40,000<br>And so the basic way you would use raft and what you do this in lab three.</p>
+<p>143<br>00:17:40,000 –&gt; 00:17:44,000<br>Let’s say you have a server.</p>
+<p>144<br>00:17:44,000 –&gt; 00:17:47,000<br>And the raft is basically nothing else in a library.</p>
+<p>145<br>00:17:47,000 –&gt; 00:17:56,000<br>And so in our setting that’s going to be go package and you know you can write a replicate the state machine by basically importing that package.</p>
+<p>146<br>00:17:56,000 –&gt; 00:18:03,000<br>So here’s we got you know you know raft at the bottom.</p>
+<p>147<br>00:18:03,000 –&gt; 00:18:08,000<br>And you know you build a server you know using raft.</p>
+<p>148<br>00:18:08,000 –&gt; 00:18:15,000<br>And so for example in lab three we’re going to build a key value server using raft.</p>
+<p>149<br>00:18:15,000 –&gt; 00:18:24,000<br>And clients talk to the key value servers.</p>
+<p>150<br>00:18:24,000 –&gt; 00:18:30,000<br>And you know submit put and get operations.</p>
+<p>151<br>00:18:30,000 –&gt; 00:18:34,000<br>The key value servers when it receives you know one of these put and get operations.</p>
+<p>152<br>00:18:34,000 –&gt; 00:18:37,000<br>It basically hands it off to raft.</p>
+<p>153<br>00:18:37,000 –&gt; 00:18:44,000<br>And so it basically puts it to the raft and actually sticks it in a one will I will see you know much more detail.</p>
+<p>154<br>00:18:44,000 –&gt; 00:18:46,000<br>Put it in the log.</p>
+<p>155<br>00:18:46,000 –&gt; 00:18:49,000<br>Actually, probably slightly differently.</p>
+<p>156<br>00:18:49,000 –&gt; 00:18:55,000<br>So it depends it to their log.</p>
+<p>157<br>00:18:55,000 –&gt; 00:19:03,000<br>And then the raft internally is going to talk to other servers to basically replicate that law.</p>
+<p>158<br>00:19:03,000 –&gt; 00:19:06,000<br>And so here are some other servers.</p>
+<p>159<br>00:19:06,000 –&gt; 00:19:11,000<br>They’re basically structured exactly the same way you know they have a raft library component.</p>
+<p>160<br>00:19:11,000 –&gt; 00:19:13,000<br>And the key value server.</p>
+<p>161<br>00:19:13,000 –&gt; 00:19:17,000<br>Like in many other replicate state machines that we’ve seen.</p>
+<p>162<br>00:19:17,000 –&gt; 00:19:19,000<br>Identical.</p>
+<p>163<br>00:19:19,000 –&gt; 00:19:21,000<br>And keep value servers.</p>
+<p>164<br>00:19:21,000 –&gt; 00:19:25,000<br>And we’re going to play the same game as I know the other previous replicate state machines we’re seeing.</p>
+<p>165<br>00:19:25,000 –&gt; 00:19:30,000<br>We’re basically feeding operations to the key value servers in the same order.</p>
+<p>166<br>00:19:30,000 –&gt; 00:19:32,000<br>Everywhere.</p>
+<p>167<br>00:19:32,000 –&gt; 00:19:37,000<br>And as a result, the key replica has all applied operations in the exact same order.</p>
+<p>168<br>00:19:37,000 –&gt; 00:19:41,000<br>You know we should say the same key value stores being built.</p>
+<p>169<br>00:19:41,000 –&gt; 00:19:45,000<br>Right. So we have a key value store here, whatever key 20.</p>
+<p>170<br>00:19:45,000 –&gt; 00:19:47,000<br>Now some value.</p>
+<p>171<br>00:19:47,000 –&gt; 00:19:49,000<br>We’re applying the updates to this kind of table.</p>
+<p>172<br>00:19:49,000 –&gt; 00:19:51,000<br>Exactly in the same order and all the replicas.</p>
+<p>173<br>00:19:51,000 –&gt; 00:19:53,000<br>You know things should be should be good.</p>
+<p>174<br>00:19:53,000 –&gt; 00:19:56,000<br>We’re going to have an identical replicas.</p>
+<p>175<br>00:19:56,000 –&gt; 00:20:00,000<br>So the way you know raft is structured is that one of the replicas is the leader.</p>
+<p>176<br>00:20:00,000 –&gt; 00:20:03,000<br>So let me in this for convenience.</p>
+<p>177<br>00:20:03,000 –&gt; 00:20:05,000<br>You know that’s going to be the first one on the site.</p>
+<p>178<br>00:20:05,000 –&gt; 00:20:08,000<br>And then just actually declines the talk to the leader.</p>
+<p>179<br>00:20:08,000 –&gt; 00:20:11,000<br>And then.</p>
+<p>180<br>00:20:11,000 –&gt; 00:20:13,000<br>What happens next is that the.</p>
+<p>181<br>00:20:13,000 –&gt; 00:20:19,000<br>So the client talks to one of the leader that lead the KV server for KV server.</p>
+<p>182<br>00:20:19,000 –&gt; 00:20:24,000<br>At pens log entry to the raft log of the leader.</p>
+<p>183<br>00:20:24,000 –&gt; 00:20:30,000<br>And then you know basically communicates you know with the other raft light reach.</p>
+<p>184<br>00:20:30,000 –&gt; 00:20:36,000<br>And then there’s raft lighters to exactly the same thing basically they repent you know the operation you know to the log.</p>
+<p>185<br>00:20:36,000 –&gt; 00:20:40,000<br>To their logs.</p>
+<p>186<br>00:20:40,000 –&gt; 00:20:46,000<br>And send the response back you know to the leader.</p>
+<p>187<br>00:20:46,000 –&gt; 00:20:56,000<br>And you know of course you know all this status torque you know the log and some other status store down this so that you know any one of them fails.</p>
+<p>188<br>00:20:56,000 –&gt; 00:21:03,000<br>They at least have the last part of their log you know still available and can build from there.</p>
+<p>189<br>00:21:03,000 –&gt; 00:21:12,000<br>So once you know basically and we’ll talk a little bit more in detail but once the entry or log entry is replicated on you know free servers.</p>
+<p>190<br>00:21:12,000 –&gt; 00:21:18,000<br>Then they can actually be delivered in order you know to the key value server.</p>
+<p>191<br>00:21:18,000 –&gt; 00:21:27,000<br>So the every committed operation and every log has an index or ever offer up as net an index zero actually one to three for whatever in order.</p>
+<p>192<br>00:21:27,000 –&gt; 00:21:30,000<br>And they’re going to be delivered in order to the key value server.</p>
+<p>193<br>00:21:30,000 –&gt; 00:21:40,000<br>So once an operation committed it’s going to be delivered to the key value server key value server performs the operation maybe updates the key value table.</p>
+<p>194<br>00:21:40,000 –&gt; 00:21:45,000<br>And then since actually the leader alone since response back to the client.</p>
+<p>195<br>00:21:45,000 –&gt; 00:21:56,000<br>So that’s sort of roughly the sequence of events that happens so clients and request to the leader leader in search game raft raft you know chitchat with the other servers.</p>
+<p>196<br>00:21:56,000 –&gt; 00:22:00,000<br>Once you know it’s replicated in an enough machines.</p>
+<p>197<br>00:22:00,000 –&gt; 00:22:10,000<br>Then you know the is considered to be committed and we’ll talk a little bit more precisely what committed means and then committed operation is delivered to the key value server.</p>
+<p>198<br>00:22:10,000 –&gt; 00:22:17,000<br>And then they execute the operation and respond to the client leader response the client.</p>
+<p>199<br>00:22:17,000 –&gt; 00:22:24,000<br>So what happens on the failure.</p>
+<p>200<br>00:22:24,000 –&gt; 00:22:30,000<br>The new leaders elected.</p>
+<p>201<br>00:22:30,000 –&gt; 00:22:34,000<br>It will take over the role of your leader.</p>
+<p>202<br>00:22:34,000 –&gt; 00:22:39,000<br>And so for example like in this particular picture it might be the case that.</p>
+<p>203<br>00:22:39,000 –&gt; 00:22:42,000<br>You know this leader crashes.</p>
+<p>204<br>00:22:42,000 –&gt; 00:22:45,000<br>And you know this becomes the new leader in the next term.</p>
+<p>205<br>00:22:45,000 –&gt; 00:22:53,000<br>So we’ll see exactly what that means. And then the clients basically foil over you know they will see they don’t get a response so they will time out.</p>
+<p>206<br>00:22:53,000 –&gt; 00:22:59,000<br>And the failure over to the second leader the new leader and basically retry their operation.</p>
+<p>207<br>00:22:59,000 –&gt; 00:23:12,000<br>And so they insert you know that new leader will take their operation inserted back into raft you know the same things happens as before and maybe this time we get lucky and we actually get the operation without any failures.</p>
+<p>208<br>00:23:12,000 –&gt; 00:23:15,000<br>And if you think a little bit carefully about this that does mean that.</p>
+<p>209<br>00:23:15,000 –&gt; 00:23:23,000<br>A client operation might end up twice in the log right because it actually may be the case that the first time it succeeded but just didn’t get the response.</p>
+<p>210<br>00:23:23,000 –&gt; 00:23:35,000<br>So it doesn’t know that succeeded will retry you know this new leader will put the log group the new record the retried operation also in the log and it will pop out you know at some point in.</p>
+<p>211<br>00:23:35,000 –&gt; 00:23:45,000<br>And so it at the key key value service and actually be a duplicate and so as you will see later in the.</p>
+<p>212<br>00:23:45,000 –&gt; 00:24:01,000<br>Lottery actually turns out that the you know the lot you need to do duplication detect duplicates.</p>
+<p>213<br>00:24:01,000 –&gt; 00:24:19,000<br>But that’s mostly an issue for lottery is not going to be an main issue for now but it’s important to know that sort of this is the sort of general style in which you know you’re one would actually use raft to build a replicate state machine.</p>
+<p>214<br>00:24:19,000 –&gt; 00:24:25,000<br>Any questions about sort of the how to use raft for replicate state machines.</p>
+<p>215<br>00:24:25,000 –&gt; 00:24:35,000<br>Yeah, but it’s a difficult number of clients contacting the leader leader.</p>
+<p>216<br>00:24:35,000 –&gt; 00:24:40,000<br>Well, there could be many there’s no real limit on it.</p>
+<p>217<br>00:24:40,000 –&gt; 00:24:53,000<br>What you will see you know it could be the case that a single machine can’t I mean maybe that’s implicitly about the question is it could be the case that the single leader can just not tolerate the is not capable of handling not many clients.</p>
+<p>218<br>00:24:53,000 –&gt; 00:25:02,000<br>So what happens then is that basically the service gets charted you know you chart the key service in multiple raft groups.</p>
+<p>219<br>00:25:02,000 –&gt; 00:25:11,000<br>So example chart one would be one raft instance chart two we are after instance chart free we are after instance and the clients you know talk to the appropriate.</p>
+<p>220<br>00:25:11,000 –&gt; 00:25:23,000<br>Chart to be to reply the operations and in that way we can scale the server to many clients and the fact that is what lap four does.</p>
+<p>221<br>00:25:23,000 –&gt; 00:25:32,000<br>How does the client know how to communicate with the new leader after the old leader fails the client basically has a list of all the servers that are in the system.</p>
+<p>222<br>00:25:32,000 –&gt; 00:25:42,000<br>So in this case we’re running with free servers everybody agrees they’re only free servers in the world declines know about the free server and they try one randomly.</p>
+<p>223<br>00:25:42,000 –&gt; 00:25:51,000<br>And if that is not the client it will redirect if that’s not the leader it will redirect the client to the appropriate one to actually.</p>
+<p>224<br>00:25:51,000 –&gt; 00:25:54,000<br>Yeah, the answer is quite.</p>
+<p>225<br>00:25:54,000 –&gt; 00:26:01,000<br>Do we assume the servers are like in a geographically close look like close to each other or to maybe.</p>
+<p>226<br>00:26:01,000 –&gt; 00:26:23,000<br>In principle be far apart there’s no real restriction on that site the only issue of course is if the client if the service are fair spread around the world the delays to actually know get in lock record dependent you know we’ll take a little while so the delays will be long.</p>
+<p>227<br>00:26:23,000 –&gt; 00:26:28,000<br>What is the lock entry being executed in the KV storage.</p>
+<p>228<br>00:26:28,000 –&gt; 00:26:46,000<br>One once it’s committed by raft so once raft has decided that all the North replicas have received it and it’s now no way possible one has to back out of that operation then it’s handed to the key value server.</p>
+<p>229<br>00:26:46,000 –&gt; 00:26:55,000<br>The leader will first like execute this command and the leader will tell the followers that this command is committed and then the follow up.</p>
+<p>230<br>00:26:55,000 –&gt; 00:27:03,000<br>The leader knows as soon as the leader knows that the operations committed X and can hand it off to his T value server let me let’s talk about it right now.</p>
+<p>231<br>00:27:03,000 –&gt; 00:27:06,000<br>And although in more detail let’s me go.</p>
+<p>232<br>00:27:06,000 –&gt; 00:27:25,000<br>And a little bit more of an overview of the protocol so previous board was sort of an overview of how you use raft to build and replicate the state machine and let’s look at the raft itself a little bit more detail so we’re here some timelines we got a leader we got two followers.</p>
+<p>233<br>00:27:25,000 –&gt; 00:27:30,000<br>So we’re running the free decline to get a talk student leader.</p>
+<p>234<br>00:27:30,000 –&gt; 00:27:36,000<br>The leader has a log you know of all the.</p>
+<p>235<br>00:27:36,000 –&gt; 00:27:42,000<br>You know when it gets a new one you know pens it you know to the end of the log.</p>
+<p>236<br>00:27:42,000 –&gt; 00:27:48,000<br>Then it’s actually sends it you know sends the log entries to.</p>
+<p>237<br>00:27:48,000 –&gt; 00:27:56,000<br>New log entries you know to the followers.</p>
+<p>238<br>00:27:56,000 –&gt; 00:28:09,000<br>And let’s say you know that follower to here for one here for two follow one actually received this log entry everything is okay it’s a pen to the end of the log it sends you basically an act backs and yes you know I appended it.</p>
+<p>239<br>00:28:09,000 –&gt; 00:28:19,000<br>And at this point you know in the raft view of the world to servers actually have the log entry.</p>
+<p>240<br>00:28:19,000 –&gt; 00:28:24,000<br>And so raft actually the leader can actually commit the log entry.</p>
+<p>241<br>00:28:24,000 –&gt; 00:28:37,000<br>And so at this point you know the the leader can actually hand off that requested just in a receipt and can actually hand it off to the kv server.</p>
+<p>242<br>00:28:37,000 –&gt; 00:28:45,000<br>And the way actually the log dust is or just the lab infrastructure dust is that basically we have a channel a go channel.</p>
+<p>243<br>00:28:45,000 –&gt; 00:29:02,000<br>One single go channel we’re basically raft go routines and the route go routine that actually decide that a particular operation is committed and just sends that operation on the applied channel so that the key value service connects the applied.</p>
+<p>244<br>00:29:02,000 –&gt; 00:29:10,000<br>And so for later to notice at this point that the leader basically has committed the operation.</p>
+<p>245<br>00:29:10,000 –&gt; 00:29:22,000<br>And it’s perfectly safe for the leader to commit this operation because the majority of the servers actually the majority of the peers actually have received the operation correct so this even if there was a failure.</p>
+<p>246<br>00:29:22,000 –&gt; 00:29:34,000<br>And they elected new leader and that’s the case that that leader or one of the servers that is remaining actually has the last operation that was appended to the log by the previous leader.</p>
+<p>247<br>00:29:34,000 –&gt; 00:29:43,000<br>So everything is good of course the last guy you know the first follower will also at some point respond and you know said yes.</p>
+<p>248<br>00:29:43,000 –&gt; 00:29:57,000<br>At this point basically from the point of view of the leader the operations committed except the followers don’t really know it yet because the followers you know they only know that you know they got it and that the leader probably has it.</p>
+<p>249<br>00:29:57,000 –&gt; 00:30:08,000<br>But they you know they don’t really know and so what actually happens is that the subsequent operation you know when the another client request comes in the leader will append another log entry.</p>
+<p>250<br>00:30:08,000 –&gt; 00:30:29,000<br>And basically sends you know a new operation or a new append entry to the followers and that append entry does basically two things it provides the new log entry for the new operation but it also confirms that all the preceding operation order tells which operation actually have committed so far.</p>
+<p>251<br>00:30:29,000 –&gt; 00:30:50,000<br>So when everyone and have to receive you know this this operation this RPC they know that the operation has been committed by the leader and therefore at that point they can also deliver it to their key value instance and know that this operations committed.</p>
+<p>252<br>00:30:50,000 –&gt; 00:31:06,000<br>I had a question so so when the leader sends an operation over and a server replies does that mean that that means it’s in the log right.</p>
+<p>253<br>00:31:06,000 –&gt; 00:31:07,000<br>Yes.</p>
+<p>254<br>00:31:07,000 –&gt; 00:31:18,000<br>But what happens if you get a majority like you know a slight majority and then one of those logs like one of the service crash like our logs do logs have to be in storage like in this.</p>
+<p>255<br>00:31:18,000 –&gt; 00:31:37,000<br>Yep so that’s a very good question so the every change to the log you know the look at the raft paper in detail here some state is must be stable and the log is one of those pieces of information that must be stable as well as the term number and a bunch of other things.</p>
+<p>256<br>00:31:37,000 –&gt; 00:31:53,000<br>So if a server crashes no big no big deal really because you know the majority of the service does have that entry on their disk and when they come back up they’ll find it.</p>
+<p>257<br>00:31:53,000 –&gt; 00:32:03,000<br>I have a question yeah so what happens if for example a follower one replies with yes and leader commits.</p>
+<p>258<br>00:32:03,000 –&gt; 00:32:16,000<br>Just before it sends the next command to the remaining followers to also commit it crashes now the remaining followers don’t know that they need to commit because the leader has crashed.</p>
+<p>259<br>00:32:16,000 –&gt; 00:32:34,000<br>So what are these cause problems there will commit it right because one follower will have it in his log and as we’ll see in the leader election rules it will become the leader and and it will propagate that append entry you know to the other servers and then they will apply to.</p>
+<p>260<br>00:32:34,000 –&gt; 00:32:37,000<br>Okay I see okay thanks.</p>
+<p>261<br>00:32:37,000 –&gt; 00:32:44,000<br>Okay so that brings me maybe this is a good you know sort of segue to the next topic like why watch and.</p>
+<p>262<br>00:32:44,000 –&gt; 00:33:02,000<br>Last few questions all about that yeah I actually as a follow up to the last question so the server crashing like after it has like consensus crashing right like right before committing it could delay committing.</p>
+<p>263<br>00:33:02,000 –&gt; 00:33:12,000<br>What do you mean what do you mean with committing so so like after it has consensus on a change right that after it has a majority yeah.</p>
+<p>264<br>00:33:12,000 –&gt; 00:33:30,000<br>It can like the paper said you saw it you essentially tell all their ones like all the servers you tell them okay this is ready for or sorry it’s committed it’s ready for like execution right into the state mission yeah.</p>
+<p>265<br>00:33:30,000 –&gt; 00:33:59,000<br>So if it crashes before it tells all the servers on its ready for execution it could delay execution right into delay execution well okay so first of all if the leader fails at that point nothing happens correct like at least the clients can’t you know proceed move any other more operations and so basically the if you want to wait to think about it at that point sort of wrap reconfigures itself and like the new leader and that’s going to be you know f1 or f2 you know one of the two is going to be the new leader and the other one is going to be the follower.</p>
+<p>266<br>00:33:59,000 –&gt; 00:34:15,000<br>Right and one of the two actually has received you know the append entry that the leader might already have committed in fact it’s KV might already have executed no problem correct because one of them has it not one will become the leader as we’ll see later with the leader election rules.</p>
+<p>267<br>00:34:15,000 –&gt; 00:34:27,000<br>And then one will you know submitted to its KV server and will replicate it you know to the other follower and then it will apply to its KV server so in the end we all will apply all the operations in the same order.</p>
+<p>268<br>00:34:27,000 –&gt; 00:34:34,000<br>I agree like eventually it’ll happen but it could be delayed right yeah could be delayed absolutely.</p>
+<p>269<br>00:34:34,000 –&gt; 00:34:57,000<br>The new leader says a complete log to all the followers it will you stay it will the way it works is actually it will try to send the end of his log if one of the followers doesn’t recognize the end of the log and go back off and you know send more and more you know earlier entries we’ll talk about it later but.</p>
+<p>270<br>00:34:57,000 –&gt; 00:35:07,000<br>But in the end it could be the case that the leader will replay it’s complete log to one of the followers if one of the followers has missed all the log entries.</p>
+<p>271<br>00:35:07,000 –&gt; 00:35:10,000<br>I got to get me back to walks.</p>
+<p>272<br>00:35:10,000 –&gt; 00:35:26,000<br>So one reason you might wonder why you have logs and all is because like the KV server has a database to you know as a table with all its information and so why do we need actually you know sort of this information twice once in the logs and once in the.</p>
+<p>273<br>00:35:26,000 –&gt; 00:35:38,000<br>KV table and so the couple reasons for that one you know a couple that already came up in the questions basically one for returns mission.</p>
+<p>274<br>00:35:44,000 –&gt; 00:35:55,000<br>So when the leader you know sends one of these appendentries you know to one of the followers that message might get lost and so the leader must be able to return it so you need to keep a record of all the log entries.</p>
+<p>275<br>00:35:55,000 –&gt; 00:36:01,000<br>The log entries that are sort of in flight.</p>
+<p>276<br>00:36:01,000 –&gt; 00:36:06,000<br>Second reason probably the primary reason first is like we need order.</p>
+<p>277<br>00:36:06,000 –&gt; 00:36:19,000<br>Every append operation or every command must be delivered in the same order at the same and hold the replicas and the log is very convenient way for us to actually maintain that order.</p>
+<p>278<br>00:36:19,000 –&gt; 00:36:25,000<br>So the second reason return transmission the third reason is we need a persistence.</p>
+<p>279<br>00:36:25,000 –&gt; 00:36:29,000<br>You know one of the followers might crash.</p>
+<p>280<br>00:36:29,000 –&gt; 00:36:43,000<br>We’re actually all of them might crash and then they come up again and we still need to be in a position that we can basically retransmit log entries to bring everybody up to date and so the log must also be persistent.</p>
+<p>281<br>00:36:43,000 –&gt; 00:36:52,000<br>So finally we need sort of space for tentative operations or tentatively committed or tentative commands.</p>
+<p>282<br>00:36:52,000 –&gt; 00:37:00,000<br>So as we noted earlier that came up in there’s an earlier questions when the leader sends an operation to a follower.</p>
+<p>283<br>00:37:00,000 –&gt; 00:37:08,000<br>The following action doesn’t really know at that point where that operation will be committed so just more stick around for a little while until it actually learns that operation is committed.</p>
+<p>284<br>00:37:08,000 –&gt; 00:37:14,000<br>So there’s a lot of space for these tentative operations and the log is a convenient place to actually do that.</p>
+<p>285<br>00:37:14,000 –&gt; 00:37:22,000<br>In the end you know what will happen correct is that the logs are identical.</p>
+<p>286<br>00:37:22,000 –&gt; 00:37:29,000<br>On all search.</p>
+<p>287<br>00:37:29,000 –&gt; 00:37:39,000<br>You know there may be out of sync during periods of time you know one might have more entries than other logs but like every sort of keep running the system and then stop the clients.</p>
+<p>288<br>00:37:39,000 –&gt; 00:37:57,000<br>Then at some point in time all the log will be completely identical and that means that basically those since they’re all have the same order all the operations all the operation will be fed to the client of the KV servers in the same order and the KV server will end up in the same state.</p>
+<p>289<br>00:37:57,000 –&gt; 00:38:03,000<br>Okay.</p>
+<p>290<br>00:38:03,000 –&gt; 00:38:17,000<br>Okay let me talk a little bit about an individual log entry.</p>
+<p>291<br>00:38:17,000 –&gt; 00:38:27,000<br>So we are going to draw many pictures like this where there’s a bunch of log entries starting zero want to.</p>
+<p>292<br>00:38:27,000 –&gt; 00:38:33,000<br>And if we look inside of one of these log entries there’s going to be commands.</p>
+<p>293<br>00:38:33,000 –&gt; 00:38:42,000<br>We’re mostly going to sort of ignore it we’re not really thinking about much about it at all and that’s the thing that actually being delivered to the application so that’s for example the put in order to get operation.</p>
+<p>294<br>00:38:42,000 –&gt; 00:38:50,000<br>So we’re going to do a few more experiments and then in the second thing that’s in there is a term.</p>
+<p>295<br>00:38:50,000 –&gt; 00:38:56,000<br>And this is basically the leaders term.</p>
+<p>296<br>00:38:56,000 –&gt; 00:39:02,000<br>So the term in which this particular command actually was a pendant to the log.</p>
+<p>297<br>00:39:02,000 –&gt; 00:39:10,000<br>So what I think about this is that basically the term identifies uniquely deleted that appended the operation to the log.</p>
+<p>298<br>00:39:10,000 –&gt; 00:39:14,000<br>During every term there’s only one single leader.</p>
+<p>299<br>00:39:14,000 –&gt; 00:39:27,000<br>And so the term ID you basically implicitly signals and what who the leader was actually appended to the to that walk that walk entry.</p>
+<p>300<br>00:39:27,000 –&gt; 00:39:33,000<br>The number that goes along here so if this is n or maybe like when you use I here.</p>
+<p>301<br>00:39:33,000 –&gt; 00:39:39,000<br>You know that’s the log index.</p>
+<p>302<br>00:39:39,000 –&gt; 00:39:48,000<br>So the combination of the log index was a term number basically uniquely identifies the content of that particular entry there could be no.</p>
+<p>303<br>00:39:48,000 –&gt; 00:39:53,000<br>So the two log entries that have the same index the same term and have different commands.</p>
+<p>304<br>00:39:53,000 –&gt; 00:40:05,000<br>Because only a single leader you know could have been in charge in that particular term and that leader you know commits a pants operations.</p>
+<p>305<br>00:40:05,000 –&gt; 00:40:10,000<br>We’ll commit a log and just be overwritten yet they might get overwritten we’ll talk about it later.</p>
+<p>306<br>00:40:10,000 –&gt; 00:40:14,000<br>But that’s certainly possible.</p>
+<p>307<br>00:40:14,000 –&gt; 00:40:26,000<br>So you know if we look at this picture sort of there’s two things that in this part of the like as an answer to this question that there are two things that need to happen we need to like leaders.</p>
+<p>308<br>00:40:26,000 –&gt; 00:40:29,000<br>For a particular term.</p>
+<p>309<br>00:40:29,000 –&gt; 00:40:34,000<br>And we need to actually ensure that the.</p>
+<p>310<br>00:40:34,000 –&gt; 00:40:39,000<br>If your logs become identical.</p>
+<p>311<br>00:40:39,000 –&gt; 00:40:45,000<br>We have a leader and we have leader changes.</p>
+<p>312<br>00:40:45,000 –&gt; 00:40:48,000<br>And so we’re going to talk about both of these topics.</p>
+<p>313<br>00:40:48,000 –&gt; 00:40:57,000<br>And we’re going to start with leader election and then talk about making a launch identical little bit later.</p>
+<p>314<br>00:40:57,000 –&gt; 00:41:03,000<br>Okay election.</p>
+<p>315<br>00:41:03,000 –&gt; 00:41:06,000<br>And elections really do topic of the last two eight.</p>
+<p>316<br>00:41:06,000 –&gt; 00:41:18,000<br>And you know the stories are some ways can straightforward you know we have you know say here we are assistant the three entries we have a leader in term 10.</p>
+<p>317<br>00:41:18,000 –&gt; 00:41:22,000<br>We have a following term 10 so which are stable situation.</p>
+<p>318<br>00:41:22,000 –&gt; 00:41:24,000<br>Another following term 10.</p>
+<p>319<br>00:41:24,000 –&gt; 00:41:32,000<br>And let’s say the leader crashes or it gets petitions you know from networks so you know can talk anymore.</p>
+<p>320<br>00:41:32,000 –&gt; 00:41:37,000<br>And what happened is that the follows will start an election.</p>
+<p>321<br>00:41:37,000 –&gt; 00:41:48,000<br>And the reason they start an election is because they’re missing hard beats from the leader.</p>
+<p>322<br>00:41:48,000 –&gt; 00:41:58,000<br>And the job of the leader is to periodically in sort of fix dinner fall sent a pen entry to the followers.</p>
+<p>323<br>00:41:58,000 –&gt; 00:42:03,000<br>Normally you know that might be happened because you know a lot of clients are active.</p>
+<p>324<br>00:42:03,000 –&gt; 00:42:06,000<br>And so the followers continuously get a pen entries.</p>
+<p>325<br>00:42:06,000 –&gt; 00:42:11,000<br>But if the leader doesn’t receive any commands from the.</p>
+<p>326<br>00:42:11,000 –&gt; 00:42:21,000<br>And then it actually supposed to send in a heartbeat periodically telling the basically to inform the followers that actually you’re still the leader.</p>
+<p>327<br>00:42:21,000 –&gt; 00:42:28,000<br>And the heartbeat basically takes the form of a normal a pen entry except no new log entries.</p>
+<p>328<br>00:42:28,000 –&gt; 00:42:35,000<br>And so the leader just tells it leader to styles and art be to like you know my log is you know this long.</p>
+<p>329<br>00:42:35,000 –&gt; 00:42:42,000<br>This is my last entry and you know those match and then everything is good.</p>
+<p>330<br>00:42:42,000 –&gt; 00:42:49,000<br>So if the leader fails then after a couple of hard beats and we’ll talk a little bit more in detail about this.</p>
+<p>331<br>00:42:49,000 –&gt; 00:42:53,000<br>There will be an election timeout.</p>
+<p>332<br>00:42:53,000 –&gt; 00:42:58,000<br>So the followers have a timer running.</p>
+<p>333<br>00:42:58,000 –&gt; 00:43:02,000<br>They reset the timer every time they get a heartbeat or an a pen entry.</p>
+<p>334<br>00:43:02,000 –&gt; 00:43:11,000<br>But if they don’t receive any hard beats or a pen entries, then at some point of time after this election timeout the timer goes off.</p>
+<p>335<br>00:43:11,000 –&gt; 00:43:14,000<br>And at that point a follower starts an election.</p>
+<p>336<br>00:43:14,000 –&gt; 00:43:22,000<br>And just as let’s assume that the first follower reaches that point first and what it will do it will send it will increase its term number.</p>
+<p>337<br>00:43:22,000 –&gt; 00:43:25,000<br>So remember to 11.</p>
+<p>338<br>00:43:25,000 –&gt; 00:43:33,000<br>It will you know talk to itself you will and be part of the and will vote for itself.</p>
+<p>339<br>00:43:33,000 –&gt; 00:43:40,000<br>And then you know the contact you know the other follower will also try to contact the leader of the leader.</p>
+<p>340<br>00:43:40,000 –&gt; 00:43:45,000<br>Let’s say the leader down to the leader does a response with the second follower does respond.</p>
+<p>341<br>00:43:45,000 –&gt; 00:43:49,000<br>And so that point that gets two votes you know one from itself and one from the follower.</p>
+<p>342<br>00:43:49,000 –&gt; 00:43:56,000<br>And at that point actually it becomes the new leader it becomes the leader for term 11.</p>
+<p>343<br>00:43:56,000 –&gt; 00:44:04,000<br>And then it you know start to again basic clients fall over to that leader and you know the things you just proceed as before.</p>
+<p>344<br>00:44:04,000 –&gt; 00:44:06,000<br>Okay.</p>
+<p>345<br>00:44:06,000 –&gt; 00:44:13,000<br>Now maybe it’s slightly there’s a couple problems and you might worry about but one of them that could be the following situation we.</p>
+<p>346<br>00:44:13,000 –&gt; 00:44:19,000<br>It turns out it was a network petition between leader 10 where the leader for term 10 and the followers for term 10.</p>
+<p>347<br>00:44:19,000 –&gt; 00:44:23,000<br>And so at some point that network you know partition heals.</p>
+<p>348<br>00:44:23,000 –&gt; 00:44:31,000<br>And so maybe you’re applying the request you know coming in still to the leader for leader for term 10.</p>
+<p>349<br>00:44:31,000 –&gt; 00:44:42,000<br>And now of course now it looks like whoops we might have actually two leaders and we’re back into this split syndrome problem that turns out not to be the case.</p>
+<p>350<br>00:44:42,000 –&gt; 00:44:50,000<br>Because one of the leader tries to actually send a pen entries through the followers to followers that are now.</p>
+<p>351<br>00:44:50,000 –&gt; 00:44:59,000<br>In term 11 they will just reject you know those a pen entries and they will tell the old leader that you know too bad you know.</p>
+<p>352<br>00:44:59,000 –&gt; 00:45:07,000<br>He’s not the leader anymore in fact they’ll send a message back you know saying no I cannot do the append.</p>
+<p>353<br>00:45:07,000 –&gt; 00:45:12,000<br>And here is my current term number 11.</p>
+<p>354<br>00:45:12,000 –&gt; 00:45:21,000<br>The leader receives that sees that the term 11 is bigger than this term number 10 and basically steps down as leader and becomes a follow up.</p>
+<p>355<br>00:45:21,000 –&gt; 00:45:28,000<br>And they kick up another election or you know to basically become part of the term that has all free of them.</p>
+<p>356<br>00:45:28,000 –&gt; 00:45:36,000<br>But basically and there’s no chance of a split brain problem because you just can’t actually get any operation food.</p>
+<p>357<br>00:45:36,000 –&gt; 00:45:43,000<br>But no split brain.</p>
+<p>358<br>00:45:43,000 –&gt; 00:45:52,000<br>And reason that we avoid the split brain is because of this major do rule as well as these term numbers.</p>
+<p>359<br>00:45:52,000 –&gt; 00:46:02,000<br>Okay that’s of course not the only problem that we might have another challenge is.</p>
+<p>360<br>00:46:02,000 –&gt; 00:46:09,000<br>So you might end up with split vote.</p>
+<p>361<br>00:46:09,000 –&gt; 00:46:17,000<br>So like a particular picture we had a leader maybe he was leader in 10 is petitioned up the network.</p>
+<p>362<br>00:46:17,000 –&gt; 00:46:23,000<br>Here are two followers in 10.</p>
+<p>363<br>00:46:23,000 –&gt; 00:46:30,000<br>And we’re not careful you know maybe they will actually start you know elections very close to each other.</p>
+<p>364<br>00:46:30,000 –&gt; 00:46:34,000<br>So you know f 10 you know votes for itself.</p>
+<p>365<br>00:46:34,000 –&gt; 00:46:42,000<br>The first leader followed for itself the second leader of the second follower of votes for itself then you know they sent you know.</p>
+<p>366<br>00:46:42,000 –&gt; 00:46:51,000<br>Voting requests you know each other and the rule is that you know you can vote one vote.</p>
+<p>367<br>00:46:51,000 –&gt; 00:46:56,000<br>And you can vote for term.</p>
+<p>368<br>00:46:56,000 –&gt; 00:47:01,000<br>So when you know the first follower is voted for itself can it has voted for itself.</p>
+<p>369<br>00:47:01,000 –&gt; 00:47:08,000<br>And so when it receives the second vote request actually cannot vote for that vote request because already voted for itself.</p>
+<p>370<br>00:47:08,000 –&gt; 00:47:14,000<br>And so at this point we’re going to have split vote like this guy is going to have one vote and this guy is going to have one vote.</p>
+<p>371<br>00:47:14,000 –&gt; 00:47:19,000<br>So at some point again you know later there will be a timeout.</p>
+<p>372<br>00:47:19,000 –&gt; 00:47:22,000<br>And then this process starts again.</p>
+<p>373<br>00:47:22,000 –&gt; 00:47:34,000<br>And of course you know I’ve divided that process you know this is election 11 election 11 or 12 and it will go to the election number 12 and you know try to try to do is again.</p>
+<p>374<br>00:47:34,000 –&gt; 00:47:36,000<br>Now you know careful correct.</p>
+<p>375<br>00:47:36,000 –&gt; 00:47:41,000<br>And so you know if you think it is happened over over and over and over and listen.</p>
+<p>376<br>00:47:41,000 –&gt; 00:47:50,000<br>You know basically every time you know the two followers roughly at the same time start his election then you know we’re not going to make for progress.</p>
+<p>377<br>00:47:50,000 –&gt; 00:48:09,000<br>So the election time hours are randomized.</p>
+<p>378<br>00:48:09,000 –&gt; 00:48:24,000<br>And so when the followers you know set their election timer in the paper or they talk about it like picking a value between 150 milliseconds and 300 milliseconds.</p>
+<p>379<br>00:48:24,000 –&gt; 00:48:35,000<br>And random number in that interval and every time you know these followers and basically reset their election timeout they pick a new number random number in that interval.</p>
+<p>380<br>00:48:35,000 –&gt; 00:48:39,000<br>And then that timer then goes off they run the election.</p>
+<p>381<br>00:48:39,000 –&gt; 00:48:53,000<br>And if basically you know the you know these intervals wide enough that it’s unlikely that like the first person or the first follower that actually gets the first follower who’s election time runs out.</p>
+<p>382<br>00:48:53,000 –&gt; 00:49:05,000<br>You know the intervals wide enough that you know there’s a good chance that an actual succeed completing a complete election before the second time where it goes off before another follower.</p>
+<p>383<br>00:49:05,000 –&gt; 00:49:08,000<br>And so this avoids you know this sort of endless play vote.</p>
+<p>384<br>00:49:08,000 –&gt; 00:49:20,000<br>Now we might get unlucky and we get maybe one or two split votes but like over time you know there has to be the case that we in the end will succeed.</p>
+<p>385<br>00:49:20,000 –&gt; 00:49:34,000<br>There are a couple sort of and this is important maybe for the lab too. There’s sort of a couple of pressures on these election timeouts.</p>
+<p>386<br>00:49:34,000 –&gt; 00:49:49,000<br>You don’t want to pick an election timeout that is too short right because if it’s too short for then we’ll short it in a heartbeat and you know you might lose one message and immediately you start running an election.</p>
+<p>387<br>00:49:49,000 –&gt; 00:50:03,000<br>And nothing that happens that is going to you know we’ll elect a new leader you will go through a new term and all the kind of stuff but the basically you know during this election this system is actually not usable right the clients are actually blocked.</p>
+<p>388<br>00:50:03,000 –&gt; 00:50:08,000<br>You don’t want to unnecessarily cause elections.</p>
+<p>389<br>00:50:08,000 –&gt; 00:50:22,000<br>And so one of your things you want to do is you’re basically probably spit and take a value that’s at least bigger than a few time out than a few heartbeats.</p>
+<p>390<br>00:50:22,000 –&gt; 00:50:43,000<br>We’re maybe in a data center and I will take a few milliseconds to sort of do an RPC and we may want to wait at least you know so maybe free for RPC around good time so that we get a chance to retry an RPC without actually having the election time or go off and so we can cover from what temporary network.</p>
+<p>391<br>00:50:44,000 –&gt; 00:50:49,000<br>Then you know we want to presumably add you know some random value to that.</p>
+<p>392<br>00:50:50,000 –&gt; 00:51:05,000<br>Renvalued to avoid you know the split votes and so one hand you know we want to make the random values big as possible right because we make it big then very little chance that actually we run into a split vote problem.</p>
+<p>393<br>00:51:06,000 –&gt; 00:51:18,000<br>But the other hand if we do that then there’s a chance that you know the system may be down for a longer period of time we might pick a big value for the election time out and that means you know downtime from the point of view of the clients.</p>
+<p>394<br>00:51:19,000 –&gt; 00:51:22,000<br>So we want to keep this you know short enough.</p>
+<p>395<br>00:51:27,000 –&gt; 00:51:28,000<br>The downtime is short.</p>
+<p>396<br>00:51:36,000 –&gt; 00:51:48,000<br>In the paper in the lens in the VALA section does quite a bit of work on the sort of validating in what are some reasonable values for their particular setting and then that’s how they got to 150 to 300 milliseconds in the lab we’re going to be a reasonable generous.</p>
+<p>397<br>00:51:49,000 –&gt; 00:51:53,000<br>You know basically if you sort of recover within a second you’re more or less going to be good.</p>
+<p>398<br>00:51:55,000 –&gt; 00:51:57,000<br>And with the referred for our test cases.</p>
+<p>399<br>00:51:58,000 –&gt; 00:52:07,000<br>Okay, I want to make one more point about the about the elections.</p>
+<p>400<br>00:52:09,000 –&gt; 00:52:21,000<br>So you know another scenario that is sort of important to consider is you know we have a follower we have a leader leader goes down so there was 10 this is 10 you follow 10.</p>
+<p>401<br>00:52:22,000 –&gt; 00:52:29,000<br>We already talked a little bit about it when let’s say this guy goes first it votes for itself.</p>
+<p>402<br>00:52:31,000 –&gt; 00:52:40,000<br>And you know we the protocol record you know unstable storage why who read voted for so the record you know records on the so this is follower one is follower two will record a voted for in term 11.</p>
+<p>403<br>00:52:40,000 –&gt; 00:52:42,000<br>You know for a follower one.</p>
+<p>404<br>00:52:43,000 –&gt; 00:52:46,000<br>Why is it recorded on stable storage.</p>
+<p>405<br>00:52:47,000 –&gt; 00:52:50,000<br>And why does you follow me to remember that.</p>
+<p>406<br>00:52:53,000 –&gt; 00:52:56,000<br>That is voted in term 11 for itself.</p>
+<p>407<br>00:52:58,000 –&gt; 00:53:01,000<br>And then we have a lot of questions about the question.</p>
+<p>408<br>00:53:02,000 –&gt; 00:53:04,000<br>So that’s the answer.</p>
+<p>409<br>00:53:07,000 –&gt; 00:53:10,000<br>That is voted in term 11 for itself.</p>
+<p>410<br>00:53:16,000 –&gt; 00:53:20,000<br>This way doesn’t vote twice if it fails.</p>
+<p>411<br>00:53:21,000 –&gt; 00:53:24,000<br>Yeah, it might crash right here.</p>
+<p>412<br>00:53:25,000 –&gt; 00:53:27,000<br>And come back up.</p>
+<p>413<br>00:53:27,000 –&gt; 00:53:32,000<br>You know it might have been a member that it and somebody might have let’s say it was a person there’s a third one guy in here.</p>
+<p>414<br>00:53:33,000 –&gt; 00:53:35,000<br>You know follower whatever free.</p>
+<p>415<br>00:53:36,000 –&gt; 00:53:38,000<br>And it already voted for follower three.</p>
+<p>416<br>00:53:39,000 –&gt; 00:53:41,000<br>Then it can actually not change in mind.</p>
+<p>417<br>00:53:43,000 –&gt; 00:53:53,000<br>And so because in the end we at the end of the term we need to have you have to be in a position that per term is only one leader and never never two.</p>
+<p>418<br>00:53:53,000 –&gt; 00:53:59,000<br>And so we can ensure that you know every follower must remember for which candidate voted and never change its might.</p>
+<p>419<br>00:54:08,000 –&gt; 00:54:15,000<br>Okay, I guess there’s a whole discussion in chat about the timeout numbers and in relation to the lab.</p>
+<p>420<br>00:54:15,000 –&gt; 00:54:20,000<br>So people can look there confused about this otherwise.</p>
+<p>421<br>00:54:21,000 –&gt; 00:54:26,000<br>We can talk about election a little bit more because this is about the last thing I want to say about elections.</p>
+<p>422<br>00:54:28,000 –&gt; 00:54:30,000<br>Any questions about the elections.</p>
+<p>423<br>00:54:31,000 –&gt; 00:54:43,000<br>I have a bit more general question. So in like the figure two of the lab that says that for each.</p>
+<p>424<br>00:54:44,000 –&gt; 00:54:48,000<br>Server your state storing like the current term and then who it voted for.</p>
+<p>425<br>00:54:49,000 –&gt; 00:54:56,000<br>But not the like current state of the server like if it’s candidate or follower for later.</p>
+<p>426<br>00:54:57,000 –&gt; 00:54:59,000<br>So I’m wondering how they like.</p>
+<p>427<br>00:55:00,000 –&gt; 00:55:03,000<br>Is that implied or is there another way to figure that out?</p>
+<p>428<br>00:55:04,000 –&gt; 00:55:08,000<br>I guess when you come back up you come back up as a follower.</p>
+<p>429<br>00:55:09,000 –&gt; 00:55:11,000<br>And you know you’re starting an election.</p>
+<p>430<br>00:55:13,000 –&gt; 00:55:17,000<br>And then that will end the end of the election. You know what you are.</p>
+<p>431<br>00:55:18,000 –&gt; 00:55:20,000<br>You’re a follower or a leader.</p>
+<p>432<br>00:55:20,000 –&gt; 00:55:23,000<br>I see. Okay. Thank you.</p>
+<p>433<br>00:55:23,000 –&gt; 00:55:25,000<br>That’s makes sense.</p>
+<p>434<br>00:55:26,000 –&gt; 00:55:29,000<br>One warning about figure two.</p>
+<p>435<br>00:55:29,000 –&gt; 00:55:33,000<br>Positive and then there’s maybe negative statement.</p>
+<p>436<br>00:55:34,000 –&gt; 00:55:38,000<br>Anywhere in the figure two when it says like you know you should do this.</p>
+<p>437<br>00:55:38,000 –&gt; 00:55:39,000<br>You should really do it.</p>
+<p>438<br>00:55:39,000 –&gt; 00:55:43,000<br>So you cannot admit any detail that actually is a figure two.</p>
+<p>439<br>00:55:43,000 –&gt; 00:55:46,000<br>If you do that then undoubtedly going to fail some of the test cases.</p>
+<p>440<br>00:55:46,000 –&gt; 00:55:49,000<br>Unfortunately, figure two is not complete.</p>
+<p>441<br>00:55:49,000 –&gt; 00:55:52,000<br>And so you still will have to do some thinking.</p>
+<p>442<br>00:55:52,000 –&gt; 00:55:57,000<br>So particularly like figure two doesn’t really say that much about like how the replies are handled.</p>
+<p>443<br>00:55:57,000 –&gt; 00:55:59,000<br>Of the road RPC and the app and the app receipt.</p>
+<p>444<br>00:55:59,000 –&gt; 00:56:04,000<br>And so you will have to do some thinking to fill in the missing details.</p>
+<p>445<br>00:56:04,000 –&gt; 00:56:05,000<br>And so.</p>
+<p>446<br>00:56:05,000 –&gt; 00:56:08,000<br>So there’s two points here like figure two.</p>
+<p>447<br>00:56:08,000 –&gt; 00:56:09,000<br>Anything that’s in there.</p>
+<p>448<br>00:56:09,000 –&gt; 00:56:10,000<br>You better deal with it.</p>
+<p>449<br>00:56:10,000 –&gt; 00:56:15,000<br>And we’re still might be things missing that you will have to resolve for you.</p>
+<p>450<br>00:56:15,000 –&gt; 00:56:18,000<br>So you’ll have to resolve for yourself.</p>
+<p>451<br>00:56:21,000 –&gt; 00:56:24,000<br>You’ll be looking at figure two a lot.</p>
+<p>452<br>00:56:24,000 –&gt; 00:56:32,000<br>So from the description of the election process, there seems to be like even for lab two,</p>
+<p>453<br>00:56:32,000 –&gt; 00:56:33,000<br>which deals only with election.</p>
+<p>454<br>00:56:33,000 –&gt; 00:56:37,000<br>There seems to be some state that we need to store on persistence.</p>
+<p>455<br>00:56:37,000 –&gt; 00:56:38,000<br>Yeah.</p>
+<p>456<br>00:56:38,000 –&gt; 00:56:41,000<br>For example, like who you voted for and the term number.</p>
+<p>457<br>00:56:41,000 –&gt; 00:56:42,000<br>Yeah.</p>
+<p>458<br>00:56:42,000 –&gt; 00:56:44,000<br>So when you look at the code of lab two,</p>
+<p>459<br>00:56:44,000 –&gt; 00:56:49,000<br>all of the code that has to do with saving the persistent state, it says above it lab two C.</p>
+<p>460<br>00:56:49,000 –&gt; 00:56:56,000<br>So is it that it’s not that crucial maybe to care about persistent storage or should we absolutely start.</p>
+<p>461<br>00:56:56,000 –&gt; 00:56:58,000<br>One thing persistence storage.</p>
+<p>462<br>00:56:58,000 –&gt; 00:57:03,000<br>Yeah, I think in the first couple of tests, we don’t actually crash machines.</p>
+<p>463<br>00:57:03,000 –&gt; 00:57:08,000<br>And so therefore to have it important and to see we’re definitely crashing machines.</p>
+<p>464<br>00:57:08,000 –&gt; 00:57:09,000<br>Okay.</p>
+<p>465<br>00:57:09,000 –&gt; 00:57:10,000<br>Awesome.</p>
+<p>466<br>00:57:10,000 –&gt; 00:57:11,000<br>Thank you.</p>
+<p>467<br>00:57:13,000 –&gt; 00:57:14,000<br>Okay.</p>
+<p>468<br>00:57:16,000 –&gt; 00:57:17,000<br>How are we doing?</p>
+<p>469<br>00:57:17,000 –&gt; 00:57:19,000<br>Everybody on board?</p>
+<p>470<br>00:57:25,000 –&gt; 00:57:26,000<br>Okay, here we go.</p>
+<p>471<br>00:57:26,000 –&gt; 00:57:27,000<br>Next step.</p>
+<p>472<br>00:57:27,000 –&gt; 00:57:29,000<br>Okay, so.</p>
+<p>473<br>00:57:29,000 –&gt; 00:57:34,000<br>One important thing to realize and you know, just came up early into questions and you know,</p>
+<p>474<br>00:57:34,000 –&gt; 00:57:38,000<br>when I hit that now, that topic hard is that logs made the verge, verge.</p>
+<p>475<br>00:57:38,000 –&gt; 00:57:50,000<br>And there can be quite dramatic, but just let’s do it.</p>
+<p>476<br>00:57:50,000 –&gt; 00:57:53,000<br>Get into it for just based understanding.</p>
+<p>477<br>00:57:53,000 –&gt; 00:57:55,000<br>And then.</p>
+<p>478<br>00:57:55,000 –&gt; 00:57:57,000<br>Discuss any more details.</p>
+<p>479<br>00:57:57,000 –&gt; 00:57:59,000<br>So let’s do a couple simple examples.</p>
+<p>480<br>00:57:59,000 –&gt; 00:58:02,000<br>So I’m going to write things and using the following rotation.</p>
+<p>481<br>00:58:02,000 –&gt; 00:58:04,000<br>We’re going to have free servers.</p>
+<p>482<br>00:58:04,000 –&gt; 00:58:16,000<br>That’s before, but I’m going to cut all the timeline business and just like draw the logs.</p>
+<p>483<br>00:58:16,000 –&gt; 00:58:19,000<br>And you know, we’re not.</p>
+<p>484<br>00:58:19,000 –&gt; 00:58:20,000<br>Indexes.</p>
+<p>485<br>00:58:20,000 –&gt; 00:58:22,000<br>So let’s say these are indexes.</p>
+<p>486<br>00:58:22,000 –&gt; 00:58:27,000<br>Now, there’s preceding part to when we’re talking about 10, 11, 12.</p>
+<p>487<br>00:58:27,000 –&gt; 00:58:32,000<br>And so, you know, where there’s an term entry in each one of them.</p>
+<p>488<br>00:58:32,000 –&gt; 00:58:42,000<br>Let’s say all free servers committed or a penitor operation in term free to index 10.</p>
+<p>489<br>00:58:42,000 –&gt; 00:58:49,000<br>And you know, it’s and same thing happened in.</p>
+<p>490<br>00:58:49,000 –&gt; 00:58:51,000<br>With index three 11.</p>
+<p>491<br>00:58:51,000 –&gt; 00:58:55,000<br>So one way to think one way you could get this correct is that server one would be the leader.</p>
+<p>492<br>00:58:55,000 –&gt; 00:59:00,000<br>So one of pencil to its own log, you know, then replicates it to s2 and s3.</p>
+<p>493<br>00:59:00,000 –&gt; 00:59:02,000<br>Same thing happens for index 11.</p>
+<p>494<br>00:59:02,000 –&gt; 00:59:09,000<br>Then index, you know, 12 maybe you know, they’re also successful and fence one operation in that index for its term.</p>
+<p>495<br>00:59:09,000 –&gt; 00:59:12,000<br>So that’s term free, but then a crash.</p>
+<p>496<br>00:59:12,000 –&gt; 00:59:22,000<br>Okay, so now we’re in the situation where one server has an extra log entry in its log and the other ones don’t.</p>
+<p>497<br>00:59:22,000 –&gt; 00:59:27,000<br>So one of them has a two, but they’re definitely not identical.</p>
+<p>498<br>00:59:27,000 –&gt; 00:59:31,000<br>That’s a simple case correct, nothing really particular, let’s take a look on.</p>
+<p>499<br>00:59:31,000 –&gt; 00:59:34,000<br>But there’s much more interesting cases, you know, going on.</p>
+<p>500<br>00:59:34,000 –&gt; 00:59:36,000<br>So another case could be.</p>
+<p>501<br>00:59:36,000 –&gt; 00:59:39,000<br>No, one server again, s1.</p>
+<p>502<br>00:59:39,000 –&gt; 00:59:40,000<br>There we go.</p>
+<p>503<br>00:59:40,000 –&gt; 00:59:43,000<br>Same scenarios s2 s3.</p>
+<p>504<br>00:59:43,000 –&gt; 00:59:50,000<br>And let’s say we have the following walks.</p>
+<p>505<br>00:59:52,000 –&gt; 01:00:00,000<br>So this is the situation we have in index 10.</p>
+<p>506<br>01:00:00,000 –&gt; 01:00:05,000<br>We have entries at all servers for term free in index 11.</p>
+<p>507<br>01:00:05,000 –&gt; 01:00:08,000<br>The first server has no entry.</p>
+<p>508<br>01:00:08,000 –&gt; 01:00:11,000<br>The other two have an entry for term free.</p>
+<p>509<br>01:00:11,000 –&gt; 01:00:21,000<br>And then last one, number 12, you know, we have entries in index four at servers two and three with thermometers four and five.</p>
+<p>510<br>01:00:21,000 –&gt; 01:00:26,000<br>So the first question that we need to ask ourselves is this possible.</p>
+<p>511<br>01:00:26,000 –&gt; 01:00:36,000<br>Can graph end up producing logs in this way, where they in the same log entry, we have two different term numbers.</p>
+<p>512<br>01:00:36,000 –&gt; 01:00:38,000<br>In same log index.</p>
+<p>513<br>01:00:38,000 –&gt; 01:00:41,000<br>Yeah, that’s possible.</p>
+<p>514<br>01:00:41,000 –&gt; 01:00:45,000<br>So basically, it looks like.</p>
+<p>515<br>01:00:45,000 –&gt; 01:00:48,000<br>So like what is the scenario that produced?</p>
+<p>516<br>01:00:48,000 –&gt; 01:00:53,000<br>Yeah, so it looks like server two or server three was.</p>
+<p>517<br>01:00:53,000 –&gt; 01:00:57,000<br>The leader for term three and then.</p>
+<p>518<br>01:00:57,000 –&gt; 01:01:03,000<br>Got some logs out to server one and then shared another log with.</p>
+<p>519<br>01:01:03,000 –&gt; 01:01:08,000<br>Only one of the two servers after which point it went down.</p>
+<p>520<br>01:01:08,000 –&gt; 01:01:19,000<br>And then s two got elected as leader for term two, which is still possible because it’s log is like up to date as as up to date is the others.</p>
+<p>521<br>01:01:19,000 –&gt; 01:01:21,000<br>And then again, just to make sure.</p>
+<p>522<br>01:01:21,000 –&gt; 01:01:24,000<br>So s two got elected for term four.</p>
+<p>523<br>01:01:24,000 –&gt; 01:01:25,000<br>Yes.</p>
+<p>524<br>01:01:25,000 –&gt; 01:01:27,000<br>Okay, again, not term two.</p>
+<p>525<br>01:01:27,000 –&gt; 01:01:30,000<br>Okay, so as to gets elected for term four.</p>
+<p>526<br>01:01:30,000 –&gt; 01:01:31,000<br>Yeah, yeah, yeah.</p>
+<p>527<br>01:01:31,000 –&gt; 01:01:33,000<br>And then using s one as a backup.</p>
+<p>528<br>01:01:33,000 –&gt; 01:01:36,000<br>Basically, yes, the follower.</p>
+<p>529<br>01:01:36,000 –&gt; 01:01:39,000<br>Yes, I think.</p>
+<p>530<br>01:01:39,000 –&gt; 01:01:45,000<br>And then s three gets elected for term five before s two can put anything in the logs.</p>
+<p>531<br>01:01:45,000 –&gt; 01:01:49,000<br>Yeah, another way to saying it like maybe s two tracks right away right after.</p>
+<p>532<br>01:01:49,000 –&gt; 01:01:51,000<br>Got elected to turn four.</p>
+<p>533<br>01:01:51,000 –&gt; 01:01:54,000<br>And so then there’s a time out.</p>
+<p>534<br>01:01:54,000 –&gt; 01:01:57,000<br>Then let’s say s three was petitioned, but now it’s back.</p>
+<p>535<br>01:01:57,000 –&gt; 01:02:01,000<br>And that will go into it will become it will.</p>
+<p>536<br>01:02:01,000 –&gt; 01:02:04,000<br>It can come into term five, correct?</p>
+<p>537<br>01:02:04,000 –&gt; 01:02:07,000<br>Yeah.</p>
+<p>538<br>01:02:07,000 –&gt; 01:02:09,000<br>Okay, good. So that’s possible.</p>
+<p>539<br>01:02:09,000 –&gt; 01:02:13,000<br>So turns out there are quite a bit of wild variations possible.</p>
+<p>540<br>01:02:13,000 –&gt; 01:02:22,000<br>So here’s the figure six figure seven, sorry, from the homework.</p>
+<p>541<br>01:02:22,000 –&gt; 01:02:28,000<br>And.</p>
+<p>542<br>01:02:28,000 –&gt; 01:02:33,000<br>And the homework asked basically questions about the form.</p>
+<p>543<br>01:02:33,000 –&gt; 01:02:34,000<br>Like, well, what happens?</p>
+<p>544<br>01:02:34,000 –&gt; 01:02:38,000<br>Like this guy in the figure six itself figure seven, whatever it is.</p>
+<p>545<br>01:02:38,000 –&gt; 01:02:41,000<br>I think it’s figure seven.</p>
+<p>546<br>01:02:41,000 –&gt; 01:02:46,000<br>The scenarios being discussed is like this guy becomes the top one becomes a new leader.</p>
+<p>547<br>01:02:46,000 –&gt; 01:02:52,000<br>And in the homework, we asked the question like what happens if this leader just goes away.</p>
+<p>548<br>01:02:52,000 –&gt; 01:02:55,000<br>And what are the possible outcomes?</p>
+<p>549<br>01:02:55,000 –&gt; 01:03:00,000<br>And the possible outcomes like are so for every log index.</p>
+<p>550<br>01:03:00,000 –&gt; 01:03:06,000<br>You know, the question is which one gets rejected?</p>
+<p>551<br>01:03:06,000 –&gt; 01:03:11,000<br>Which one will be accepted for sure?</p>
+<p>552<br>01:03:11,000 –&gt; 01:03:16,000<br>And which ones depends?</p>
+<p>553<br>01:03:16,000 –&gt; 01:03:22,000<br>And I think this is an important thing exercise to do because once we are so to understand what our log edge is,</p>
+<p>554<br>01:03:22,000 –&gt; 01:03:27,000<br>we’re going to have some other possible outcomes going to really firm up like understanding about how.</p>
+<p>555<br>01:03:27,000 –&gt; 01:03:30,000<br>Raffects we supposed to be operating.</p>
+<p>556<br>01:03:30,000 –&gt; 01:03:33,000<br>What I’d like to do is like do a quick breakout room.</p>
+<p>557<br>01:03:33,000 –&gt; 01:03:37,000<br>And I’d like you to identify.</p>
+<p>558<br>01:03:37,000 –&gt; 01:03:42,000<br>Two possible outcomes that not guaranteed.</p>
+<p>559<br>01:03:42,000 –&gt; 01:03:45,000<br>And in the corresponding scenario.</p>
+<p>560<br>01:03:45,000 –&gt; 01:03:51,000<br>So let’s take a quick breakout room here session here and like start to figure out the answer to the homework question.</p>
+<p>561<br>01:03:51,000 –&gt; 01:04:01,000<br>And in five minutes.</p>
+<p>562<br>01:04:01,000 –&gt; 01:04:04,000<br>Really, were you able to.</p>
+<p>563<br>01:04:04,000 –&gt; 01:04:07,000<br>Do you want me to do?</p>
+<p>564<br>01:04:07,000 –&gt; 01:04:13,000<br>Yeah, let me actually make you.</p>
+<p>565<br>01:04:13,000 –&gt; 01:04:19,000<br>Disappoints.</p>
+<p>566<br>01:04:19,000 –&gt; 01:04:20,000<br>In the coast.</p>
+<p>567<br>01:04:20,000 –&gt; 01:04:23,000<br>I got to move your host.</p>
+<p>568<br>01:05:13,000 –&gt; 01:05:16,000<br>You</p>
+<p>569<br>01:05:43,000 –&gt; 01:05:46,000<br>You</p>
+<p>570<br>01:06:13,000 –&gt; 01:06:16,000<br>You</p>
+<p>571<br>01:06:43,000 –&gt; 01:06:46,000<br>You</p>
+<p>572<br>01:07:13,000 –&gt; 01:07:15,000<br>You</p>
+<p>573<br>01:07:43,000 –&gt; 01:07:45,000<br>You</p>
+<p>574<br>01:08:13,000 –&gt; 01:08:15,000<br>You</p>
+<p>575<br>01:08:43,000 –&gt; 01:08:45,000<br>You</p>
+<p>576<br>01:09:13,000 –&gt; 01:09:15,000<br>You</p>
+<p>577<br>01:09:43,000 –&gt; 01:09:45,000<br>You</p>
+<p>578<br>01:10:13,000 –&gt; 01:10:15,000<br>You</p>
+<p>579<br>01:10:43,000 –&gt; 01:10:45,000<br>You</p>
+<p>580<br>01:11:13,000 –&gt; 01:11:15,000<br>You</p>
+<p>581<br>01:11:43,000 –&gt; 01:11:46,000<br>You</p>
+<p>582<br>01:11:46,000 –&gt; 01:11:47,000<br>You</p>
+<p>583<br>01:11:47,000 –&gt; 01:11:48,000<br>You</p>
+<p>584<br>01:11:48,000 –&gt; 01:11:50,000<br>Okay.</p>
+<p>585<br>01:11:50,000 –&gt; 01:11:58,000<br>Oh, again, everybody hear me again?</p>
+<p>586<br>01:11:58,000 –&gt; 01:12:10,000<br>Can I get a positive signal?</p>
+<p>587<br>01:12:10,000 –&gt; 01:12:16,000<br>Yes.</p>
+<p>588<br>01:12:16,000 –&gt; 01:12:20,000<br>Okay.</p>
+<p>589<br>01:12:20,000 –&gt; 01:12:24,000<br>Okay.</p>
+<p>590<br>01:12:24,000 –&gt; 01:12:28,000<br>So I hope everybody had a good time discussing this.</p>
+<p>591<br>01:12:28,000 –&gt; 01:12:32,000<br>And so let’s, so this is really this question about log divergence.</p>
+<p>592<br>01:12:32,000 –&gt; 01:12:36,000<br>And you know, we see here correct in this figure there are pretty wild variations.</p>
+<p>593<br>01:12:36,000 –&gt; 01:12:40,000<br>And what can happen.</p>
+<p>594<br>01:12:40,000 –&gt; 01:12:48,000<br>And these are all possible as you know, the caption of the figure explains they’re all possible scenarios.</p>
+<p>595<br>01:12:48,000 –&gt; 01:12:54,000<br>So the question in the homework and just to quickly review that I’m sure most of you already.</p>
+<p>596<br>01:12:54,000 –&gt; 01:12:56,000<br>I don’t think we can see your screen.</p>
+<p>597<br>01:12:56,000 –&gt; 01:12:58,000<br>Oh, that’ll be to that.</p>
+<p>598<br>01:12:58,000 –&gt; 01:13:02,000<br>That’s because I forgot to click share. Yes.</p>
+<p>599<br>01:13:02,000 –&gt; 01:13:04,000<br>Okay. Let me fix that.</p>
+<p>600<br>01:13:04,000 –&gt; 01:13:14,000<br>I appreciate that.</p>
+<p>601<br>01:13:14,000 –&gt; 01:13:16,000<br>Okay.</p>
+<p>602<br>01:13:16,000 –&gt; 01:13:20,000<br>Where do you see my screen?</p>
+<p>603<br>01:13:20,000 –&gt; 01:13:21,000<br>Yeah.</p>
+<p>604<br>01:13:21,000 –&gt; 01:13:23,000<br>Okay. Thank you. Sorry for that.</p>
+<p>605<br>01:13:23,000 –&gt; 01:13:24,000<br>Okay. So.</p>
+<p>606<br>01:13:24,000 –&gt; 01:13:30,000<br>So I’m going back to this caption of figure seven figure seven explains like that these are possible situations.</p>
+<p>607<br>01:13:30,000 –&gt; 01:13:36,000<br>And you know what we want to figure out to get a before talking about the details about how the logs are get repaired.</p>
+<p>608<br>01:13:36,000 –&gt; 01:13:38,000<br>You know what actually is possible.</p>
+<p>609<br>01:13:38,000 –&gt; 01:13:44,000<br>So assume that actually this top guy did not get elected leader.</p>
+<p>610<br>01:13:44,000 –&gt; 01:13:48,000<br>As an caption of the in the figure, but like basically what what outcomes are possible.</p>
+<p>611<br>01:13:48,000 –&gt; 01:13:55,000<br>And they’re going to be what I mean with that is like example, we look at F, you know, it has a two.</p>
+<p>612<br>01:13:55,000 –&gt; 01:14:00,000<br>An index of an entry from term two in index four.</p>
+<p>613<br>01:14:00,000 –&gt; 01:14:03,000<br>And the question. You want to ask them understand is the clear.</p>
+<p>614<br>01:14:03,000 –&gt; 01:14:07,000<br>That is possible because the descriptive happened. You know what will happen next.</p>
+<p>615<br>01:14:07,000 –&gt; 01:14:11,000<br>You know, is it possible that this entry will survive.</p>
+<p>616<br>01:14:11,000 –&gt; 01:14:16,000<br>So when we客 figure like the leader basically you know logs get that being you know put together in.</p>
+<p>617<br>01:14:16,000 –&gt; 01:14:24,000<br>Our synchonize to a lead his force the logs to be identical is the scenario which actually the log entry.</p>
+<p>618<br>01:14:24,000 –&gt; 01:14:26,000<br>the entry from term two will survive.</p>
+<p>619<br>01:14:30,000 –&gt; 01:14:32,000<br>Now, no, correct.</p>
+<p>620<br>01:14:32,000 –&gt; 01:14:34,000<br>This will definitely be rejected, correct?</p>
+<p>621<br>01:14:34,000 –&gt; 01:14:36,000<br>And why is that the case?</p>
+<p>622<br>01:14:38,000 –&gt; 01:14:42,000<br>There are centuries from term six that are already committed.</p>
+<p>623<br>01:14:42,000 –&gt; 01:14:44,000<br>And so, I will never be elected.</p>
+<p>624<br>01:14:44,000 –&gt; 01:14:46,000<br>Yeah, everyone will never be elected.</p>
+<p>625<br>01:14:46,000 –&gt; 01:14:48,000<br>And so, somebody else will be elected.</p>
+<p>626<br>01:14:48,000 –&gt; 01:14:51,000<br>And nobody has a two in term two in index four.</p>
+<p>627<br>01:14:51,000 –&gt; 01:14:53,000<br>So, it will be overwritten.</p>
+<p>628<br>01:14:53,000 –&gt; 01:14:55,000<br>We direct value will be overwritten.</p>
+<p>629<br>01:14:59,000 –&gt; 01:15:01,000<br>There will be a four overwritten.</p>
+<p>630<br>01:15:01,000 –&gt; 01:15:03,000<br>Yeah, that will be this will become a four, correct?</p>
+<p>631<br>01:15:03,000 –&gt; 01:15:06,000<br>So, when later on, when we talk about sort of lock, you know,</p>
+<p>632<br>01:15:06,000 –&gt; 01:15:09,000<br>synchronization or forcing logs on followers,</p>
+<p>633<br>01:15:09,000 –&gt; 01:15:13,000<br>it has to be the case that this two turns into four at f.</p>
+<p>634<br>01:15:13,000 –&gt; 01:15:15,000<br>Good.</p>
+<p>635<br>01:15:15,000 –&gt; 01:15:19,000<br>So, so this also answers sort of a second question like,</p>
+<p>636<br>01:15:19,000 –&gt; 01:15:25,000<br>the entry from the index four from term four is definitely going to be accepted.</p>
+<p>637<br>01:15:27,000 –&gt; 01:15:33,000<br>Okay, so then maybe more interesting is this question of a depends.</p>
+<p>638<br>01:15:33,000 –&gt; 01:15:37,000<br>You know, so we know at least one entry term that definitely got rejected.</p>
+<p>639<br>01:15:37,000 –&gt; 01:15:39,000<br>We know one term that definitely going to accept it.</p>
+<p>640<br>01:15:39,000 –&gt; 01:15:45,000<br>And, you know, are there any sort of terms and indexes in any case that may be possibly accepted?</p>
+<p>641<br>01:15:45,000 –&gt; 01:15:47,000<br>Oh, that’s sevens.</p>
+<p>642<br>01:15:47,000 –&gt; 01:15:49,000<br>Maybe.</p>
+<p>643<br>01:15:49,000 –&gt; 01:15:51,000<br>Yeah, the sevens.</p>
+<p>644<br>01:15:51,000 –&gt; 01:15:55,000<br>So, when would the sevens not be accepted?</p>
+<p>645<br>01:15:55,000 –&gt; 01:15:58,000<br>Okay, so the easy question area is the sevens will be accepted, correct?</p>
+<p>646<br>01:15:58,000 –&gt; 01:16:03,000<br>Because D gets a selected leader and then it will force it logged on everybody else.</p>
+<p>647<br>01:16:03,000 –&gt; 01:16:05,000<br>Okay, so that’s the case where seven gets accepted.</p>
+<p>648<br>01:16:05,000 –&gt; 01:16:09,000<br>When they get the seven get rejected.</p>
+<p>649<br>01:16:09,000 –&gt; 01:16:13,000<br>If you get selected leader and then these down,</p>
+<p>650<br>01:16:13,000 –&gt; 01:16:15,000<br>it is over it.</p>
+<p>651<br>01:16:15,000 –&gt; 01:16:23,000<br>Yeah, so D goes down, see becomes leader and then C’s log entries are being pushed and everybody else entries.</p>
+<p>652<br>01:16:23,000 –&gt; 01:16:27,000<br>And then whatever D and so we’re done we’re in that we’re going to be term seven, correct?</p>
+<p>653<br>01:16:27,000 –&gt; 01:16:31,000<br>And at some point that would be longer and every D comes back up.</p>
+<p>654<br>01:16:31,000 –&gt; 01:16:35,000<br>You know, it’s, you know, entries are going to be over it, right?</p>
+<p>655<br>01:16:35,000 –&gt; 01:16:37,000<br>It’s seven.</p>
+<p>656<br>01:16:37,000 –&gt; 01:16:40,000<br>So seven is definitely possible, but not guaranteed.</p>
+<p>657<br>01:16:40,000 –&gt; 01:16:42,000<br>Any other case?</p>
+<p>658<br>01:16:42,000 –&gt; 01:16:44,000<br>I had a question.</p>
+<p>659<br>01:16:44,000 –&gt; 01:16:48,000<br>It could become leader to right.</p>
+<p>660<br>01:16:48,000 –&gt; 01:16:50,000<br>Eight.</p>
+<p>661<br>01:16:50,000 –&gt; 01:16:52,000<br>Yeah.</p>
+<p>662<br>01:16:52,000 –&gt; 01:16:56,000<br>Yeah, a group leader is she in do down.</p>
+<p>663<br>01:16:56,000 –&gt; 01:17:00,000<br>The end even actually be down for it to be a leader, right?</p>
+<p>664<br>01:17:00,000 –&gt; 01:17:02,000<br>It’s just like it.</p>
+<p>665<br>01:17:02,000 –&gt; 01:17:04,000<br>If it’s the first one.</p>
+<p>666<br>01:17:04,000 –&gt; 01:17:06,000<br>If the longer’s log, correct?</p>
+<p>667<br>01:17:06,000 –&gt; 01:17:10,000<br>If the term if the two terms are equal at the end, then you pick the longers long.</p>
+<p>668<br>01:17:10,000 –&gt; 01:17:12,000<br>Um, but.</p>
+<p>669<br>01:17:12,000 –&gt; 01:17:18,000<br>Um, I think if if if a is the first one to call for an election, right?</p>
+<p>670<br>01:17:18,000 –&gt; 01:17:22,000<br>Like potentially be.</p>
+<p>671<br>01:17:22,000 –&gt; 01:17:23,000<br>Yeah, correct.</p>
+<p>672<br>01:17:23,000 –&gt; 01:17:26,000<br>If she and D are down, a could win the election.</p>
+<p>673<br>01:17:26,000 –&gt; 01:17:30,000<br>But if they’re alive, can’t it also still win the election?</p>
+<p>674<br>01:17:30,000 –&gt; 01:17:33,000<br>Yeah, so let’s say see in the.</p>
+<p>675<br>01:17:33,000 –&gt; 01:17:35,000<br>Okay, let’s ease down.</p>
+<p>676<br>01:17:35,000 –&gt; 01:17:36,000<br>Let’s do that for sure, correct?</p>
+<p>677<br>01:17:36,000 –&gt; 01:17:39,000<br>Because we know the D will win the election period.</p>
+<p>678<br>01:17:39,000 –&gt; 01:17:46,000<br>But does it have to like we know we know we know it won’t get a vote from D, right?</p>
+<p>679<br>01:17:46,000 –&gt; 01:17:48,000<br>For sure.</p>
+<p>680<br>01:17:48,000 –&gt; 01:17:52,000<br>But, but does it have to win?</p>
+<p>681<br>01:17:52,000 –&gt; 01:17:55,000<br>Why what do we think?</p>
+<p>682<br>01:17:55,000 –&gt; 01:18:03,000<br>What if a received the vote from B, E, and at first and then received the vote from.</p>
+<p>683<br>01:18:03,000 –&gt; 01:18:05,000<br>Yeah.</p>
+<p>684<br>01:18:05,000 –&gt; 01:18:07,000<br>Yeah, you can get a majority, correct?</p>
+<p>685<br>01:18:07,000 –&gt; 01:18:19,000<br>Without actually the participating.</p>
+<p>686<br>01:18:19,000 –&gt; 01:18:29,000<br>Even if the participating in the election, it’s possible for a to get the majority votes, right?</p>
+<p>687<br>01:18:29,000 –&gt; 01:18:35,000<br>Yes, I think we just answered that.</p>
+<p>688<br>01:18:35,000 –&gt; 01:18:42,000<br>Is it isn’t there a mechanism though where if a candidate sees a.</p>
+<p>689<br>01:18:42,000 –&gt; 01:18:48,000<br>Message from another several of the higher turn number like stands down.</p>
+<p>690<br>01:18:48,000 –&gt; 01:18:52,000<br>Yes, for my high turn number, but A has to.</p>
+<p>691<br>01:18:52,000 –&gt; 01:18:57,000<br>If D is down.</p>
+<p>692<br>01:18:57,000 –&gt; 01:18:59,000<br>It doesn’t have to be down, right?</p>
+<p>693<br>01:18:59,000 –&gt; 01:19:01,000<br>You just have to get them first.</p>
+<p>694<br>01:19:01,000 –&gt; 01:19:02,000<br>Yes, just that’s.</p>
+<p>695<br>01:19:02,000 –&gt; 01:19:06,000<br>Yeah.</p>
+<p>696<br>01:19:06,000 –&gt; 01:19:11,000<br>But it will step down when it gets the vote from seven or D.</p>
+<p>697<br>01:19:11,000 –&gt; 01:19:13,000<br>Wait, are you sure about that?</p>
+<p>698<br>01:19:13,000 –&gt; 01:19:15,000<br>Because I don’t think so.</p>
+<p>699<br>01:19:15,000 –&gt; 01:19:18,000<br>I think it’s.</p>
+<p>700<br>01:19:18,000 –&gt; 01:19:20,000<br>Well, what a.</p>
+<p>701<br>01:19:20,000 –&gt; 01:19:23,000<br>Okay, so if D at some point will.</p>
+<p>702<br>01:19:23,000 –&gt; 01:19:24,000<br>It depends.</p>
+<p>703<br>01:19:24,000 –&gt; 01:19:27,000<br>They’re going to start racing, correct?</p>
+<p>704<br>01:19:27,000 –&gt; 01:19:28,000<br>The.</p>
+<p>705<br>01:19:28,000 –&gt; 01:19:30,000<br>Okay, let me actually do some very important topic.</p>
+<p>706<br>01:19:30,000 –&gt; 01:19:33,000<br>So I don’t want to do it in 10 seconds.</p>
+<p>707<br>01:19:33,000 –&gt; 01:19:36,000<br>And let me come back to this at the start of the next lecture.</p>
+<p>708<br>01:19:36,000 –&gt; 01:19:37,000<br>Okay.</p>
+<p>709<br>01:19:37,000 –&gt; 01:19:39,000<br>This is a great point to stop.</p>
+<p>710<br>01:19:39,000 –&gt; 01:19:42,000<br>I think the state machine on in figure four clarifies it.</p>
+<p>711<br>01:19:42,000 –&gt; 01:19:43,000<br>Like, I can’t.</p>
+<p>712<br>01:19:43,000 –&gt; 01:19:45,000<br>It goes back to follower if.</p>
+<p>713<br>01:19:45,000 –&gt; 01:19:46,000<br>Discovers a higher term.</p>
+<p>714<br>01:19:46,000 –&gt; 01:19:48,000<br>So if it was if he wasn’t down.</p>
+<p>715<br>01:19:48,000 –&gt; 01:19:50,000<br>It will go back to follower.</p>
+<p>716<br>01:19:50,000 –&gt; 01:19:53,000<br>It wants to like this.</p>
+<p>717<br>01:19:53,000 –&gt; 01:19:57,000<br>Wait, but I thought that it would only go back to a follower state.</p>
+<p>718<br>01:19:57,000 –&gt; 01:20:02,000<br>If it received an append entries from a current leader.</p>
+<p>719<br>01:20:02,000 –&gt; 01:20:07,000<br>Like a request vote is not the same.</p>
+<p>720<br>01:20:07,000 –&gt; 01:20:08,000<br>So it is worth.</p>
+<p>721<br>01:20:08,000 –&gt; 01:20:12,000<br>There’s a difference between the term number that a server’s at.</p>
+<p>722<br>01:20:12,000 –&gt; 01:20:16,000<br>And the term of the most recent entry in the log.</p>
+<p>723<br>01:20:16,000 –&gt; 01:20:17,000<br>Oh, yes.</p>
+<p>724<br>01:20:17,000 –&gt; 01:20:18,000<br>It’s over.</p>
+<p>725<br>01:20:18,000 –&gt; 01:20:22,000<br>Like, like server a can have most recent entry in the log B6,</p>
+<p>726<br>01:20:22,000 –&gt; 01:20:27,000<br>the term six, but have its current term number B7.</p>
+<p>727<br>01:20:27,000 –&gt; 01:20:30,000<br>And it’s term number can actually be arbitrarily high.</p>
+<p>728<br>01:20:30,000 –&gt; 01:20:31,000<br>Yes, correct.</p>
+<p>729<br>01:20:31,000 –&gt; 01:20:32,000<br>That’s that’s correct.</p>
+<p>730<br>01:20:32,000 –&gt; 01:20:35,000<br>And so a could start term eight.</p>
+<p>731<br>01:20:35,000 –&gt; 01:20:38,000<br>And then get elected in term eight.</p>
+<p>732<br>01:20:38,000 –&gt; 01:20:45,000<br>And that and whatever these tells it doesn’t matter because if these most recent term is seven,</p>
+<p>733<br>01:20:45,000 –&gt; 01:20:49,000<br>they won’t go back to follower because it’s a higher term than seven.</p>
+<p>734<br>01:20:49,000 –&gt; 01:20:50,000<br>I see.</p>
+<p>735<br>01:20:50,000 –&gt; 01:20:53,000<br>So it could be a higher term arbitrary.</p>
+<p>736<br>01:20:53,000 –&gt; 01:21:00,000<br>But it could could a go into into term seven.</p>
+<p>737<br>01:21:00,000 –&gt; 01:21:02,000<br>It’s own term seven.</p>
+<p>738<br>01:21:02,000 –&gt; 01:21:05,000<br>If D was like partition, like,</p>
+<p>739<br>01:21:05,000 –&gt; 01:21:10,000<br>if there was a network petition and it didn’t know about D.</p>
+<p>740<br>01:21:10,000 –&gt; 01:21:13,000<br>I think it’s like, even if it does know about D,</p>
+<p>741<br>01:21:13,000 –&gt; 01:21:14,000<br>why does that matter?</p>
+<p>742<br>01:21:14,000 –&gt; 01:21:19,000<br>It should matter.</p>
+<p>743<br>01:21:19,000 –&gt; 01:21:26,000<br>If if if if a promotes a self to candidate and then sends out a request.</p>
+<p>744<br>01:21:26,000 –&gt; 01:21:29,000<br>And then if you want to send out a vote request,</p>
+<p>745<br>01:21:29,000 –&gt; 01:21:31,000<br>then like,</p>
+<p>746<br>01:21:31,000 –&gt; 01:21:32,000<br>D could come back and say like,</p>
+<p>747<br>01:21:32,000 –&gt; 01:21:38,000<br>Oh, well, my latest log entry was at this index for term seven.</p>
+<p>748<br>01:21:38,000 –&gt; 01:21:41,000<br>But I don’t think that.</p>
+<p>749<br>01:21:41,000 –&gt; 01:21:42,000<br>A wait,</p>
+<p>750<br>01:21:42,000 –&gt; 01:21:44,000<br>actually it doesn’t even say that, right?</p>
+<p>751<br>01:21:44,000 –&gt; 01:21:47,000<br>And in the response to your request, vote RPC.</p>
+<p>752<br>01:21:47,000 –&gt; 01:21:48,000<br>It just says you know,</p>
+<p>753<br>01:21:48,000 –&gt; 01:21:52,000<br>it says like it’s current term, which would be seven,</p>
+<p>754<br>01:21:52,000 –&gt; 01:21:53,000<br>which matches a.</p>
+<p>755<br>01:21:53,000 –&gt; 01:21:56,000<br>Because that we that’s our hypothesis.</p>
+<p>756<br>01:21:56,000 –&gt; 01:21:57,000<br>And then.</p>
+<p>757<br>01:21:57,000 –&gt; 01:21:59,000<br>Yeah, it started the election.</p>
+<p>758<br>01:21:59,000 –&gt; 01:22:04,000<br>It will be in term seven.</p>
+<p>759<br>01:22:04,000 –&gt; 01:22:06,000<br>But a D will not vote for a.</p>
+<p>760<br>01:22:06,000 –&gt; 01:22:08,000<br>Yes, that’s true.</p>
+<p>761<br>01:22:08,000 –&gt; 01:22:09,000<br>But I don’t know.</p>
+<p>762<br>01:22:09,000 –&gt; 01:22:16,000<br>I think it’s totally fine if D is alive and gives a response to a</p>
+<p>763<br>01:22:16,000 –&gt; 01:22:17,000<br>vote request.</p>
+<p>764<br>01:22:17,000 –&gt; 01:22:18,000<br>Like,</p>
+<p>765<br>01:22:18,000 –&gt; 01:22:22,000<br>I don’t think that deters a from being the candidate.</p>
+<p>766<br>01:22:22,000 –&gt; 01:22:24,000<br>So I want to just put in the chat.</p>
+<p>767<br>01:22:24,000 –&gt; 01:22:25,000<br>I think the answer to that.</p>
+<p>768<br>01:22:25,000 –&gt; 01:22:30,000<br>So I grant said that as soon as D rejects the vote.</p>
+<p>769<br>01:22:30,000 –&gt; 01:22:34,000<br>A will revert to being a follower because it will realize that it has a</p>
+<p>770<br>01:22:34,000 –&gt; 01:22:35,000<br>lower term number.</p>
+<p>771<br>01:22:35,000 –&gt; 01:22:36,000<br>But okay,</p>
+<p>772<br>01:22:36,000 –&gt; 01:22:38,000<br>not necessarily because again,</p>
+<p>773<br>01:22:38,000 –&gt; 01:22:43,000<br>the remember that the most recent term on their log is not the same thing</p>
+<p>774<br>01:22:43,000 –&gt; 01:22:48,000<br>as the most recent term that the server keeps track of.</p>
+<p>775<br>01:22:48,000 –&gt; 01:22:51,000<br>You’re going to have a higher current term than the most recent thing on log.</p>
+<p>776<br>01:22:51,000 –&gt; 01:22:54,000<br>And so if a tries to elect itself in term seven,</p>
+<p>777<br>01:22:54,000 –&gt; 01:22:56,000<br>yes, when it tries to contact D,</p>
+<p>778<br>01:22:56,000 –&gt; 01:22:57,000<br>it will give up.</p>
+<p>779<br>01:22:57,000 –&gt; 01:23:00,000<br>But if a tries to elect itself in term eight,</p>
+<p>780<br>01:23:00,000 –&gt; 01:23:01,000<br>which it would,</p>
+<p>781<br>01:23:01,000 –&gt; 01:23:05,000<br>if it’s already seen that these has reached term seven.</p>
+<p>782<br>01:23:05,000 –&gt; 01:23:09,000<br>Then like a can get elected.</p>
+<p>783<br>01:23:09,000 –&gt; 01:23:14,000<br>Wait, but if D is if we assume that D is in term seven.</p>
+<p>784<br>01:23:14,000 –&gt; 01:23:17,000<br>Like if a tries to elect itself for term seven,</p>
+<p>785<br>01:23:17,000 –&gt; 01:23:22,000<br>then we don’t actually have this case because if the RPC request or</p>
+<p>786<br>01:23:22,000 –&gt; 01:23:26,000<br>if one contains a term which is strictly greater than the current term you do that.</p>
+<p>787<br>01:23:26,000 –&gt; 01:23:27,000<br>But if they’re the same,</p>
+<p>788<br>01:23:27,000 –&gt; 01:23:28,000<br>then it doesn’t matter.</p>
+<p>789<br>01:23:28,000 –&gt; 01:23:31,000<br>It will just proceed as normal.</p>
+<p>790<br>01:23:31,000 –&gt; 01:23:32,000<br>That’s correct.</p>
+<p>791<br>01:23:32,000 –&gt; 01:23:33,000<br>Yes, that’s right.</p>
+<p>792<br>01:23:33,000 –&gt; 01:23:37,000<br>The interest get replaced by whatever age telling us.</p>
+<p>793<br>01:23:37,000 –&gt; 01:23:40,000<br>So at the end of section,</p>
+<p>794<br>01:23:40,000 –&gt; 01:23:44,000<br>like the election restriction section 5.4.1.</p>
+<p>795<br>01:23:44,000 –&gt; 01:23:54,000<br>They they raft determines which of the two logs is more up to date by comparing the index and term of the last entries in the log.</p>
+<p>796<br>01:23:54,000 –&gt; 01:23:59,000<br>So within that mean that D has to become the leader.</p>
+<p>797<br>01:23:59,000 –&gt; 01:24:01,000<br>If we’re comparing.</p>
+<p>798<br>01:24:01,000 –&gt; 01:24:04,000<br>No, because did just this vote no.</p>
+<p>799<br>01:24:04,000 –&gt; 01:24:07,000<br>But other people might vote yes.</p>
+<p>800<br>01:24:07,000 –&gt; 01:24:09,000<br>Yeah.</p>
+<p>801<br>01:24:09,000 –&gt; 01:24:12,000<br>So what about the case where.</p>
+<p>802<br>01:24:12,000 –&gt; 01:24:15,000<br>So what about the case where.</p>
+<p>803<br>01:24:15,000 –&gt; 01:24:17,000<br>Go ahead.</p>
+<p>804<br>01:24:17,000 –&gt; 01:24:22,000<br>What about the case where E runs for election in terms five,</p>
+<p>805<br>01:24:22,000 –&gt; 01:24:24,000<br>for example, or five.</p>
+<p>806<br>01:24:24,000 –&gt; 01:24:27,000<br>And then it gets a vote from D saying no,</p>
+<p>807<br>01:24:27,000 –&gt; 01:24:31,000<br>it would then update its term right and stop running.</p>
+<p>808<br>01:24:31,000 –&gt; 01:24:32,000<br>I got this.</p>
+<p>809<br>01:24:32,000 –&gt; 01:24:36,000<br>You were thinking about you starting an election for five.</p>
+<p>810<br>01:24:36,000 –&gt; 01:24:37,000<br>Yeah.</p>
+<p>811<br>01:24:37,000 –&gt; 01:24:40,000<br>And if it gets a response from almost anybody,</p>
+<p>812<br>01:24:40,000 –&gt; 01:24:42,000<br>it’s behind in a right.</p>
+<p>813<br>01:24:42,000 –&gt; 01:24:45,000<br>So it does update its term in that case, right?</p>
+<p>814<br>01:24:45,000 –&gt; 01:24:47,000<br>Another person in a pen.</p>
+<p>815<br>01:24:47,000 –&gt; 01:24:50,000<br>Another way to ask this question, who can become leader?</p>
+<p>816<br>01:24:50,000 –&gt; 01:24:53,000<br>Right in this, you know, from these, you know,</p>
+<p>817<br>01:24:53,000 –&gt; 01:24:56,000<br>whenever from these six ABC for F,</p>
+<p>818<br>01:24:56,000 –&gt; 01:24:58,000<br>who can become leader?</p>
+<p>819<br>01:24:58,000 –&gt; 01:25:00,000<br>Can one of F become leader?</p>
+<p>820<br>01:25:00,000 –&gt; 01:25:01,000<br>No.</p>
+<p>821<br>01:25:01,000 –&gt; 01:25:03,000<br>Call them up.</p>
+<p>822<br>01:25:03,000 –&gt; 01:25:07,000<br>Can he become leader?</p>
+<p>823<br>01:25:07,000 –&gt; 01:25:09,000<br>Can he become leader?</p>
+<p>824<br>01:25:09,000 –&gt; 01:25:11,000<br>Can he become leader?</p>
+<p>825<br>01:25:11,000 –&gt; 01:25:15,000<br>I’m also know the only ones that can become leader are AC and</p>
+<p>826<br>01:25:15,000 –&gt; 01:25:16,000<br>E.</p>
+<p>827<br>01:25:16,000 –&gt; 01:25:19,000<br>That’s correct.</p>
+<p>828<br>01:25:19,000 –&gt; 01:25:21,000<br>Possible leaders.</p>
+<p>829<br>01:25:21,000 –&gt; 01:25:25,000<br>But can can a become a leader if D is alive?</p>
+<p>830<br>01:25:25,000 –&gt; 01:25:26,000<br>Because the,</p>
+<p>831<br>01:25:26,000 –&gt; 01:25:30,000<br>because the safety section says that the RPC,</p>
+<p>832<br>01:25:30,000 –&gt; 01:25:33,000<br>the request what RPC implements the restriction that it,</p>
+<p>833<br>01:25:33,000 –&gt; 01:25:36,000<br>it compares the last log entries and the one with the highest log</p>
+<p>834<br>01:25:36,000 –&gt; 01:25:38,000<br>of the number of log entries.</p>
+<p>835<br>01:25:38,000 –&gt; 01:25:41,000<br>I think it doesn’t vote for someone.</p>
+<p>836<br>01:25:41,000 –&gt; 01:25:43,000<br>Exactly.</p>
+<p>837<br>01:25:43,000 –&gt; 01:25:47,000<br>So like, he will never vote for a right or for anything else.</p>
+<p>838<br>01:25:47,000 –&gt; 01:25:49,000<br>That’s exactly right.</p>
+<p>839<br>01:25:49,000 –&gt; 01:25:51,000<br>I mean, it’s also not true that like,</p>
+<p>840<br>01:25:51,000 –&gt; 01:25:54,000<br>if you have an entry in a higher term,</p>
+<p>841<br>01:25:54,000 –&gt; 01:25:56,000<br>then another node that like,</p>
+<p>842<br>01:25:56,000 –&gt; 01:26:00,000<br>you’re actually sort of like better, right?</p>
+<p>843<br>01:26:00,000 –&gt; 01:26:01,000<br>Because, um,</p>
+<p>844<br>01:26:01,000 –&gt; 01:26:05,000<br>I mean, you can be like becoming leader and trying to append</p>
+<p>845<br>01:26:05,000 –&gt; 01:26:07,000<br>you append and reason to the log,</p>
+<p>846<br>01:26:07,000 –&gt; 01:26:09,000<br>but they don’t go through.</p>
+<p>847<br>01:26:09,000 –&gt; 01:26:10,000<br>So,</p>
+<p>848<br>01:26:10,000 –&gt; 01:26:11,000<br>well, these life,</p>
+<p>849<br>01:26:11,000 –&gt; 01:26:12,000<br>they wouldn’t go through.</p>
+<p>850<br>01:26:12,000 –&gt; 01:26:13,000<br>Okay.</p>
+<p>851<br>01:26:13,000 –&gt; 01:26:14,000<br>These life, correct?</p>
+<p>852<br>01:26:14,000 –&gt; 01:26:16,000<br>Devoted against eight becomes leader.</p>
+<p>853<br>01:26:16,000 –&gt; 01:26:18,000<br>Dety A actually tries to,</p>
+<p>854<br>01:26:18,000 –&gt; 01:26:19,000<br>well,</p>
+<p>855<br>01:26:19,000 –&gt; 01:26:20,000<br>if,</p>
+<p>856<br>01:26:20,000 –&gt; 01:26:22,000<br>A won’t contact D.</p>
+<p>857<br>01:26:22,000 –&gt; 01:26:28,000<br>He actually didn’t vote for it.</p>
+<p>858<br>01:26:28,000 –&gt; 01:26:31,000<br>And so they would just proceed.</p>
+<p>859<br>01:26:31,000 –&gt; 01:26:34,000<br>So why could D have logs in term seven?</p>
+<p>860<br>01:26:34,000 –&gt; 01:26:38,000<br>If it’s not the leader in term seven.</p>
+<p>861<br>01:26:38,000 –&gt; 01:26:42,000<br>It must have been the leader in term seven, right?</p>
+<p>862<br>01:26:42,000 –&gt; 01:26:44,000<br>Yeah, I agree.</p>
+<p>863<br>01:26:44,000 –&gt; 01:26:54,000<br>Otherwise, we would have no log entries.</p>
+<p>864<br>01:26:54,000 –&gt; 01:26:57,000<br>Um, where can you have log duplication?</p>
+<p>865<br>01:26:57,000 –&gt; 01:26:59,000<br>I think I forgot.</p>
+<p>866<br>01:26:59,000 –&gt; 01:27:02,000<br>So in this case was D,</p>
+<p>867<br>01:27:02,000 –&gt; 01:27:05,000<br>a leader.</p>
+<p>868<br>01:27:05,000 –&gt; 01:27:06,000<br>In term seven,</p>
+<p>869<br>01:27:06,000 –&gt; 01:27:07,000<br>who got disconnected.</p>
+<p>870<br>01:27:07,000 –&gt; 01:27:12,000<br>And then the new leader got elected the one at the top.</p>
+<p>871<br>01:27:12,000 –&gt; 01:27:15,000<br>Yeah, I think so.</p>
+<p>872<br>01:27:15,000 –&gt; 01:27:16,000<br>Actually, let me take it back.</p>
+<p>873<br>01:27:16,000 –&gt; 01:27:18,000<br>I don’t really remember exactly the sequence.</p>
+<p>874<br>01:27:18,000 –&gt; 01:27:20,000<br>I really pay attention much to the top guy.</p>
+<p>875<br>01:27:20,000 –&gt; 01:27:21,000<br>What,</p>
+<p>876<br>01:27:21,000 –&gt; 01:27:23,000<br>I presume that is the case.</p>
+<p>877<br>01:27:23,000 –&gt; 01:27:26,000<br>It does say that is either for term eight.</p>
+<p>878<br>01:27:26,000 –&gt; 01:27:27,000<br>And that means like,</p>
+<p>879<br>01:27:27,000 –&gt; 01:27:29,000<br>you can write up with the reply.</p>
+<p>880<br>01:27:29,000 –&gt; 01:27:32,000<br>I think that that’s not the problem of that.</p>
+<p>881<br>01:27:32,000 –&gt; 01:27:37,000<br>I think the case we’re looking at the one where a has a higher.</p>
+<p>882<br>01:27:37,000 –&gt; 01:27:38,000<br>The number than D is a,</p>
+<p>883<br>01:27:38,000 –&gt; 01:27:42,000<br>the contradiction case in the safety argument that you mentioned.</p>
+<p>884<br>01:27:42,000 –&gt; 01:27:46,000<br>Like, I think they prove that this is not possible.</p>
+<p>885<br>01:27:46,000 –&gt; 01:27:48,000<br>That what is possible?</p>
+<p>886<br>01:27:48,000 –&gt; 01:27:49,000<br>Like that.</p>
+<p>887<br>01:27:49,000 –&gt; 01:27:50,000<br>Um,</p>
+<p>888<br>01:27:50,000 –&gt; 01:27:51,000<br>A could be elected.</p>
+<p>889<br>01:27:51,000 –&gt; 01:27:55,000<br>And be missing an entry and have a higher term than D,</p>
+<p>890<br>01:27:55,000 –&gt; 01:27:56,000<br>which is the case here.</p>
+<p>891<br>01:27:56,000 –&gt; 01:28:01,000<br>Obviously, YOU see no conclusions in human dwarfs,</p>
+<p>892<br>01:28:01,000 –&gt; 01:28:03,520<br>we speak to the expected group at the basic evidence that the</p>
+<p>893<br>01:28:03,520 –&gt; 01:28:06,000<br>bonding between themitt charges is,</p>
+<p>894<br>01:28:06,000 –&gt; 01:28:07,000<br>and you know.</p>
+<p>895<br>01:28:07,000 –&gt; 01:28:08,000<br>You want to be responsible?</p>
+<p>896<br>01:28:08,000 –&gt; 01:28:11,000<br>Just like to be the one I know more about wheezing,</p>
+<p>897<br>01:28:11,000 –&gt; 01:28:12,000<br>than like the step proof.</p>
+<p>898<br>01:28:12,000 –&gt; 01:28:14,000<br>That this is a contradiction.</p>
+<p>899<br>01:28:14,000 –&gt; 01:28:15,000<br>I,</p>
+<p>900<br>01:28:15,000 –&gt; 01:28:16,000<br>I don’t think so.</p>
+<p>901<br>01:28:16,000 –&gt; 01:28:19,000<br>I think it’s totally fine for it to be elected leader.</p>
+<p>902<br>01:28:19,000 –&gt; 01:28:20,000<br>I think,</p>
+<p>903<br>01:28:20,000 –&gt; 01:28:21,000<br>uh,</p>
+<p>904<br>01:28:21,000 –&gt; 01:28:24,000<br>I think the safety proof says that a future leader cannot have.</p>
+<p>905<br>01:28:24,000 –&gt; 01:28:26,720<br>And nothing wrong will happen in the end.</p>
+<p>906<br>01:28:26,720 –&gt; 01:28:32,880<br>And the reason that the whole committed thing works is because if it’s committed then more</p>
+<p>907<br>01:28:32,880 –&gt; 01:28:38,119<br>than the majority have those entries and so someone who doesn’t have the committed entries</p>
+<p>908<br>01:28:38,119 –&gt; 01:28:40,119<br>could never become elected, right?</p>
+<p>909<br>01:28:40,119 –&gt; 01:28:41,119<br>That’s correct.</p>
+<p>910<br>01:28:41,119 –&gt; 01:28:42,119<br>Yes.</p>
+<p>911<br>01:28:42,119 –&gt; 01:28:44,119<br>That’s exactly right.</p>
+<p>912<br>01:28:44,119 –&gt; 01:28:45,119<br>Yeah.</p>
+<p>913<br>01:28:45,119 –&gt; 01:28:52,119<br>They discussed like, yeah, like in terms of only something that’s not going to happen</p>
+<p>914<br>01:28:52,119 –&gt; 01:28:56,559<br>in terms of only someone who has all the committed entries can get elected.</p>
+<p>915<br>01:28:56,559 –&gt; 01:29:02,119<br>I think it gets more complicated with, you know, within the people who have all the committed</p>
+<p>916<br>01:29:02,119 –&gt; 01:29:05,359<br>entries, which ones can’t get elected.</p>
+<p>917<br>01:29:05,359 –&gt; 01:29:06,359<br>That’s, yeah.</p>
+<p>918<br>01:29:06,359 –&gt; 01:29:07,359<br>Yeah.</p>
+<p>919<br>01:29:07,359 –&gt; 01:29:10,359<br>Somebody said it doesn’t matter.</p>
+<p>920<br>01:29:10,359 –&gt; 01:29:11,359<br>Yeah.</p>
+<p>921<br>01:29:11,359 –&gt; 01:29:12,359<br>Yeah.</p>
+<p>922<br>01:29:12,359 –&gt; 01:29:13,359<br>Okay.</p>
+<p>923<br>01:29:13,359 –&gt; 01:29:14,359<br>Okay.</p>
+<p>924<br>01:29:14,359 –&gt; 01:29:15,359<br>Okay.</p>
+<p>925<br>01:29:15,359 –&gt; 01:29:16,359<br>Okay.</p>
+<p>926<br>01:29:16,359 –&gt; 01:29:17,359<br>Okay.</p>
+<p>927<br>01:29:17,359 –&gt; 01:29:18,359<br>Okay.</p>
+<p>928<br>01:29:18,359 –&gt; 01:29:23,279<br>All the commits after term four are not committed than here, right?</p>
+<p>929<br>01:29:23,279 –&gt; 01:29:24,279<br>So these two fours?</p>
+<p>930<br>01:29:24,279 –&gt; 01:29:27,679<br>Those are not the first two fours.</p>
+<p>931<br>01:29:27,679 –&gt; 01:29:31,960<br>Those are, what’s the question?</p>
+<p>932<br>01:29:31,960 –&gt; 01:29:32,960<br>They all will be committed.</p>
+<p>933<br>01:29:32,960 –&gt; 01:29:33,960<br>Yeah.</p>
+<p>934<br>01:29:33,960 –&gt; 01:29:35,960<br>Those would be committed, but then everything after wouldn’t be.</p>
+<p>935<br>01:29:35,960 –&gt; 01:29:36,960<br>Yeah.</p>
+<p>936<br>01:29:36,960 –&gt; 01:29:37,960<br>No.</p>
+<p>937<br>01:29:37,960 –&gt; 01:29:38,960<br>The five would be committed.</p>
+<p>938<br>01:29:38,960 –&gt; 01:29:39,960<br>Two six.</p>
+<p>939<br>01:29:39,960 –&gt; 01:29:41,960<br>And the two six, those are also valid.</p>
+<p>940<br>01:29:42,960 –&gt; 01:29:43,960<br>Okay.</p>
+<p>941<br>01:29:43,960 –&gt; 01:29:44,960<br>We only need exactly.</p>
+<p>942<br>01:29:44,960 –&gt; 01:29:45,960<br>It’s okay.</p>
+<p>943<br>01:29:45,960 –&gt; 01:29:46,960<br>Exactly.</p>
+<p>944<br>01:29:46,960 –&gt; 01:29:47,960<br>Okay.</p>
+<p>945<br>01:29:47,960 –&gt; 01:29:48,960<br>Okay.</p>
+<p>946<br>01:29:48,960 –&gt; 01:29:49,960<br>You need one over half.</p>
+<p>947<br>01:29:49,960 –&gt; 01:29:50,960<br>Four.</p>
+<p>948<br>01:29:50,960 –&gt; 01:29:51,960<br>Yeah.</p>
+<p>949<br>01:29:51,960 –&gt; 01:29:54,960<br>So the five and six wouldn’t be committed.</p>
+<p>950<br>01:29:54,960 –&gt; 01:29:56,960<br>Oh, but you have the other.</p>
+<p>951<br>01:29:56,960 –&gt; 01:29:57,960<br>You have the other right?</p>
+<p>952<br>01:29:57,960 –&gt; 01:29:58,960<br>Yeah.</p>
+<p>953<br>01:29:58,960 –&gt; 01:29:59,960<br>Yeah.</p>
+<p>954<br>01:29:59,960 –&gt; 01:30:00,960<br>Okay.</p>
+<p>955<br>01:30:00,960 –&gt; 01:30:01,960<br>Oh, let’s not forget about those.</p>
+<p>956<br>01:30:01,960 –&gt; 01:30:02,960<br>Thank you.</p>
+<p>957<br>01:30:02,960 –&gt; 01:30:03,960<br>Okay.</p>
+<p>958<br>01:30:03,960 –&gt; 01:30:04,960<br>Yeah.</p>
+<p>959<br>01:30:04,960 –&gt; 01:30:09,960<br>I’ll come back to this at the beginning of next lecture because some of you probably had</p>
+<p>960<br>01:30:09,960 –&gt; 01:30:10,960<br>a question.</p>
+<p>961<br>01:30:10,960 –&gt; 01:30:11,960<br>We’re going to run to another class.</p>
+<p>962<br>01:30:11,960 –&gt; 01:30:13,960<br>But the, I’ll come back to this.</p>
+<p>963<br>01:30:13,960 –&gt; 01:30:16,960<br>If you have more questions, feel free to stick around.</p>
+<p>964<br>01:30:16,960 –&gt; 01:30:23,960<br>You know, we’ll resume this.</p>
+<p>965<br>01:30:23,960 –&gt; 01:30:26,960<br>Can you say the log deflication.</p>
+<p>966<br>01:30:26,960 –&gt; 01:30:30,960<br>Again, why, where could there be log deflication?</p>
+<p>967<br>01:30:30,960 –&gt; 01:30:37,960<br>What the, what I meant is that the leader at some point forces its log on the followers.</p>
+<p>968<br>01:30:37,960 –&gt; 01:30:45,960<br>I think, I think you meant it on some of the previous slides.</p>
+<p>969<br>01:30:45,960 –&gt; 01:30:46,960<br>Okay.</p>
+<p>970<br>01:30:46,960 –&gt; 01:30:50,960<br>So maybe you’re maybe a, I can’t remember when I said.</p>
+<p>971<br>01:30:50,960 –&gt; 01:30:51,960<br>Sorry.</p>
+<p>972<br>01:30:51,960 –&gt; 01:30:53,960<br>It is.</p>
+<p>973<br>01:30:53,960 –&gt; 01:30:56,960<br>It is a little more.</p>
+<p>974<br>01:30:56,960 –&gt; 01:30:58,960<br>Maybe a little more.</p>
+<p>975<br>01:30:58,960 –&gt; 01:30:59,960<br>Yeah.</p>
+<p>976<br>01:30:59,960 –&gt; 01:31:00,960<br>Okay.</p>
+<p>977<br>01:31:00,960 –&gt; 01:31:12,960<br>Oh, is that there deleted duplicates?</p>
+<p>978<br>01:31:12,960 –&gt; 01:31:13,960<br>Detect duplicates.</p>
+<p>979<br>01:31:13,960 –&gt; 01:31:14,960<br>Yeah.</p>
+<p>980<br>01:31:14,960 –&gt; 01:31:15,960<br>Yeah.</p>
+<p>981<br>01:31:15,960 –&gt; 01:31:16,960<br>This is, this is not an arraft issue.</p>
+<p>982<br>01:31:16,960 –&gt; 01:31:17,960<br>Correct.</p>
+<p>983<br>01:31:17,960 –&gt; 01:31:24,960<br>This is really a KV key value service issue.</p>
+<p>984<br>01:31:24,960 –&gt; 01:31:27,960<br>We’re a client request.</p>
+<p>985<br>01:31:27,960 –&gt; 01:31:28,960<br>You know, might be reclined.</p>
+<p>986<br>01:31:28,960 –&gt; 01:31:32,960<br>A client may, okay, a client might not get a response.</p>
+<p>987<br>01:31:32,960 –&gt; 01:31:35,960<br>Even though, you know, that request actually went through a raft.</p>
+<p>988<br>01:31:35,960 –&gt; 01:31:39,960<br>Because what happened is that the leader may be applied the operation to its state.</p>
+<p>989<br>01:31:39,960 –&gt; 01:31:43,960<br>But before it responded to the client, it crashed.</p>
+<p>990<br>01:31:43,960 –&gt; 01:31:45,960<br>So the client will retry.</p>
+<p>991<br>01:31:45,960 –&gt; 01:31:47,960<br>And we’ll send it to question the new leader.</p>
+<p>992<br>01:31:47,960 –&gt; 01:31:49,960<br>The new linear will run it through a raft.</p>
+<p>993<br>01:31:49,960 –&gt; 01:31:52,960<br>And it will pop out of a raft again.</p>
+<p>994<br>01:31:52,960 –&gt; 01:31:57,960<br>So it has to be the case that the KV server does duplicate detection.</p>
+<p>995<br>01:31:57,960 –&gt; 01:32:01,960<br>Also, this is like only if the client didn’t get the response.</p>
+<p>996<br>01:32:01,960 –&gt; 01:32:02,960<br>That’s exactly.</p>
+<p>997<br>01:32:02,960 –&gt; 01:32:03,960<br>Yeah, exactly.</p>
+<p>998<br>01:32:03,960 –&gt; 01:32:04,960<br>Okay.</p>
+<p>999<br>01:32:04,960 –&gt; 01:32:05,960<br>Okay.</p>
+<p>1000<br>01:32:05,960 –&gt; 01:32:06,960<br>Thank you.</p>
+<p>1001<br>01:32:06,960 –&gt; 01:32:07,960<br>Yeah.</p>
+<p>1002<br>01:32:07,960 –&gt; 01:32:12,960<br>Then that will be no, you will do this in live free.</p>
+<p>1003<br>01:32:12,960 –&gt; 01:32:17,960<br>I think I also asked this question during the lecture, but I don’t think I fully understood the answers.</p>
+<p>1004<br>01:32:17,960 –&gt; 01:32:19,960<br>So I just repeat the question.</p>
+<p>1005<br>01:32:19,960 –&gt; 01:32:20,960<br>Yeah.</p>
+<p>1006<br>01:32:20,960 –&gt; 01:32:22,960<br>The question is that.</p>
+<p>1007<br>01:32:22,960 –&gt; 01:32:30,960<br>So you said that the way commits work is that once the leader commits, it waits for a new client.</p>
+<p>1008<br>01:32:30,960 –&gt; 01:32:36,960<br>Message and then it just depends that message of the log entry and sends an append entry to the remaining followers.</p>
+<p>1009<br>01:32:36,960 –&gt; 01:32:41,960<br>With an additional message saying that they should also commit all the previous entries, correct?</p>
+<p>1010<br>01:32:41,960 –&gt; 01:32:44,960<br>Yeah, there’s indirectly the protocol, the staff correct.</p>
+<p>1011<br>01:32:44,960 –&gt; 01:32:45,960<br>Right.</p>
+<p>1012<br>01:32:45,960 –&gt; 01:32:56,960<br>So I think that what if the leader commits all the entries and right before it is able to send this message to the remaining followers, the leader crashes.</p>
+<p>1013<br>01:32:56,960 –&gt; 01:33:03,960<br>It cannot commit until it has a majority response from all the from from a majority of the followers.</p>
+<p>1014<br>01:33:03,960 –&gt; 01:33:04,960<br>I see.</p>
+<p>1015<br>01:33:04,960 –&gt; 01:33:07,960<br>So it it first like even.</p>
+<p>1016<br>01:33:07,960 –&gt; 01:33:12,960<br>It sticks to the log, but doesn’t actually deliver to the KV server yet.</p>
+<p>1017<br>01:33:12,960 –&gt; 01:33:19,960<br>So it waits from a reply of commit from all the remaining followers and then it recommends its own.</p>
+<p>1018<br>01:33:19,960 –&gt; 01:33:20,960<br>Yeah.</p>
+<p>1019<br>01:33:20,960 –&gt; 01:33:21,960<br>Okay.</p>
+<p>1020<br>01:33:21,960 –&gt; 01:33:24,960<br>So there’s a basically this variable by ask the client or commit index, correct?</p>
+<p>1021<br>01:33:24,960 –&gt; 01:33:32,960<br>That is actually maintaining it only increases the commit index and once it receives response from the majority of the followers.</p>
+<p>1022<br>01:33:32,960 –&gt; 01:33:39,960<br>And all of the followers say that they have committed their own like they have committed the log increase on their own servers.</p>
+<p>1023<br>01:33:39,960 –&gt; 01:33:47,960<br>They will commit their log entries once they know that the leader actually has committed it.</p>
+<p>1024<br>01:33:47,960 –&gt; 01:33:48,960<br>Right.</p>
+<p>1025<br>01:33:48,960 –&gt; 01:33:53,960<br>So that’s my question like how would they know if the leader is unable to send that message to the remaining followers?</p>
+<p>1026<br>01:33:53,960 –&gt; 01:33:58,960<br>Well, so then you know, we basically we end in situations that we just saw in this figure seven.</p>
+<p>1027<br>01:33:58,960 –&gt; 01:34:08,960<br>There’s going to be tentative log entries in their logs and depending who becomes new leader and what the log situation is, you know, that operation may get committed or may not get committed.</p>
+<p>1028<br>01:34:08,960 –&gt; 01:34:09,960<br>I see.</p>
+<p>1029<br>01:34:09,960 –&gt; 01:34:10,960<br>Okay.</p>
+<p>1030<br>01:34:10,960 –&gt; 01:34:11,960<br>Yeah.</p>
+<p>1031<br>01:34:11,960 –&gt; 01:34:12,960<br>Thank you.</p>
+<p>1032<br>01:34:12,960 –&gt; 01:34:13,960<br>Hi.</p>
+<p>1033<br>01:34:13,960 –&gt; 01:34:14,960<br>I had a follow up question on this.</p>
+<p>1034<br>01:34:14,960 –&gt; 01:34:21,960<br>So if says the leader pushes a log entry, it’s gets accepted by majority, but it crashes.</p>
+<p>1035<br>01:34:21,960 –&gt; 01:34:26,960<br>Then later on, this log entry can be committed right by some other leader.</p>
+<p>1036<br>01:34:26,960 –&gt; 01:34:27,960<br>It can’t.</p>
+<p>1037<br>01:34:27,960 –&gt; 01:34:28,960<br>Oh, may not.</p>
+<p>1038<br>01:34:28,960 –&gt; 01:34:29,960<br>Yeah.</p>
+<p>1039<br>01:34:29,960 –&gt; 01:34:35,960<br>But say if it’s get committed, then how does the new leader know who was the client who.</p>
+<p>1040<br>01:34:35,960 –&gt; 01:34:38,960<br>Requested for this log entry or I will.</p>
+<p>1041<br>01:34:38,960 –&gt; 01:34:39,960<br>The client.</p>
+<p>1042<br>01:34:39,960 –&gt; 01:34:40,960<br>In the.</p>
+<p>1043<br>01:34:40,960 –&gt; 01:34:41,960<br>In the.</p>
+<p>1044<br>01:34:41,960 –&gt; 01:34:42,960<br>The.</p>
+<p>1045<br>01:34:42,960 –&gt; 01:34:43,960<br>The.</p>
+<p>1046<br>01:34:43,960 –&gt; 01:34:44,960<br>The.</p>
+<p>1047<br>01:34:44,960 –&gt; 01:34:45,960<br>The.</p>
+<p>1048<br>01:34:45,960 –&gt; 01:34:46,960<br>The.</p>
+<p>1049<br>01:34:46,960 –&gt; 01:34:47,960<br>The.</p>
+<p>1050<br>01:34:47,960 –&gt; 01:34:48,960<br>The.</p>
+<p>1051<br>01:34:48,960 –&gt; 01:34:49,960<br>The.</p>
+<p>1052<br>01:34:49,960 –&gt; 01:34:50,960<br>The.</p>
+<p>1053<br>01:34:50,960 –&gt; 01:34:51,960<br>Okay.</p>
+<p>1054<br>01:34:51,960 –&gt; 01:34:56,960<br>So that’s really question about like actually how the KVs are exactly stored information with raft.</p>
+<p>1055<br>01:34:56,960 –&gt; 01:34:59,960<br>So the scenario is client talked to the leader.</p>
+<p>1056<br>01:34:59,960 –&gt; 01:35:00,960<br>The.</p>
+<p>1057<br>01:35:00,960 –&gt; 01:35:01,960<br>The client.</p>
+<p>1058<br>01:35:01,960 –&gt; 01:35:02,960<br>The.</p>
+<p>1059<br>01:35:02,960 –&gt; 01:35:03,960<br>The.</p>
+<p>1060<br>01:35:03,960 –&gt; 01:35:04,960<br>The.</p>
+<p>1061<br>01:35:04,960 –&gt; 01:35:05,960<br>The client.</p>
+<p>1062<br>01:35:05,960 –&gt; 01:35:07,960<br>The leader actually committed.</p>
+<p>1063<br>01:35:07,960 –&gt; 01:35:09,960<br>Did the executive’s operation or not?</p>
+<p>1064<br>01:35:09,960 –&gt; 01:35:10,960<br>It did not.</p>
+<p>1065<br>01:35:10,960 –&gt; 01:35:11,960<br>No, it.</p>
+<p>1066<br>01:35:11,960 –&gt; 01:35:12,960<br>It did not.</p>
+<p>1067<br>01:35:12,960 –&gt; 01:35:15,960<br>So then one of the followers later.</p>
+<p>1068<br>01:35:15,960 –&gt; 01:35:17,960<br>We’ll get this operation.</p>
+<p>1069<br>01:35:17,960 –&gt; 01:35:19,960<br>Maybe apply it.</p>
+<p>1070<br>01:35:19,960 –&gt; 01:35:22,960<br>Won’t send a response because there’s no about the client.</p>
+<p>1071<br>01:35:22,960 –&gt; 01:35:24,960<br>But the client will retry, right?</p>
+<p>1072<br>01:35:24,960 –&gt; 01:35:26,960<br>Because it actually hasn’t gotten a response.</p>
+<p>1073<br>01:35:26,960 –&gt; 01:35:30,960<br>It will contact the new leader and basically enter the same operation in the.</p>
+<p>1074<br>01:35:30,960 –&gt; 01:35:31,960<br>In the.</p>
+<p>1075<br>01:35:31,960 –&gt; 01:35:32,960<br>In the raft again.</p>
+<p>1076<br>01:35:32,960 –&gt; 01:35:33,960<br>And then we’ll pop out again.</p>
+<p>1077<br>01:35:33,960 –&gt; 01:35:35,960<br>And then the server will send the.</p>
+<p>1078<br>01:35:35,960 –&gt; 01:35:38,960<br>As we’ll see in the last three, it will send the last response.</p>
+<p>1079<br>01:35:38,960 –&gt; 01:35:44,960<br>So I expect the servers remember the last value that they sent back.</p>
+<p>1080<br>01:35:44,960 –&gt; 01:35:45,960<br>Okay.</p>
+<p>1081<br>01:35:45,960 –&gt; 01:35:51,960<br>So if there’s a get request, you know, the first get request is executed.</p>
+<p>1082<br>01:35:51,960 –&gt; 01:35:53,960<br>There’s no response to be sent back.</p>
+<p>1083<br>01:35:53,960 –&gt; 01:35:57,960<br>That get request actually, but you will store the response in the.</p>
+<p>1084<br>01:35:57,960 –&gt; 01:36:00,960<br>In the KV in the KV server will remember the response.</p>
+<p>1085<br>01:36:00,960 –&gt; 01:36:03,960<br>So when it sees it to duplicate it and then we’ll send the response.</p>
+<p>1086<br>01:36:03,960 –&gt; 01:36:05,960<br>So there will be duplicate detection table.</p>
+<p>1087<br>01:36:05,960 –&gt; 01:36:07,960<br>That includes the response.</p>
+<p>1088<br>01:36:07,960 –&gt; 01:36:08,960<br>Okay.</p>
+<p>1089<br>01:36:08,960 –&gt; 01:36:09,960<br>Yeah, makes sense.</p>
+<p>1090<br>01:36:09,960 –&gt; 01:36:10,960<br>Thanks.</p>
+<p>1091<br>01:36:10,960 –&gt; 01:36:12,960<br>Welcome.</p>
+<p>1092<br>01:36:12,960 –&gt; 01:36:14,960<br>I was a little curious.</p>
+<p>1093<br>01:36:14,960 –&gt; 01:36:19,960<br>I think I asked roughly this and my question like pre electric question as well.</p>
+<p>1094<br>01:36:19,960 –&gt; 01:36:21,960<br>Like how raft compares to other like the.</p>
+<p>1095<br>01:36:21,960 –&gt; 01:36:23,960<br>In terms of like optimizations you could do.</p>
+<p>1096<br>01:36:23,960 –&gt; 01:36:26,960<br>And like as an example, I was thinking the ability I could sort of think of was.</p>
+<p>1097<br>01:36:26,960 –&gt; 01:36:27,960<br>Batching.</p>
+<p>1098<br>01:36:27,960 –&gt; 01:36:31,960<br>Yeah, it seemed like raft is like perfect for batching because the leader could just like put a.</p>
+<p>1099<br>01:36:31,960 –&gt; 01:36:34,960<br>You know, more than one entry on its log wait a little bit before sending its next.</p>
+<p>1100<br>01:36:34,960 –&gt; 01:36:36,960<br>Ventures and send that.</p>
+<p>1101<br>01:36:36,960 –&gt; 01:36:39,960<br>Ventures with whatever batch set of.</p>
+<p>1102<br>01:36:39,960 –&gt; 01:36:41,960<br>Operations or whatever it wants the replica to do.</p>
+<p>1103<br>01:36:41,960 –&gt; 01:36:43,960<br>And then we’ll see if we can.</p>
+<p>1104<br>01:36:43,960 –&gt; 01:36:44,960<br>And then we’ll see if we can.</p>
+<p>1105<br>01:36:44,960 –&gt; 01:36:45,960<br>And then we’ll see if we can.</p>
+<p>1106<br>01:36:45,960 –&gt; 01:36:46,960<br>And then we’ll see if we can.</p>
+<p>1107<br>01:36:46,960 –&gt; 01:36:47,960<br>And then we’ll see if we can.</p>
+<p>1108<br>01:36:47,960 –&gt; 01:36:54,960<br>And then we’ll see if we can.</p>
+<p>1109<br>01:36:54,960 –&gt; 01:36:56,960<br>Operation or whatever it wants the replica to do.</p>
+<p>1110<br>01:36:56,960 –&gt; 01:36:57,960<br>Just to figure out like what.</p>
+<p>1111<br>01:36:57,960 –&gt; 01:37:00,960<br>What was was the Diffission to the raft like from a performance point of view.</p>
+<p>1112<br>01:37:00,960 –&gt; 01:37:03,960<br>Well, raft does not do that shape right.</p>
+<p>1113<br>01:37:03,960 –&gt; 01:37:05,960<br>And maybe it could.</p>
+<p>1114<br>01:37:05,960 –&gt; 01:37:08,960<br>But I’m going to make it a vertical more complicated.</p>
+<p>1115<br>01:37:08,960 –&gt; 01:37:15,960<br>And so they just get nothing.</p>
+<p>1116<br>01:37:15,960 –&gt; 01:37:19,800<br>I guess it’s not like you don’t really need to do anything other than just like maybe wait</p>
+<p>1117<br>01:37:19,800 –&gt; 01:37:21,000<br>if you feel like it before.</p>
+<p>1118<br>01:37:21,000 –&gt; 01:37:21,960<br>Yeah, you can have multiple.</p>
+<p>1119<br>01:37:24,199 –&gt; 01:37:25,000<br>So yeah, I guess like.</p>
+<p>1120<br>01:37:31,239 –&gt; 01:37:33,000<br>I think it comes down to performance.</p>
+<p>1121<br>01:37:33,880 –&gt; 01:37:37,640<br>There’s a whole bunch of optimizations that Grapp doesn’t do, you know, that some other systems do.</p>
+<p>1122<br>01:37:37,640 –&gt; 01:37:40,840<br>Like, you know, for example, you might be able to commute to your operations because it doesn’t</p>
+<p>1123<br>01:37:41,000 –&gt; 01:37:43,079<br>matter in what order you do them.</p>
+<p>1124<br>01:37:43,720 –&gt; 01:37:47,960<br>So there’s a slew of optimizations and around just basically do not have them.</p>
+<p>1125<br>01:37:48,760 –&gt; 01:37:49,079<br>Okay.</p>
+<p>1126<br>01:37:51,480 –&gt; 01:37:52,199<br>Thanks.</p>
+<p>1127<br>01:37:52,199 –&gt; 01:37:54,360<br>And it may be perfectly fine for like the use case.</p>
+<p>1128<br>01:37:54,360 –&gt; 01:37:55,159<br>Right.</p>
+<p>1129<br>01:37:55,159 –&gt; 01:37:55,400<br>Right.</p>
+<p>1130<br>01:37:59,560 –&gt; 01:38:04,520<br>You mentioned something a couple minutes ago that a lot of NJ could be lost.</p>
+<p>1131<br>01:38:04,520 –&gt; 01:38:07,960<br>No, it’s not possible that like a client request could never be executed.</p>
+<p>1132<br>01:38:07,960 –&gt; 01:38:13,960<br>Book of Grapp guarantees that all the servers will execute the same set of lock entries in the same sequence.</p>
+<p>1133<br>01:38:15,880 –&gt; 01:38:20,520<br>And so like that means the draft is not, cannot be usable for like all applications.</p>
+<p>1134<br>01:38:20,520 –&gt; 01:38:26,039<br>If we can, only if we can afford some long requests.</p>
+<p>1135<br>01:38:27,560 –&gt; 01:38:34,439<br>Well, you know, we have to assume that we get the responses from the, from the RAF servers as a whole</p>
+<p>1136<br>01:38:34,439 –&gt; 01:38:38,439<br>per if the KV servers plus RAF may get lost anyway because the network gets lost.</p>
+<p>1137<br>01:38:39,159 –&gt; 01:38:40,759<br>And that’s what network may lost responses.</p>
+<p>1138<br>01:38:40,759 –&gt; 01:38:42,679<br>So the client has to be able to repeat.</p>
+<p>1139<br>01:38:44,039 –&gt; 01:38:47,319<br>When the client must recent, must retry.</p>
+<p>1140<br>01:38:48,599 –&gt; 01:38:49,000<br>I see.</p>
+<p>1141<br>01:38:49,000 –&gt; 01:38:55,960<br>So like when it actually commits a log entry and excuses, it applies to the client that it did actually do that.</p>
+<p>1142<br>01:38:55,960 –&gt; 01:38:56,439<br>Yeah.</p>
+<p>1143<br>01:38:56,439 –&gt; 01:38:56,599<br>Yeah.</p>
+<p>1144<br>01:38:56,599 –&gt; 01:38:58,439<br>So this is like we were literally talking about this.</p>
+<p>1145<br>01:38:58,439 –&gt; 01:39:03,879<br>The duplicate detection table, the duplicate detection table has the response that was sent</p>
+<p>1146<br>01:39:03,880 –&gt; 01:39:06,840<br>or was constructed in response to executing that operation.</p>
+<p>1147<br>01:39:08,840 –&gt; 01:39:09,079<br>Thank you.</p>
+<p>1148<br>01:39:13,640 –&gt; 01:39:14,760<br>Any further questions?</p>
+<p>1149<br>01:39:18,279 –&gt; 01:39:19,880<br>Okay. Thank you so much.</p>
+<p>1150<br>01:39:19,880 –&gt; 01:39:31,319<br>Hi. Welcome. It’s great to ask so many questions.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6824 P5Lecture5FaultToleranceRaft1</div>
+      <div>http://example.com/2025/10/25/MIT6824 P5Lecture5FaultToleranceRaft1/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P6Lecture6-Lab1QA/" title="MIT6824 P6Lecture6 Lab1QA">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6824 P6Lecture6 Lab1QA</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P3Lecture3GFS/" title="MIT6824 P3Lecture3GFS">
+                        <span class="hidden-mobile">MIT6824 P3Lecture3GFS</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

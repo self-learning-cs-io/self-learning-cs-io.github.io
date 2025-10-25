@@ -1,0 +1,834 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:04,360So in this video, I’m going to talk with the details of how a NAT operates, and that is 200:00:04,360 –&gt; 00:00:09,919the rules and recommendations that are given in">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP715 4Nats">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP715-4Nats/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:04,360So in this video, I’m going to talk with the details of how a NAT operates, and that is 200:00:04,360 –&gt; 00:00:09,919the rules and recommendations that are given in">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.790Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.790Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP715 4Nats - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP715 4Nats"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.1k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          18 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP715 4Nats</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:04,360<br>So in this video, I’m going to talk with the details of how a NAT operates, and that is</p>
+<p>2<br>00:00:04,360 –&gt; 00:00:09,919<br>the rules and recommendations that are given in terms of NAT behavior for handling both</p>
+<p>3<br>00:00:09,919 –&gt; 00:00:14,960<br>incoming and outgoing connections, possible packets that traverse, as well as how a NAT</p>
+<p>4<br>00:00:14,960 –&gt; 00:00:17,440<br>responds when it’s not acting as a NAT.</p>
+<p>5<br>00:00:17,440 –&gt; 00:00:26,920<br>To recall that a NAT, a network address translation box, will set up a mapings from internal IP address</p>
+<p>6<br>00:00:26,920 –&gt; 00:00:33,719<br>port pairs for transport protocol to external IP address port pairs.</p>
+<p>7<br>00:00:33,719 –&gt; 00:00:38,640<br>So here we have a NAT whose external IP address is 128, 34, 22, 8.</p>
+<p>8<br>00:00:38,640 –&gt; 00:00:46,799<br>So it has an internal interface and an external interface.</p>
+<p>9<br>00:00:46,799 –&gt; 00:00:50,280<br>To the external world, this NAT appears as 128, 34, 22, 8.</p>
+<p>10<br>00:00:50,280 –&gt; 00:00:57,280<br>To the internal world, it has another IP address, say 10.0.0.1.</p>
+<p>11<br>00:00:57,280 –&gt; 00:01:06,439<br>Now a host A can, by sending a TCP connection open, a send message to server S on port 80,</p>
+<p>12<br>00:01:06,439 –&gt; 00:01:12,840<br>the NAT will observe that will translate host A’s internal address in port 10.0 to 0101, 4512,</p>
+<p>13<br>00:01:12,840 –&gt; 00:01:16,799<br>to the external address in port 128, 34, 22.8.</p>
+<p>14<br>00:01:16,799 –&gt; 00:01:21,840<br>That’s going to assign an external port, in this case 6641, for this mapping, you’ll</p>
+<p>15<br>00:01:21,840 –&gt; 00:01:25,159<br>set up this mapping.</p>
+<p>16<br>00:01:25,159 –&gt; 00:01:31,200<br>So one question you can ask is that if some arbitrary packet comes into the NAT, how should</p>
+<p>17<br>00:01:31,200 –&gt; 00:01:32,959<br>the NAT respond?</p>
+<p>18<br>00:01:32,959 –&gt; 00:01:43,479<br>So now if the NAT starts receiving TCP packets from 128, 34, 22.8, sorry, packets to 128, 34,</p>
+<p>19<br>00:01:43,479 –&gt; 00:01:46,560<br>22.8, port 66, 41, it should translate them.</p>
+<p>20<br>00:01:46,560 –&gt; 00:01:49,519<br>So the mapping says, now it might have restrictions on that, based on whether it’s full</p>
+<p>21<br>00:01:49,519 –&gt; 00:01:52,879<br>cone, port restricted, etc.</p>
+<p>22<br>00:01:52,879 –&gt; 00:01:57,320<br>But generally speaking, packets which match this will traverse.</p>
+<p>23<br>00:01:57,320 –&gt; 00:02:05,840<br>But what happens if it receives a packet destined to its external address, so 128, 34, 22.8,</p>
+<p>24<br>00:02:05,840 –&gt; 00:02:13,599<br>and port some random port of 55,127.</p>
+<p>25<br>00:02:13,599 –&gt; 00:02:14,599<br>What should that do?</p>
+<p>26<br>00:02:15,319 –&gt; 00:02:18,159<br>Well, in the end, the NAT is itself an IP device.</p>
+<p>27<br>00:02:18,159 –&gt; 00:02:24,879<br>And the fact that some of its ports happen to result in translation is independent of the</p>
+<p>28<br>00:02:24,879 –&gt; 00:02:26,280<br>fact that the how it responds.</p>
+<p>29<br>00:02:26,280 –&gt; 00:02:30,479<br>So imagine that there are no port mapping setup, that there are no internal nodes to the</p>
+<p>30<br>00:02:30,479 –&gt; 00:02:33,280<br>NAT, that nobody had opened any connections.</p>
+<p>31<br>00:02:33,280 –&gt; 00:02:36,680<br>How would the NAT respond if you tried to open a connection to it?</p>
+<p>32<br>00:02:36,680 –&gt; 00:02:39,799<br>In this case, it responded as it always would.</p>
+<p>33<br>00:02:39,800 –&gt; 00:02:45,439<br>So for this particular case, I might do a connection refuse, like a reset packet, or</p>
+<p>34<br>00:02:45,439 –&gt; 00:02:49,840<br>depending on what message what packet comes in, it could send an ICMP error.</p>
+<p>35<br>00:02:49,840 –&gt; 00:02:55,680<br>And so generally speaking, the NAT behaves like a normal IP device, or an IP router, with</p>
+<p>36<br>00:02:55,680 –&gt; 00:03:05,200<br>the exception of when packets come to the external interface that have a mapping, or when</p>
+<p>37<br>00:03:05,200 –&gt; 00:03:09,480<br>packets traverse from the internal interface and generate a mapping.</p>
+<p>38<br>00:03:09,479 –&gt; 00:03:14,159<br>And so beside that, if you imagine if you had no such A or B, or any node behind it,</p>
+<p>39<br>00:03:14,159 –&gt; 00:03:18,919<br>then that behaves just like a normal IP device.</p>
+<p>40<br>00:03:18,919 –&gt; 00:03:24,639<br>So for example, many NATs, such as your home router, in fact run a web server on port 80.</p>
+<p>41<br>00:03:24,639 –&gt; 00:03:29,060<br>So if you have a home wireless router, it runs web server on port 80, which is what lets</p>
+<p>42<br>00:03:29,060 –&gt; 00:03:30,439<br>you configure it.</p>
+<p>43<br>00:03:30,439 –&gt; 00:03:32,879<br>Or sometimes it’s not port 80, but some other port.</p>
+<p>44<br>00:03:32,879 –&gt; 00:03:39,120<br>The idea that the NAT itself can respond to connections, whether they be for a web management</p>
+<p>45<br>00:03:39,120 –&gt; 00:03:47,480<br>interface, or for other services, that’s a perfectly reasonable and allowed behavior.</p>
+<p>46<br>00:03:47,480 –&gt; 00:03:51,520<br>So one question that comes up with me having that is what causes you to set up these</p>
+<p>47<br>00:03:51,520 –&gt; 00:03:52,520<br>mappings.</p>
+<p>48<br>00:03:52,520 –&gt; 00:03:59,640<br>So you can imagine in the case of UDP, this is generally when a packet comes from the</p>
+<p>49<br>00:03:59,640 –&gt; 00:04:05,719<br>internal interface going to something external.</p>
+<p>50<br>00:04:05,719 –&gt; 00:04:10,560<br>And NAT sets up a mapping, mapping that IP address port to an external IP address port.</p>
+<p>51<br>00:04:10,560 –&gt; 00:04:14,479<br>Of course, the NAT needs to be careful about these allocations so that it’s not reusing</p>
+<p>52<br>00:04:14,479 –&gt; 00:04:15,479<br>them.</p>
+<p>53<br>00:04:15,479 –&gt; 00:04:26,120<br>TCP, well, if you see a TCP sin, then you notice that a mapping, or you could even be a little</p>
+<p>54<br>00:04:26,120 –&gt; 00:04:30,560<br>more liberal and say, look, if we see any TCP packets coming from inside, then we assume</p>
+<p>55<br>00:04:30,560 –&gt; 00:04:33,600<br>there should be a mapping and just set up the mapping.</p>
+<p>56<br>00:04:33,600 –&gt; 00:04:36,480<br>Here’s of course a question then, so this is how you create mappings when you tear them</p>
+<p>57<br>00:04:36,480 –&gt; 00:04:37,480<br>down.</p>
+<p>58<br>00:04:37,480 –&gt; 00:04:44,040<br>Well, UDP, since there is no control sequence, generally these are on a timeout.</p>
+<p>59<br>00:04:44,040 –&gt; 00:04:45,200<br>Mappings are torn down on a timeout.</p>
+<p>60<br>00:04:45,200 –&gt; 00:04:49,160<br>You do need to reclaim them, otherwise you could run out of external ports to use.</p>
+<p>61<br>00:04:49,160 –&gt; 00:04:57,240<br>TCP, well, if you see a proper fin, Ack exchange to tear down the connection, then you know</p>
+<p>62<br>00:04:57,240 –&gt; 00:05:02,920<br>that you can garbage collect the connection state, the inter and the mapping will look more</p>
+<p>63<br>00:05:02,920 –&gt; 00:05:03,920<br>quickly.</p>
+<p>64<br>00:05:03,920 –&gt; 00:05:04,920<br>Of course, there are some edge cases here.</p>
+<p>65<br>00:05:04,920 –&gt; 00:05:06,720<br>You need to be sure it actually was discarded.</p>
+<p>66<br>00:05:06,720 –&gt; 00:05:12,080<br>You want to make sure that you don’t enter some state where it’s possible to lose data.</p>
+<p>67<br>00:05:12,080 –&gt; 00:05:17,000<br>So it turns out that there are of C’s that go into detail exactly how NAT should behave.</p>
+<p>68<br>00:05:17,000 –&gt; 00:05:22,560<br>These behavioral recommendations came out after almost a decade of experience with these</p>
+<p>69<br>00:05:22,560 –&gt; 00:05:27,639<br>devices and how they can possibly disrupt applications through strange behavior.</p>
+<p>70<br>00:05:27,639 –&gt; 00:05:33,039<br>So there are some early documents that tried to state based on somebody who went out</p>
+<p>71<br>00:05:33,039 –&gt; 00:05:38,159<br>actually calling Jennings, went out basically to fries electronics and bought 25 different</p>
+<p>72<br>00:05:38,159 –&gt; 00:05:42,959<br>NAT boxes and just measured them and saw what they did and they did all kinds of crazy</p>
+<p>73<br>00:05:42,959 –&gt; 00:05:43,959<br>things.</p>
+<p>74<br>00:05:43,959 –&gt; 00:05:48,279<br>So based on that and based on application behavior, the ITF came up with a pair of recommendations,</p>
+<p>75<br>00:05:48,279 –&gt; 00:05:53,240<br>one for UDP, one for TCP, there’s also for other behavioral recommendations on how</p>
+<p>76<br>00:05:53,240 –&gt; 00:05:54,240<br>NAT should behave.</p>
+<p>77<br>00:05:54,240 –&gt; 00:05:59,800<br>UDP is specified in RFC 4787.</p>
+<p>78<br>00:05:59,800 –&gt; 00:06:01,840<br>So here’s RFC 4787.</p>
+<p>79<br>00:06:01,840 –&gt; 00:06:09,079<br>As you can see, it’s a PASS CON practice, number 127, best current practice.</p>
+<p>80<br>00:06:09,079 –&gt; 00:06:17,560<br>And so generally speaking, these documents have, there’s a list of terminology.</p>
+<p>81<br>00:06:17,560 –&gt; 00:06:21,960<br>They have a set of behavioral recommendations.</p>
+<p>82<br>00:06:21,959 –&gt; 00:06:31,620<br>So here for example is recommendation one or requirement one and that must have an end</p>
+<p>83<br>00:06:31,620 –&gt; 00:06:35,120<br>point independent mapping behavior.</p>
+<p>84<br>00:06:35,120 –&gt; 00:06:40,719<br>So what this means is that if we return to the terminologies to describe NATs, what</p>
+<p>85<br>00:06:40,719 –&gt; 00:06:44,959<br>this essentially is saying in terms of that classification terminology, if you’d read</p>
+<p>86<br>00:06:44,959 –&gt; 00:06:51,279<br>through the details of the document, if that NATs cannot be symmetric, in that the mapping</p>
+<p>87<br>00:06:51,279 –&gt; 00:06:56,839<br>and NAT creates between, for UDP, between an internal IP address port and an external IP</p>
+<p>88<br>00:06:56,839 –&gt; 00:07:00,039<br>address port, must be independent of what the endpoint is.</p>
+<p>89<br>00:07:00,039 –&gt; 00:07:01,319<br>It can’t be a symmetric network.</p>
+<p>90<br>00:07:01,319 –&gt; 00:07:06,639<br>It sets up a new mapping for every external IP address in port because of all the ways</p>
+<p>91<br>00:07:06,639 –&gt; 00:07:09,599<br>in that that tends to break applications.</p>
+<p>92<br>00:07:09,599 –&gt; 00:07:13,119<br>So here’s a second recommendation.</p>
+<p>93<br>00:07:13,119 –&gt; 00:07:20,959<br>Here’s a recommendation that NATs have an IP address pulling behavior of paired.</p>
+<p>94<br>00:07:20,959 –&gt; 00:07:24,439<br>So this is for NATs that happen to actually have multiple external addresses.</p>
+<p>95<br>00:07:24,439 –&gt; 00:07:32,039<br>And the idea is that hey, if we can, then UDP packets coming from the same internal IP address</p>
+<p>96<br>00:07:32,039 –&gt; 00:07:35,199<br>should appear to have the same external IP address.</p>
+<p>97<br>00:07:35,199 –&gt; 00:07:43,719<br>So here’s the third recommendation that requirement, which has to do with how ports are assigned.</p>
+<p>98<br>00:07:43,719 –&gt; 00:07:49,279<br>So it turns out historically ports 0 to 1023 were considered system services.</p>
+<p>99<br>00:07:49,279 –&gt; 00:07:55,199<br>So these were ports that only administrators or super users could bind to, basically,</p>
+<p>100<br>00:07:55,199 –&gt; 00:07:57,359<br>root on Unix systems.</p>
+<p>101<br>00:07:57,359 –&gt; 00:08:02,079<br>So that’s why you see things like HTTP, SMTP, they’re all running on these low port numbers,</p>
+<p>102<br>00:08:02,079 –&gt; 00:08:06,719<br>as opposed to lots of applications, stuff like BitTorrent or Skype, which run on high port</p>
+<p>103<br>00:08:06,719 –&gt; 00:08:07,719<br>numbers.</p>
+<p>104<br>00:08:07,719 –&gt; 00:08:09,039<br>And so that’s this historical artifact.</p>
+<p>105<br>00:08:09,039 –&gt; 00:08:15,439<br>But there are some assumptions that applications have made historically based on this.</p>
+<p>106<br>00:08:15,439 –&gt; 00:08:20,399<br>And so what one of this requirement says is just to kind of say, we don’t break things</p>
+<p>107<br>00:08:20,399 –&gt; 00:08:25,600<br>that if the internal port is between 0 and 1023, then the external port should be between</p>
+<p>108<br>00:08:25,600 –&gt; 00:08:26,600<br>0 and 1023.</p>
+<p>109<br>00:08:26,600 –&gt; 00:08:33,080<br>And the opposite is also true that if it’s not, if it’s in 1024, 65535, then the external</p>
+<p>110<br>00:08:33,080 –&gt; 00:08:35,399<br>should be between 65535.</p>
+<p>111<br>00:08:35,399 –&gt; 00:08:38,600<br>So now can I go through all of these requirements?</p>
+<p>112<br>00:08:38,600 –&gt; 00:08:42,200<br>What’s nice actually is if you read through these documents, is it really gives you a sense</p>
+<p>113<br>00:08:42,200 –&gt; 00:08:46,040<br>of all of the different kinds of application expectations that there are.</p>
+<p>114<br>00:08:46,040 –&gt; 00:08:50,320<br>What’s nice is that there are these justifications, leave an explain like, hey, there are applications</p>
+<p>115<br>00:08:50,320 –&gt; 00:08:54,120<br>that make these assumptions or protocols that make these assumptions.</p>
+<p>116<br>00:08:54,120 –&gt; 00:08:57,440<br>And therefore, the NAT needs to do this so it doesn’t break those applications.</p>
+<p>117<br>00:08:57,440 –&gt; 00:09:03,600<br>It gives you just this nice sort of a couple of points of interesting protocol approaches</p>
+<p>118<br>00:09:03,600 –&gt; 00:09:06,160<br>that happen on the internet.</p>
+<p>119<br>00:09:06,159 –&gt; 00:09:10,480<br>Now the TCP requirements are specified in RSC 5382.</p>
+<p>120<br>00:09:10,480 –&gt; 00:09:18,000<br>So we can see the first requirement for TCP NAT behavior is very similar to UDP, this endpoint</p>
+<p>121<br>00:09:18,000 –&gt; 00:09:19,519<br>independent mapping.</p>
+<p>122<br>00:09:19,519 –&gt; 00:09:20,759<br>Symmetric NATs are really bad.</p>
+<p>123<br>00:09:20,759 –&gt; 00:09:23,399<br>They break all kinds of things, so never build a symmetric NAT.</p>
+<p>124<br>00:09:23,399 –&gt; 00:09:25,839<br>That’s requirement number one.</p>
+<p>125<br>00:09:25,839 –&gt; 00:09:30,039<br>But unlike UDP, TCP has connections and so, and connection setup.</p>
+<p>126<br>00:09:30,039 –&gt; 00:09:38,879<br>And so there are a couple of requirements that come out for TCP that aren’t present in UDP.</p>
+<p>127<br>00:09:38,879 –&gt; 00:09:42,480<br>For example, and this one’s kind of interesting is requirement two.</p>
+<p>128<br>00:09:42,480 –&gt; 00:09:47,599<br>A NAT must support all valid sequences of TCP packets for connections initiated both internally</p>
+<p>129<br>00:09:47,599 –&gt; 00:09:51,079<br>as well as externally when the connection is permitted by the NAT.</p>
+<p>130<br>00:09:51,079 –&gt; 00:09:58,079<br>And the basic point here is this subpoint A, that NAT must handle TCP simultaneous open.</p>
+<p>131<br>00:09:58,080 –&gt; 00:10:02,560<br>So this gets back to the case you talked about NAT hole punching where it can be that two</p>
+<p>132<br>00:10:02,560 –&gt; 00:10:15,400<br>nodes behind NATs say A and B. They want to open connections to one another.</p>
+<p>133<br>00:10:15,400 –&gt; 00:10:17,600<br>They want to open a connection through the NAT.</p>
+<p>134<br>00:10:17,600 –&gt; 00:10:22,759<br>So what they do is they talk to some external server and their servers that provide the</p>
+<p>135<br>00:10:22,759 –&gt; 00:10:26,399<br>substraction things like ICE.</p>
+<p>136<br>00:10:26,399 –&gt; 00:10:29,960<br>Let allow them basically do some query responses to figure out what kind of NAT they’re behind</p>
+<p>137<br>00:10:29,960 –&gt; 00:10:35,799<br>also to figure out what the external IP address in port is associated with their local IP address</p>
+<p>138<br>00:10:35,799 –&gt; 00:10:36,799<br>in port.</p>
+<p>139<br>00:10:36,799 –&gt; 00:10:41,799<br>So based on this, both A and B can figure out given their internal address in port, what’s</p>
+<p>140<br>00:10:41,799 –&gt; 00:10:44,039<br>the external address in port.</p>
+<p>141<br>00:10:44,039 –&gt; 00:10:48,639<br>They somehow exchange this information through a rendezvous service.</p>
+<p>142<br>00:10:48,639 –&gt; 00:10:57,120<br>And then both A and B simultaneously try to open TCP connections to one another.</p>
+<p>143<br>00:10:57,120 –&gt; 00:11:03,639<br>Now it could be that these connections are there or the state is there.</p>
+<p>144<br>00:11:03,639 –&gt; 00:11:12,679<br>But the basic point is that it can very well be that B sends a sin which sets up the state</p>
+<p>145<br>00:11:12,679 –&gt; 00:11:17,719<br>and that sin reaches A before A has set up its translation state.</p>
+<p>146<br>00:11:17,719 –&gt; 00:11:20,359<br>And so the sin is not going to traverse.</p>
+<p>147<br>00:11:20,359 –&gt; 00:11:27,039<br>However, the state now exists on B. So B now has a translation entry.</p>
+<p>148<br>00:11:27,039 –&gt; 00:11:32,239<br>Now A then opens up a connection back and its sin does traverse this translation and</p>
+<p>149<br>00:11:32,239 –&gt; 00:11:37,079<br>now A can open a connection on B. But the thing is that this is a simultaneous open.</p>
+<p>150<br>00:11:37,079 –&gt; 00:11:39,639<br>B has sent a sin and the sin is outstanding.</p>
+<p>151<br>00:11:39,639 –&gt; 00:11:43,439<br>In terms of the TCP state diagram, it’s already sent to sin.</p>
+<p>152<br>00:11:43,439 –&gt; 00:11:48,199<br>This is the simultaneous open when A and B sends sins to each other at the same time.</p>
+<p>153<br>00:11:48,199 –&gt; 00:11:52,279<br>So for peer-to-pre applications where A and B want to open a connection directly one</p>
+<p>154<br>00:11:52,279 –&gt; 00:11:58,519<br>another, it’s important that a NAT allow this kind of TCP open.</p>
+<p>155<br>00:11:58,519 –&gt; 00:12:02,439<br>That it’s not just that a hub, we don’t support simultaneous open and so therefore we’re</p>
+<p>156<br>00:12:02,439 –&gt; 00:12:07,559<br>not going to allow this sin to traverse because that’s an incoming sin.</p>
+<p>157<br>00:12:07,559 –&gt; 00:12:10,919<br>But if you have a mapping, the incoming sin must be able to traverse.</p>
+<p>158<br>00:12:10,919 –&gt; 00:12:14,199<br>So that’s what here requirement to is saying.</p>
+<p>159<br>00:12:14,199 –&gt; 00:12:19,239<br>But even more generally, it’s saying that look, TCP has a state diagram and that you’re</p>
+<p>160<br>00:12:19,239 –&gt; 00:12:23,279<br>supposed to be able to traverse the state diagram, to open a connection in any way that you</p>
+<p>161<br>00:12:23,279 –&gt; 00:12:26,599<br>want and a NAT should not restrict that.</p>
+<p>162<br>00:12:26,599 –&gt; 00:12:32,559<br>That is that NAT should not be somehow limiting the, be a limit the TCP implementation options.</p>
+<p>163<br>00:12:32,559 –&gt; 00:12:38,279<br>So here requirement three states that it should have an endpoint independent filtering</p>
+<p>164<br>00:12:38,279 –&gt; 00:12:39,279<br>behavior.</p>
+<p>165<br>00:12:39,279 –&gt; 00:12:43,159<br>So this is basically, this is back to the terminology talked about in the classification</p>
+<p>166<br>00:12:43,159 –&gt; 00:12:45,359<br>of NAT, this means a full cone NAT.</p>
+<p>167<br>00:12:45,359 –&gt; 00:12:50,599<br>That it’s recommended that NATs in terms of TCP be full cone.</p>
+<p>168<br>00:12:50,599 –&gt; 00:12:55,000<br>And again, like the UDP recommendations, each of these behavioral recommendations, each</p>
+<p>169<br>00:12:55,000 –&gt; 00:12:56,959<br>of these has a justification.</p>
+<p>170<br>00:12:56,959 –&gt; 00:13:01,679<br>And so it can be really, very, very insightful and looming to read through what are the</p>
+<p>171<br>00:13:01,679 –&gt; 00:13:06,919<br>kinds of applications, what are the, sort of the edge cases that can make the NATs can</p>
+<p>172<br>00:13:06,919 –&gt; 00:13:07,919<br>break.</p>
+<p>173<br>00:13:07,919 –&gt; 00:13:12,519<br>You see a lot of them relate to peer to peer in particular voice over IP, all those kinds</p>
+<p>174<br>00:13:12,519 –&gt; 00:13:16,239<br>of applications where NATs work fine when simply you have a client behind the NAT opening</p>
+<p>175<br>00:13:16,239 –&gt; 00:13:20,039<br>connection to a server, but anything peer to peer with things behind NATs want to open</p>
+<p>176<br>00:13:20,039 –&gt; 00:13:25,599<br>connections to one another, you have to have an intelligent behavior and then not otherwise</p>
+<p>177<br>00:13:25,599 –&gt; 00:13:29,039<br>you can break those applications.</p>
+<p>178<br>00:13:29,039 –&gt; 00:13:35,360<br>So this one requirement for is kind of an interesting edge case, which is that so NAT must not</p>
+<p>179<br>00:13:35,360 –&gt; 00:13:39,439<br>respond to an unsolicited inbound sin for at least six seconds.</p>
+<p>180<br>00:13:39,439 –&gt; 00:13:42,279<br>So here’s the, here’s the case why this is important.</p>
+<p>181<br>00:13:42,279 –&gt; 00:13:47,399<br>Again, let’s go to this example where we have ANB that are both behind NATs and they’re</p>
+<p>182<br>00:13:47,399 –&gt; 00:13:50,039<br>trying to do a simultaneous open.</p>
+<p>183<br>00:13:50,039 –&gt; 00:13:57,000<br>Now it turns out that A ends up sending its simultaneous open well before B does such</p>
+<p>184<br>00:13:57,000 –&gt; 00:14:06,159<br>that its sin arrives before B has tried to open its connection to A.</p>
+<p>185<br>00:14:06,159 –&gt; 00:14:14,240<br>So if B’s NAT responds with response to this unsolicited inbound sin by saying, you know,</p>
+<p>186<br>00:14:14,240 –&gt; 00:14:21,399<br>sorry, connection refused or by saying an ICMP error, whatever it wants to do depending</p>
+<p>187<br>00:14:21,399 –&gt; 00:14:26,959<br>on the circumstances, the problem then is that this might come back to the NAT and cause</p>
+<p>188<br>00:14:26,959 –&gt; 00:14:28,799<br>the NAT to tear down the state.</p>
+<p>189<br>00:14:28,799 –&gt; 00:14:33,919<br>And then when B tries to do its own simultaneous open, so here’d be the error.</p>
+<p>190<br>00:14:33,919 –&gt; 00:14:37,519<br>If B tries to do its own simultaneous open, that state is now torn down and that’s going</p>
+<p>191<br>00:14:37,519 –&gt; 00:14:39,000<br>to fail.</p>
+<p>192<br>00:14:39,000 –&gt; 00:14:44,279<br>And so the idea here is that if B has to wait at least six seconds, the assumption is that</p>
+<p>193<br>00:14:44,279 –&gt; 00:14:48,559<br>B and A if they’re doing a simultaneous open are going to try to do so within six seconds</p>
+<p>194<br>00:14:48,559 –&gt; 00:14:49,559<br>of each other.</p>
+<p>195<br>00:14:49,559 –&gt; 00:14:52,319<br>That’s what sort of means simultaneously.</p>
+<p>196<br>00:14:52,319 –&gt; 00:14:59,879<br>And so the NAT will wait before issuing that response such that B has a chance to do its</p>
+<p>197<br>00:14:59,879 –&gt; 00:15:06,399<br>own open which could then set up the state for A.</p>
+<p>198<br>00:15:06,399 –&gt; 00:15:09,359<br>Note that in the second sentence, if during the interval and that receives and translates</p>
+<p>199<br>00:15:09,359 –&gt; 00:15:15,119<br>an outbound sin, it must suddenly drop the original unsolicited inbound sin.</p>
+<p>200<br>00:15:15,120 –&gt; 00:15:20,480<br>But in this case, you know, inbound sin came in, it was unsolicited, but then suddenly</p>
+<p>201<br>00:15:20,480 –&gt; 00:15:25,159<br>something showed that maybe it was solicited, you should just drop it.</p>
+<p>202<br>00:15:25,159 –&gt; 00:15:26,840<br>You shouldn’t issue an error.</p>
+<p>203<br>00:15:26,840 –&gt; 00:15:31,159<br>You can ask the question is to whether or not you should have it traverse the NAT.</p>
+<p>204<br>00:15:31,159 –&gt; 00:15:32,480<br>There’ll be another approach.</p>
+<p>205<br>00:15:32,480 –&gt; 00:15:35,240<br>You actually went back and looked through some of the archives and this just seemed to</p>
+<p>206<br>00:15:35,240 –&gt; 00:15:36,240<br>work pretty well.</p>
+<p>207<br>00:15:36,240 –&gt; 00:15:38,159<br>The mailing list archives about this discussion.</p>
+<p>208<br>00:15:38,159 –&gt; 00:15:39,159<br>This seemed to work pretty well.</p>
+<p>209<br>00:15:39,159 –&gt; 00:15:42,399<br>It means the NAT has enough to buffer these sins.</p>
+<p>210<br>00:15:42,399 –&gt; 00:15:46,759<br>It solves the problem and serves the least complicated answer.</p>
+<p>211<br>00:15:46,759 –&gt; 00:15:50,519<br>That’s just a brief overview of some of the internals and NATs and their policies and</p>
+<p>212<br>00:15:50,519 –&gt; 00:15:53,600<br>the algorithms that they use and some of the rules that there are for their behavior to</p>
+<p>213<br>00:15:53,600 –&gt; 00:15:55,840<br>allow applications to work.</p>
+<p>214<br>00:15:55,840 –&gt; 00:16:00,480<br>If this is something interesting, I totally recommend reading these ARFCs in a bit more detail,</p>
+<p>215<br>00:16:00,480 –&gt; 00:16:05,600<br>especially because they give these really nice descriptions as to why these behaviors exist,</p>
+<p>216<br>00:16:05,600 –&gt; 00:16:07,519<br>particularly for peer-to-peer applications.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP715 4Nats</div>
+      <div>http://example.com/2025/10/25/CS144-networkP715-4Nats/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP71-6Layeringprinciple/" title="CS144 NetworkP71 6Layeringprinciple">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP71 6Layeringprinciple</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP735-5bHTTPQuiz1Intro/" title="CS144 NetworkP735 5bHTTPQuiz1Intro">
+                        <span class="hidden-mobile">CS144 NetworkP735 5bHTTPQuiz1Intro</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

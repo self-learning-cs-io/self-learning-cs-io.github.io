@@ -1,0 +1,775 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:05,440Continuing on a theme of routing, in this video I’m going to tell you about a distance vector protocol. 200:00:05,440 –&gt; 00:00:13,919Distance vector protocols are on">
+<meta property="og:type" content="article">
+<meta property="og:title" content="CS144 NetworkP866 2Routing">
+<meta property="og:url" content="http://example.com/2025/10/25/CS144-networkP866-2Routing/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:05,440Continuing on a theme of routing, in this video I’m going to tell you about a distance vector protocol. 200:00:05,440 –&gt; 00:00:13,919Distance vector protocols are on">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.794Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.794Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>CS144 NetworkP866 2Routing - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="CS144 NetworkP866 2Routing"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.7k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          15 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">CS144 NetworkP866 2Routing</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:05,440<br>Continuing on a theme of routing, in this video I’m going to tell you about a distance vector protocol.</p>
+<p>2<br>00:00:05,440 –&gt; 00:00:13,919<br>Distance vector protocols are one in which the routers maintain a vector of their distances to a given or to all of the other routers.</p>
+<p>3<br>00:00:13,919 –&gt; 00:00:25,120<br>And then iteratively through a distributed algorithm they converge on finding the shortest path or the lowest cost spanning tree from them to every other router.</p>
+<p>4<br>00:00:25,120 –&gt; 00:00:34,719<br>And we’re going to see a specific example of this, what’s known as the Bellamann Ford algorithm, which is the most commonly used algorithm in these distance vector protocols.</p>
+<p>5<br>00:00:35,679 –&gt; 00:00:42,400<br>So the particular problem we’re going to address is how can routers work together to find the minimum cost spanning tree?</p>
+<p>6<br>00:00:42,400 –&gt; 00:00:47,840<br>Here’s an example that I’ve shown in green here as the minimum cost spanning tree for this particular graph.</p>
+<p>7<br>00:00:48,480 –&gt; 00:00:53,520<br>Notice that this is equivalent to finding the minimum cost spanning tree amongst just the routers.</p>
+<p>8<br>00:00:53,520 –&gt; 00:00:59,359<br>It didn’t matter whether I included the end hosts because really in the end we’re just building the spanning tree amongst the routers.</p>
+<p>9<br>00:00:59,359 –&gt; 00:01:03,120<br>So in the rest of the examples I’m just going to confine myself to that.</p>
+<p>10<br>00:01:03,120 –&gt; 00:01:06,560<br>So now let’s look at the distributed Bellamann Ford algorithm.</p>
+<p>11<br>00:01:06,560 –&gt; 00:01:14,000<br>And in this example we’re going to use the case of trying to find the minimum cost spanning tree to R8.</p>
+<p>12<br>00:01:14,319 –&gt; 00:01:18,959<br>Just to remind you in the previous slide this was the router in the bottom right hand corner.</p>
+<p>13<br>00:01:18,959 –&gt; 00:01:24,799<br>So this green spanning tree shown here is the minimum cost spanning tree for everybody to reach R8.</p>
+<p>14<br>00:01:25,439 –&gt; 00:01:32,480<br>So remember that in general all of the routers are going to be building the lowest cost spanning tree to reach all of the other routers.</p>
+<p>15<br>00:01:32,480 –&gt; 00:01:37,920<br>So we’re just taking one specific case here of finding that minimum cost spanning tree to R8.</p>
+<p>16<br>00:01:38,799 –&gt; 00:01:46,079<br>So in the Bellamann Ford algorithm we’re going to assume that the routers know the cost of the link to each of their neighbors</p>
+<p>17<br>00:01:46,079 –&gt; 00:01:49,680<br>so that there is a metric and a cost associated with using that link.</p>
+<p>18<br>00:01:49,680 –&gt; 00:01:57,439<br>And we’re going to assume that router R sub i is going to maintain the value of the cost to reach R8.</p>
+<p>19<br>00:01:58,480 –&gt; 00:02:05,040<br>So at any one instance it’s going to keep a sense of its current lowest cost to reach R sub 8.</p>
+<p>20<br>00:02:05,120 –&gt; 00:02:14,879<br>So router R a is going to be c sub i. So we’re going to have a vector c which is going to contain the seven costs of the seven routers R1 through R7</p>
+<p>21<br>00:02:15,680 –&gt; 00:02:21,759<br>of their current cost to reach R8 and this is the distance vector to reach R8.</p>
+<p>22<br>00:02:22,879 –&gt; 00:02:27,759<br>Initially the algorithm is going to set this vector to all values of infinity.</p>
+<p>23<br>00:02:28,159 –&gt; 00:02:36,000<br>And then every t seconds, so starting after the first t seconds R i is going to send c i to its neighbors.</p>
+<p>24<br>00:02:36,000 –&gt; 00:02:41,199<br>Another of each router is going to send the cost to reach R8 to each of its neighbors.</p>
+<p>25<br>00:02:43,199 –&gt; 00:02:48,879<br>If R i at any time learns of a lower cost path it’s going to update this value c sub i.</p>
+<p>26<br>00:02:48,879 –&gt; 00:02:55,359<br>So if after t seconds it hears a lower cost path to reach R8 it’s going to update its value</p>
+<p>27<br>00:02:55,360 –&gt; 00:02:58,400<br>and then we’re going to repeat and we’re just going to keep repeating forever.</p>
+<p>28<br>00:03:00,240 –&gt; 00:03:05,600<br>Okay let’s look at this as how this would work on the graph. And remember there’s a natural extension</p>
+<p>29<br>00:03:05,600 –&gt; 00:03:12,560<br>to calculate this for R1 through R7 we just exchange all of the values. I’ve just shown you the one example here.</p>
+<p>30<br>00:03:13,440 –&gt; 00:03:18,160<br>Now let’s look at a concrete example and we’re going to look at this particular graph here which</p>
+<p>31<br>00:03:18,160 –&gt; 00:03:22,960<br>I’ve annotated with some cost. They’re different from the cost before. There’s a matter of the particular values</p>
+<p>32<br>00:03:22,960 –&gt; 00:03:29,120<br>or how they came about whether they’re for the represent the delay of using a link or the</p>
+<p>33<br>00:03:29,120 –&gt; 00:03:33,360<br>the price of using a link. They’re just values and we’re going to try and find the minimum cost</p>
+<p>34<br>00:03:33,360 –&gt; 00:03:38,159<br>spanning tree using the Bellman Ford algorithm. So remember in the Bellman Ford algorithm we start out</p>
+<p>35<br>00:03:38,159 –&gt; 00:03:44,240<br>with a distance vector to reach R8 of all the value set to infinity. So R1 thinks it costs</p>
+<p>36<br>00:03:44,719 –&gt; 00:03:50,719<br>it’s infinite to start with R2 and so on. They all think that the cost is infinite in order to reach</p>
+<p>37<br>00:03:50,719 –&gt; 00:03:55,520<br>R8. Okay so that’s where we’re going to begin and we’re going to go through and see waves of</p>
+<p>38<br>00:03:55,520 –&gt; 00:04:00,240<br>information propagating through so that we can update these and steadily converge on what the</p>
+<p>39<br>00:04:00,240 –&gt; 00:04:06,960<br>minimum cost spanning tree is in order to reach R8. So in the next step that information is going</p>
+<p>40<br>00:04:06,960 –&gt; 00:04:13,919<br>to propagate outwards from R8. So this information here is going to tell us in that first wave that</p>
+<p>41<br>00:04:14,799 –&gt; 00:04:21,839<br>R8 can be reached in one hop from these routers. R3 is going to learn that it can get there in 4.</p>
+<p>42<br>00:04:22,479 –&gt; 00:04:28,399<br>That’s over the direct path. R5 will learn it can get there in 6. R6 over here will learn that it can</p>
+<p>43<br>00:04:28,399 –&gt; 00:04:34,479<br>get there in 2 and R7 will learn that it can get there in 1. So they’re the costs in that first step.</p>
+<p>44<br>00:04:35,039 –&gt; 00:04:43,839<br>And so R3 will update its own value. 4, 6, 1 and 2 respectively. And now they will advertise</p>
+<p>45<br>00:04:43,839 –&gt; 00:04:50,799<br>those values on in the next round of the algorithm. So that information is going to propagate out here</p>
+<p>46<br>00:04:50,799 –&gt; 00:04:56,799<br>into the next hop. So R4 is going to learn in the next in the next iteration of the algorithm</p>
+<p>47<br>00:04:56,799 –&gt; 00:05:04,399<br>that it can get there at a cost of 2 via R7. So 2 via R7 could get also get there at a cost of 6 via</p>
+<p>48<br>00:05:04,399 –&gt; 00:05:09,759<br>R6. That’s a higher value so it’s going to ignore that one. R2 can get there at a cost of 7,</p>
+<p>49<br>00:05:09,759 –&gt; 00:05:18,000<br>6 plus 1. So that’s 7 going via R5. And R1 is going to learn that it can get there at a cost of 8</p>
+<p>50<br>00:05:18,000 –&gt; 00:05:23,759<br>via R3. Okay, so it’s tempting to think that we’re done at this point because every router is heard of</p>
+<p>51<br>00:05:23,759 –&gt; 00:05:28,639<br>value. But of course this is going to keep going because this information is going to propagate</p>
+<p>52<br>00:05:28,639 –&gt; 00:05:34,000<br>further. In the next time this news is going to propagate this way, this news is going to propagate</p>
+<p>53<br>00:05:34,000 –&gt; 00:05:38,879<br>this way, this news will propagate this way and so on. So everyone is going to hear more values</p>
+<p>54<br>00:05:38,959 –&gt; 00:05:43,600<br>in the next round. Let me clear that to make it a little bit clearer and see what happens in the</p>
+<p>55<br>00:05:43,600 –&gt; 00:05:51,040<br>next round. So this is the values that I just showed you. Just as an example, R1 had learned,</p>
+<p>56<br>00:05:51,040 –&gt; 00:06:01,120<br>if you remember, that it can get to R8 via R3 at a cost of 8. So it has that value 8 going via R3,</p>
+<p>57<br>00:06:01,199 –&gt; 00:06:08,959<br>for example. Okay, so now what happens, you can see that we found out all of the two hop</p>
+<p>58<br>00:06:08,959 –&gt; 00:06:14,319<br>information. So this is really like the two hop information. In the next iteration, we’re going to</p>
+<p>59<br>00:06:14,319 –&gt; 00:06:21,199<br>find out the three hop information. Let’s see what this three hop information is. Well, based on this,</p>
+<p>60<br>00:06:21,920 –&gt; 00:06:26,240<br>the ones that are going to change that I’ve shown in red here, let’s focus on those. R2,</p>
+<p>61<br>00:06:27,040 –&gt; 00:06:34,079<br>which previously thought that the lowest cost path was of cost 7 going via R5, it’s going to</p>
+<p>62<br>00:06:34,079 –&gt; 00:06:40,639<br>learn about this three hop path because R4 is going to advertise to it the value 6. And so it’s</p>
+<p>63<br>00:06:40,639 –&gt; 00:06:45,600<br>going to hear about this value that it can get there at a cost of 6 going via R4. So that’s going</p>
+<p>64<br>00:06:45,600 –&gt; 00:06:52,560<br>to be its new value and that’s the one here. Similarly, R5 is going to learn about the three hop</p>
+<p>65<br>00:06:53,199 –&gt; 00:06:58,959<br>path, which goes via R4. It’s going to learn about this one here. So previously, the lowest cost path</p>
+<p>66<br>00:06:58,959 –&gt; 00:07:07,439<br>was a value 6. Now it’s going to learn one of value 4 of cost 4 going via R4. So that’s this entry</p>
+<p>67<br>00:07:07,439 –&gt; 00:07:12,319<br>here that it just learned about. So the first three hop path that was actually lower cost than the two</p>
+<p>68<br>00:07:12,319 –&gt; 00:07:18,160<br>hop path. Let’s see what happens in the next iteration. In the next iteration of the algorithm,</p>
+<p>69<br>00:07:18,160 –&gt; 00:07:23,680<br>the news is spreading out further to the four hop paths. And in the four hop paths, for example,</p>
+<p>70<br>00:07:23,680 –&gt; 00:07:33,520<br>R1 is going to learn of the four hop path that goes 1, 2, 3, 4, which is of cost 7 because R2</p>
+<p>71<br>00:07:33,520 –&gt; 00:07:39,120<br>will have propagated on the information that it can get there at a cost of 6. So 6 plus 1 is 7.</p>
+<p>72<br>00:07:39,120 –&gt; 00:07:44,320<br>So if it goes via R2, it can get there at a cost of 7. So that’s this one here.</p>
+<p>73<br>00:07:44,319 –&gt; 00:07:53,680<br>R2 has just learned in this next hop that there is an even better path. And we can see this one here.</p>
+<p>74<br>00:07:53,680 –&gt; 00:07:58,399<br>I’m going to draw this one in green to make it a little bit clearer, which goes via here. And that</p>
+<p>75<br>00:07:58,399 –&gt; 00:08:05,920<br>is a cost 1, 2, 3, 4, 5. So it’s just learning that it can get there at 5 if it goes via R5.</p>
+<p>76<br>00:08:07,120 –&gt; 00:08:11,759<br>So the interesting thing here is these two bits of information are actually inconsistent because</p>
+<p>77<br>00:08:11,759 –&gt; 00:08:17,199<br>the algorithm hasn’t converged. The news of this particular opportunity hasn’t made it to R1 yet.</p>
+<p>78<br>00:08:17,199 –&gt; 00:08:25,120<br>So we’ll see that happen in the next step. In the next step, R1 is going to learn of the newer value,</p>
+<p>79<br>00:08:25,120 –&gt; 00:08:36,159<br>which is to go via that it can reach it in a cost of 6 going on this path here. 1, 2, 3, 4, 5, 6,</p>
+<p>80<br>00:08:36,159 –&gt; 00:08:43,519<br>cost of 6 going via R2. Oops, I’ve got a little bit of a mistake there. Okay, that should be via R2.</p>
+<p>81<br>00:08:46,159 –&gt; 00:08:51,279<br>So now it appears that we’re done. How do we know that we’re done? Well, we can look at it and see</p>
+<p>82<br>00:08:51,279 –&gt; 00:08:56,399<br>that we can’t find any lower cost paths. That tells us that we’re done. But you could also see that</p>
+<p>83<br>00:08:56,399 –&gt; 00:09:02,480<br>this will finish. It can’t go any further. So long as we’ve explored the maximum hop length in</p>
+<p>84<br>00:09:02,480 –&gt; 00:09:07,440<br>the network and the maximum hop length here, you can see that there’s a longer one that goes</p>
+<p>85<br>00:09:07,440 –&gt; 00:09:16,960<br>like this. That’s probably about the longest. So that’s 1, 2, 3, 4, 5, 6. So that will be another</p>
+<p>86<br>00:09:16,960 –&gt; 00:09:24,639<br>hop for that information to propagate. So it’s the longest loop free path. We know that a path that</p>
+<p>87<br>00:09:24,639 –&gt; 00:09:28,720<br>has a loop in it must have a higher cost. So we’re never going to pick that one. So so long as we’ve</p>
+<p>88<br>00:09:28,720 –&gt; 00:09:33,519<br>gone as many hops as the longest loop free path, we know that we’ll finish. The question is how do</p>
+<p>89<br>00:09:33,519 –&gt; 00:09:38,240<br>we know that we’ll end up with the right answer? In fact, there’s a couple of questions that are worth</p>
+<p>90<br>00:09:38,240 –&gt; 00:09:43,279<br>asking here. The first one is what is the maximum runtime of the algorithm? Just told you that.</p>
+<p>91<br>00:09:43,279 –&gt; 00:09:47,920<br>It’s going to be the longest loop free path. It’s going to be the hop count of the longest loop free path.</p>
+<p>92<br>00:09:49,680 –&gt; 00:09:55,920<br>Will the algorithm always converge? Intuitive late is actually pretty clear that it must converge,</p>
+<p>93<br>00:09:55,919 –&gt; 00:10:02,159<br>because we start out with the values infinity and we only ever replace them with lower values</p>
+<p>94<br>00:10:02,159 –&gt; 00:10:08,479<br>and we keep reducing the value until the algorithm has run. So we only have a replace a value with a</p>
+<p>95<br>00:10:08,479 –&gt; 00:10:14,799<br>lower cost value and eventually we should hear from all of our neighbors their lowest cost path.</p>
+<p>96<br>00:10:15,679 –&gt; 00:10:20,319<br>And so eventually we will reach the lowest value and we will converge. So the algorithm will</p>
+<p>97<br>00:10:20,320 –&gt; 00:10:26,879<br>always converge. It’s the clever thing about this algorithm. So what happens when link costs change</p>
+<p>98<br>00:10:26,879 –&gt; 00:10:33,600<br>or when links and routers fail? We’ll see an example of that in a minute when actually things can go</p>
+<p>99<br>00:10:33,600 –&gt; 00:10:39,440<br>wrong when that happens, but in general it will continue to converge because when something fails,</p>
+<p>100<br>00:10:39,440 –&gt; 00:10:45,440<br>if a lower cost path should suddenly appear, then it will find it and start using it. Things are</p>
+<p>101<br>00:10:45,440 –&gt; 00:10:51,200<br>a little bit more complicated when things fail and there is no longer a path to somewhere. And I’ll</p>
+<p>102<br>00:10:51,200 –&gt; 00:10:56,640<br>see you show you an example of this in right now. This is a well-known problem with the Bellman</p>
+<p>103<br>00:10:56,640 –&gt; 00:11:02,800<br>Ford algorithm and it’s sometimes characterized as bad news travels slowly. Let’s see what that’s</p>
+<p>104<br>00:11:02,800 –&gt; 00:11:08,400<br>what’s going on here. We’re going to look at this really simple four router network here that are</p>
+<p>105<br>00:11:08,400 –&gt; 00:11:14,320<br>all connected in a line and the cost from one router to the next is one. So nice simple trivial</p>
+<p>106<br>00:11:14,320 –&gt; 00:11:19,920<br>example. So initially everything’s working fine. We’ve converged on these values down here at time</p>
+<p>107<br>00:11:19,920 –&gt; 00:11:26,960<br>zero. We happen to know that we can get to R4. So this is all about the costs to reach R4 in this case.</p>
+<p>108<br>00:11:28,240 –&gt; 00:11:35,440<br>We that R1 can get there in a cost of three. So that’s its value. If it goes via R2,</p>
+<p>109<br>00:11:35,840 –&gt; 00:11:43,280<br>R2 can get there at a cost of two. That’s this plus this. If it goes via R3,</p>
+<p>110<br>00:11:44,640 –&gt; 00:11:50,000<br>R3 can get there in a cost of one and it’s directly connected to R4. So everything is good.</p>
+<p>111<br>00:11:50,880 –&gt; 00:11:57,440<br>But then suddenly the link from three to four is going to break. So this link over here has broken.</p>
+<p>112<br>00:11:58,080 –&gt; 00:12:07,040<br>What happens next? Well, what’s going to happen is they’re going to keep advertising their cost.</p>
+<p>113<br>00:12:07,520 –&gt; 00:12:14,240<br>R3 is going to start advertising. Hey, I was under the impression that I could get there with a cost</p>
+<p>114<br>00:12:14,240 –&gt; 00:12:21,440<br>of one before. That’s here. But I don’t have that link anymore. I know that that link is broken.</p>
+<p>115<br>00:12:21,520 –&gt; 00:12:29,360<br>But I did hear from R2 that R2 could get there at a cost of two. Now I am one hop away from R2.</p>
+<p>116<br>00:12:29,360 –&gt; 00:12:34,000<br>So therefore I must be able to get there in a cost of three if I send my packets to R2.</p>
+<p>117<br>00:12:34,640 –&gt; 00:12:40,000<br>Clearly this is wrong. R3 is delusional. Can’t really do that. But because it’s being hearing</p>
+<p>118<br>00:12:40,000 –&gt; 00:12:46,080<br>this value advertised from R2 that says if you send packets to me, I’ll deliver them to R4 at a cost</p>
+<p>119<br>00:12:46,080 –&gt; 00:12:53,200<br>of two plus the cost from me to you. And so therefore a cost of three. Our one doesn’t know anything</p>
+<p>120<br>00:12:53,200 –&gt; 00:13:01,920<br>about the failure yet. Let’s see what happens in the next step. So the question is will it eventually</p>
+<p>121<br>00:13:01,920 –&gt; 00:13:10,960<br>converge and settle down on the correct value? So in the next step, because R3 is now advertising</p>
+<p>122<br>00:13:10,960 –&gt; 00:13:21,120<br>its cost as being three if it goes via R2, that news is going to reach R2. And R2 is going to say,</p>
+<p>123<br>00:13:21,120 –&gt; 00:13:27,120<br>hey, you were previously saying to me that it was a cost of three, but you’re now, sorry, a cost</p>
+<p>124<br>00:13:27,120 –&gt; 00:13:33,120<br>of one. Now you’re telling me it’s a cost of three. So therefore it must be costing me four to get</p>
+<p>125<br>00:13:33,120 –&gt; 00:13:38,400<br>there. It’s your cost which was three that you were advertising to me plus the one. So it’s costing</p>
+<p>126<br>00:13:38,720 –&gt; 00:13:44,639<br>me four to get there if I go via R3. And you can see what’s going to happen is this is going to</p>
+<p>127<br>00:13:44,639 –&gt; 00:13:50,559<br>gradually, they’re going to gradually keep feeding each other bad information iteratively and it’s</p>
+<p>128<br>00:13:50,559 –&gt; 00:13:55,840<br>going to increase at every step. And this is just going to spiral out of control. So in the next round,</p>
+<p>129<br>00:13:57,519 –&gt; 00:14:03,759<br>R2 is going to say, hey, you’re telling me that I can get there at four plus the cost from me to you.</p>
+<p>130<br>00:14:03,759 –&gt; 00:14:08,159<br>That’s five. If I send packets to you and so it goes to five and then you know it’s going to go to six</p>
+<p>131<br>00:14:09,200 –&gt; 00:14:14,000<br>and so on and it’s just going to keep increasing as we go around. This is known as the counting to</p>
+<p>132<br>00:14:14,000 –&gt; 00:14:22,319<br>infinity problem or bad news travel slowly. There’s a fairly simple fix to this which is, it seems a</p>
+<p>133<br>00:14:22,319 –&gt; 00:14:27,679<br>bit of a, bit of a clue, but we could set into infinity to be some small number and say 16 and</p>
+<p>134<br>00:14:27,679 –&gt; 00:14:31,679<br>stop when you get to a count of 16. If you get to a count of 16, it actually means that there’s no</p>
+<p>135<br>00:14:31,679 –&gt; 00:14:37,359<br>path at all. There are various other methods. There’s one that’s called split horizon. You’ll find</p>
+<p>136<br>00:14:37,359 –&gt; 00:14:43,439<br>this described in textbook. Essentially, because R2 received the lowest cost path from R3,</p>
+<p>137<br>00:14:44,799 –&gt; 00:14:51,039<br>it does not advertise that cost to R3. In other words, because R2 was originally receiving that lowest</p>
+<p>138<br>00:14:51,039 –&gt; 00:14:59,919<br>cost path from R3, it doesn’t send those advertisements to R3. And so R3 will never think that it can</p>
+<p>139<br>00:14:59,919 –&gt; 00:15:06,959<br>reach R4 via R2. So that’s one way. Another one is called split horizon with poison reverse.</p>
+<p>140<br>00:15:07,919 –&gt; 00:15:16,159<br>In this case, R2 will actively advertise infinity to R3. So it says, because I heard the lowest</p>
+<p>141<br>00:15:16,159 –&gt; 00:15:22,399<br>cost path from you, I’m going to actively send you the value infinity. So you will absolutely never</p>
+<p>142<br>00:15:22,399 –&gt; 00:15:29,679<br>think that you can get there via me. So these are kind of fixes to what is really an elegant algorithm,</p>
+<p>143<br>00:15:29,679 –&gt; 00:15:34,479<br>but in practice, it takes quite a few things like this to make it work. Let’s take a look at</p>
+<p>144<br>00:15:34,479 –&gt; 00:15:40,319<br>Belmanford in practice. Belmanford is an example of a distance vector algorithm. In other words,</p>
+<p>145<br>00:15:40,319 –&gt; 00:15:46,399<br>there’s a distance vector that is maintained by all of the routers of the distance from them to</p>
+<p>146<br>00:15:46,399 –&gt; 00:15:52,319<br>every other router. And then they iteratively converge on the correct answer. In other words,</p>
+<p>147<br>00:15:52,319 –&gt; 00:15:57,599<br>the correct minimum cost distance. This is an example of, therefore, of a distance vector algorithm</p>
+<p>148<br>00:15:57,600 –&gt; 00:16:03,279<br>and formed the heart of one of the first routing protocols used in the internet, called RIP.</p>
+<p>149<br>00:16:03,759 –&gt; 00:16:08,720<br>And the RIP stood for the routing information protocol. And it was used very widely for a</p>
+<p>150<br>00:16:08,720 –&gt; 00:16:13,200<br>quite a long time. And this was because it requires very little computation on the routers. It could</p>
+<p>151<br>00:16:13,200 –&gt; 00:16:17,759<br>be calculated in a distributed way, requiring very little burden, computational burden on each</p>
+<p>152<br>00:16:17,759 –&gt; 00:16:22,399<br>of the routers. And we knew that it would eventually converge with a few little fixes here like</p>
+<p>153<br>00:16:22,959 –&gt; 00:16:28,159<br>the split horizon technique and preventing it from counting to infinity. Over time, though, it was</p>
+<p>154<br>00:16:28,159 –&gt; 00:16:33,600<br>replaced by other algorithms, other techniques that collect together the entire state of the network</p>
+<p>155<br>00:16:33,600 –&gt; 00:16:39,600<br>on each router. And then independently, on their own, calculate the minimum cost spanning tree.</p>
+<p>156<br>00:16:39,600 –&gt; 00:16:45,199<br>So no longer a distributed algorithm. We’ll see an example of that in another video on Dijkstra’s</p>
+<p>157<br>00:16:45,200 –&gt; 00:16:46,800<br>shortest path first algorithm.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>CS144 NetworkP866 2Routing</div>
+      <div>http://example.com/2025/10/25/CS144-networkP866-2Routing/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP856-1Routing/" title="CS144 NetworkP856 1Routing">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">CS144 NetworkP856 1Routing</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/CS144-networkP896-5Routing/" title="CS144 NetworkP896 5Routing">
+                        <span class="hidden-mobile">CS144 NetworkP896 5Routing</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

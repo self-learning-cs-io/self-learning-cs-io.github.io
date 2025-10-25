@@ -1,0 +1,835 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:09,040Next we’re going to look at slightly different graph processing applications. 200:00:09,040 –&gt; 00:00:16,519But it’s a graph processing algorithm that’s useful in man">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P65Part22 07_connected Components">
+<meta property="og:url" content="http://example.com/2025/10/25/PrincetonAlgorithms%20P65Part22-07_connected-components/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:09,040Next we’re going to look at slightly different graph processing applications. 200:00:09,040 –&gt; 00:00:16,519But it’s a graph processing algorithm that’s useful in man">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.834Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.834Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P65Part22 07_connected Components - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P65Part22 07_connected Components"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          2.2k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          19 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P65Part22 07_connected Components</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:09,040<br>Next we’re going to look at slightly different graph processing applications.</p>
+<p>2<br>00:00:09,040 –&gt; 00:00:16,519<br>But it’s a graph processing algorithm that’s useful in many applications as we’ll see in</p>
+<p>3<br>00:00:16,519 –&gt; 00:00:17,519<br>a minute.</p>
+<p>4<br>00:00:17,519 –&gt; 00:00:19,960<br>Slightly different than depth and breadth or search.</p>
+<p>5<br>00:00:19,960 –&gt; 00:00:22,519<br>It’s called Computing Connective Component.</p>
+<p>6<br>00:00:22,519 –&gt; 00:00:28,519<br>Now I mentioned this a little bit when we talked about basic definitions.</p>
+<p>7<br>00:00:28,519 –&gt; 00:00:34,079<br>So the idea is that if there’s a path between two vertices, we say they’re connected.</p>
+<p>8<br>00:00:34,079 –&gt; 00:00:42,039<br>And what we want to do is pre-process the graph that is build a data type that can answer</p>
+<p>9<br>00:00:42,039 –&gt; 00:00:48,399<br>queries of the form is v connected to w in constant time.</p>
+<p>10<br>00:00:48,399 –&gt; 00:00:56,039<br>Now we want to be able to do that for a huge sparse graph of the type that appears in practice.</p>
+<p>11<br>00:00:56,039 –&gt; 00:01:03,799<br>So we can’t use the, if we could use the adjacency matrix data structure, maybe we can</p>
+<p>12<br>00:01:03,799 –&gt; 00:01:06,480<br>do that, but we can’t.</p>
+<p>13<br>00:01:06,480 –&gt; 00:01:14,079<br>So we’re going to build a class that uses our standard representation that will enable</p>
+<p>14<br>00:01:14,079 –&gt; 00:01:17,159<br>clients to find connected components.</p>
+<p>15<br>00:01:17,159 –&gt; 00:01:19,319<br>Really interesting to think about this one.</p>
+<p>16<br>00:01:19,319 –&gt; 00:01:24,759<br>We’re getting the job done that we could get done if we had a huge sparse matrix.</p>
+<p>17<br>00:01:24,760 –&gt; 00:01:30,640<br>If we have billions of vertices, there’s no way we can have billions squared in the matrix.</p>
+<p>18<br>00:01:30,640 –&gt; 00:01:33,400<br>So we have to find another way to do it.</p>
+<p>19<br>00:01:33,400 –&gt; 00:01:36,040<br>So here’s the data type that we want to implement.</p>
+<p>20<br>00:01:36,040 –&gt; 00:01:38,280<br>So it’s called CC.</p>
+<p>21<br>00:01:38,280 –&gt; 00:01:43,960<br>And it’s going to, the constructor is going to build the data structure that finds a connected</p>
+<p>22<br>00:01:43,960 –&gt; 00:01:52,000<br>component in the given graph to be able to efficiently answer these connectivity queries.</p>
+<p>23<br>00:01:52,000 –&gt; 00:01:56,319<br>It’ll also be able to count the number of connected components.</p>
+<p>24<br>00:01:56,319 –&gt; 00:02:04,400<br>And it also assigns a identifier from zero to count minus one that identifies a connected</p>
+<p>25<br>00:02:04,400 –&gt; 00:02:08,039<br>component that every vertex is in.</p>
+<p>26<br>00:02:08,039 –&gt; 00:02:16,479<br>So now if you, maybe this sounds a little bit similar to what we did for the union fine</p>
+<p>27<br>00:02:16,479 –&gt; 00:02:18,159<br>problem.</p>
+<p>28<br>00:02:18,159 –&gt; 00:02:26,079<br>So union fine problem, we were taking edges and we wanted to have queries that, well,</p>
+<p>29<br>00:02:26,079 –&gt; 00:02:31,079<br>union is like adding edge to the graph and then find is like, are these two things connected</p>
+<p>30<br>00:02:31,079 –&gt; 00:02:32,079<br>yet?</p>
+<p>31<br>00:02:32,079 –&gt; 00:02:38,319<br>Now with union fine, we found that we couldn’t quite answer the thing in constant time.</p>
+<p>32<br>00:02:38,319 –&gt; 00:02:43,400<br>Remember, there’s a very slowly growing question, constant and practical terms, but not</p>
+<p>33<br>00:02:43,400 –&gt; 00:02:44,919<br>really.</p>
+<p>34<br>00:02:44,919 –&gt; 00:02:51,560<br>So it’s less sufficient than the algorithm that we’re going to talk about because it doesn’t</p>
+<p>35<br>00:02:51,560 –&gt; 00:02:53,560<br>quite get constant time.</p>
+<p>36<br>00:02:53,560 –&gt; 00:02:58,879<br>On the other hand, in another way, it’s better than the algorithm that we’re going to talk</p>
+<p>37<br>00:02:58,879 –&gt; 00:03:02,560<br>about because you can intermix the unions and fines.</p>
+<p>38<br>00:03:02,560 –&gt; 00:03:07,000<br>And in this case, because we’re working with a graph, it’s like we’re taking all the unions</p>
+<p>39<br>00:03:07,000 –&gt; 00:03:10,319<br>and then we’re handling fine requests.</p>
+<p>40<br>00:03:10,319 –&gt; 00:03:16,239<br>So anyway, what we’re going to use to implement this is a depth first search approach.</p>
+<p>41<br>00:03:16,239 –&gt; 00:03:17,879<br>So we’ll do the depth first search.</p>
+<p>42<br>00:03:17,879 –&gt; 00:03:24,000<br>We’ll just keep different data than we did than when we were finding paths.</p>
+<p>43<br>00:03:24,000 –&gt; 00:03:34,719<br>So the algorithm is based on the notion that connection is equivalence relation.</p>
+<p>44<br>00:03:34,719 –&gt; 00:03:40,479<br>So as we call a equivalence relation, it has these three properties.</p>
+<p>45<br>00:03:40,479 –&gt; 00:03:43,159<br>Every vertex is connected to itself.</p>
+<p>46<br>00:03:43,159 –&gt; 00:03:49,400<br>If v is connected to w, then w is connected to v. And if v is connected to w and w to x,</p>
+<p>47<br>00:03:49,400 –&gt; 00:03:51,639<br>then v is connected to x.</p>
+<p>48<br>00:03:51,639 –&gt; 00:03:58,000<br>And those basic operations underlie the algorithm that we’re going to talk about.</p>
+<p>49<br>00:03:58,000 –&gt; 00:04:07,759<br>So the equivalence relation is a general mathematical concept that implies in graph there in this</p>
+<p>50<br>00:04:07,759 –&gt; 00:04:08,759<br>case.</p>
+<p>51<br>00:04:08,759 –&gt; 00:04:16,399<br>And as I already mentioned in the case of graph, it implies that the vertices divide up into</p>
+<p>52<br>00:04:16,399 –&gt; 00:04:21,360<br>connected components, which are maximal sets of connected vertices.</p>
+<p>53<br>00:04:21,360 –&gt; 00:04:24,959<br>So our sample graph has three connected components.</p>
+<p>54<br>00:04:24,959 –&gt; 00:04:30,919<br>And what we’ll do is assign identifiers to each one of the components.</p>
+<p>55<br>00:04:30,919 –&gt; 00:04:38,839<br>And that will, for every vertex, give us an identifier number for that vertex.</p>
+<p>56<br>00:04:38,839 –&gt; 00:04:42,879<br>And that’s the data structure that our depth first search is going to build.</p>
+<p>57<br>00:04:42,879 –&gt; 00:04:49,759<br>And that immediately gives the constant time implementation of the connectivity query.</p>
+<p>58<br>00:04:49,759 –&gt; 00:04:53,319<br>Given two vertices, you look up their ID.</p>
+<p>59<br>00:04:53,319 –&gt; 00:04:55,839<br>If they’re equal, they’re in the same connected component.</p>
+<p>60<br>00:04:55,839 –&gt; 00:04:58,680<br>If they’re different, they’re not.</p>
+<p>61<br>00:04:58,680 –&gt; 00:05:03,360<br>So that’s the data structure that we’re going to build.</p>
+<p>62<br>00:05:03,360 –&gt; 00:05:10,519<br>It’s like a union find tree where all the trees are flat.</p>
+<p>63<br>00:05:10,519 –&gt; 00:05:12,639<br>So that’s what I just said.</p>
+<p>64<br>00:05:12,639 –&gt; 00:05:17,360<br>Given connected components, we can answer queries in constant time.</p>
+<p>65<br>00:05:17,360 –&gt; 00:05:26,879<br>So here’s a big grid graph that we used when we’re talking about union find.</p>
+<p>66<br>00:05:26,879 –&gt; 00:05:32,080<br>And it turns out that this one’s got 63 connected components.</p>
+<p>67<br>00:05:32,080 –&gt; 00:05:40,720<br>And again, when you really think about it, it’s kind of amazing that we can do this computation</p>
+<p>68<br>00:05:40,720 –&gt; 00:05:44,040<br>in linear time, even for huge graphs.</p>
+<p>69<br>00:05:44,040 –&gt; 00:05:48,840<br>And it’s really important to be able to do so for those very huge graphs that we talked</p>
+<p>70<br>00:05:48,840 –&gt; 00:05:52,480<br>about in so many applications.</p>
+<p>71<br>00:05:52,480 –&gt; 00:05:56,879<br>If you can process all the edges, you can also find out the connected components and be</p>
+<p>72<br>00:05:56,879 –&gt; 00:06:00,800<br>set up to answer connectivity queries.</p>
+<p>73<br>00:06:00,800 –&gt; 00:06:05,120<br>This is a simple algorithm, but really it’s ingenious.</p>
+<p>74<br>00:06:05,120 –&gt; 00:06:09,960<br>OK, so let’s look at the implementation.</p>
+<p>75<br>00:06:09,959 –&gt; 00:06:15,039<br>So our goal is to petition the vertices into connected components.</p>
+<p>76<br>00:06:15,039 –&gt; 00:06:18,959<br>So we’re going to use DFS and marking.</p>
+<p>77<br>00:06:18,959 –&gt; 00:06:24,599<br>And so what we’re going to do is for a general graph, for every unmarked vertex, we’re going</p>
+<p>78<br>00:06:24,599 –&gt; 00:06:30,120<br>to run DFS to find all the vertices that are connected to that one that are going to</p>
+<p>79<br>00:06:30,120 –&gt; 00:06:32,919<br>be part of the same component.</p>
+<p>80<br>00:06:32,919 –&gt; 00:06:39,479<br>So we used the marking to help control the DFS, but also to control the connected</p>
+<p>81<br>00:06:39,480 –&gt; 00:06:46,800<br>components that the vertices that have already been processed and known to be in a given</p>
+<p>82<br>00:06:46,800 –&gt; 00:06:49,360<br>connected component.</p>
+<p>83<br>00:06:49,360 –&gt; 00:06:56,560<br>So let’s look at a demo to understand how this algorithm works.</p>
+<p>84<br>00:06:56,560 –&gt; 00:07:00,600<br>So again, we’re going to use Depth for Search and their summary of Depth for Search to</p>
+<p>85<br>00:07:00,600 –&gt; 00:07:05,879<br>visit a vertex, we mark it as visitive, and then recursively visit all the unmarked</p>
+<p>86<br>00:07:05,879 –&gt; 00:07:09,360<br>vertices that are adjacent.</p>
+<p>87<br>00:07:09,360 –&gt; 00:07:15,280<br>And so in this case, so we’ll start, we’re going to visit all the vertices in the graph</p>
+<p>88<br>00:07:15,280 –&gt; 00:07:18,920<br>in order to identify the connected component.</p>
+<p>89<br>00:07:18,920 –&gt; 00:07:21,639<br>So we’ll start by visiting 0.</p>
+<p>90<br>00:07:21,639 –&gt; 00:07:25,480<br>To visit 0, we have to check 6, 2, 1, and 5.</p>
+<p>91<br>00:07:25,480 –&gt; 00:07:28,480<br>So we start by checking 6.</p>
+<p>92<br>00:07:28,480 –&gt; 00:07:31,520<br>We mark it as visited.</p>
+<p>93<br>00:07:31,520 –&gt; 00:07:34,800<br>So that’s entry 6 in the array.</p>
+<p>94<br>00:07:34,800 –&gt; 00:07:41,439<br>And now we’re going to keep this other vertex indexed array, which is the ID, the connected</p>
+<p>95<br>00:07:41,439 –&gt; 00:07:43,319<br>component number.</p>
+<p>96<br>00:07:43,319 –&gt; 00:07:49,439<br>So all we’re saying by putting a 0 in that entry is that 6 and 0 are in the same connected</p>
+<p>97<br>00:07:49,439 –&gt; 00:07:50,920<br>component.</p>
+<p>98<br>00:07:50,920 –&gt; 00:07:57,240<br>Every vertex that we encountered during the Depth for Search from 0, we’re going to assign</p>
+<p>99<br>00:07:57,240 –&gt; 00:07:59,759<br>a value of 0.</p>
+<p>100<br>00:07:59,759 –&gt; 00:08:02,879<br>Okay, so what do we have to do to visit 6?</p>
+<p>101<br>00:08:02,879 –&gt; 00:08:07,839<br>We have to check 0, and then we have to check 4.</p>
+<p>102<br>00:08:07,839 –&gt; 00:08:11,120<br>So 4 is unmarked.</p>
+<p>103<br>00:08:11,120 –&gt; 00:08:14,600<br>So we’re going to recurse and visit 4.</p>
+<p>104<br>00:08:14,600 –&gt; 00:08:17,199<br>To visit 4, we have to check 5.</p>
+<p>105<br>00:08:17,199 –&gt; 00:08:19,199<br>5 is unmarked.</p>
+<p>106<br>00:08:19,199 –&gt; 00:08:23,480<br>So we recurse to visit 5.</p>
+<p>107<br>00:08:23,480 –&gt; 00:08:27,199<br>And to visit 5, we have to check 3, 4, and 0.</p>
+<p>108<br>00:08:27,199 –&gt; 00:08:28,839<br>3 is unmarked.</p>
+<p>109<br>00:08:28,839 –&gt; 00:08:32,399<br>This is the same depth for a search that we did before.</p>
+<p>110<br>00:08:32,399 –&gt; 00:08:36,959<br>Now we’re just keeping track of the connected component number, and we’re assigning every</p>
+<p>111<br>00:08:36,959 –&gt; 00:08:44,720<br>vertex that we encounter with the same ID as 0.</p>
+<p>112<br>00:08:44,720 –&gt; 00:08:48,679<br>Okay, so now we have to visit 3.</p>
+<p>113<br>00:08:48,679 –&gt; 00:08:51,399<br>To visit 3, we have to check 5 and 4.</p>
+<p>114<br>00:08:51,399 –&gt; 00:08:53,559<br>5 was marked, nothing to do.</p>
+<p>115<br>00:08:53,559 –&gt; 00:08:56,039<br>4 was marked, nothing to do.</p>
+<p>116<br>00:08:56,039 –&gt; 00:08:57,960<br>So we’re done with 3.</p>
+<p>117<br>00:08:57,960 –&gt; 00:08:58,879<br>We’re done with 3.</p>
+<p>118<br>00:08:58,879 –&gt; 00:09:01,439<br>We can continue the depth for Search from 5.</p>
+<p>119<br>00:09:01,440 –&gt; 00:09:03,720<br>We have to check 4 and 0.</p>
+<p>120<br>00:09:03,720 –&gt; 00:09:09,120<br>4 was marked, 0 was marked, so we’re done.</p>
+<p>121<br>00:09:09,120 –&gt; 00:09:11,880<br>And now we can continue with the depth for Search from 4.</p>
+<p>122<br>00:09:11,880 –&gt; 00:09:13,720<br>We have to check 6 and 3.</p>
+<p>123<br>00:09:13,720 –&gt; 00:09:19,120<br>6 was marked, 3 was marked, and we’re done.</p>
+<p>124<br>00:09:19,120 –&gt; 00:09:26,280<br>And we can now 6 is done, and now we can continue with 0, and we have to check 2.</p>
+<p>125<br>00:09:26,280 –&gt; 00:09:28,720<br>Check 2, it’s not marked.</p>
+<p>126<br>00:09:28,720 –&gt; 00:09:33,519<br>So we mark it and give it a connected component number of 0.</p>
+<p>127<br>00:09:33,519 –&gt; 00:09:38,920<br>To visit 2, all we do is check 0, which is marked, so we’re done, and then we do the same</p>
+<p>128<br>00:09:38,920 –&gt; 00:09:40,600<br>thing with 1.</p>
+<p>129<br>00:09:40,600 –&gt; 00:09:48,080<br>Unmarked, so we visit it, I guess sign it 0, and then visit 1.</p>
+<p>130<br>00:09:48,080 –&gt; 00:09:51,879<br>To do that, we check 0, which is marked, so we’re done with 1.</p>
+<p>131<br>00:09:51,879 –&gt; 00:09:58,120<br>And then to finish 0, we have to check 5, and that’s marked, so we don’t have to do</p>
+<p>132<br>00:09:58,120 –&gt; 00:10:00,919<br>anything, and we’re done with 0.</p>
+<p>133<br>00:10:00,919 –&gt; 00:10:05,100<br>So now we’re done with the first connected component, but we’re not done with the whole</p>
+<p>134<br>00:10:05,100 –&gt; 00:10:12,440<br>graph, so what we want to do is go look for, so that’s a connected component corresponding</p>
+<p>135<br>00:10:12,440 –&gt; 00:10:13,940<br>to 0.</p>
+<p>136<br>00:10:13,940 –&gt; 00:10:21,840<br>Now what we want to do is go look for an unmarked vertex, so we started at 0, we check</p>
+<p>137<br>00:10:21,840 –&gt; 00:10:26,600<br>1, 2, 3, 4, 5, and 6, and they’re all marked.</p>
+<p>138<br>00:10:26,600 –&gt; 00:10:33,240<br>And so the next unmarked vertex that we find in the graph is 7.</p>
+<p>139<br>00:10:33,240 –&gt; 00:10:41,840<br>So once we return from the depth research for 0, we increment, counter, which is how</p>
+<p>140<br>00:10:41,840 –&gt; 00:10:46,720<br>many connected components have we seen, and now we’re going to assign that number to</p>
+<p>141<br>00:10:46,720 –&gt; 00:10:51,320<br>everything that’s connected to 7 on the depth research from 7.</p>
+<p>142<br>00:10:51,320 –&gt; 00:10:58,800<br>So what do we do to depth research from 7, we check 8, 8’s unmarked, so we go visit it,</p>
+<p>143<br>00:10:58,800 –&gt; 00:11:05,840<br>so we assign it, connect the component number of 1, same as 7, and mark it, and then go</p>
+<p>144<br>00:11:05,840 –&gt; 00:11:11,000<br>ahead and recurse to visit 8, we check 7, which is marked, so there’s nothing to do, we’re</p>
+<p>145<br>00:11:11,000 –&gt; 00:11:15,680<br>done with 8, and then we’re done with 7.</p>
+<p>146<br>00:11:15,680 –&gt; 00:11:20,280<br>So now we’re done with all the vertices that were connected to 7, we increment our</p>
+<p>147<br>00:11:20,360 –&gt; 00:11:26,120<br>counter of number of components to 2 and look for another vertex.</p>
+<p>148<br>00:11:26,120 –&gt; 00:11:32,240<br>So now we check 8, which we already know is marked, connected to 7, and so now 9 is unmarked,</p>
+<p>149<br>00:11:32,240 –&gt; 00:11:38,159<br>so we’re going to do a DFS from 9, and everybody connected to 9 is going to get assigned a connected</p>
+<p>150<br>00:11:38,159 –&gt; 00:11:40,159<br>component number of 2.</p>
+<p>151<br>00:11:40,159 –&gt; 00:11:48,659<br>So to visit 9, we have to check 11, and that was unmarked, so we visit it, give it a 2,</p>
+<p>152<br>00:11:48,659 –&gt; 00:11:54,419<br>to visit 11, we have to check 9, which is marked, so nothing to do, and 12, which is unmarked,</p>
+<p>153<br>00:11:54,419 –&gt; 00:11:58,139<br>so we visit it, and give it a number of 2.</p>
+<p>154<br>00:11:58,139 –&gt; 00:12:02,740<br>To visit 12, we have to check 11, which was marked, and 9, which is also marked, and</p>
+<p>155<br>00:12:02,740 –&gt; 00:12:10,259<br>then we’re done with 12, and then we’re done with 11, and then to finish doing 9, we</p>
+<p>156<br>00:12:10,259 –&gt; 00:12:16,980<br>have to check 10 and 12, 10 is unmarked, so we mark it and give it a number of 2, to</p>
+<p>157<br>00:12:16,980 –&gt; 00:12:25,100<br>visit 10, we check 9, which is marked, so we’re done, and then finally to finish the DFS,</p>
+<p>158<br>00:12:25,100 –&gt; 00:12:32,060<br>we check 12 from 9, and that’s marked, so we’re done with 9, and now we keep looking,</p>
+<p>159<br>00:12:32,060 –&gt; 00:12:41,340<br>and we find that 10, 11, and 12 are all marked, so we’ve completed the computation, and</p>
+<p>160<br>00:12:41,340 –&gt; 00:12:46,860<br>for every vertex, we have a connected component number, and for any given query, we can test</p>
+<p>161<br>00:12:46,860 –&gt; 00:12:52,340<br>whether they’re in the same connected component simply by looking up that number and seeing</p>
+<p>162<br>00:12:52,340 –&gt; 00:12:58,060<br>if it’s equal, that’s a demo of connected components computation.</p>
+<p>163<br>00:12:58,060 –&gt; 00:13:05,899<br>Okay, so here’s the code for finding connected components with DFS, which is another</p>
+<p>164<br>00:13:05,899 –&gt; 00:13:12,340<br>straightforward DFS implementation, just like the other one, it just keeps slightly</p>
+<p>165<br>00:13:12,340 –&gt; 00:13:15,420<br>different data structures.</p>
+<p>166<br>00:13:15,419 –&gt; 00:13:26,740<br>So we keep the marked data structure, which is the vertices that we’ve visited, and then</p>
+<p>167<br>00:13:26,740 –&gt; 00:13:33,860<br>we keep this vertex indexed array ID, which gives the identifier of the component containing</p>
+<p>168<br>00:13:33,860 –&gt; 00:13:39,379<br>V, I think we call it CC on the demo, and then account of the number of components that</p>
+<p>169<br>00:13:39,379 –&gt; 00:13:41,539<br>we’ve seen.</p>
+<p>170<br>00:13:41,539 –&gt; 00:13:51,539<br>So the constructor creates the marked array, and it creates this ID array, but now the</p>
+<p>171<br>00:13:51,539 –&gt; 00:13:57,059<br>constructor does more work than a single call on DFS.</p>
+<p>172<br>00:13:57,059 –&gt; 00:14:01,659<br>What it does is it goes through, this is the constructor, goes through every vertex in</p>
+<p>173<br>00:14:01,659 –&gt; 00:14:08,699<br>the array in the graph, and if it’s not marked, it does the DFS, and that DFS will mark</p>
+<p>174<br>00:14:08,700 –&gt; 00:14:16,200<br>a lot of other vertices, but when it’s done, all of those are going to get assigned to</p>
+<p>175<br>00:14:16,200 –&gt; 00:14:22,540<br>value of count, and we’re going to increment count, then go and look for another unmarked</p>
+<p>176<br>00:14:22,540 –&gt; 00:14:23,540<br>vertex.</p>
+<p>177<br>00:14:23,540 –&gt; 00:14:29,500<br>Anything that wasn’t marked by that first DFS, DFS, we’ll do a DFS from that one, and</p>
+<p>178<br>00:14:29,500 –&gt; 00:14:36,020<br>mark all its vertices with the next value for the ID.</p>
+<p>179<br>00:14:36,019 –&gt; 00:14:44,179<br>So now let’s look at the implementation of DFS, it’s recursive array, just like the</p>
+<p>180<br>00:14:44,179 –&gt; 00:14:56,220<br>one that we did for pathfinding, except all that we do, when we mark a vertex, we also</p>
+<p>181<br>00:14:56,220 –&gt; 00:15:01,899<br>simply set its ID to the current component name.</p>
+<p>182<br>00:15:01,899 –&gt; 00:15:07,720<br>So all the vertices that are discovered in the same call of DFS have the same ID, and</p>
+<p>183<br>00:15:07,720 –&gt; 00:15:15,579<br>to visit a vertex, you go through all its adjacent vertices, and any that are not marked,</p>
+<p>184<br>00:15:15,579 –&gt; 00:15:18,220<br>you give a recursive DFS call.</p>
+<p>185<br>00:15:18,220 –&gt; 00:15:26,419<br>Again, this code is amazingly compact and elegant, when we’re going through the demo step-by-step,</p>
+<p>186<br>00:15:26,419 –&gt; 00:15:33,979<br>maybe you could see that the underlying computation is actually kind of complex, but recursion</p>
+<p>187<br>00:15:33,979 –&gt; 00:15:43,500<br>and the graph processing API that we set up provides compact and easy to understand implementation.</p>
+<p>188<br>00:15:43,500 –&gt; 00:15:52,819<br>So that’s using DFS to find connected components, and then to return the ID of a given vertex,</p>
+<p>189<br>00:15:52,820 –&gt; 00:15:57,260<br>you just look it up in the array, and to return the number of components just return</p>
+<p>190<br>00:15:57,260 –&gt; 00:16:03,220<br>count, and then you can build up the needed connectivity API from those.</p>
+<p>191<br>00:16:03,220 –&gt; 00:16:07,540<br>So that’s depth-first search to find connected components.</p>
+<p>192<br>00:16:07,540 –&gt; 00:16:14,420<br>We’ll just talk briefly about two applications, and from scientific applications.</p>
+<p>193<br>00:16:14,420 –&gt; 00:16:21,540<br>So here’s an application of sexually transmitted diseases at a high school, and simply the</p>
+<p>194<br>00:16:21,539 –&gt; 00:16:32,879<br>vertices are people, blue or men and pink or women, and you have an edge between if there</p>
+<p>195<br>00:16:32,879 –&gt; 00:16:40,120<br>was a contact, and so it’s obvious that you’re going to be interested in the connected</p>
+<p>196<br>00:16:40,120 –&gt; 00:16:46,980<br>components of this graph to be able to properly study sexually transmitted diseases.</p>
+<p>197<br>00:16:46,980 –&gt; 00:16:54,779<br>These individuals had no contact with these, which everyone has a disease, maybe it won’t</p>
+<p>198<br>00:16:54,779 –&gt; 00:16:58,980<br>spread, or if you add a new edge, then you may be have a problem.</p>
+<p>199<br>00:16:58,980 –&gt; 00:17:04,059<br>That’s just one example of studying a spread of disease.</p>
+<p>200<br>00:17:04,059 –&gt; 00:17:15,059<br>Here’s another example that we use for the similar to the flood fill example.</p>
+<p>201<br>00:17:15,059 –&gt; 00:17:21,700<br>This is processing data from a scientific experiment.</p>
+<p>202<br>00:17:21,700 –&gt; 00:17:29,299<br>In this case, this image comes from a photograph, and the white things are particles that are</p>
+<p>203<br>00:17:29,299 –&gt; 00:17:36,299<br>moving, and all yet is an image where it’s a grayscale image.</p>
+<p>204<br>00:17:36,299 –&gt; 00:17:42,339<br>And so what we’ll do to do this processing is we want to identify the movement of these</p>
+<p>205<br>00:17:42,339 –&gt; 00:17:44,779<br>particles over the time.</p>
+<p>206<br>00:17:44,779 –&gt; 00:17:50,019<br>And the way we do it is build a grid graph, like the one for the flood fill application,</p>
+<p>207<br>00:17:50,019 –&gt; 00:17:57,740<br>and do an edge connecting two vertices if they’re different to their grayscale values</p>
+<p>208<br>00:17:57,740 –&gt; 00:18:01,299<br>greater than or less than some threshold.</p>
+<p>209<br>00:18:01,299 –&gt; 00:18:09,259<br>And so then if you do that and then find the connected components, then you can identify</p>
+<p>210<br>00:18:09,259 –&gt; 00:18:14,579<br>blobs which correspond to real particles in this simulation.</p>
+<p>211<br>00:18:14,579 –&gt; 00:18:19,900<br>And they do that every frame in a movie, then you can track movie particles every time.</p>
+<p>212<br>00:18:19,900 –&gt; 00:18:23,619<br>So these are maybe fairly high resolution images.</p>
+<p>213<br>00:18:23,619 –&gt; 00:18:25,740<br>These are grass with lots and lots of edges.</p>
+<p>214<br>00:18:25,740 –&gt; 00:18:32,500<br>You need to be able to do this computation quickly in order to do this scientific experiment.</p>
+<p>215<br>00:18:32,500 –&gt; 00:18:36,740<br>And we use this as an example in our first year programming course.</p>
+<p>216<br>00:18:36,740 –&gt; 00:18:42,779<br>But it’s based on computing connected components using depth first search.</p>
+<p>217<br>00:18:42,779 –&gt; 00:18:46,339<br>So that’s our third example of a graph processing algorithm.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P65Part22 07_connected Components</div>
+      <div>http://example.com/2025/10/25/PrincetonAlgorithms P65Part22-07_connected-components/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P67Part23-02_introduction-to-digraphs/" title="PrincetonAlgorithms P67Part23 02_introduction To Digraphs">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P67Part23 02_introduction To Digraphs</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P68Part23-03_digraph-api/" title="PrincetonAlgorithms P68Part23 03_digraph Api">
+                        <span class="hidden-mobile">PrincetonAlgorithms P68Part23 03_digraph Api</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

@@ -1,0 +1,1742 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:03,680So I want to talk today about the MAMCache. 200:00:03,680 –&gt; 00:00:08,640This is a paper from Facebook from 2013. 300:00:08,640 –&gt; 00:00:12,880The MAMCache is sti">
+<meta property="og:type" content="article">
+<meta property="og:title" content="MIT6824 P18Lecture17 CacheConsistency MemcachedatFacebook">
+<meta property="og:url" content="http://example.com/2025/10/25/MIT6824%20P18Lecture17-CacheConsistency-MemcachedatFacebook/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:03,680So I want to talk today about the MAMCache. 200:00:03,680 –&gt; 00:00:08,640This is a paper from Facebook from 2013. 300:00:08,640 –&gt; 00:00:12,880The MAMCache is sti">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.802Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.802Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>MIT6824 P18Lecture17 CacheConsistency MemcachedatFacebook - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="MIT6824 P18Lecture17 CacheConsistency MemcachedatFacebook"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          12k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          101 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">MIT6824 P18Lecture17 CacheConsistency MemcachedatFacebook</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:03,680<br>So I want to talk today about the MAMCache.</p>
+<p>2<br>00:00:03,680 –&gt; 00:00:08,640<br>This is a paper from Facebook from 2013.</p>
+<p>3<br>00:00:08,640 –&gt; 00:00:12,880<br>The MAMCache is still widely used in many websites.</p>
+<p>4<br>00:00:12,880 –&gt; 00:00:14,880<br>We’re big internet websites.</p>
+<p>5<br>00:00:14,880 –&gt; 00:00:18,719<br>You can use have ideas or architecture for similar to it.</p>
+<p>6<br>00:00:18,719 –&gt; 00:00:23,359<br>The paper is an experienced paper.</p>
+<p>7<br>00:00:30,000 –&gt; 00:00:36,960<br>The goal of the paper is not to introduce new ideas or new concepts or innovative ways of building</p>
+<p>8<br>00:00:37,679 –&gt; 00:00:44,320<br>systems that are more to report on practical experience in trying to build systems that</p>
+<p>9<br>00:00:44,320 –&gt; 00:00:49,760<br>in this particular case can support a billion requests per second or multiple billion requests per</p>
+<p>10<br>00:00:49,760 –&gt; 00:00:50,159<br>seconds.</p>
+<p>11<br>00:00:51,119 –&gt; 00:00:57,199<br>And so there are three lessons that you can take away from this particular paper.</p>
+<p>12<br>00:01:02,159 –&gt; 00:01:07,920<br>One is that you have very impressive performance out of building a system</p>
+<p>13<br>00:01:09,120 –&gt; 00:01:11,359<br>with an off-the-shelf component.</p>
+<p>14<br>00:01:11,359 –&gt; 00:01:20,640<br>And so the system consists of an extended open software packages like</p>
+<p>15<br>00:01:20,640 –&gt; 00:01:26,719<br>mySQL, MAMCache.D, and then they combine that together to actually build a system</p>
+<p>16<br>00:01:26,719 –&gt; 00:01:29,439<br>where it’s built that out to a system that can actually support an ability in the</p>
+<p>17<br>00:01:29,439 –&gt; 00:01:30,239<br>other requests per seconds.</p>
+<p>18<br>00:01:31,760 –&gt; 00:01:39,200<br>As you will see in this lecture, there’s sort of continuously attention between performance.</p>
+<p>19<br>00:01:42,319 –&gt; 00:01:43,280<br>And consistency.</p>
+<p>20<br>00:01:48,719 –&gt; 00:01:52,799<br>And as you will see in this paper, the design is mostly driven by performance.</p>
+<p>21<br>00:01:54,159 –&gt; 00:02:01,280<br>But they want to provide some degree of consistency and the sort of that is sort of added to</p>
+<p>22<br>00:02:02,239 –&gt; 00:02:06,719<br>make the system be used for the application that actually faces the cases.</p>
+<p>23<br>00:02:06,799 –&gt; 00:02:12,800<br>In fact, the consistency model is quite different from the consistency models that we’ve seen before.</p>
+<p>24<br>00:02:12,800 –&gt; 00:02:18,079<br>Most of the systems we talked about so far actually provide the external consistency or linear</p>
+<p>25<br>00:02:18,079 –&gt; 00:02:24,159<br>isability. They’re very strong for consistency. And in case of Facebook,</p>
+<p>26<br>00:02:25,199 –&gt; 00:02:32,159<br>their application don’t really need linear isability. If a user is reading news articles and the</p>
+<p>27<br>00:02:32,240 –&gt; 00:02:38,879<br>news feed is a couple of seconds behind, doesn’t really matter. And so they have absolutely not the goal</p>
+<p>28<br>00:02:38,879 –&gt; 00:02:45,759<br>of providing linear isability or strict consistency. So that’s an important thing to keep in mind.</p>
+<p>29<br>00:02:48,240 –&gt; 00:02:53,039<br>Despite that they’re not shooting for strong consistency, there are some sort of carcassionary</p>
+<p>30<br>00:02:53,120 –&gt; 00:03:01,759<br>pales in the paper that you know, adding consistency measures is not easy. And it can be sort of</p>
+<p>31<br>00:03:01,759 –&gt; 00:03:08,319<br>not have for your parent’s room until the front of the start. But nevertheless, you know,</p>
+<p>32<br>00:03:08,319 –&gt; 00:03:15,759<br>that you really can’t argue with the success of the system. It’s really very successful and</p>
+<p>33<br>00:03:15,759 –&gt; 00:03:22,079<br>allows Facebook and websites that follow or in their companies, the follow-up strategies to</p>
+<p>34<br>00:03:22,080 –&gt; 00:03:30,240<br>actually scale the large, large number of users. So my point for this lecture is basically first</p>
+<p>35<br>00:03:30,240 –&gt; 00:03:35,680<br>to talk about performance. Really, the performance is the driving force behind this design. And then</p>
+<p>36<br>00:03:35,680 –&gt; 00:03:43,280<br>at the end, you know, talk more about consistency. Before jumping into, let me know if there’s any questions.</p>
+<p>37<br>00:03:44,080 –&gt; 00:03:56,319<br>Okay, so let me start with sort of a little bit of a broader introduction to performance. And</p>
+<p>38<br>00:03:56,319 –&gt; 00:04:08,800<br>basically, so talk about like website evolution. I’m sure many of you actually have built websites.</p>
+<p>39<br>00:04:09,439 –&gt; 00:04:13,280<br>And you know, if you sort of start out and you don’t have many users, you know, this is pretty</p>
+<p>40<br>00:04:13,280 –&gt; 00:04:18,560<br>straightforward. You know, you buy a machine where rent a machine on Amazon or anywhere else.</p>
+<p>41<br>00:04:19,600 –&gt; 00:04:24,400<br>And you just have basically need three components. You know, you need a web server. So let’s say</p>
+<p>42<br>00:04:24,400 –&gt; 00:04:33,360<br>Apache. You need sort of an application framework to build your website in. Maybe it’s PHP,</p>
+<p>43<br>00:04:33,360 –&gt; 00:04:41,439<br>maybe it’s Python, in case of Facebook data, I think they use PHP. And you need the database</p>
+<p>44<br>00:04:41,439 –&gt; 00:04:46,639<br>that actually stores the data. I’ll see your website. So it’ll be definitely my use, you know,</p>
+<p>45<br>00:04:46,639 –&gt; 00:04:53,199<br>whatever my SQL. That’s Facebook is doing. And so, you know, clients, you know, connect through your</p>
+<p>46<br>00:04:53,199 –&gt; 00:05:01,360<br>website, run, you know, whatever application code, whatever application service the website provides,</p>
+<p>47<br>00:05:01,680 –&gt; 00:05:08,879<br>and store and retrieve data using the database and the database provides transactions. It has</p>
+<p>48<br>00:05:09,439 –&gt; 00:05:16,720<br>SQLs. It’s easy to query over the data in different ways. And all the persistent status,</p>
+<p>49<br>00:05:16,720 –&gt; 00:05:20,800<br>you know, short in the database. So, you know, you just have to back up the database and you’re</p>
+<p>50<br>00:05:20,800 –&gt; 00:05:26,639<br>basically having a grid sort of fault tolerance plan. And that’s sort of the, and for any website,</p>
+<p>51<br>00:05:26,719 –&gt; 00:05:32,240<br>that’s a small number of users. This is completely sufficient. And the way many websites are built.</p>
+<p>52<br>00:05:32,959 –&gt; 00:05:38,479<br>However, you know, when the number of users increases, you probably need to go to much</p>
+<p>53<br>00:05:38,479 –&gt; 00:05:43,439<br>a little bit more sophisticated design. So this is sort of step one in the evolution. And then</p>
+<p>54<br>00:05:43,439 –&gt; 00:05:55,279<br>step two, this sort of tried to address the first bottleneck that you were running to when you</p>
+<p>55<br>00:05:55,279 –&gt; 00:05:59,679<br>have a larger number of users. And typically, the bottleneck that you were running to is basically</p>
+<p>56<br>00:05:59,679 –&gt; 00:06:03,679<br>the computation that cycles being used, you know, by the applications. So if you have found</p>
+<p>57<br>00:06:03,679 –&gt; 00:06:08,879<br>new users running at the website at the same time, or 10,000 or whatever number of users it is,</p>
+<p>58<br>00:06:09,679 –&gt; 00:06:14,719<br>and, you know, just the running, you know, the application code on a single CPU or a single</p>
+<p>59<br>00:06:14,719 –&gt; 00:06:21,679<br>computer gets to, you know, is the, you know, drive space where you do the CPU load up to 100%,</p>
+<p>60<br>00:06:21,680 –&gt; 00:06:27,040<br>and then, you know, you can’t support more. And so, fortunately, it isn’t actually straightforwardly</p>
+<p>61<br>00:06:27,040 –&gt; 00:06:32,879<br>solved because, you know, the database actually has all the persistent state. So the difficulty</p>
+<p>62<br>00:06:32,879 –&gt; 00:06:37,280<br>is all the basis, you know, you keep the one machine with the database, and run, keep the machine</p>
+<p>63<br>00:06:37,280 –&gt; 00:06:41,360<br>on the database, and then just buy a bunch of different machines for the front ends. And I’m just</p>
+<p>64<br>00:06:41,360 –&gt; 00:06:46,800<br>going to talk about the front end of one thing, which is, you know, typically the website,</p>
+<p>65<br>00:06:46,879 –&gt; 00:06:51,840<br>hatchy plus, you know, some application code. And you’re going to, you’re going to get more users,</p>
+<p>66<br>00:06:51,840 –&gt; 00:07:03,120<br>you’ll buy more machines. You know, they all connect to the database, you know, to get their data,</p>
+<p>67<br>00:07:04,240 –&gt; 00:07:09,920<br>and, and not actually this design works out extremely well, because basically the front ends</p>
+<p>68<br>00:07:10,240 –&gt; 00:07:17,920<br>are stateless. All this data, again, is in the database. And so adding a new server, you know,</p>
+<p>69<br>00:07:17,920 –&gt; 00:07:23,120<br>it’s pretty trivial. All the front ends, actually, we’ll see the latest rights because all the data</p>
+<p>70<br>00:07:23,120 –&gt; 00:07:27,200<br>is actually stored in the database. So there are no consistency issues. In terms of fault</p>
+<p>71<br>00:07:27,200 –&gt; 00:07:32,800<br>tolerance is easy. If one of these machines fails, you know, no problem at all. And maybe the other</p>
+<p>72<br>00:07:32,800 –&gt; 00:07:36,960<br>machines have to take over the load, or you have to bring on a new machine of line, but you know,</p>
+<p>73<br>00:07:36,959 –&gt; 00:07:43,199<br>actually you have to do anything in terms of complicated data restoration or restoration,</p>
+<p>74<br>00:07:43,199 –&gt; 00:07:49,519<br>because all the data is actually in the database. And so this is a good, just typically the</p>
+<p>75<br>00:07:49,519 –&gt; 00:07:59,279<br>first thing that happens as a website to your scales. Now, of course, if your website scales further,</p>
+<p>76<br>00:08:00,319 –&gt; 00:08:06,879<br>and you need to support more than say, you know, for example, a simple old MySQL setup can probably</p>
+<p>77<br>00:08:06,879 –&gt; 00:08:14,879<br>support 100,000 simple read transactions or simple read queries per second, probably, you know,</p>
+<p>78<br>00:08:14,879 –&gt; 00:08:21,040<br>thousands of write transactions. And so if the total number requests from your users actually go</p>
+<p>79<br>00:08:21,040 –&gt; 00:08:30,159<br>to over 100,000, then you need a different plan. And so then the next plan is typically sharpings.</p>
+<p>80<br>00:08:37,840 –&gt; 00:08:43,919<br>And so far, this is all pretty standard. And so what you do is actually you take the storage,</p>
+<p>81<br>00:08:43,919 –&gt; 00:08:51,439<br>you know, machine, and you split it in multiple machines. The front end is basically state-of-same.</p>
+<p>82<br>00:08:51,439 –&gt; 00:08:54,240<br>We still have our any front end machines.</p>
+<p>83<br>00:08:54,720 –&gt; 00:09:10,799<br>And here we have our charted database. And basically, you know, some range of the keys</p>
+<p>84<br>00:09:10,799 –&gt; 00:09:19,200<br>lives on, you know, whatever, maybe one, two, 40 live-on, you know, chart one, 42, whatever,</p>
+<p>85<br>00:09:19,200 –&gt; 00:09:25,680<br>70 live-on, chart two, and 70 to 100, you know, just to make stuff up, lives in chart three.</p>
+<p>86<br>00:09:25,680 –&gt; 00:09:31,360<br>So basically you take the tables in the database or the rows in the database and chart them by key.</p>
+<p>87<br>00:09:32,800 –&gt; 00:09:37,840<br>And so when a friend that needs to know, of course, which database there are, and even though it</p>
+<p>88<br>00:09:37,840 –&gt; 00:09:43,040<br>needs to get, you know, key 32, you know, we’ll go to chart one, it needs to get me to key,</p>
+<p>89<br>00:09:43,039 –&gt; 00:09:50,240<br>we’ll say 50 years ago to chart two. And so this gives us like database parallelism.</p>
+<p>90<br>00:09:56,240 –&gt; 00:10:04,000<br>So like every, most requests actually are two different charts, you know, basically instead of</p>
+<p>91<br>00:10:04,000 –&gt; 00:10:08,959<br>actually limited by the one machine, we’re actually getting the proof boot of one machine, say,</p>
+<p>92<br>00:10:09,040 –&gt; 00:10:18,080<br>100,000 times in the number of machines that we have. And so that is typically the next step.</p>
+<p>93<br>00:10:18,080 –&gt; 00:10:23,040<br>And of course, this actually has this step is a little bit more painful than the first step.</p>
+<p>94<br>00:10:24,480 –&gt; 00:10:30,000<br>Because now you might actually have cross-charge transactions if you need them, or if you want to</p>
+<p>95<br>00:10:30,000 –&gt; 00:10:35,360<br>avoid them, you’ve got to sort of group the keys, you know, that go together on the same machine,</p>
+<p>96<br>00:10:36,080 –&gt; 00:10:42,240<br>otherwise, you know, you need some two-phase commit type protocol if you do transactions</p>
+<p>97<br>00:10:42,240 –&gt; 00:10:47,120<br>across sharks. So this is the step from the first, you know, design two to design three,</p>
+<p>98<br>00:10:47,840 –&gt; 00:10:50,879<br>is sort of a significant, a significant step.</p>
+<p>99<br>00:10:54,480 –&gt; 00:10:59,920<br>Now, if you grow further and further, you might think, well, you know, you can just</p>
+<p>100<br>00:10:59,919 –&gt; 00:11:05,839<br>shark the database further and further, sure, a few keys per server, but that actually increases,</p>
+<p>101<br>00:11:06,559 –&gt; 00:11:11,839<br>you know, this, the risk that you actually have to do cross-shark transactions.</p>
+<p>102<br>00:11:13,360 –&gt; 00:11:18,879<br>So there’s another way of going, which is to observe that like, well, maybe it’s not really important</p>
+<p>103<br>00:11:18,879 –&gt; 00:11:24,480<br>that the database actually supports the reach. You know, we can re-offload the reach,</p>
+<p>104<br>00:11:24,480 –&gt; 00:11:29,599<br>you know, from the database, and basically the database only does the rights, then maybe you</p>
+<p>105<br>00:11:29,759 –&gt; 00:11:35,759<br>can get a big, you know, performance game. And so that’s basically the next, you know, common step</p>
+<p>106<br>00:11:35,759 –&gt; 00:11:41,120<br>that websites take. If this can look is, you know, at cash.</p>
+<p>107<br>00:11:51,680 –&gt; 00:11:56,480<br>And, you know, it could be in the form of MEN cash, or RADIS, you know, sort of popular,</p>
+<p>108<br>00:11:56,480 –&gt; 00:12:02,639<br>you know, open source packages, you know, for cashing. And then the basic plan is, you know,</p>
+<p>109<br>00:12:02,639 –&gt; 00:12:06,960<br>sell it, it’s roughly as follows. You have a lot of front ends before.</p>
+<p>110<br>00:12:13,759 –&gt; 00:12:18,720<br>And we have a set of cashes on the site. We’ll talk a little bit about that in a second,</p>
+<p>111<br>00:12:18,720 –&gt; 00:12:24,960<br>a little bit more. In the case, okay, okay, we got here are cashes, cash layer,</p>
+<p>112<br>00:12:26,560 –&gt; 00:12:32,639<br>cash one, cash two, cash three. And in the case of Facebook, these are called, each individual</p>
+<p>113<br>00:12:32,639 –&gt; 00:12:38,960<br>survey is called a MEN cash D-Demon. And the whole cluster, the collection of cash is called MEN cash.</p>
+<p>114<br>00:12:43,519 –&gt; 00:12:46,320<br>And, you know, there’s still our database, I’m going to start it</p>
+<p>115<br>00:12:48,000 –&gt; 00:12:54,159<br>across maybe multiple machines. There’s sort of the storage layer.</p>
+<p>116<br>00:12:57,440 –&gt; 00:13:04,080<br>And then sort of the idea is, you know, pretty straightforward. If, you know, front end needs to</p>
+<p>117<br>00:13:05,039 –&gt; 00:13:12,240<br>want to read a particular key, it first tries to cash. And hopefully, you know, we’ll hit into cash,</p>
+<p>118<br>00:13:12,240 –&gt; 00:13:18,720<br>and so basically get a quick response back, you know, from the cash. If it’s not into cash,</p>
+<p>119<br>00:13:18,720 –&gt; 00:13:25,360<br>then it can retrieve it from the storage system and then install, you know, the data into cash.</p>
+<p>120<br>00:13:27,360 –&gt; 00:13:30,560<br>And writes, you know, basically go straight to the storage server.</p>
+<p>121<br>00:13:37,680 –&gt; 00:13:41,039<br>And this, you know, this sort of kind of design, you know, we’ll talk about it in much more</p>
+<p>122<br>00:13:41,039 –&gt; 00:13:45,279<br>in the details in a second, but this sort of kind of design way at the cash layer works extremely</p>
+<p>123<br>00:13:45,279 –&gt; 00:13:50,399<br>well for read heavy workloads. And so if you think about Facebook, it is going to be, you know,</p>
+<p>124<br>00:13:50,399 –&gt; 00:13:55,840<br>a whole lot of users. And what they’re doing is reading other people’s posts, you know,</p>
+<p>125<br>00:13:55,840 –&gt; 00:14:04,399<br>looking at the timelines, you know, maybe watching, looking at pictures, reading the news articles,</p>
+<p>126<br>00:14:04,399 –&gt; 00:14:08,000<br>etc. So it’s a very heavily oriented,</p>
+<p>127<br>00:14:10,639 –&gt; 00:14:17,840<br>worked, worked, worked, oriented to reach. And you know, in this case, you know, the reads are going</p>
+<p>128<br>00:14:17,840 –&gt; 00:14:24,240<br>to be all surfed from these cashers. And these cashers can be like good simple. And think about</p>
+<p>129<br>00:14:26,480 –&gt; 00:14:30,800<br>caching the key value server that you build in lab 3, you know, the key value server itself is</p>
+<p>130<br>00:14:30,800 –&gt; 00:14:35,280<br>actually nothing more than a hash table. Maybe, you know, you want to be a little bit smart about</p>
+<p>131<br>00:14:35,920 –&gt; 00:14:41,519<br>having locked per bucket and sort of you have a bunch of concurrency within the cash server itself</p>
+<p>132<br>00:14:42,480 –&gt; 00:14:46,080<br>or the key value server itself. But it is basically pretty straightforward.</p>
+<p>133<br>00:14:46,240 –&gt; 00:14:56,320<br>The two challenges that come along with this, where the main challenge basically is</p>
+<p>134<br>00:14:58,080 –&gt; 00:15:03,600<br>how to keep the database and the cash persistent.</p>
+<p>135<br>00:15:09,360 –&gt; 00:15:15,360<br>So challenge one. And you know, a lot of the paper is devoted to talking about that.</p>
+<p>136<br>00:15:17,040 –&gt; 00:15:23,440<br>And the second challenge, which I know is the main theme from the paper, is how to make sure that</p>
+<p>137<br>00:15:23,440 –&gt; 00:15:27,440<br>the database doesn’t get overloaded.</p>
+<p>138<br>00:15:36,000 –&gt; 00:15:42,879<br>And the issue here is that once your scale up say to a billion requests per second,</p>
+<p>139<br>00:15:43,039 –&gt; 00:15:50,320<br>by using cash if any of the cashers fail, that load will shift from the front ends,</p>
+<p>140<br>00:15:50,320 –&gt; 00:15:56,159<br>you know, perhaps to the database. And of course, you know, the database is completely not</p>
+<p>141<br>00:15:56,159 –&gt; 00:16:02,240<br>designed to support that kind of workload. And basically will follow over. And so a key challenge</p>
+<p>142<br>00:16:02,240 –&gt; 00:16:09,279<br>in the whole sort of lessons that you learn from this particular paper is the techniques to</p>
+<p>143<br>00:16:09,279 –&gt; 00:16:14,240<br>basically void, you know, going through the database so that there’s no risk that actually you</p>
+<p>144<br>00:16:14,240 –&gt; 00:16:20,959<br>overload the database. Okay, any sort of questions so far?</p>
+<p>145<br>00:16:27,279 –&gt; 00:16:32,079<br>Let me say a little bit about consistency, because that will be, although I’m going to talk</p>
+<p>146<br>00:16:32,079 –&gt; 00:16:36,799<br>mostly about performance, it’s going to be important to keep in mind even in this sort of section</p>
+<p>147<br>00:16:36,799 –&gt; 00:16:41,919<br>about consistency, about performance. That’s an adequate question. Sorry.</p>
+<p>148<br>00:16:43,039 –&gt; 00:16:48,559<br>It goes back to like having the state like the clients be stateless.</p>
+<p>149<br>00:16:50,240 –&gt; 00:16:54,559<br>So what, yeah, there we go on the second part of website evolution. Why is it important</p>
+<p>150<br>00:16:54,559 –&gt; 00:17:00,559<br>that the clients will be stateless? The makes the replication easy, right? The clients don’t actually,</p>
+<p>151<br>00:17:00,559 –&gt; 00:17:03,039<br>you don’t replicate the data, so you don’t have to keep the data persistent.</p>
+<p>152<br>00:17:03,439 –&gt; 00:17:08,240<br>You know, old data lives in one place, maybe the database server.</p>
+<p>153<br>00:17:09,279 –&gt; 00:17:14,960<br>Okay, yeah. So the idea is like any, any client can like fail and it doesn’t matter.</p>
+<p>154<br>00:17:14,960 –&gt; 00:17:20,240<br>Yeah, it doesn’t matter. You know, keep your income computing and you’re going to have to worry</p>
+<p>155<br>00:17:20,240 –&gt; 00:17:22,960<br>about actually keeping data consistent because data is only in one place.</p>
+<p>156<br>00:17:25,200 –&gt; 00:17:27,599<br>Like a lot of the things that we’ve been talking about this semester are going to</p>
+<p>157<br>00:17:27,599 –&gt; 00:17:37,599<br>and it doesn’t show up in this particular design. Okay. Okay. So I’ll get them back to sort of</p>
+<p>158<br>00:17:38,559 –&gt; 00:17:42,480<br>once you do actually catch data, you do have this consistency issue, right?</p>
+<p>159<br>00:17:44,879 –&gt; 00:17:48,559<br>And so, you know, the interesting question is like, I want this database, what is their Facebook</p>
+<p>160<br>00:17:48,559 –&gt; 00:17:52,879<br>shooting for? And something that’s typical that’s called almost like it’s called the</p>
+<p>161<br>00:17:52,880 –&gt; 00:17:59,040<br>eventual consistency, which is a pretty vague term. But basically, you know, maybe the contrast</p>
+<p>162<br>00:17:59,040 –&gt; 00:18:06,080<br>it is to say, I actually don’t know, shoot for linearizability. And then, in fact, you know, what they</p>
+<p>163<br>00:18:06,080 –&gt; 00:18:09,600<br>should have shooting for is, you know, they do want, you know, right order.</p>
+<p>164<br>00:18:14,320 –&gt; 00:18:20,080<br>So, uh, raise our old plates in some consistent, you know, total order so that you don’t get weird,</p>
+<p>165<br>00:18:20,079 –&gt; 00:18:24,399<br>you know, going back and tie in problems. And that is all done basically by the database.</p>
+<p>166<br>00:18:28,159 –&gt; 00:18:33,039<br>So, not really a big concern, you know, for the men catch a leader itself.</p>
+<p>167<br>00:18:34,720 –&gt; 00:18:38,559<br>And through the reads, it’s okay if reads are behind.</p>
+<p>168<br>00:18:38,559 –&gt; 00:18:52,559<br>And that is really the property of the applications that Facebook wants to support.</p>
+<p>169<br>00:18:53,200 –&gt; 00:18:58,960<br>Again, you know, the data that’s in these sketches is, you know, the data that the user’s</p>
+<p>170<br>00:18:58,960 –&gt; 00:19:06,079<br>actually consume, you know, the web pages, posts, timelines, friend lists, and all the kind of</p>
+<p>171<br>00:19:06,079 –&gt; 00:19:13,519<br>stuff. And or status. And none of that, actually, it’s really that important for users to see a very,</p>
+<p>172<br>00:19:14,879 –&gt; 00:19:18,720<br>you know, up to date, you know, picture, you know, it is a white behind a little bit, you know,</p>
+<p>173<br>00:19:18,720 –&gt; 00:19:23,119<br>one to two seconds, no problem at all. Certainly, it’s left behind for, you know, on this</p>
+<p>174<br>00:19:23,119 –&gt; 00:19:26,960<br>in milliseconds, you know, the user won’t even notice, you know, there’s an unacceptable.</p>
+<p>175<br>00:19:27,919 –&gt; 00:19:31,919<br>And so it’s okay to use it behind. Of course, you don’t want to be behind for hours, you know,</p>
+<p>176<br>00:19:31,920 –&gt; 00:19:36,640<br>you can use it by actually notice. But you know, for a little while behind this, actually, you’re not</p>
+<p>177<br>00:19:36,640 –&gt; 00:19:43,039<br>a particular big deal. So they don’t really shoot, you know, for straight lines and linearized</p>
+<p>178<br>00:19:43,039 –&gt; 00:19:48,480<br>ability where read observed the last right, you know, even some reason right, you know, that’s fine.</p>
+<p>179<br>00:19:49,680 –&gt; 00:19:53,759<br>There’s one exception to that. And which is that they do want to arrange that, you know,</p>
+<p>180<br>00:19:53,759 –&gt; 00:19:56,160<br>sort of clients, read their own threats.</p>
+<p>181<br>00:20:02,000 –&gt; 00:20:14,720<br>And, and meaning that, you know, if a one client, you know, updates a key K, and then immediately</p>
+<p>182<br>00:20:14,720 –&gt; 00:20:19,840<br>read you later that key K, it’s very desirable that that client actually does observe its own</p>
+<p>183<br>00:20:21,120 –&gt; 00:20:25,920<br>right. Because actually links is more complicated to otherwise, we’re writing complications would</p>
+<p>184<br>00:20:25,920 –&gt; 00:20:32,720<br>be even more complicated. So this is roughly what they’re shooting for. And, you know, this is</p>
+<p>185<br>00:20:32,720 –&gt; 00:20:37,279<br>quite a bit weaker than some of the models that we have seen before. And we’re mentioning maybe a</p>
+<p>186<br>00:20:37,279 –&gt; 00:20:44,720<br>little bit, you know, from the, but the zookeeper sort of style of contract, you know, it can provide.</p>
+<p>187<br>00:20:48,320 –&gt; 00:20:54,160<br>Okay, so one other thing, I want to say, you go back a little bit. So we need to keep the database</p>
+<p>188<br>00:20:54,160 –&gt; 00:21:02,720<br>in the cash system in some manner. And so the basic plan that things will follow is</p>
+<p>189<br>00:21:05,519 –&gt; 00:21:10,160<br>a new validation plan or a cash validation plan.</p>
+<p>190<br>00:21:16,800 –&gt; 00:21:22,960<br>And we’ll see later in the lecture on why that is the case. Basically what happens if a front end</p>
+<p>191<br>00:21:23,039 –&gt; 00:21:31,200<br>does right, you know, it goes actually through the database. Here’s my SQL.</p>
+<p>192<br>00:21:35,279 –&gt; 00:21:41,440<br>But they run next to the database, you know, another program, you know, whatever it calls Q.</p>
+<p>193<br>00:21:45,200 –&gt; 00:21:50,559<br>And basically, you know, it looks at the transaction log. So mySQL, we’re going to maintain some</p>
+<p>194<br>00:21:50,559 –&gt; 00:21:55,919<br>transaction log, you know, things like transactions. And you know, it looks like this transaction log</p>
+<p>195<br>00:21:55,919 –&gt; 00:22:03,919<br>sees, you know, what things get modified. And basically, if there’s a, you know, a key that gets</p>
+<p>196<br>00:22:03,919 –&gt; 00:22:09,200<br>modified. So it sees like KK gets modified. And it will send an validation message to the cash,</p>
+<p>197<br>00:22:10,000 –&gt; 00:22:17,279<br>basically deleting. Actually, it’s usually the meat of that key K, you know, to the appropriate</p>
+<p>198<br>00:22:17,279 –&gt; 00:22:23,759<br>catch. And that way, you know, the data will be removed. And then at some point later, when a client</p>
+<p>199<br>00:22:23,759 –&gt; 00:22:34,879<br>comes along, does a read, it will get a miss. In the cash, read, it retrieves the data from</p>
+<p>200<br>00:22:37,920 –&gt; 00:22:44,160<br>reasons from there. So here does it get, let me call this a get, is a read, gets the data from the</p>
+<p>201<br>00:22:44,160 –&gt; 00:22:49,840<br>read and then actually installs it in the cash. And so one thing you might wonder, and I like,</p>
+<p>202<br>00:22:49,840 –&gt; 00:22:55,759<br>why actually does the application itself install the data into the cash? So it doesn’t put.</p>
+<p>203<br>00:22:57,680 –&gt; 00:23:01,519<br>And this has to do with actually that these cash is, you know, what they’re called are look aside</p>
+<p>204<br>00:23:01,519 –&gt; 00:23:08,800<br>cash. And the reason they’re sort of look aside is that because typically what the application will do</p>
+<p>205<br>00:23:08,800 –&gt; 00:23:12,880<br>with the data that actually reads from the database is maybe a massager delivered. Now, there’s some</p>
+<p>206<br>00:23:12,880 –&gt; 00:23:17,600<br>computation on it, namely, it’ll take the text of the page and actually turn it into an HTML</p>
+<p>207<br>00:23:17,600 –&gt; 00:23:23,760<br>pilot page or HTML file and that’s the result of that HTML version of the page actually into the</p>
+<p>208<br>00:23:23,760 –&gt; 00:23:28,960<br>cash, where maybe, you know, the reach of budget different records aggregates, you know, some data</p>
+<p>209<br>00:23:28,960 –&gt; 00:23:35,920<br>and puts the aggregated result in the cash. So the application is sort of in control in this design</p>
+<p>210<br>00:23:35,920 –&gt; 00:23:41,440<br>of what to put in the cash and it puts a little bit more burden on the on the front end or in the</p>
+<p>211<br>00:23:41,440 –&gt; 00:23:46,799<br>application or decline to this case. But it has the advantage, you know, that you can sort of</p>
+<p>212<br>00:23:46,799 –&gt; 00:23:51,680<br>do some pre-processing before actually sticking something into cash. And this sort of in contrast</p>
+<p>213<br>00:23:51,680 –&gt; 00:23:55,440<br>where the cash would be transparent, where the cash would be sitting between the front ends</p>
+<p>214<br>00:23:55,440 –&gt; 00:23:59,039<br>and the storage server and if you miss in the cash then the cash would choose the data.</p>
+<p>215<br>00:24:00,320 –&gt; 00:24:04,080<br>But of course the cash in the database don’t really know what the application exactly wants to store</p>
+<p>216<br>00:24:04,080 –&gt; 00:24:11,120<br>in the cash. And so in the look aside design, this is the application is sort of in control of the cash.</p>
+<p>217<br>00:24:11,680 –&gt; 00:24:20,080<br>So in a little bit more detail, we can look at this picture that looks like how actually</p>
+<p>218<br>00:24:21,120 –&gt; 00:24:29,279<br>we derive to implement it. So here’s the reads. Oops, sorry.</p>
+<p>219<br>00:24:29,279 –&gt; 00:24:43,680<br>So this is a sort of figure two from the paper.</p>
+<p>220<br>00:24:47,200 –&gt; 00:24:49,599<br>And so here’s our web server that is our client.</p>
+<p>221<br>00:24:51,839 –&gt; 00:24:56,879<br>You have the client to get a retrieved paper from the memcash. And as we’ll see in a second,</p>
+<p>222<br>00:24:56,880 –&gt; 00:25:02,000<br>you know, typically they’ll ask for a whole bunch of keys. And there’s not uncommon that, you know,</p>
+<p>223<br>00:25:02,000 –&gt; 00:25:07,840<br>the web server will ask for 2200 of keys, you know, presumably in starting to compute some web page,</p>
+<p>224<br>00:25:07,840 –&gt; 00:25:13,440<br>the web page contains aggregates data from lots of different places. And for every peaches data that</p>
+<p>225<br>00:25:13,440 –&gt; 00:25:21,760<br>needs to be put into that web page, the client issues a get request, we may perhaps have many, many, many keys.</p>
+<p>226<br>00:25:21,759 –&gt; 00:25:30,000<br>Then it goes to memcash, it gets results back and you know, when sending that gap to the memcash,</p>
+<p>227<br>00:25:30,000 –&gt; 00:25:35,759<br>you know, it might contact many memcash D servers. The results come back to the web server.</p>
+<p>228<br>00:25:36,799 –&gt; 00:25:42,319<br>If anything is missing, you know, it can process the ones that actually return the positive result,</p>
+<p>229<br>00:25:42,319 –&gt; 00:25:50,400<br>but you know, we get nil back, then the client, you know, goes and doesn’t select on the database,</p>
+<p>230<br>00:25:50,400 –&gt; 00:25:58,320<br>it runs an SQL query, that returns some data. And the results, you know, of that, and the client might</p>
+<p>231<br>00:25:58,320 –&gt; 00:26:05,120<br>do some computation and then actually install the processed values that came back from the select into</p>
+<p>232<br>00:26:05,120 –&gt; 00:26:11,440<br>memcash. That’s sort of the read site. And again, again, you can sort of see the lookest, the lookest site,</p>
+<p>233<br>00:26:11,440 –&gt; 00:26:16,160<br>you know, property or aspect of this design, where memcash is not really sitting straight between</p>
+<p>234<br>00:26:16,240 –&gt; 00:26:20,240<br>the Web server and the database, but sits on the site and is managed by the client.</p>
+<p>235<br>00:26:22,320 –&gt; 00:26:24,800<br>So here’s the right site.</p>
+<p>236<br>00:26:28,080 –&gt; 00:26:35,759<br>So for example, if the Web server or the application needs to whatever add a post or, you know,</p>
+<p>237<br>00:26:35,759 –&gt; 00:26:43,680<br>put a picture in the post or whatever, the server does not update, you know, sends basically</p>
+<p>238<br>00:26:43,759 –&gt; 00:26:49,920<br>the update to the database. This is just performed like a normal transaction.</p>
+<p>239<br>00:26:51,200 –&gt; 00:26:55,120<br>And then of course, on the database and the site, you know, as we saw before, you know, we’ll do</p>
+<p>240<br>00:26:55,120 –&gt; 00:27:06,480<br>invalidations using, you know, this the SQL demon. But that SQL demon, you operate asynchronously.</p>
+<p>241<br>00:27:06,480 –&gt; 00:27:23,680<br>And so the client, the right doesn’t really wait until that invalidation has happened. Again,</p>
+<p>242<br>00:27:23,680 –&gt; 00:27:29,680<br>once the update is done in the database, the transaction has completely completed, it will turn</p>
+<p>243<br>00:27:29,680 –&gt; 00:27:35,279<br>to the client and then in parallel, the SQL does the invalidations.</p>
+<p>244<br>00:27:37,039 –&gt; 00:27:42,000<br>And because, you know, the SQL does the invalidations asynchronously,</p>
+<p>245<br>00:27:43,360 –&gt; 00:27:49,680<br>the Web server just to precaution does the delete of the key in the memcash immediately.</p>
+<p>246<br>00:27:50,240 –&gt; 00:27:56,000<br>And so when the reason for that delete is only because we want to read our own rights.</p>
+<p>247<br>00:28:00,160 –&gt; 00:28:13,840<br>So when the Web server, for example, looked for that key K right after it did the update,</p>
+<p>248<br>00:28:13,840 –&gt; 00:28:19,840<br>then it will miss in memcash.d and it will go and actually retrieve the new value and then install it.</p>
+<p>249<br>00:28:21,120 –&gt; 00:28:26,400<br>And without just the case, we’re what’s a remealy, it reaches own, reaches out,</p>
+<p>250<br>00:28:26,880 –&gt; 00:28:30,480<br>reads the key K that it just actually updated a little while ago.</p>
+<p>251<br>00:28:33,120 –&gt; 00:28:40,080<br>Okay, when the principle is not necessary to do this delete the invalidation at some point,</p>
+<p>252<br>00:28:40,080 –&gt; 00:28:45,840<br>it won’t happen and it will kick out that KK out of the cache. And that’s fine for basically</p>
+<p>253<br>00:28:45,840 –&gt; 00:28:51,280<br>other clients, but just for this client, we want to make sure that actually reaches own rights.</p>
+<p>254<br>00:28:52,240 –&gt; 00:28:54,000<br>I have a question.</p>
+<p>255<br>00:28:54,000 –&gt; 00:28:54,480<br>Yeah.</p>
+<p>256<br>00:28:54,480 –&gt; 00:28:59,119<br>So why doesn’t it set after the delete?</p>
+<p>257<br>00:28:59,119 –&gt; 00:29:03,680<br>Yeah, that’s a very good question. Like why doesn’t it do an update immediately?</p>
+<p>258<br>00:29:03,680 –&gt; 00:29:12,079<br>Right. And I think that’s called an update scheme. And that’s an principle possible here too.</p>
+<p>259<br>00:29:12,799 –&gt; 00:29:16,319<br>But I think it’s a little bit tricky for them to make work because I think it was going to require</p>
+<p>260<br>00:29:16,319 –&gt; 00:29:22,720<br>some collaboration between the database, the cache and the client. And I think the issues it follows.</p>
+<p>261<br>00:29:24,319 –&gt; 00:29:32,399<br>Let’s say we have a client C1, we have a client C2, and we’ll see similar sort of tag races</p>
+<p>262<br>00:29:32,399 –&gt; 00:29:38,079<br>going up. And let’s say client X1, since X1 is sends that through the database.</p>
+<p>263<br>00:29:38,079 –&gt; 00:29:46,960<br>And then, like I said, this is a hypothetical update scheme.</p>
+<p>264<br>00:29:50,960 –&gt; 00:29:55,519<br>And the main point of this slide will be, or this board will be sort of talking about,</p>
+<p>265<br>00:29:55,519 –&gt; 00:30:00,559<br>like doing action nobdade is not completely trivial. Let’s say client 2 at the same time,</p>
+<p>266<br>00:30:00,559 –&gt; 00:30:04,720<br>we’re roughly after it, you know, says X2, sends that to the database.</p>
+<p>267<br>00:30:04,720 –&gt; 00:30:11,519<br>And let’s say the client 1 has got a little bit delayed. And so we implement your</p>
+<p>268<br>00:30:11,519 –&gt; 00:30:20,400<br>scheme, correct? And we immediately do a set of K22. And let me say K was zero at the end in the beginning.</p>
+<p>269<br>00:30:21,200 –&gt; 00:30:28,720<br>So this will update map cache D, correct? So cache is now going to be half a value of whatever K22.</p>
+<p>270<br>00:30:29,440 –&gt; 00:30:36,000<br>Then, you know, client 1 actually comes around to do actually its set. So it will do set here,</p>
+<p>271<br>00:30:36,000 –&gt; 00:30:47,600<br>or put, and set, you know, put, oops, sets K21. And so this will all correct the two. And now we have</p>
+<p>272<br>00:30:47,600 –&gt; 00:30:58,000<br>a stale value in the cache. And worse, you know, this value is there.</p>
+<p>273<br>00:30:59,680 –&gt; 00:31:03,759<br>I sort of persistently stay up. You know, any, you know, get later on, you know, we’ll see</p>
+<p>274<br>00:31:03,759 –&gt; 00:31:10,160<br>actually the state of value. And so this is not so desirable. And so you want to avoid that. And</p>
+<p>275<br>00:31:10,160 –&gt; 00:31:16,799<br>of course, you can make maybe updates scheme work by, for example, order, or time stamping, or</p>
+<p>276<br>00:31:17,519 –&gt; 00:31:23,680<br>signing a sequence number studio updates. And then by the database, and then the key value</p>
+<p>277<br>00:31:23,680 –&gt; 00:31:30,640<br>server, or an M cache, you know, basically not perform updates that are out of order. But the</p>
+<p>278<br>00:31:30,640 –&gt; 00:31:34,720<br>scheme like that, who’s going to require some participation of the database, I mean, and</p>
+<p>279<br>00:31:34,720 –&gt; 00:31:38,880<br>required modifications to my SQL. And one of their goals is to actually build everything from</p>
+<p>280<br>00:31:38,880 –&gt; 00:31:44,799<br>off to shelf components. And so, you know, they prefer to go with this infillulation scheme,</p>
+<p>281<br>00:31:44,799 –&gt; 00:31:50,400<br>which I think is just simpler to implement. Because basically, you know, you’re the database,</p>
+<p>282<br>00:31:50,400 –&gt; 00:31:56,320<br>the only thing it has to do is this like additional process that sits on site. And, you know,</p>
+<p>283<br>00:31:56,320 –&gt; 00:32:01,440<br>users to standard delete operation on that, you know, MEN cache, Diority supports.</p>
+<p>284<br>00:32:04,640 –&gt; 00:32:06,080<br>Thank you. Does that make sense?</p>
+<p>285<br>00:32:08,560 –&gt; 00:32:12,720<br>And we’ll see similarly, you should like this one show up later again, right? Because there’s</p>
+<p>286<br>00:32:14,160 –&gt; 00:32:19,680<br>your member from the paper, there’s some discussion about these tokens or leases to deal with</p>
+<p>287<br>00:32:19,680 –&gt; 00:32:25,279<br>stable values. But that’s going to be us. We’ll see stable values on the read site, or</p>
+<p>288<br>00:32:26,799 –&gt; 00:32:31,440<br>stable values as sort of have an interesting interaction between readers and writers. But can</p>
+<p>289<br>00:32:31,440 –&gt; 00:32:36,640<br>be solved totally in the context of MEN cache, D, without actually making any database modifications.</p>
+<p>290<br>00:32:38,160 –&gt; 00:32:44,320<br>So why do we have a separate process to basically issue the invalidation? So this is a SQL,</p>
+<p>291<br>00:32:44,319 –&gt; 00:32:51,279<br>I think it was called. So why do we have this process if the front end itself will issue a</p>
+<p>292<br>00:32:51,279 –&gt; 00:32:59,519<br>delete K anyway? We’ll see later on why this is going to be very useful. And particularly,</p>
+<p>293<br>00:32:59,519 –&gt; 00:33:02,639<br>you know, what we’re going to do is we’ll see is that the cache is going to be replicated.</p>
+<p>294<br>00:33:02,639 –&gt; 00:33:05,759<br>And we need to set an invalidation to everywhere. Okay. Okay.</p>
+<p>295<br>00:33:07,759 –&gt; 00:33:13,119<br>That’s what we need. We would not want to send a delete to every MEN cache replica.</p>
+<p>296<br>00:33:14,480 –&gt; 00:33:19,599<br>Clearly, yeah. We’ll see in a second. Hold on. And then we’ll see that in a second. In fact,</p>
+<p>297<br>00:33:21,200 –&gt; 00:33:30,000<br>we’re going to talk about it right now. So so far actually most of the story is pretty standard.</p>
+<p>298<br>00:33:32,000 –&gt; 00:33:37,439<br>There’s small changes here. And what we’ve talked about so far is nothing really</p>
+<p>299<br>00:33:38,400 –&gt; 00:33:45,279<br>too exceptional. Things get more interesting right after this. And so we get more into</p>
+<p>300<br>00:33:45,279 –&gt; 00:33:54,080<br>sort of Facebook specific optimizations or performance tricks. And the first thing that we’re</p>
+<p>301<br>00:33:54,080 –&gt; 00:34:05,120<br>going to see is the first thing that actually becomes unusual is that actually Facebook basically</p>
+<p>302<br>00:34:05,119 –&gt; 00:34:10,400<br>replicates a complete data center. At the time of the writing of this paper that we’re basically</p>
+<p>303<br>00:34:10,400 –&gt; 00:34:17,759<br>two data centers, one of the west coasts. So we switch back to blue. So data center one,</p>
+<p>304<br>00:34:18,400 –&gt; 00:34:29,199<br>they call the regions. We’re here data center two. And they basically have, you know,</p>
+<p>305<br>00:34:29,199 –&gt; 00:34:36,319<br>they’re all have a client layer. So a lot of front ends.</p>
+<p>306<br>00:34:43,279 –&gt; 00:34:44,960<br>And maybe this is the one on the west coast.</p>
+<p>307<br>00:34:48,639 –&gt; 00:34:54,399<br>And then you know, there’s the MEN cache, do you hear the MEN cache layer? And both have their own</p>
+<p>308<br>00:34:54,480 –&gt; 00:35:02,320<br>MEN cache layer. So here they set a front ends again. A lot of front ends. So here’s our lot of MEN cache</p>
+<p>309<br>00:35:02,320 –&gt; 00:35:11,599<br>D’s. A lot of MEN cache D’s. A lot of MEN cache D’s here. And then you know, there’s the storage layer</p>
+<p>310<br>00:35:11,599 –&gt; 00:35:19,920<br>in which is our you know, sort of charted, you know, databases. So a lot of machines here too.</p>
+<p>311<br>00:35:20,159 –&gt; 00:35:29,119<br>And basically, you know, the data center two, the one on the east coast, is a, you know, a direct</p>
+<p>312<br>00:35:29,119 –&gt; 00:35:36,000<br>replica of the one on the west coast. And the scheme that they use kind of for rights, because</p>
+<p>313<br>00:35:36,000 –&gt; 00:35:41,200<br>now we have two replicas, really, of the data, correct the data of the database is stored in two places.</p>
+<p>314<br>00:35:41,200 –&gt; 00:35:46,000<br>So we need to keep in some way, you know, these two copies up to date. In the basic plan,</p>
+<p>315<br>00:35:46,000 –&gt; 00:35:51,519<br>the links on the right side is to all the rights are going through the primary. And one of the</p>
+<p>316<br>00:35:51,519 –&gt; 00:35:57,599<br>regions is the primary, the other is the backup region. So this is region two. And in fact, I think in</p>
+<p>317<br>00:35:57,599 –&gt; 00:36:07,519<br>the paper, the west coast is the primary. And the east coast is the backup. And so all rights</p>
+<p>318<br>00:36:08,480 –&gt; 00:36:15,679<br>actually go through the storage layer on the primary. So even rights, no issue by the front ends,</p>
+<p>319<br>00:36:16,159 –&gt; 00:36:22,559<br>on the east coast, you know, go to the database here. And so the database there on the primary</p>
+<p>320<br>00:36:22,559 –&gt; 00:36:28,000<br>just runs the transaction. And, you know, we know and then basically propagates, you know, these</p>
+<p>321<br>00:36:28,000 –&gt; 00:36:34,159<br>invalidation methods, or first of all, it takes the log that actually sits on this site. And</p>
+<p>322<br>00:36:34,159 –&gt; 00:36:39,760<br>basically copies, or transmits it over to the other side. And so this is the squeal process that</p>
+<p>323<br>00:36:39,760 –&gt; 00:36:45,920<br>basically does that. And, you know, that process basically applies, you know, the log to the</p>
+<p>324<br>00:36:45,920 –&gt; 00:36:51,920<br>storage database on the other side. So keeping the two databases in sync. And as a side effect,</p>
+<p>325<br>00:36:51,920 –&gt; 00:36:56,800<br>you know, it might actually send invalidation messages or delete messages to delete keys.</p>
+<p>326<br>00:37:01,040 –&gt; 00:37:05,120<br>And so you might wonder like, you know, why do it in this way? You know, why not keep, for example,</p>
+<p>327<br>00:37:05,119 –&gt; 00:37:09,519<br>everything on the west coast. And, you know, basically double the number of, you know,</p>
+<p>328<br>00:37:09,519 –&gt; 00:37:14,480<br>mancaches and all that kind of stuff. But, you know, the one primary reason to do this is this</p>
+<p>329<br>00:37:14,480 –&gt; 00:37:23,920<br>goes, good read performance for users. Good reads for users that are actually sitting on the east</p>
+<p>330<br>00:37:23,920 –&gt; 00:37:30,239<br>coast. So, you know, they will connect, you know, to one of these guys. They will look up the data in</p>
+<p>331<br>00:37:30,719 –&gt; 00:37:36,079<br>the cache, their mancache on the east coast. And basically return the data straight out of the</p>
+<p>332<br>00:37:36,079 –&gt; 00:37:40,479<br>mancache. So we’re basically going to get really good, you know, one we just do get our good</p>
+<p>333<br>00:37:40,479 –&gt; 00:37:44,239<br>read performance. In fact, you know, we can also get low latency because we’re basically, you know,</p>
+<p>334<br>00:37:44,239 –&gt; 00:37:51,519<br>reading from a replica, now that’s closed by. Of course, you know, these cache, you know, might get</p>
+<p>335<br>00:37:51,519 –&gt; 00:37:56,079<br>a little bit more out of sync than the example there in the single data center because like this whole</p>
+<p>336<br>00:37:56,079 –&gt; 00:37:59,199<br>update and the affiliation and it all happens async to this.</p>
+<p>337<br>00:38:05,199 –&gt; 00:38:09,759<br>But that’s more or less going to be a little bit okay, correct? Because we were, you said, that we’re</p>
+<p>338<br>00:38:09,759 –&gt; 00:38:14,480<br>actually not looking for, you know, strict consistency or reliability or shared reliability.</p>
+<p>339<br>00:38:15,840 –&gt; 00:38:24,480<br>I have a question. So, if someone in the east coast of a client of the east coast</p>
+<p>340<br>00:38:24,480 –&gt; 00:38:35,039<br>writes, it writes directly to, to the storage on west, right? Which doesn’t invalidate.</p>
+<p>341<br>00:38:36,480 –&gt; 00:38:40,079<br>This guy also will say it invalidates to its cache.</p>
+<p>342<br>00:38:42,159 –&gt; 00:38:47,840<br>But we said, right, right, but we said, like the client itself to read its own right.</p>
+<p>343<br>00:38:49,199 –&gt; 00:38:53,119<br>Yeah, so where does that, where does that go? That of course goes through the year, correct?</p>
+<p>344<br>00:38:53,199 –&gt; 00:38:57,599<br>Yeah, yeah, yeah, that makes sense. Okay. Okay.</p>
+<p>345<br>00:38:59,279 –&gt; 00:39:09,359<br>Okay. I’ve got a question to you. Do clients always talk, so will a given client always talk</p>
+<p>346<br>00:39:09,359 –&gt; 00:39:17,599<br>to the same memcash server? No. Because I’ll go back a little bit earlier and we’ll talk about these</p>
+<p>347<br>00:39:17,599 –&gt; 00:39:23,920<br>in a second because this actually is a problem, as we’ll see. So, in front of them, basically talks</p>
+<p>348<br>00:39:24,719 –&gt; 00:39:31,360<br>the keys are sharp across the memcash server, correct? And so, like whatever, TK1, K1,</p>
+<p>349<br>00:39:31,360 –&gt; 00:39:37,599<br>listen, C1, K2, listen, C2, etc, etc. And typically, in front of them, when it needs to</p>
+<p>350<br>00:39:37,599 –&gt; 00:39:42,960<br>construct a webpage, it needs to get a whole bunch of keys. And so, since actually these requests,</p>
+<p>351<br>00:39:42,960 –&gt; 00:39:48,720<br>basically parallel to the different memcash keys and gets older responses back.</p>
+<p>352<br>00:39:52,480 –&gt; 00:39:57,400<br>And so, in fact, the front-ends are very likely to talk to every memcash</p>
+<p>353<br>00:39:57,400 –&gt; 00:40:04,000<br>key in the system. I see. But for a given key, it would always talk to the same server.</p>
+<p>354<br>00:40:04,000 –&gt; 00:40:10,960<br>Yes. Yeah. They actually happen to use existing hashing. So, like, we’ll talk a little bit</p>
+<p>355<br>00:40:10,960 –&gt; 00:40:14,880<br>about a second and a little bit more. But like, one of the memcash deserves goes down, correct?</p>
+<p>356<br>00:40:14,880 –&gt; 00:40:19,840<br>You know, can’t talk to that one anymore. And so, it might be over time that the assignment from</p>
+<p>357<br>00:40:20,400 –&gt; 00:40:28,000<br>sharks to servers will change a little bit. Sorry, actually, just to follow up on that.</p>
+<p>358<br>00:40:28,000 –&gt; 00:40:35,519<br>So, the requirement for clients to read their own rights is kind of like a weak guarantee,</p>
+<p>359<br>00:40:35,519 –&gt; 00:40:40,639<br>right? Because if the server that it deletes from goes down, and then it has to read from a different</p>
+<p>360<br>00:40:40,639 –&gt; 00:40:45,599<br>replica, it might end up not reading its right. If in the presence of a similar error.</p>
+<p>361<br>00:40:45,599 –&gt; 00:40:48,239<br>Hold on. Hold on. Hold back. Hold back. Hold for a little while. Okay?</p>
+<p>362<br>00:40:49,039 –&gt; 00:40:52,799<br>There will see. There’s a number of countries where races, if you will, and they have different</p>
+<p>363<br>00:40:52,799 –&gt; 00:40:59,599<br>techniques were solving those races. Sorry, final question. Yep. Final. I like</p>
+<p>364<br>00:40:59,679 –&gt; 00:41:12,159<br>that. So, we’re doing, like, for read our own rights, we make sure that we go directly to the</p>
+<p>365<br>00:41:12,159 –&gt; 00:41:20,239<br>storage servers, right, after a right, correct? Yes. I’m not in the cache. But you also said that</p>
+<p>366<br>00:41:20,799 –&gt; 00:41:25,119<br>no, no, hold on. Hold on. When you do a right, you do the update in the database.</p>
+<p>367<br>00:41:25,119 –&gt; 00:41:35,199<br>Then you delete the K from your system. So, in this particular case, you would do a right</p>
+<p>368<br>00:41:35,199 –&gt; 00:41:41,359<br>to the primary, delete the K from your local cache. So, when the next time you do get,</p>
+<p>369<br>00:41:42,079 –&gt; 00:41:47,920<br>you’re going to read from the storage server again. Right. Exactly. Yeah. But</p>
+<p>370<br>00:41:47,920 –&gt; 00:41:56,480<br>I was curious. So, you also said the right to storage happened asynchronously, right?</p>
+<p>371<br>00:41:57,599 –&gt; 00:42:04,159<br>The replication happens asynchronously, and invalidations happen asynchronously.</p>
+<p>372<br>00:42:04,159 –&gt; 00:42:09,760<br>Not the rights. Okay. The rights are synchronous. So, you do the delete after you finish the right.</p>
+<p>373<br>00:42:09,840 –&gt; 00:42:21,600<br>Okay. Great. Thanks. So, if you do a right, and you’re from the, so you’re not, you’re not from the</p>
+<p>374<br>00:42:21,600 –&gt; 00:42:28,080<br>primary region, you do a right to the primary storage, and then you invalidate your mem cache,</p>
+<p>375<br>00:42:28,080 –&gt; 00:42:34,720<br>and then do a read, but you do a read from your storage, and maybe your storage is not to date yet.</p>
+<p>376<br>00:42:35,439 –&gt; 00:42:41,199<br>So, you got the rates, and so we’ll see how they solve that. That’s correct.</p>
+<p>377<br>00:42:41,759 –&gt; 00:42:45,359<br>But first, let’s talk more about performance, because there is not good enough for them yet,</p>
+<p>378<br>00:42:45,359 –&gt; 00:42:51,279<br>they want more performance. Until, you know, if you’re sort of broadly speaking,</p>
+<p>379<br>00:42:52,319 –&gt; 00:42:58,399<br>there’s sort of two strategies to getting performance. I’m just typing them back a little bit.</p>
+<p>380<br>00:43:05,679 –&gt; 00:43:10,799<br>And we already seen them a little bit in a very hard level. So, there’s two ways we set up the</p>
+<p>381<br>00:43:10,799 –&gt; 00:43:14,799<br>plans. One is to partition or shark.</p>
+<p>382<br>00:43:23,039 –&gt; 00:43:27,759<br>And that’s very cool, because in fact, we see that being used basically both on the storage layer</p>
+<p>383<br>00:43:27,759 –&gt; 00:43:33,119<br>and the mem cache layer. And so, if you’re going to need more capacity, you know, you should buy</p>
+<p>384<br>00:43:33,119 –&gt; 00:43:39,039<br>another server, you know, change the hash and function, and suddenly you got more capacity in</p>
+<p>385<br>00:43:39,039 –&gt; 00:43:44,159<br>your mem cache, and you can hold more data, right? And the data can be accessed in parallel.</p>
+<p>386<br>00:43:44,880 –&gt; 00:43:46,400<br>So, you know, you’ve got a lot of capacity,</p>
+<p>387<br>00:43:53,199 –&gt; 00:43:55,440<br>plus in the capacity, plus in the parallelism side.</p>
+<p>388<br>00:43:55,519 –&gt; 00:44:05,280<br>But, you know, if you have a particular key that is extremely hot, like a lot of</p>
+<p>389<br>00:44:06,000 –&gt; 00:44:08,960<br>clients actually need to get that key, you know, whatever particular person,</p>
+<p>390<br>00:44:08,960 –&gt; 00:44:14,000<br>and phase MOOC who has a timeline that, you know, everybody’s following, then, you know,</p>
+<p>391<br>00:44:15,039 –&gt; 00:44:19,679<br>that key is going to hit a lot. And, you know, it’s being served, you know, luckily, in this case,</p>
+<p>392<br>00:44:19,679 –&gt; 00:44:23,440<br>it’s being served maybe by two different servers, one in the West Coast, the one in the East Coast.</p>
+<p>393<br>00:44:24,079 –&gt; 00:44:27,280<br>But, you know, presumably a lot of clients on the East Coast and in the West Coast, we’re going to</p>
+<p>394<br>00:44:27,280 –&gt; 00:44:32,480<br>hate the same, or the two, the mem cache deserver on the West Coast and the mem cache deserver in</p>
+<p>395<br>00:44:32,480 –&gt; 00:44:37,840<br>East Coast that hold that key. And so, that’s not going to be that good, right? Because, like,</p>
+<p>396<br>00:44:37,840 –&gt; 00:44:42,400<br>that single server might actually get overloaded. And it does have the key distribution</p>
+<p>397<br>00:44:43,039 –&gt; 00:44:48,240<br>varies widely. And so, that’s not so good. And so, the self-pronged like that, you know, the second</p>
+<p>398<br>00:44:48,239 –&gt; 00:44:56,879<br>server approach is to replicate. Repricate data. Here’s partition data. And on the</p>
+<p>399<br>00:44:56,879 –&gt; 00:45:05,039<br>most replicate data. And that’s great, you know, for hotkeys. If you can take the same key,</p>
+<p>400<br>00:45:05,039 –&gt; 00:45:09,519<br>replicated on a bunch of different mem cache deservers, then declines that all meet that key,</p>
+<p>401<br>00:45:09,519 –&gt; 00:45:13,599<br>can be spread across, you know, those mem cache deservers and get the keys basically parallel.</p>
+<p>402<br>00:45:14,559 –&gt; 00:45:22,400<br>And so, that works actually good for hotkeys. It doesn’t really increase your capacity, right? So,</p>
+<p>403<br>00:45:22,400 –&gt; 00:45:30,319<br>you just take more. And in some ways, we can see that in the previous picture, we have replication</p>
+<p>404<br>00:45:30,319 –&gt; 00:45:34,719<br>in action here, correct? We have replicated one data center, you know, from the West Coast,</p>
+<p>405<br>00:45:34,719 –&gt; 00:45:38,960<br>completed to the East Coast. That hasn’t introduced, you know, increased the total capacity</p>
+<p>406<br>00:45:39,679 –&gt; 00:45:43,280<br>for the mem cache deservers, because both mem cache and the mem cache layers, you know, store,</p>
+<p>407<br>00:45:43,280 –&gt; 00:45:48,800<br>you know, the same store, the same amount of data, you know, didn’t increase the capacity of the</p>
+<p>408<br>00:45:48,800 –&gt; 00:45:54,320<br>the mem cache layer. But, you know, you’re allowed to, you know, read from these two different</p>
+<p>409<br>00:45:54,320 –&gt; 00:45:59,679<br>and mem cache layers on the East and the West Coast in parallel. Okay? So, we see a little bit of</p>
+<p>410<br>00:45:59,679 –&gt; 00:46:04,800<br>the form of replication going on. And you might wonder, you know, what now is left to be done?</p>
+<p>411<br>00:46:05,600 –&gt; 00:46:11,519<br>And this comes to, there’s a question I was asked a little bit earlier, let’s see, more capacity now,</p>
+<p>412<br>00:46:11,519 –&gt; 00:46:15,920<br>right? So, well, when one solution to, you know, more capacity, even in a single data center,</p>
+<p>413<br>00:46:15,920 –&gt; 00:46:19,600<br>so if we get that there’s two data centers, just look for the thing from the perspective of single</p>
+<p>414<br>00:46:19,600 –&gt; 00:46:25,039<br>data center, we want more capacity. But one option, correct, would be to whatever, just buy more</p>
+<p>415<br>00:46:25,039 –&gt; 00:46:32,880<br>mem cache deservers and just keep buying more of them. And that turns out to be slightly problematic.</p>
+<p>416<br>00:46:33,840 –&gt; 00:46:42,240<br>And one reason that is problematic is because these front-ends talk to basically every mem cache</p>
+<p>417<br>00:46:43,280 –&gt; 00:46:50,480<br>server. And so, they, you know, almost at least for rights, you know, we know that the</p>
+<p>418<br>00:46:50,480 –&gt; 00:46:57,920<br>TCP connection is open and so there’s a large number of TCP connections. And for the more,</p>
+<p>419<br>00:46:57,920 –&gt; 00:47:04,639<br>and as we said before, if actually there’s a particular key heart, the head heart, then the</p>
+<p>420<br>00:47:07,039 –&gt; 00:47:12,880<br>that doesn’t really be solved by shard. So you can buy more machines, but if not one key is hot,</p>
+<p>421<br>00:47:12,880 –&gt; 00:47:17,200<br>it makes a one machine that actually is not going to really include your performance. So,</p>
+<p>422<br>00:47:17,200 –&gt; 00:47:23,440<br>their next step in terms of, you know, performance improvement is to actually replicate</p>
+<p>423<br>00:47:23,519 –&gt; 00:47:32,960<br>with inside the single data center. So, more performance. This is this idea of cluster.</p>
+<p>424<br>00:47:35,760 –&gt; 00:47:37,840<br>And this is really a story about replication.</p>
+<p>425<br>00:47:40,960 –&gt; 00:47:44,320<br>And so what they actually do is like if we look in the single data center,</p>
+<p>426<br>00:47:44,320 –&gt; 00:47:54,800<br>they got, we got our storage layer. And then within the storage layer,</p>
+<p>427<br>00:47:55,519 –&gt; 00:48:01,519<br>these we were going to replicate a set of front-ends. So, we have our front-end layer,</p>
+<p>428<br>00:48:01,519 –&gt; 00:48:12,880<br>and here’s our mem cache layer. I’m going to take that out and just replicate it multiple times.</p>
+<p>429<br>00:48:15,280 –&gt; 00:48:24,960<br>And then they’re called as a cluster. And the reason this is good, you know, is the intersection</p>
+<p>430<br>00:48:24,960 –&gt; 00:48:33,280<br>of the dual well with, you know, it’s good for popular keys. The popular key will now be replicated,</p>
+<p>431<br>00:48:34,000 –&gt; 00:48:41,840<br>potentially multiple clusters. And so that is nice. Second, it reduces the number of connections.</p>
+<p>432<br>00:48:44,320 –&gt; 00:48:51,360<br>And this is actually particularly, there’s multiple reasons why this is important.</p>
+<p>433<br>00:48:52,880 –&gt; 00:49:01,039<br>It avoids what they call the, before it’s the in-cast problem, in-cast congestion.</p>
+<p>434<br>00:49:04,480 –&gt; 00:49:09,920<br>And so, except before, like one of these front-ends, may have to retrieve, you know, 500,</p>
+<p>435<br>00:49:10,000 –&gt; 00:49:17,920<br>you know, whatever, you know, tends to 100 to the keys. And so it will send them a parallel to all the</p>
+<p>436<br>00:49:17,920 –&gt; 00:49:24,400<br>particular mem cache that are important. They will all respond. And of course, you know, we have</p>
+<p>437<br>00:49:24,400 –&gt; 00:49:29,599<br>many, many more mem caches. We’re going to have much more parallelism. A lot of packets will come</p>
+<p>438<br>00:49:29,599 –&gt; 00:49:38,000<br>back exactly at the same time. They can easily loop you into Q, Q’s being overloaded or Q’s being</p>
+<p>439<br>00:49:38,000 –&gt; 00:49:42,559<br>full and therefore, packets getting dropped. And so by reducing the number of connections,</p>
+<p>440<br>00:49:42,559 –&gt; 00:49:45,760<br>that actually every friend they talks to, you know, reduces the number of responses that are going</p>
+<p>441<br>00:49:45,760 –&gt; 00:49:52,320<br>to come back. And we avoid this in-cast congestion problem. And in general, it sort of reduces the</p>
+<p>442<br>00:49:52,320 –&gt; 00:49:59,519<br>pressure on the network. It’s actually hard to build networks that have a bi-section bandwidth that</p>
+<p>443<br>00:49:59,519 –&gt; 00:50:06,639<br>can sustain a huge load. And here, by sort of making using replication, basically, the network,</p>
+<p>444<br>00:50:06,639 –&gt; 00:50:10,079<br>you know, for one cluster really has to support that one cluster well.</p>
+<p>445<br>00:50:17,279 –&gt; 00:50:22,879<br>Now, so this is all good. Of course, you know, this is the downside of the design like this is</p>
+<p>446<br>00:50:22,879 –&gt; 00:50:29,679<br>that if you have unpopular keys, there’s unpopular keys going to get stored in multiple regions</p>
+<p>447<br>00:50:29,679 –&gt; 00:50:36,319<br>and basically, you know, do nothing or then contribute to improvement in performance. And so,</p>
+<p>448<br>00:50:36,320 –&gt; 00:50:41,840<br>in fact, you know, what they do is they have one additional sort of pool that they have, and they</p>
+<p>449<br>00:50:41,840 –&gt; 00:50:55,039<br>call this the regional pool. And then applications can decide to store not so popular keys into the</p>
+<p>450<br>00:50:55,039 –&gt; 00:51:05,120<br>regional pool to stick it at the site. And so that these, so that they don’t are replicated in time</p>
+<p>451<br>00:51:05,119 –&gt; 00:51:09,279<br>to cross-hubble clusters. So you can think about the regional pool being shared among multiple</p>
+<p>452<br>00:51:09,279 –&gt; 00:51:15,759<br>clusters and use for the less popular keys or less infrequently used keys. Okay.</p>
+<p>453<br>00:51:17,839 –&gt; 00:51:25,119<br>So this is going to help with popular keys because each cluster is going to have its own</p>
+<p>454<br>00:51:25,119 –&gt; 00:51:28,559<br>mem cache. Yep. Yeah, every cluster has its own mem cache.</p>
+<p>455<br>00:51:28,559 –&gt; 00:51:34,480<br>That’s its own front ends. That has its own mem cache.</p>
+<p>456<br>00:51:37,759 –&gt; 00:51:44,320<br>And basically, users, you know, the users are basically a low balance across all these clusters.</p>
+<p>457<br>00:51:45,920 –&gt; 00:51:54,159<br>But this still does not increase capacity, right? This not increase capacity. If you want to increase</p>
+<p>458<br>00:51:54,159 –&gt; 00:52:01,480<br>capacity, you will increase capacity a little bit, correct, because like all the impopular</p>
+<p>459<br>00:52:01,480 –&gt; 00:52:04,079<br>stuff is not being actually cast and just stuck in the regional pool.</p>
+<p>460<br>00:52:05,599 –&gt; 00:52:08,480<br>Okay. And so that stays in now free to actually store other keys.</p>
+<p>461<br>00:52:14,480 –&gt; 00:52:20,719<br>So to avoid incase congestion, they would also reduce the number of shards per cluster, right?</p>
+<p>462<br>00:52:20,799 –&gt; 00:52:23,119<br>Yeah, we’re, you know, don’t grow it.</p>
+<p>463<br>00:52:25,039 –&gt; 00:52:29,119<br>The alternative plan, correct, was nothing to do with clusters, but basically keep growing the</p>
+<p>464<br>00:52:30,079 –&gt; 00:52:38,000<br>mem cache, the number of shards in a single mem cache. And you know, that has its own limitations.</p>
+<p>465<br>00:52:39,839 –&gt; 00:52:40,799<br>It sends. Thank you.</p>
+<p>466<br>00:52:40,800 –&gt; 00:52:54,640<br>Okay. Well, so this sort of the, the base design, except there’s a lot of different</p>
+<p>467<br>00:52:54,640 –&gt; 00:53:00,000<br>performance challenges that they have to resolve. And most of these performance challenges really</p>
+<p>468<br>00:53:00,000 –&gt; 00:53:03,760<br>have to do with, I think, the way to think about it is protecting the database.</p>
+<p>469<br>00:53:11,120 –&gt; 00:53:11,840<br>Okay.</p>
+<p>470<br>00:53:22,480 –&gt; 00:53:26,960<br>Like I was going back to this picture, correct, like we have now designed that apparently can support,</p>
+<p>471<br>00:53:26,960 –&gt; 00:53:34,240<br>you know, billions requests per second. But the storage layer itself, you know, is sharded,</p>
+<p>472<br>00:53:34,399 –&gt; 00:53:40,639<br>because certainly not, you know, sustained billions requests per second. And it would be a disaster,</p>
+<p>473<br>00:53:41,199 –&gt; 00:53:44,719<br>if, for example, let’s say all the mem cache is filled, there’s some way or another,</p>
+<p>474<br>00:53:44,719 –&gt; 00:53:48,639<br>where a whole cluster failed. And all the front ends, you know, would hit the storage servers.</p>
+<p>475<br>00:53:49,439 –&gt; 00:53:53,679<br>Then, you know, the storage servers would fail over, you know, couldn’t handle that kind of load.</p>
+<p>476<br>00:53:53,679 –&gt; 00:54:00,239<br>And so they got to be very, very careful. We have actually putting, doing anything that</p>
+<p>477<br>00:54:00,239 –&gt; 00:54:06,959<br>requires more load than the storage servers. So, so one, for example, challenge, I’m going to talk</p>
+<p>478<br>00:54:06,959 –&gt; 00:54:17,199<br>about the number of them, is to bring up a new cluster. The easy way to bring up a new cluster</p>
+<p>479<br>00:54:17,199 –&gt; 00:54:23,919<br>would be just to, you know, build the cluster, you know, turn the machines on, install the software,</p>
+<p>480<br>00:54:23,920 –&gt; 00:54:31,039<br>and it’ll be done. And basically, rely on the fact that, you know, if the data is not in the cache,</p>
+<p>481<br>00:54:31,039 –&gt; 00:54:34,639<br>you know, you’ll have the miss, and then we’ll miss, we’ll go through the database and actually,</p>
+<p>482<br>00:54:34,639 –&gt; 00:54:41,039<br>you know, collect the necessary data. And, you know, what’s the problem about the kind of design?</p>
+<p>483<br>00:54:45,440 –&gt; 00:54:48,800<br>It’s going to have a lot of cache misses, because there’s nothing in the cache.</p>
+<p>484<br>00:54:48,800 –&gt; 00:54:54,160<br>Now, if we, for example, let’s say you had, you had one cluster, and you had a second cluster,</p>
+<p>485<br>00:54:54,160 –&gt; 00:54:59,039<br>right, and you moved half of your users to the second cluster, like that 50% of sort of your</p>
+<p>486<br>00:55:00,400 –&gt; 00:55:05,039<br>requests are going to miss in the cache, and they’re going to hit the database. And the database will fall</p>
+<p>487<br>00:55:05,039 –&gt; 00:55:14,960<br>over, right? So how do they do deal with this? Got it. No, not the gutter. This is the,</p>
+<p>488<br>00:55:14,960 –&gt; 00:55:24,320<br>I think they were making the new cluster read some entries from the cache of an old cluster.</p>
+<p>489<br>00:55:24,320 –&gt; 00:55:30,559<br>Yeah, great for gets in the new cluster. If they miss in the new cluster, they go to the old cluster,</p>
+<p>490<br>00:55:31,280 –&gt; 00:55:43,760<br>from an existing one. And then they said in the new cluster. So basically, one way to think about</p>
+<p>491<br>00:55:43,760 –&gt; 00:55:52,400<br>is they fill up a new cluster or warm up a new cluster by reading from an existing cluster. And so</p>
+<p>492<br>00:55:52,400 –&gt; 00:55:56,960<br>that may be increased the load on an existing cluster a little bit, but at least the bone that</p>
+<p>493<br>00:55:56,960 –&gt; 00:56:02,960<br>actually put a lot of pressure on the database. And as we’ll see in a second, that also introduces</p>
+<p>494<br>00:56:02,960 –&gt; 00:56:10,800<br>again some consistency issues. And we’ll see that a little bit later. Okay. So that’s one,</p>
+<p>495<br>00:56:11,200 –&gt; 00:56:17,680<br>you know, example of performance channels that address the other performance is a popular term.</p>
+<p>496<br>00:56:18,560 –&gt; 00:56:22,000<br>It’s used in many contexts that are called the fundering-hurt problem.</p>
+<p>497<br>00:56:25,360 –&gt; 00:56:26,800<br>What’s the fundering-hurt problem?</p>
+<p>498<br>00:56:31,120 –&gt; 00:56:34,960<br>I guess when there are a lot of rights and reads,</p>
+<p>499<br>00:56:35,760 –&gt; 00:56:41,840<br>approximately at the same time. And because there are a lot of rights, the data will be invalidated</p>
+<p>500<br>00:56:42,880 –&gt; 00:56:48,000<br>many times. And the database will be assaulted with requests.</p>
+<p>501<br>00:56:48,000 –&gt; 00:56:53,920<br>Yeah. And you can make it even simpler. Like a single write, cause an invalidation of a key.</p>
+<p>502<br>00:56:55,440 –&gt; 00:57:00,159<br>And you know, anybody, any client that reads the key right after it. So you could have the following</p>
+<p>503<br>00:57:00,159 –&gt; 00:57:06,319<br>situation. You have a very, very popular key. The you invalidate the key. So you delete the key</p>
+<p>504<br>00:57:06,319 –&gt; 00:57:13,920<br>from your cache. All the machines or all the front ends that meet that popular key. And we’ll do</p>
+<p>505<br>00:57:13,920 –&gt; 00:57:19,759<br>get down that key. I’ll get back NIL. And then they’re all want to like read select from the database.</p>
+<p>506<br>00:57:20,960 –&gt; 00:57:24,960<br>And that, you know, my coach, you know, puts a lot of pressure on the database.</p>
+<p>507<br>00:57:26,079 –&gt; 00:57:29,440<br>So they want to avoid that problem. And so how do they do that?</p>
+<p>508<br>00:57:30,239 –&gt; 00:57:34,239<br>How do they avoid that problem? They use the leases.</p>
+<p>509<br>00:57:34,799 –&gt; 00:57:37,920<br>Yeah. Go ahead. Same work.</p>
+<p>510<br>00:57:37,920 –&gt; 00:57:45,679<br>Yeah. I think like they gave like a like a time like for key specific for the user. And then like</p>
+<p>511<br>00:57:45,679 –&gt; 00:57:52,000<br>some like some time what I understood it was like kind of a luck. And then like give another user</p>
+<p>512<br>00:57:52,000 –&gt; 00:57:57,920<br>tries to like use it. They were like wait and then hopefully it would be updated fast enough.</p>
+<p>513<br>00:57:57,920 –&gt; 00:58:04,480<br>So that in the next week try to get it. Yeah. So basically, so the get if you do get and you get</p>
+<p>514<br>00:58:04,480 –&gt; 00:58:12,480<br>NIL back, you get two situations. Either you got a lease. Right. The first line basically that</p>
+<p>515<br>00:58:12,480 –&gt; 00:58:17,920<br>doesn’t get a missus. You know, gets a lease from MkG. And that MkG that needs basically gives</p>
+<p>516<br>00:58:17,920 –&gt; 00:58:22,240<br>it the right to an update. What tells the client like, you know, you’re responsible for doing the</p>
+<p>517<br>00:58:22,239 –&gt; 00:58:30,959<br>update. And if you don’t, you know, the first one, then you get a basically a retry message</p>
+<p>518<br>00:58:32,559 –&gt; 00:58:37,199<br>or result. And that basically tells the client like, you should retry soon and not immediately.</p>
+<p>519<br>00:58:37,199 –&gt; 00:58:41,839<br>And maybe spread around a little bit. They probably do some, you know, binary backup type style thing.</p>
+<p>520<br>00:58:42,479 –&gt; 00:58:49,359<br>And retry to get. And you know, most cases, the client that, you know, the first client that missed</p>
+<p>521<br>00:58:50,160 –&gt; 00:58:56,880<br>will have updated the key K, you know, recently soon like in the order of milliseconds. And then</p>
+<p>522<br>00:58:56,880 –&gt; 00:59:03,200<br>these retries actually will succeed. Right. And there’s no really, and there’s no explosion on the</p>
+<p>523<br>00:59:03,200 –&gt; 00:59:08,800<br>number of requests to date a day. So with this key, of course, it introduces, as we’ll see in a second</p>
+<p>524<br>00:59:08,800 –&gt; 00:59:14,960<br>more, you know, race conditions. But you know, first, let’s keep focusing on performance.</p>
+<p>525<br>00:59:15,440 –&gt; 00:59:26,159<br>There was another thing about leases, right? Where they fit like address, um, style sets.</p>
+<p>526<br>00:59:26,159 –&gt; 00:59:31,599<br>Yeah. So that leads it for two roles. As we’ll see in a second, one for consistency and one for</p>
+<p>527<br>00:59:31,599 –&gt; 00:59:37,360<br>performance. This one is for performance. And so we’ll talk about consistency in second,</p>
+<p>528<br>00:59:37,360 –&gt; 00:59:40,800<br>and then we’ll see the second reviews as one way to solve one of these race conditions.</p>
+<p>529<br>00:59:45,360 –&gt; 00:59:50,880<br>Okay. One more. There are many more in the paper, but just one more that’s sort of interesting.</p>
+<p>530<br>00:59:50,880 –&gt; 00:59:58,000<br>At least the iPhone interesting. You know, what happens if they have a memcash, the, you were meant to</p>
+<p>531<br>00:59:58,000 –&gt; 00:59:58,800<br>serve a failure?</p>
+<p>532<br>00:59:58,800 –&gt; 01:00:16,000<br>I think that’s the whole data center that, oh, the whole collection of memcash server that failed.</p>
+<p>533<br>01:00:16,000 –&gt; 01:00:18,000<br>I just consider a handful.</p>
+<p>534<br>01:00:19,200 –&gt; 01:00:23,039<br>I’ve always, I’ve got it that someone mentioned before. Yeah.</p>
+<p>535<br>01:00:23,519 –&gt; 01:00:29,679<br>Said the memcash, the failed memcash, but they don’t delete them.</p>
+<p>536<br>01:00:30,480 –&gt; 01:00:35,679<br>Yeah. So look at the scenario correct, the problematic scenario is like a memcash to you server fails.</p>
+<p>537<br>01:00:37,279 –&gt; 01:00:41,360<br>That will result in a bunch of misses. Those misses will hit the database and then want to</p>
+<p>538<br>01:00:41,360 –&gt; 01:00:46,639<br>avoid hitting the database, right? Any client that actually has a couple of keys to those servers</p>
+<p>539<br>01:00:46,639 –&gt; 01:00:52,239<br>is going to try to retrieve the key, wolf, fail, and then you know, we’ll have to do something.</p>
+<p>540<br>01:00:53,279 –&gt; 01:00:59,679<br>So when it gets fails, you know, the easy solution is to go through the database,</p>
+<p>541<br>01:01:00,159 –&gt; 01:01:04,960<br>but I think we want to protect the database. And so that doesn’t seem to do a great idea.</p>
+<p>542<br>01:01:04,960 –&gt; 01:01:09,759<br>And so what they do is actually have a small other cluster or another pool like the regional pool,</p>
+<p>543<br>01:01:09,759 –&gt; 01:01:10,880<br>they call the gutter pool.</p>
+<p>544<br>01:01:15,039 –&gt; 01:01:20,800<br>And the gutter pool is basically a sort of a handful of memcash TV machines that is just available.</p>
+<p>545<br>01:01:21,760 –&gt; 01:01:27,360<br>And they’re available for sort of the short period of time that the systems are reconfigures</p>
+<p>546<br>01:01:27,360 –&gt; 01:01:32,160<br>and repairs itself and adds new memcash to the servers to replace the ones that fail.</p>
+<p>547<br>01:01:32,960 –&gt; 01:01:37,039<br>But they’re not period of time. That’s in the order of minutes. Maybe a little bit more.</p>
+<p>548<br>01:01:38,240 –&gt; 01:01:42,640<br>They don’t want the get requests or the selects to go through the database.</p>
+<p>549<br>01:01:42,640 –&gt; 01:01:46,720<br>Instead, what they do when they get fails, you go try first the gutter pool.</p>
+<p>550<br>01:01:47,519 –&gt; 01:01:54,719<br>And the gutter pool will, you know, the first one that hits the gutter pool will fail or</p>
+<p>551<br>01:01:54,719 –&gt; 01:01:59,519<br>it will miss. Do select in the database, get the result, stick it into the gutter pool,</p>
+<p>552<br>01:01:59,519 –&gt; 01:02:04,399<br>and then subsequent requests or gets will actually then be answered for the gutter pool.</p>
+<p>553<br>01:02:04,399 –&gt; 01:02:08,879<br>And at some point, you know, the memcash D machine that was failed, you know,</p>
+<p>554<br>01:02:08,879 –&gt; 01:02:12,639<br>it has either been replaced or replaced with another machine or recovered.</p>
+<p>555<br>01:02:12,639 –&gt; 01:02:16,879<br>And then you get a load, just because shift back to this memcash TV server and the gutter pool</p>
+<p>556<br>01:02:16,879 –&gt; 01:02:21,199<br>sort of sits again in the site to sort of carry over between these sort of tradition periods.</p>
+<p>557<br>01:02:23,599 –&gt; 01:02:28,559<br>Okay. And so this sort of gets us to the, I guess the reading question for today.</p>
+<p>558<br>01:02:28,559 –&gt; 01:02:34,000<br>As you mentioned, the gutter pools, you don’t do the lead from the gutter pool.</p>
+<p>559<br>01:02:35,599 –&gt; 01:02:38,079<br>In validations are actually also not sent to the gutter pool.</p>
+<p>560<br>01:02:38,559 –&gt; 01:02:43,599<br>And the question is like in a Y or can we speculate on Y?</p>
+<p>561<br>01:02:43,599 –&gt; 01:02:47,119<br>And so maybe this is a good time for a quick breakout room, a couple of minutes,</p>
+<p>562<br>01:02:47,119 –&gt; 01:02:51,599<br>you know, to either discuss other aspects from the memcash D design that you want to discuss,</p>
+<p>563<br>01:02:51,599 –&gt; 01:02:53,519<br>we’re trying to figure out what the answer to that question is.</p>
+<p>564<br>01:02:56,000 –&gt; 01:02:58,079<br>So maybe we can do a breakout. Yes. Thank you.</p>
+<p>565<br>01:08:38,079 –&gt; 01:08:40,079<br>Okay.</p>
+<p>566<br>01:09:03,439 –&gt; 01:09:05,439<br>Okay. So everybody back.</p>
+<p>567<br>01:09:08,399 –&gt; 01:09:10,399<br>Yeah.</p>
+<p>568<br>01:09:10,399 –&gt; 01:09:11,119<br>Looks like it.</p>
+<p>569<br>01:09:11,119 –&gt; 01:09:12,720<br>Yep. Okay. Good.</p>
+<p>570<br>01:09:13,519 –&gt; 01:09:17,840<br>Okay. So anybody, you know, go to paper doesn’t answer this question very precisely,</p>
+<p>571<br>01:09:17,840 –&gt; 01:09:20,559<br>but anybody wants to dare to speculate what the answer is.</p>
+<p>572<br>01:09:21,680 –&gt; 01:09:26,559<br>The delete, no, no, no, no invalidations to the gutter cluster.</p>
+<p>573<br>01:09:31,039 –&gt; 01:09:38,000<br>Well, we said with something like if you do, then you would have a lot of pressure on the gutter pool.</p>
+<p>574<br>01:09:38,079 –&gt; 01:09:43,359<br>Because there are so few machines and for every cache miss, there are two requests and for</p>
+<p>575<br>01:09:43,920 –&gt; 01:09:50,000<br>a cache headed just one. So if you do that after every write, you would have an extra request</p>
+<p>576<br>01:09:50,559 –&gt; 01:09:53,519<br>on the gutter pool and it’s so small so you don’t want to do that.</p>
+<p>577<br>01:09:53,519 –&gt; 01:09:58,880<br>And also you would protect the database as well because you would constantly query it</p>
+<p>578<br>01:09:59,600 –&gt; 01:10:01,600<br>after a write request.</p>
+<p>579<br>01:10:01,600 –&gt; 01:10:02,880<br>Yeah.</p>
+<p>580<br>01:10:02,880 –&gt; 01:10:06,800<br>I got it. I think in general, the delete message is also well, I have to go to two pools, correct?</p>
+<p>581<br>01:10:06,800 –&gt; 01:10:11,199<br>The original mancash people, all the mancash people’s and he invalidated N2 together.</p>
+<p>582<br>01:10:11,840 –&gt; 01:10:15,600<br>And so, you know, you also double the delete traffic. So I think that’s a perfectly,</p>
+<p>583<br>01:10:16,480 –&gt; 01:10:19,680<br>I think that’s the reason, you know, it’s a small set of machines.</p>
+<p>584<br>01:10:19,680 –&gt; 01:10:21,600<br>There’s the R2 sort of over.</p>
+<p>585<br>01:10:22,480 –&gt; 01:10:29,119<br>Basically get the through that transformation from a deleted mancash deserber failed mancash deserber</p>
+<p>586<br>01:10:29,119 –&gt; 01:10:33,440<br>to a new mancash deserber. Good. Okay.</p>
+<p>587<br>01:10:34,079 –&gt; 01:10:39,359<br>So it’s all one of the say back performance, even though there’s more in the paper about performance.</p>
+<p>588<br>01:10:40,559 –&gt; 01:10:45,919<br>Instead, I want to talk a little bit about sort of these races that sort of come about because</p>
+<p>589<br>01:10:45,919 –&gt; 01:10:50,639<br>of this trying to achieve the high performance that we’ve been talking about.</p>
+<p>590<br>01:10:51,599 –&gt; 01:10:53,519<br>There’s going to be three races I want to talk about.</p>
+<p>591<br>01:10:53,519 –&gt; 01:10:56,239<br>And in fact, I think all three you’re already identified.</p>
+<p>592<br>01:10:57,679 –&gt; 01:11:00,239<br>And so, amazingly, most of the discussions presumably going to be about,</p>
+<p>593<br>01:11:00,639 –&gt; 01:11:03,760<br>you know, how they avoid that.</p>
+<p>594<br>01:11:05,359 –&gt; 01:11:08,559<br>And so, race one is what they call stale sets.</p>
+<p>595<br>01:11:09,279 –&gt; 01:11:11,840<br>And you know, it’s scenarios swallows.</p>
+<p>596<br>01:11:12,479 –&gt; 01:11:13,519<br>But we have a client one.</p>
+<p>597<br>01:11:14,239 –&gt; 01:11:18,960<br>Use one region, nothing, one cluster, nothing particular special set of.</p>
+<p>598<br>01:11:19,760 –&gt; 01:11:23,359<br>So the client one does get up a K.</p>
+<p>599<br>01:11:24,319 –&gt; 01:11:27,279<br>You know, turns out to get a nail in the scenario.</p>
+<p>600<br>01:11:28,079 –&gt; 01:11:30,479<br>It will read the value from the database.</p>
+<p>601<br>01:11:32,239 –&gt; 01:11:34,399<br>Maybe this is the client that actually got the token.</p>
+<p>602<br>01:11:36,079 –&gt; 01:11:39,519<br>And it’s the one that actually is allowed to set it.</p>
+<p>603<br>01:11:40,479 –&gt; 01:11:44,079<br>But before it actually gets to set, you know, another client comes in.</p>
+<p>604<br>01:11:44,719 –&gt; 01:11:49,359<br>And race, K is two to the database.</p>
+<p>605<br>01:11:50,159 –&gt; 01:11:53,519<br>And then does a put of K on two.</p>
+<p>606<br>01:11:53,680 –&gt; 01:12:01,600<br>And then, you know, the other client, you know, actually finally gets around to do doing</p>
+<p>607<br>01:12:01,600 –&gt; 01:12:05,440<br>actually it’s put so there’s a put of K comma.</p>
+<p>608<br>01:12:05,440 –&gt; 01:12:06,960<br>And this is like maybe V1.</p>
+<p>609<br>01:12:07,840 –&gt; 01:12:09,200<br>So K comma D1.</p>
+<p>610<br>01:12:10,160 –&gt; 01:12:15,440<br>And now where we have a stale value in the cache.</p>
+<p>611<br>01:12:15,440 –&gt; 01:12:18,160<br>And that, you know, stale value is sort of permanent there.</p>
+<p>612<br>01:12:19,200 –&gt; 01:12:20,800<br>Until somebody else does an update.</p>
+<p>613<br>01:12:21,600 –&gt; 01:12:22,320<br>Okay.</p>
+<p>614<br>01:12:22,320 –&gt; 01:12:25,680<br>And that’s sort of indesirable where that really breaks their sort of contract.</p>
+<p>615<br>01:12:25,680 –&gt; 01:12:28,560<br>And the applications, they don’t want to go back in time.</p>
+<p>616<br>01:12:29,199 –&gt; 01:12:32,320<br>I’m going to be anonymally that that should be user could have served.</p>
+<p>617<br>01:12:32,320 –&gt; 01:12:34,640<br>And that’s what I want to try to avoid that.</p>
+<p>618<br>01:12:36,960 –&gt; 01:12:39,440<br>And so what do they, how do they solve this problem?</p>
+<p>619<br>01:12:42,640 –&gt; 01:12:43,440<br>What is this is?</p>
+<p>620<br>01:12:44,800 –&gt; 01:12:47,360<br>Yeah, Christian, some say this is the leases help out here.</p>
+<p>621<br>01:12:47,360 –&gt; 01:12:48,480<br>They already have the leases, right?</p>
+<p>622<br>01:12:48,559 –&gt; 01:12:50,000<br>Because this guy got a lease for,</p>
+<p>623<br>01:12:51,279 –&gt; 01:12:54,399<br>must have gotten lease because otherwise he’s not reading from the database.</p>
+<p>624<br>01:12:55,039 –&gt; 01:12:58,799<br>And so at the client one presents this lease at the put.</p>
+<p>625<br>01:13:02,000 –&gt; 01:13:04,479<br>Or can put a, or sent the lease at the put.</p>
+<p>626<br>01:13:05,679 –&gt; 01:13:09,199<br>And the fact that well, and what is the additional step basically?</p>
+<p>627<br>01:13:10,159 –&gt; 01:13:21,840<br>To check that this hasn’t expired or something, because if the other client was able to.</p>
+<p>628<br>01:13:22,800 –&gt; 01:13:25,599<br>I’m sorry, I just realized I made a mistake.</p>
+<p>629<br>01:13:26,159 –&gt; 01:13:28,639<br>So this is why the question is also not so good.</p>
+<p>630<br>01:13:29,199 –&gt; 01:13:29,599<br>Let me see.</p>
+<p>631<br>01:13:30,239 –&gt; 01:13:31,840<br>The client who doesn’t do a put, correct?</p>
+<p>632<br>01:13:31,840 –&gt; 01:13:33,359<br>That was an invalidation consistency.</p>
+<p>633<br>01:13:34,079 –&gt; 01:13:35,359<br>I got myself confused here.</p>
+<p>634<br>01:13:35,359 –&gt; 01:13:37,119<br>So what does the client actually have client to do?</p>
+<p>635<br>01:13:38,000 –&gt; 01:13:40,239<br>After it sets the database.</p>
+<p>636<br>01:13:44,079 –&gt; 01:13:45,279<br>I’m going back to the lead.</p>
+<p>637<br>01:13:45,279 –&gt; 01:13:46,319<br>Yeah, those are the lead.</p>
+<p>638<br>01:13:47,840 –&gt; 01:13:49,760<br>For the reason that we talked about the earlier era, correct?</p>
+<p>639<br>01:13:49,760 –&gt; 01:13:50,800<br>So it doesn’t delete if K.</p>
+<p>640<br>01:13:51,760 –&gt; 01:13:56,000<br>And what’s the side effect of what happens with the lease of a key that’s being deleted?</p>
+<p>641<br>01:13:59,439 –&gt; 01:14:02,559<br>It doesn’t like verify or it doesn’t.</p>
+<p>642<br>01:14:03,359 –&gt; 01:14:04,720<br>Yeah, actually what happens with the site,</p>
+<p>643<br>01:14:04,720 –&gt; 01:14:10,880<br>as a side effect of the delete, the lease is invalidated.</p>
+<p>644<br>01:14:12,640 –&gt; 01:14:13,920<br>So it invalidates the lease.</p>
+<p>645<br>01:14:17,600 –&gt; 01:14:23,039<br>And so when the put comes along, so my timeline is a little bit here, this happens like well before.</p>
+<p>646<br>01:14:24,880 –&gt; 01:14:27,280<br>So the put happens after the delete.</p>
+<p>647<br>01:14:28,079 –&gt; 01:14:30,159<br>The put will present the lease that I’ve got at the get.</p>
+<p>648<br>01:14:30,960 –&gt; 01:14:33,680<br>But that lease has been invalidated by the delete.</p>
+<p>649<br>01:14:33,840 –&gt; 01:14:35,760<br>So this put gets rejected.</p>
+<p>650<br>01:14:41,680 –&gt; 01:14:46,800<br>So basically, one way to think about this is that they leverage the lease mechanism to</p>
+<p>651<br>01:14:46,800 –&gt; 01:14:48,640<br>avoid the funding herd problem.</p>
+<p>652<br>01:14:50,320 –&gt; 01:14:54,800<br>Extended to basically also avoid this stale set problem.</p>
+<p>653<br>01:14:58,159 –&gt; 01:14:58,960<br>Does that make sense?</p>
+<p>654<br>01:14:59,600 –&gt; 01:15:07,920<br>And now the revolution is that if we don’t have this lease invalidation mechanism,</p>
+<p>655<br>01:15:07,920 –&gt; 01:15:13,199<br>we would still obey the like the weak consistency that you would have ordered rights that happen</p>
+<p>656<br>01:15:13,199 –&gt; 01:15:14,720<br>at some point in the past.</p>
+<p>657<br>01:15:14,720 –&gt; 01:15:18,800<br>But I believe that the thing that this thing ensures is that you observe your own rights, right?</p>
+<p>658<br>01:15:18,800 –&gt; 01:15:20,640<br>I think you’re sure if you’re all right.</p>
+<p>659<br>01:15:20,640 –&gt; 01:15:22,640<br>They’re also sure if you don’t go back in time.</p>
+<p>660<br>01:15:23,600 –&gt; 01:15:30,720<br>Like if you’ve read something, and like everybody else that comes now after this client too,</p>
+<p>661<br>01:15:31,600 –&gt; 01:15:34,000<br>we’ll see the old V1.</p>
+<p>662<br>01:15:34,000 –&gt; 01:15:39,200<br>And so a client might get well behind and not see that new right for a long, long period of time.</p>
+<p>663<br>01:15:39,200 –&gt; 01:15:40,720<br>In fact, my team not at all.</p>
+<p>664<br>01:15:40,720 –&gt; 01:15:45,200<br>Yeah, but I mean, would this be actually going back in time because</p>
+<p>665<br>01:15:46,000 –&gt; 01:15:50,320<br>clients did not read anything after maybe back in time’s their own work.</p>
+<p>666<br>01:15:50,319 –&gt; 01:15:53,279<br>But it won’t observe V2 for a long, long time.</p>
+<p>667<br>01:15:53,279 –&gt; 01:15:54,079<br>I see.</p>
+<p>668<br>01:15:54,079 –&gt; 01:15:54,880<br>Okay.</p>
+<p>669<br>01:15:54,880 –&gt; 01:15:56,799<br>And now there’s not something that we wanted to happen.</p>
+<p>670<br>01:15:58,399 –&gt; 01:16:01,039<br>It’s okay to be either a little bit, but not for a long, long time.</p>
+<p>671<br>01:16:03,199 –&gt; 01:16:03,519<br>Okay.</p>
+<p>672<br>01:16:04,719 –&gt; 01:16:09,599<br>Second race, which you guys already mentioned, already identified too.</p>
+<p>673<br>01:16:11,599 –&gt; 01:16:12,719<br>It’s the end of the journey.</p>
+<p>674<br>01:16:13,920 –&gt; 01:16:16,719<br>I guess, lab debugging, you know, all about races.</p>
+<p>675<br>01:16:17,600 –&gt; 01:16:19,119<br>Race two.</p>
+<p>676<br>01:16:19,119 –&gt; 01:16:21,520<br>And this is the cold cluster race.</p>
+<p>677<br>01:16:25,360 –&gt; 01:16:26,800<br>And sort of in a similar style.</p>
+<p>678<br>01:16:28,720 –&gt; 01:16:32,880<br>With two clients, client one, with client two.</p>
+<p>679<br>01:16:37,280 –&gt; 01:16:41,360<br>And let’s say K is V1 originally.</p>
+<p>680<br>01:16:41,360 –&gt; 01:16:43,840<br>And so we’re in both clients under the cold cluster.</p>
+<p>681<br>01:16:44,000 –&gt; 01:16:51,360<br>Point one sets the key to a new value in the database.</p>
+<p>682<br>01:16:54,159 –&gt; 01:16:58,720<br>Delete the K in the cold cluster, right?</p>
+<p>683<br>01:16:58,720 –&gt; 01:17:00,159<br>In the current cluster that’s actually in.</p>
+<p>684<br>01:17:01,279 –&gt; 01:17:08,079<br>And then this client doesn’t get in the cold cluster.</p>
+<p>685<br>01:17:09,039 –&gt; 01:17:15,439<br>C is that it actually is not there.</p>
+<p>686<br>01:17:16,159 –&gt; 01:17:22,079<br>And at least we’re going to do get from the warm cluster.</p>
+<p>687<br>01:17:23,359 –&gt; 01:17:24,319<br>Get the value back.</p>
+<p>688<br>01:17:26,720 –&gt; 01:17:27,519<br>That’s what we meant.</p>
+<p>689<br>01:17:27,519 –&gt; 01:17:34,239<br>Like, you know, get actually gets there before actually the cold cluster or the warm</p>
+<p>690<br>01:17:34,239 –&gt; 01:17:35,519<br>cluster actually has been updated.</p>
+<p>691<br>01:17:36,800 –&gt; 01:17:42,479<br>And so now it will do a set of the K to V1 or put.</p>
+<p>692<br>01:17:42,479 –&gt; 01:17:44,159<br>Sorry, let me be consistent.</p>
+<p>693<br>01:17:45,679 –&gt; 01:17:50,639<br>Now, K to V1 in the cold cluster.</p>
+<p>694<br>01:17:50,639 –&gt; 01:17:53,760<br>And now we have the sort of the same situation as before.</p>
+<p>695<br>01:17:55,599 –&gt; 01:18:01,279<br>We have sort of a permanent scale value in the cold cluster.</p>
+<p>696<br>01:18:05,119 –&gt; 01:18:09,359<br>And how do they solve that problem?</p>
+<p>697<br>01:18:15,760 –&gt; 01:18:19,840<br>Anyone you remember?</p>
+<p>698<br>01:18:27,599 –&gt; 01:18:30,960<br>So they have a small extension that avoids this problem.</p>
+<p>699<br>01:18:31,760 –&gt; 01:18:33,199<br>And you guess what it could be if you.</p>
+<p>700<br>01:18:38,720 –&gt; 01:18:41,520<br>Which is C1 and the warm cluster or cold cluster?</p>
+<p>701<br>01:18:41,520 –&gt; 01:18:42,640<br>You know, both in the cold cluster.</p>
+<p>702<br>01:18:47,039 –&gt; 01:18:48,319<br>Oh, and they’re different.</p>
+<p>703<br>01:18:48,319 –&gt; 01:18:50,159<br>They’re in different cold clusters, right?</p>
+<p>704<br>01:18:52,480 –&gt; 01:18:53,439<br>I’m not sure that matters.</p>
+<p>705<br>01:18:54,560 –&gt; 01:18:55,760<br>Yeah, actually it doesn’t.</p>
+<p>706<br>01:19:01,359 –&gt; 01:19:03,199<br>Okay.</p>
+<p>707<br>01:19:03,199 –&gt; 01:19:05,899<br>any</p>
+<p>708<br>01:19:05,899 –&gt; 01:19:17,539<br>body</p>
+<p>709<br>01:19:18,199 –&gt; 01:19:29,479<br>here.</p>
+<p>710<br>01:19:29,479 –&gt; 01:19:35,880<br>Is anybody</p>
+<p>711<br>01:19:47,539 –&gt; 01:19:55,380<br>I think they mentioned like the holdoff for two seconds.</p>
+<p>712<br>01:19:55,380 –&gt; 01:19:59,539<br>Though I’m not entirely sure about all the details of that.</p>
+<p>713<br>01:19:59,539 –&gt; 01:20:08,539<br>Yeah, basically the, this actually causes, they put a hold,</p>
+<p>714<br>01:20:08,539 –&gt; 01:20:12,539<br>they call this a holdoff or two second holdoff.</p>
+<p>715<br>01:20:13,539 –&gt; 01:20:17,539<br>On any sets to that key.</p>
+<p>716<br>01:20:17,539 –&gt; 01:20:22,539<br>So this particular, after you do the lead in the cold cluster,</p>
+<p>717<br>01:20:22,539 –&gt; 01:20:26,539<br>you can’t do any sets to that key for two seconds.</p>
+<p>718<br>01:20:26,539 –&gt; 01:20:31,539<br>And so this particular foot will be rejected.</p>
+<p>719<br>01:20:31,539 –&gt; 01:20:34,539<br>And this is only during the warm up to your face, correct?</p>
+<p>720<br>01:20:34,539 –&gt; 01:20:37,539<br>So when the cluster comes up, it’s called, you know,</p>
+<p>721<br>01:20:37,539 –&gt; 01:20:40,539<br>for a couple hours of runs, you know, to start warming up</p>
+<p>722<br>01:20:40,539 –&gt; 01:20:42,539<br>and get it’s content in place.</p>
+<p>723<br>01:20:42,539 –&gt; 01:20:45,539<br>And once, you know, sort of the warmed up,</p>
+<p>724<br>01:20:45,539 –&gt; 01:20:47,539<br>then, you know, they stopped doing this trick.</p>
+<p>725<br>01:20:47,539 –&gt; 01:20:50,539<br>But basically, you sort of do, you know,</p>
+<p>726<br>01:20:50,539 –&gt; 01:20:53,539<br>this paste is problem over, they, you know,</p>
+<p>727<br>01:20:53,539 –&gt; 01:20:56,539<br>think the two seconds is sufficient.</p>
+<p>728<br>01:20:56,539 –&gt; 01:21:00,539<br>And that’s the sufficient for basically that right to do.</p>
+<p>729<br>01:21:00,539 –&gt; 01:21:03,539<br>Propagate to the cold database, too.</p>
+<p>730<br>01:21:03,539 –&gt; 01:21:08,539<br>Okay.</p>
+<p>731<br>01:21:08,539 –&gt; 01:21:11,539<br>Good. There’s one more right problem.</p>
+<p>732<br>01:21:11,539 –&gt; 01:21:13,539<br>As I’ll leave you quickly mentioned that because again,</p>
+<p>733<br>01:21:13,539 –&gt; 01:21:15,539<br>you already mentioned it.</p>
+<p>734<br>01:21:15,539 –&gt; 01:21:18,539<br>The race number three.</p>
+<p>735<br>01:21:18,539 –&gt; 01:21:19,539<br>That they talked about in the paper.</p>
+<p>736<br>01:21:19,539 –&gt; 01:21:21,539<br>And I’m sure they’re more, you know, the one they say,</p>
+<p>737<br>01:21:21,539 –&gt; 01:21:23,539<br>the one that I talked to the paper about.</p>
+<p>738<br>01:21:23,539 –&gt; 01:21:27,539<br>And this is between regions.</p>
+<p>739<br>01:21:27,539 –&gt; 01:21:29,539<br>And it has to do with the primary and backup problem,</p>
+<p>740<br>01:21:29,539 –&gt; 01:21:32,539<br>primary and backup.</p>
+<p>741<br>01:21:32,539 –&gt; 01:21:36,539<br>And it’s sort of a similar problem.</p>
+<p>742<br>01:21:36,539 –&gt; 01:21:45,539<br>And we’re, you know, the client one does right to the database.</p>
+<p>743<br>01:21:45,539 –&gt; 01:21:47,539<br>The database.</p>
+<p>744<br>01:21:47,539 –&gt; 01:21:49,539<br>And this is a client in the backup.</p>
+<p>745<br>01:21:49,539 –&gt; 01:21:51,539<br>So this is a backup client sits in the backup region.</p>
+<p>746<br>01:21:51,539 –&gt; 01:21:55,539<br>So it doesn’t right to the database in the primary region.</p>
+<p>747<br>01:21:55,539 –&gt; 01:21:57,539<br>So it goes off.</p>
+<p>748<br>01:21:57,539 –&gt; 01:22:02,539<br>And then those delete.</p>
+<p>749<br>01:22:02,539 –&gt; 01:22:08,539<br>And so we’re going to have a couple of.</p>
+<p>750<br>01:22:08,539 –&gt; 01:22:12,539<br>And then we’ll have the.</p>
+<p>751<br>01:22:12,539 –&gt; 01:22:15,539<br>Of the K in, of course, the backup region.</p>
+<p>752<br>01:22:15,539 –&gt; 01:22:19,539<br>For me, it’s cash.</p>
+<p>753<br>01:22:19,539 –&gt; 01:22:22,539<br>And then in principle, it would do immediately.</p>
+<p>754<br>01:22:22,539 –&gt; 01:22:23,539<br>This is like one of you mentioned this.</p>
+<p>755<br>01:22:23,539 –&gt; 01:22:25,539<br>Like even me do get that particular K.</p>
+<p>756<br>01:22:25,539 –&gt; 01:22:27,539<br>Then.</p>
+<p>757<br>01:22:27,539 –&gt; 01:22:31,539<br>And won’t see the.</p>
+<p>758<br>01:22:31,539 –&gt; 01:22:34,539<br>So we won’t see its own.</p>
+<p>759<br>01:22:34,539 –&gt; 01:22:35,539<br>Right.</p>
+<p>760<br>01:22:35,539 –&gt; 01:22:38,539<br>Because that right is still on the way to the backup.</p>
+<p>761<br>01:22:38,539 –&gt; 01:22:41,539<br>Or to the primary, the primary will, you know,</p>
+<p>762<br>01:22:41,539 –&gt; 01:22:43,539<br>send the through the.</p>
+<p>763<br>01:22:43,539 –&gt; 01:22:44,539<br>The stick.</p>
+<p>764<br>01:22:44,539 –&gt; 01:22:46,539<br>SQL thing.</p>
+<p>765<br>01:22:46,539 –&gt; 01:22:49,539<br>Copy the update to the database in the.</p>
+<p>766<br>01:22:49,539 –&gt; 01:22:50,539<br>Backup area.</p>
+<p>767<br>01:22:50,539 –&gt; 01:22:52,539<br>And so only then, you know, again, in the backup,</p>
+<p>768<br>01:22:52,539 –&gt; 01:22:54,539<br>actually, in the backup area, in the backup region,</p>
+<p>769<br>01:22:54,539 –&gt; 01:22:56,539<br>we’ll actually see the K change.</p>
+<p>770<br>01:22:56,539 –&gt; 01:22:59,539<br>And so we’re, so we have a problem here, right?</p>
+<p>771<br>01:22:59,539 –&gt; 01:23:02,539<br>So if this K key, K would proceed.</p>
+<p>772<br>01:23:02,539 –&gt; 01:23:04,539<br>So we got any modifications.</p>
+<p>773<br>01:23:04,539 –&gt; 01:23:07,539<br>Then we would see not our own rights.</p>
+<p>774<br>01:23:07,539 –&gt; 01:23:13,539<br>And anybody remember how they solved this problem?</p>
+<p>775<br>01:23:13,539 –&gt; 01:23:16,539<br>What’s the remote marker?</p>
+<p>776<br>01:23:16,539 –&gt; 01:23:17,539<br>Yeah, absolutely.</p>
+<p>777<br>01:23:17,539 –&gt; 01:23:19,539<br>It is. So when they delete this K.</p>
+<p>778<br>01:23:19,539 –&gt; 01:23:23,539<br>K key, are they, you know, they make it, they keep it in the</p>
+<p>779<br>01:23:23,539 –&gt; 01:23:24,539<br>back.</p>
+<p>780<br>01:23:24,539 –&gt; 01:23:26,539<br>And so we have a key of the backup.</p>
+<p>781<br>01:23:26,539 –&gt; 01:23:29,539<br>And market has remote.</p>
+<p>782<br>01:23:29,539 –&gt; 01:23:33,539<br>And so when this client.</p>
+<p>783<br>01:23:33,539 –&gt; 01:23:37,539<br>One doesn’t get it will see, hey, I’m going to get a,</p>
+<p>784<br>01:23:37,539 –&gt; 01:23:41,539<br>basically gets remote back from its local.</p>
+<p>785<br>01:23:41,539 –&gt; 01:23:42,539<br>Mancash.</p>
+<p>786<br>01:23:42,539 –&gt; 01:23:48,539<br>And then it knows basically to fetch it from the primary.</p>
+<p>787<br>01:23:48,539 –&gt; 01:23:58,539<br>And then the primary region.</p>
+<p>788<br>01:23:58,539 –&gt; 01:23:59,539<br>Okay.</p>
+<p>789<br>01:23:59,539 –&gt; 01:24:02,539<br>But then the remote marker.</p>
+<p>790<br>01:24:02,539 –&gt; 01:24:06,539<br>Will be removed when it’s safe to read from the back.</p>
+<p>791<br>01:24:06,539 –&gt; 01:24:11,539<br>Yes, I think one of the database, the backup database gets the data</p>
+<p>792<br>01:24:11,539 –&gt; 01:24:12,539<br>from the primary.</p>
+<p>793<br>01:24:12,539 –&gt; 01:24:17,539<br>It can remove the marker.</p>
+<p>794<br>01:24:17,539 –&gt; 01:24:20,539<br>Because then it’s safe to read from the primary database.</p>
+<p>795<br>01:24:20,539 –&gt; 01:24:24,539<br>Over the backup database.</p>
+<p>796<br>01:24:24,539 –&gt; 01:24:27,539<br>Does that make sense?</p>
+<p>797<br>01:24:27,539 –&gt; 01:24:32,539<br>Okay, so let me do a quick summary.</p>
+<p>798<br>01:24:32,539 –&gt; 01:24:35,539<br>And I’m running a little bit over time.</p>
+<p>799<br>01:24:35,539 –&gt; 01:24:42,539<br>So quick summaries, you know, caching is vital.</p>
+<p>800<br>01:24:42,539 –&gt; 01:24:45,539<br>They basically get this kind of capacity that we’re talking about.</p>
+<p>801<br>01:24:45,539 –&gt; 01:24:49,539<br>This paper like billions of operations per second.</p>
+<p>802<br>01:24:49,539 –&gt; 01:24:53,539<br>The sort of two strategies to sort of get this high capacity.</p>
+<p>803<br>01:24:53,539 –&gt; 01:24:58,539<br>One is petitioning.</p>
+<p>804<br>01:24:58,539 –&gt; 01:25:03,539<br>Which gives you sort of parallelism or sharding.</p>
+<p>805<br>01:25:03,539 –&gt; 01:25:08,539<br>And the other strategy is replication, which is really good for hot keys.</p>
+<p>806<br>01:25:08,539 –&gt; 01:25:12,539<br>Keys that being requested by lots of lots of clients.</p>
+<p>807<br>01:25:12,539 –&gt; 01:25:16,539<br>So that actually they keep getting replicated the multiple machines.</p>
+<p>808<br>01:25:16,539 –&gt; 01:25:18,539<br>And.</p>
+<p>809<br>01:25:18,539 –&gt; 01:25:20,539<br>And you know, what else to see?</p>
+<p>810<br>01:25:20,539 –&gt; 01:25:25,539<br>The sort of a bunch of sort of almost ad hoc techniques to sort of.</p>
+<p>811<br>01:25:25,539 –&gt; 01:25:33,539<br>Get around some the serious consistency issues that pop up even if the system is only designed to give a weak consistency.</p>
+<p>812<br>01:25:33,539 –&gt; 01:25:40,539<br>And so this whole sort of consistency between the database.</p>
+<p>813<br>01:25:40,539 –&gt; 01:25:42,539<br>And the D.</p>
+<p>814<br>01:25:42,539 –&gt; 01:25:50,539<br>And cash and then cash is tricky, maybe much more tricky than you might have fought.</p>
+<p>815<br>01:25:50,539 –&gt; 01:25:53,539<br>Because you know, what could be the problem.</p>
+<p>816<br>01:25:53,539 –&gt; 01:25:56,539<br>But then as you can see, you know, it’s like the period of tricky.</p>
+<p>817<br>01:25:56,539 –&gt; 01:26:03,539<br>And in fact, there’s a quite a bit of research going on trying to figure out like how could you do better?</p>
+<p>818<br>01:26:03,539 –&gt; 01:26:08,539<br>Okay, with that, I want to conclude that people that need to run can run more.</p>
+<p>819<br>01:26:08,539 –&gt; 01:26:11,539<br>So we’re going to be able to do that.</p>
+<p>820<br>01:26:11,539 –&gt; 01:26:14,539<br>So I think that’s a very good question.</p>
+<p>821<br>01:26:14,539 –&gt; 01:26:16,539<br>And I’ll say around.</p>
+<p>822<br>01:26:16,539 –&gt; 01:26:19,539<br>And there are any questions if you have any questions remaining.</p>
+<p>823<br>01:26:19,539 –&gt; 01:26:21,539<br>And otherwise, I’ll see you first thing.</p>
+<p>824<br>01:26:21,539 –&gt; 01:26:22,539<br>Thank you.</p>
+<p>825<br>01:26:22,539 –&gt; 01:26:25,539<br>Sorry, I have a question about.</p>
+<p>826<br>01:26:25,539 –&gt; 01:26:26,539<br>So.</p>
+<p>827<br>01:26:26,539 –&gt; 01:26:31,539<br>For example, for the last thing we talked about with the remote market.</p>
+<p>828<br>01:26:31,539 –&gt; 01:26:34,539<br>How did they know that this is going to be.</p>
+<p>829<br>01:26:34,539 –&gt; 01:26:36,539<br>Or relevant data race.</p>
+<p>830<br>01:26:36,539 –&gt; 01:26:45,539<br>Or how did they decide that it is going to be more useful to do this additional steps of remote marker.</p>
+<p>831<br>01:26:45,539 –&gt; 01:26:48,539<br>First, they’re just getting civil data.</p>
+<p>832<br>01:26:48,539 –&gt; 01:26:55,539<br>Well, I think that is because they have this requirement right up front, although they, the people didn’t really stipulate it very clearly.</p>
+<p>833<br>01:26:55,539 –&gt; 01:26:59,539<br>They really want this.</p>
+<p>834<br>01:26:59,539 –&gt; 01:27:05,539<br>And like, for example, you do a user adds something to their timeline.</p>
+<p>835<br>01:27:05,539 –&gt; 01:27:08,539<br>Read it again, and it’s not there.</p>
+<p>836<br>01:27:08,539 –&gt; 01:27:12,539<br>And so that is a thing that could be observed directly by users.</p>
+<p>837<br>01:27:12,539 –&gt; 01:27:15,539<br>And strange inconsistency.</p>
+<p>838<br>01:27:15,539 –&gt; 01:27:19,539<br>They want to avoid that.</p>
+<p>839<br>01:27:19,539 –&gt; 01:27:21,539<br>Okay, that makes sense.</p>
+<p>840<br>01:27:21,539 –&gt; 01:27:29,539<br>And my other question was on the one of the first slides where you had invalidation of them.</p>
+<p>841<br>01:27:29,539 –&gt; 01:27:36,539<br>I had.</p>
+<p>842<br>01:27:36,539 –&gt; 01:27:42,539<br>Yeah, this is the old age like a little bit wild now.</p>
+<p>843<br>01:27:42,539 –&gt; 01:27:45,539<br>Oh, no, it was on the later ones.</p>
+<p>844<br>01:27:45,539 –&gt; 01:27:48,539<br>Well, this is also has invalidation on it.</p>
+<p>845<br>01:27:48,539 –&gt; 01:27:54,539<br>So, maybe the next one.</p>
+<p>846<br>01:27:54,539 –&gt; 01:27:56,539<br>Yes, here we go.</p>
+<p>847<br>01:27:56,539 –&gt; 01:28:04,539<br>Oh, yeah, the client is going to set the invalidation only for its local region.</p>
+<p>848<br>01:28:04,539 –&gt; 01:28:07,539<br>And the squeal is going to do it.</p>
+<p>849<br>01:28:07,539 –&gt; 01:28:12,539<br>Yeah, for the transfer and for the non local.</p>
+<p>850<br>01:28:12,539 –&gt; 01:28:14,539<br>Okay, that makes sense.</p>
+<p>851<br>01:28:14,539 –&gt; 01:28:15,539<br>Thank you so much.</p>
+<p>852<br>01:28:16,539 –&gt; 01:28:22,539<br>Professor Anne, to add your final question.</p>
+<p>853<br>01:28:22,539 –&gt; 01:28:25,539<br>Sorry, sorry.</p>
+<p>854<br>01:28:25,539 –&gt; 01:28:27,539<br>Yeah, go ahead.</p>
+<p>855<br>01:28:27,539 –&gt; 01:28:33,539<br>These are after class.</p>
+<p>856<br>01:28:33,539 –&gt; 01:28:43,539<br>So first, so servers, servers in a region are assigned what when we have clusters each one are assigned to a cluster, right?</p>
+<p>857<br>01:28:43,539 –&gt; 01:28:44,539<br>Yeah, yeah.</p>
+<p>858<br>01:28:44,539 –&gt; 01:28:48,539<br>So every every every cluster is really a replica.</p>
+<p>859<br>01:28:48,539 –&gt; 01:28:49,539<br>Okay, nice.</p>
+<p>860<br>01:28:49,539 –&gt; 01:28:50,539<br>Yeah.</p>
+<p>861<br>01:28:50,539 –&gt; 01:28:54,539<br>And like like server size, I’m to one single replica.</p>
+<p>862<br>01:28:54,539 –&gt; 01:28:55,539<br>Yeah.</p>
+<p>863<br>01:28:55,539 –&gt; 01:28:56,539<br>Yeah.</p>
+<p>864<br>01:28:56,539 –&gt; 01:28:57,539<br>Nice.</p>
+<p>865<br>01:28:57,539 –&gt; 01:29:06,539<br>And then the second one was like straight from the paper and very precise, but it says like, okay, here.</p>
+<p>866<br>01:29:06,539 –&gt; 01:29:17,539<br>So, in I think generic cash in page two, it says like the new man cash is more a general, you got the store.</p>
+<p>867<br>01:29:17,539 –&gt; 01:29:29,539<br>And in particular, they say it takes little effort for new services to leverage the existing Marcher infrastructure without the burden tuning, optimizing provisioning and maintaining a large short of lead.</p>
+<p>868<br>01:29:29,539 –&gt; 01:29:35,539<br>So I wasn’t sure and I looked up and I couldn’t find what up, like what’s existing Marcher infrastructure.</p>
+<p>869<br>01:29:35,539 –&gt; 01:29:37,539<br>I actually know exactly what they’re referring to.</p>
+<p>870<br>01:29:37,539 –&gt; 01:29:38,539<br>So, okay.</p>
+<p>871<br>01:29:38,539 –&gt; 01:29:39,539<br>All right.</p>
+<p>872<br>01:29:39,539 –&gt; 01:29:40,539<br>Cool.</p>
+<p>873<br>01:29:40,539 –&gt; 01:29:41,539<br>Thanks.</p>
+<p>874<br>01:29:41,539 –&gt; 01:29:42,539<br>Yeah.</p>
+<p>875<br>01:29:42,539 –&gt; 01:29:43,539<br>All right.</p>
+<p>876<br>01:29:43,539 –&gt; 01:29:44,539<br>Nice.</p>
+<p>877<br>01:29:44,539 –&gt; 01:29:48,539<br>See you.</p>
+<p>878<br>01:29:48,539 –&gt; 01:29:54,539<br>I want to pull up on a question that I think will you mask about a certain failure mode.</p>
+<p>879<br>01:29:54,539 –&gt; 01:29:59,539<br>If I’m in cash, the server fails.</p>
+<p>880<br>01:29:59,539 –&gt; 01:30:00,539<br>I think there was a diet.</p>
+<p>881<br>01:30:00,539 –&gt; 01:30:02,539<br>I’m trying to think which slide would be helpful.</p>
+<p>882<br>01:30:02,539 –&gt; 01:30:03,539<br>Look at.</p>
+<p>883<br>01:30:03,539 –&gt; 01:30:05,539<br>Um,</p>
+<p>884<br>01:30:05,539 –&gt; 01:30:10,539<br>Oh, maybe that one, the one you were just.</p>
+<p>885<br>01:30:10,539 –&gt; 01:30:15,539<br>Just anything that kind of shows them I’m cash the overall system diagram, I guess.</p>
+<p>886<br>01:30:15,539 –&gt; 01:30:16,539<br>Okay.</p>
+<p>887<br>01:30:16,539 –&gt; 01:30:18,539<br>Well, multiple doors.</p>
+<p>888<br>01:30:18,539 –&gt; 01:30:22,539<br>But this is the one basically you think about as a single cluster if you will.</p>
+<p>889<br>01:30:22,539 –&gt; 01:30:23,539<br>Yeah.</p>
+<p>890<br>01:30:23,539 –&gt; 01:30:24,539<br>Okay.</p>
+<p>891<br>01:30:24,539 –&gt; 01:30:25,539<br>Yeah.</p>
+<p>892<br>01:30:25,539 –&gt; 01:30:26,539<br>Yeah.</p>
+<p>893<br>01:30:26,539 –&gt; 01:30:27,539<br>Okay.</p>
+<p>894<br>01:30:27,539 –&gt; 01:30:31,539<br>We could look at another one, but I think this is sort of probably good enough.</p>
+<p>895<br>01:30:31,539 –&gt; 01:30:33,539<br>Yeah, I think this is, this is good.</p>
+<p>896<br>01:30:33,539 –&gt; 01:30:36,539<br>Yeah, I think his question was.</p>
+<p>897<br>01:30:36,539 –&gt; 01:30:38,539<br>So.</p>
+<p>898<br>01:30:38,539 –&gt; 01:30:39,539<br>Shoot.</p>
+<p>899<br>01:30:39,539 –&gt; 01:30:41,539<br>I tried to get rid of it.</p>
+<p>900<br>01:30:41,539 –&gt; 01:30:46,539<br>But it was something about like if a client, if a front end writes.</p>
+<p>901<br>01:30:46,539 –&gt; 01:30:48,539<br>Yeah.</p>
+<p>902<br>01:30:48,539 –&gt; 01:30:52,539<br>If a client writes to its memcash do server.</p>
+<p>903<br>01:30:52,539 –&gt; 01:30:55,539<br>And that memcash do server crashes.</p>
+<p>904<br>01:30:55,539 –&gt; 01:31:00,539<br>And then the client immediately tries to switch his presumably switches to another memcash do server.</p>
+<p>905<br>01:31:00,539 –&gt; 01:31:02,539<br>And then reads it again.</p>
+<p>906<br>01:31:02,539 –&gt; 01:31:07,539<br>What mechanism makes sure it doesn’t see that it’s seen the result of its previous right.</p>
+<p>907<br>01:31:07,539 –&gt; 01:31:12,539<br>I think what happens is we probably go through the gunner.</p>
+<p>908<br>01:31:12,539 –&gt; 01:31:13,539<br>Okay.</p>
+<p>909<br>01:31:13,539 –&gt; 01:31:18,539<br>We’re going to memcash the fails correct that client will get a no response back.</p>
+<p>910<br>01:31:18,539 –&gt; 01:31:25,539<br>And when that no response comes back, it actually goes through the gunner, which has nothing in it.</p>
+<p>911<br>01:31:25,539 –&gt; 01:31:27,539<br>Probably in the first try.</p>
+<p>912<br>01:31:27,539 –&gt; 01:31:31,539<br>And we’ll read it from whatever database.</p>
+<p>913<br>01:31:31,539 –&gt; 01:31:33,539<br>Okay, okay.</p>
+<p>914<br>01:31:33,539 –&gt; 01:31:35,539<br>That makes sense.</p>
+<p>915<br>01:31:35,539 –&gt; 01:31:39,539<br>And it’s a little bit unclear exactly what happens when a new machine gets at it.</p>
+<p>916<br>01:31:39,539 –&gt; 01:31:42,539<br>And then we’re going to talk a lot about it in the paper.</p>
+<p>917<br>01:31:42,539 –&gt; 01:31:52,539<br>But I presume this is actually because this is the hatching part where keys will sort of be automatically shipped it from one machine to another.</p>
+<p>918<br>01:31:52,539 –&gt; 01:31:54,539<br>I guess.</p>
+<p>919<br>01:31:54,539 –&gt; 01:31:57,539<br>Would it if there were multiple clusters.</p>
+<p>920<br>01:31:57,539 –&gt; 01:31:59,539<br>Wouldn’t it not.</p>
+<p>921<br>01:31:59,539 –&gt; 01:32:01,539<br>Maybe I just need to reread about the gutter.</p>
+<p>922<br>01:32:01,539 –&gt; 01:32:04,539<br>But wouldn’t it potentially shift to another memcash be in the.</p>
+<p>923<br>01:32:04,539 –&gt; 01:32:05,539<br>Oh, actually, it would.</p>
+<p>924<br>01:32:05,539 –&gt; 01:32:10,539<br>And then it always when a get fails to climb go through the gutter.</p>
+<p>925<br>01:32:10,539 –&gt; 01:32:11,539<br>Right.</p>
+<p>926<br>01:32:11,539 –&gt; 01:32:12,539<br>Okay. Yeah.</p>
+<p>927<br>01:32:12,539 –&gt; 01:32:16,539<br>These clusters are kind of self contains different and then the memcash.</p>
+<p>928<br>01:32:16,539 –&gt; 01:32:17,539<br>Okay.</p>
+<p>929<br>01:32:17,539 –&gt; 01:32:18,539<br>Okay. That makes.</p>
+<p>930<br>01:32:18,539 –&gt; 01:32:19,539<br>Yeah. That makes perfect sense.</p>
+<p>931<br>01:32:19,539 –&gt; 01:32:20,539<br>All right.</p>
+<p>932<br>01:32:20,539 –&gt; 01:32:21,539<br>Thank you.</p>
+<p>933<br>01:32:21,539 –&gt; 01:32:22,539<br>Follow up on that.</p>
+<p>934<br>01:32:22,539 –&gt; 01:32:23,539<br>Follow up on that.</p>
+<p>935<br>01:32:23,539 –&gt; 01:32:28,539<br>When it falls back to the gutter, what is like two different clusters.</p>
+<p>936<br>01:32:28,539 –&gt; 01:32:30,539<br>Their memcash server fails at the same time.</p>
+<p>937<br>01:32:30,539 –&gt; 01:32:32,539<br>And so they both go to the gutter.</p>
+<p>938<br>01:32:32,539 –&gt; 01:32:35,539<br>And now doing like concurrent rights to the gutter.</p>
+<p>939<br>01:32:35,539 –&gt; 01:32:41,539<br>How do we ensure that those rights don’t go out of order.</p>
+<p>940<br>01:32:41,539 –&gt; 01:32:44,539<br>You know, they do sets, correct.</p>
+<p>941<br>01:32:44,539 –&gt; 01:32:55,539<br>And the rights always go to the database to the primary and the primary orders all of them.</p>
+<p>942<br>01:32:55,539 –&gt; 01:32:58,539<br>I think rights are always ordered.</p>
+<p>943<br>01:32:58,539 –&gt; 01:33:02,539<br>And the only thing that, you know, the.</p>
+<p>944<br>01:33:02,539 –&gt; 01:33:08,539<br>Clients, my due is, you know, set the value in or put a value into the kV server.</p>
+<p>945<br>01:33:08,539 –&gt; 01:33:13,539<br>But then they have done that after they’ve read from the database.</p>
+<p>946<br>01:33:13,539 –&gt; 01:33:18,539<br>Right. So what if someone’s like doing a they do a read.</p>
+<p>947<br>01:33:18,539 –&gt; 01:33:21,539<br>And then they’re setting it into the database.</p>
+<p>948<br>01:33:21,539 –&gt; 01:33:24,539<br>But like, let’s say two different clusters fail.</p>
+<p>949<br>01:33:24,539 –&gt; 01:33:33,539<br>And then I’m not sure if this possible actually, but let’s say like one cluster one first reads from a key gets back the value.</p>
+<p>950<br>01:33:33,539 –&gt; 01:33:35,539<br>And then there’s a right in between.</p>
+<p>951<br>01:33:35,539 –&gt; 01:33:40,539<br>And then the second cluster then reads and then they both try to put into the memcash servers.</p>
+<p>952<br>01:33:40,539 –&gt; 01:33:42,539<br>But.</p>
+<p>953<br>01:33:42,539 –&gt; 01:33:45,539<br>But let’s say those service fail.</p>
+<p>954<br>01:33:45,539 –&gt; 01:33:47,539<br>Yeah, maybe, maybe.</p>
+<p>955<br>01:33:47,539 –&gt; 01:33:48,539<br>Good question.</p>
+<p>956<br>01:33:48,539 –&gt; 01:33:51,539<br>I think there’s all kinds of little corner cases that they’re actually not the scripted case.</p>
+<p>957<br>01:33:51,539 –&gt; 01:34:00,539<br>I think maybe leases will help out because the server you’re going to set to doesn’t have the lease for the.</p>
+<p>958<br>01:34:00,539 –&gt; 01:34:05,539<br>The first line we did again got a lease back, correct, to do the set.</p>
+<p>959<br>01:34:05,539 –&gt; 01:34:14,539<br>And if you’re in the meantime, the service gets replaced, the replacement server does not know that actually the lease was granted.</p>
+<p>960<br>01:34:14,539 –&gt; 01:34:18,539<br>And so we’ll reject the set.</p>
+<p>961<br>01:34:18,539 –&gt; 01:34:20,539<br>I’m just speculating.</p>
+<p>962<br>01:34:20,539 –&gt; 01:34:21,539<br>Okay.</p>
+<p>963<br>01:34:21,539 –&gt; 01:34:25,539<br>Yeah, so for the gutter, how does that control leases there?</p>
+<p>964<br>01:34:25,539 –&gt; 01:34:27,539<br>I don’t know.</p>
+<p>965<br>01:34:27,539 –&gt; 01:34:28,539<br>Oh, okay.</p>
+<p>966<br>01:34:28,539 –&gt; 01:34:29,539<br>I see.</p>
+<p>967<br>01:34:29,539 –&gt; 01:34:30,539<br>Sorry.</p>
+<p>968<br>01:34:30,539 –&gt; 01:34:36,539<br>I can speculate, but they can all you know, you know, surely I don’t know.</p>
+<p>969<br>01:34:36,539 –&gt; 01:34:39,539<br>Well, would you say if you hadn’t speculated?</p>
+<p>970<br>01:34:39,539 –&gt; 01:34:43,539<br>Well, I would first have to go sit down and think of a little bit about it.</p>
+<p>971<br>01:34:43,539 –&gt; 01:34:45,539<br>Okay, that makes sense.</p>
+<p>972<br>01:34:45,539 –&gt; 01:34:47,539<br>Thank you.</p>
+<p>973<br>01:34:48,539 –&gt; 01:34:57,539<br>A bit of a tangential question, which is how it was really cool that they’re using UDP for the get requests and the TCP for the others.</p>
+<p>974<br>01:34:57,539 –&gt; 01:34:59,539<br>And I was wondering like, how common that is.</p>
+<p>975<br>01:34:59,539 –&gt; 01:35:02,539<br>Is that like a very standard thing to do?</p>
+<p>976<br>01:35:02,539 –&gt; 01:35:06,539<br>Yes, yes, no.</p>
+<p>977<br>01:35:06,539 –&gt; 01:35:08,539<br>It is.</p>
+<p>978<br>01:35:08,539 –&gt; 01:35:14,539<br>I can people prefer in general to use TCP because it will provide July bill, be ordering and all the great stuff.</p>
+<p>979<br>01:35:14,539 –&gt; 01:35:21,539<br>And there’s real overheads with it, you know, like the, you know, the statement needs to maintain per connections, per connection.</p>
+<p>980<br>01:35:21,539 –&gt; 01:35:23,539<br>And so there’s always a little bit of a struggle.</p>
+<p>981<br>01:35:23,539 –&gt; 01:35:30,539<br>Like when we see in a lot of incoming out of TCP connection or a lot of out of bill connections, that always causes problems.</p>
+<p>982<br>01:35:30,539 –&gt; 01:35:38,539<br>And in the default, you know, if you run it that problem is to basically do you the tech stuff.</p>
+<p>983<br>01:35:38,539 –&gt; 01:35:41,539<br>And so this isn’t like novel from this paper.</p>
+<p>984<br>01:35:41,539 –&gt; 01:35:45,539<br>No, I was not able to.</p>
+<p>985<br>01:35:45,539 –&gt; 01:35:50,539<br>Some people like to roll their own sort of like reliably transport protocol over UDP.</p>
+<p>986<br>01:35:50,539 –&gt; 01:35:52,539<br>Like quick.</p>
+<p>987<br>01:35:52,539 –&gt; 01:35:55,539<br>Yeah, example.</p>
+<p>988<br>01:35:55,539 –&gt; 01:36:02,539<br>Yeah, because they mentioned they also do like sequence numbers.</p>
+<p>989<br>01:36:02,539 –&gt; 01:36:10,539<br>But zoom with it and maintain congestion windows and all the other scaling and all the other TCP features that these P has.</p>
+<p>990<br>01:36:10,539 –&gt; 01:36:12,539<br>Thank you.</p>
+<p>991<br>01:36:12,539 –&gt; 01:36:18,539<br>You’re welcome.</p>
+<p>992<br>01:36:18,539 –&gt; 01:36:20,539<br>Another oops, sorry.</p>
+<p>993<br>01:36:20,539 –&gt; 01:36:25,539<br>Go ahead.</p>
+<p>994<br>01:36:25,539 –&gt; 01:36:33,539<br>Okay, I guess I just wanted to quickly ask about kind of the replication between the different clusters.</p>
+<p>995<br>01:36:33,539 –&gt; 01:36:36,539<br>But basically they don’t do any formal replication.</p>
+<p>996<br>01:36:36,539 –&gt; 01:36:38,539<br>Yeah, correctly.</p>
+<p>997<br>01:36:38,539 –&gt; 01:36:39,539<br>Well, yeah, there.</p>
+<p>998<br>01:36:39,539 –&gt; 01:36:41,539<br>No, well, yes and no, right?</p>
+<p>999<br>01:36:41,539 –&gt; 01:36:45,539<br>Because you know, the database need to be updated.</p>
+<p>1000<br>01:36:45,539 –&gt; 01:36:46,539<br>Hold on, hold on.</p>
+<p>1001<br>01:36:46,539 –&gt; 01:36:48,539<br>When I let me actually go back and see.</p>
+<p>1002<br>01:36:48,539 –&gt; 01:36:51,539<br>Make sure I, you know what you’re talking about.</p>
+<p>1003<br>01:36:51,539 –&gt; 01:36:54,539<br>Let’s see cluster.</p>
+<p>1004<br>01:36:54,539 –&gt; 01:36:57,539<br>Yeah, there’s no real replication going on between the clusters, right?</p>
+<p>1005<br>01:36:57,539 –&gt; 01:37:01,539<br>Because there’s one single storage layer.</p>
+<p>1006<br>01:37:01,539 –&gt; 01:37:10,539<br>Right. And so they’re, are they’re kind of like depending on these leases to keep the caches up to they are.</p>
+<p>1007<br>01:37:10,539 –&gt; 01:37:13,539<br>Every cluster is completely independent.</p>
+<p>1008<br>01:37:13,539 –&gt; 01:37:16,539<br>Right, they have nothing to do with each other.</p>
+<p>1009<br>01:37:16,539 –&gt; 01:37:20,539<br>And user are divided over these clusters.</p>
+<p>1010<br>01:37:20,539 –&gt; 01:37:23,539<br>And so when user talks to one cluster.</p>
+<p>1011<br>01:37:23,539 –&gt; 01:37:28,539<br>And then, you know, within the cluster, you know, they use leases.</p>
+<p>1012<br>01:37:28,539 –&gt; 01:37:31,539<br>Where.</p>
+<p>1013<br>01:37:31,539 –&gt; 01:37:36,539<br>And those database invalidates leases and keys.</p>
+<p>1014<br>01:37:36,539 –&gt; 01:37:37,539<br>Right.</p>
+<p>1015<br>01:37:37,539 –&gt; 01:37:38,539<br>Okay. Yeah.</p>
+<p>1016<br>01:37:38,539 –&gt; 01:37:41,539<br>So it’s like the squeal in the storage.</p>
+<p>1017<br>01:37:41,539 –&gt; 01:37:44,539<br>Yeah, all the rights basically in and just go through the store.</p>
+<p>1018<br>01:37:44,539 –&gt; 01:37:45,539<br>Correct.</p>
+<p>1019<br>01:37:45,539 –&gt; 01:37:49,539<br>All rights go through here.</p>
+<p>1020<br>01:37:49,539 –&gt; 01:37:51,539<br>And they get ordered.</p>
+<p>1021<br>01:37:51,539 –&gt; 01:37:57,539<br>And you know, they pop out as the validation message.</p>
+<p>1022<br>01:37:57,539 –&gt; 01:38:03,539<br>Pot it. Thank you.</p>
+<p>1023<br>01:38:03,539 –&gt; 01:38:05,539<br>Yeah, go ahead.</p>
+<p>1024<br>01:38:05,539 –&gt; 01:38:06,539<br>Yeah.</p>
+<p>1025<br>01:38:06,539 –&gt; 01:38:10,539<br>So, a potential question.</p>
+<p>1026<br>01:38:10,539 –&gt; 01:38:15,539<br>And I guess I’m not sure this is because of the way we’ve kind of presented papers in the class.</p>
+<p>1027<br>01:38:15,539 –&gt; 01:38:19,539<br>But it kind of seems like.</p>
+<p>1028<br>01:38:19,539 –&gt; 01:38:24,539<br>Um, the way these systems are developed is like, okay, we have like.</p>
+<p>1029<br>01:38:24,539 –&gt; 01:38:27,539<br>These systems like our needs are continuing to scale.</p>
+<p>1030<br>01:38:27,539 –&gt; 01:38:31,539<br>So let’s like, maybe this is also not an accurate representation.</p>
+<p>1031<br>01:38:31,539 –&gt; 01:38:34,539<br>But it sounds like let’s add another layer.</p>
+<p>1032<br>01:38:34,539 –&gt; 01:38:38,539<br>To kind of handle this float or the kind of, you know, cash something or.</p>
+<p>1033<br>01:38:38,539 –&gt; 01:38:41,539<br>Add another layer complexity on top of it.</p>
+<p>1034<br>01:38:41,539 –&gt; 01:38:44,539<br>And then we’re going to have to make a real problem.</p>
+<p>1035<br>01:38:44,539 –&gt; 01:38:47,539<br>And then we’re going to have to make a real problem.</p>
+<p>1036<br>01:38:47,539 –&gt; 01:38:50,539<br>And then we’re going to have to make a real problem.</p>
+<p>1037<br>01:38:50,539 –&gt; 01:38:51,539<br>Fair.</p>
+<p>1038<br>01:38:51,539 –&gt; 01:38:54,539<br>The state at like system development has generally been like.</p>
+<p>1039<br>01:38:54,539 –&gt; 01:38:58,539<br>Let’s just add another layer to kind of deal with.</p>
+<p>1040<br>01:38:58,539 –&gt; 01:38:59,539<br>Yes, I know.</p>
+<p>1041<br>01:38:59,539 –&gt; 01:39:02,539<br>I think the, the, the, the standard system took a very pragmatic approach.</p>
+<p>1042<br>01:39:02,539 –&gt; 01:39:05,539<br>You know, figure out like, and I’ll run into a real problem.</p>
+<p>1043<br>01:39:05,539 –&gt; 01:39:07,539<br>And it’s all the real problem.</p>
+<p>1044<br>01:39:07,539 –&gt; 01:39:09,539<br>And basically you think about it.</p>
+<p>1045<br>01:39:09,539 –&gt; 01:39:10,539<br>I think it’s pretty impressive.</p>
+<p>1046<br>01:39:10,539 –&gt; 01:39:12,539<br>And again, this kind of performance.</p>
+<p>1047<br>01:39:12,539 –&gt; 01:39:14,539<br>And they’ve lost the shelf components.</p>
+<p>1048<br>01:39:14,539 –&gt; 01:39:15,539<br>Right.</p>
+<p>1049<br>01:39:15,539 –&gt; 01:39:18,539<br>The, the, the, the, the, absolutely people also go back once in the wild.</p>
+<p>1050<br>01:39:18,539 –&gt; 01:39:22,539<br>It’s like, okay, how would I design a system to get better performance.</p>
+<p>1051<br>01:39:22,539 –&gt; 01:39:27,539<br>And don’t, for example, have this inconsistencies between the database and the cash.</p>
+<p>1052<br>01:39:27,539 –&gt; 01:39:32,539<br>And, you know, and actually turned out to be a recent problem.</p>
+<p>1053<br>01:39:32,539 –&gt; 01:39:34,539<br>Because people haven’t really figured out how to do that.</p>
+<p>1054<br>01:39:34,539 –&gt; 01:39:38,539<br>And then so you’ll see recent research papers that describe alternative solutions.</p>
+<p>1055<br>01:39:39,539 –&gt; 01:39:42,539<br>For new components of a solution because on, you know,</p>
+<p>1056<br>01:39:42,539 –&gt; 01:39:47,539<br>any of the proposal I know off, you know, cannot support a building operation for a second.</p>
+<p>1057<br>01:39:47,539 –&gt; 01:39:50,539<br>Yeah, right.</p>
+<p>1058<br>01:39:50,539 –&gt; 01:39:52,539<br>Okay, that’s interesting.</p>
+<p>1059<br>01:39:52,539 –&gt; 01:39:53,539<br>Thank you.</p>
+<p>1060<br>01:39:53,539 –&gt; 01:39:55,539<br>Yeah, this is fascinating stuff.</p>
+<p>1061<br>01:39:55,539 –&gt; 01:39:59,539<br>It’s like a real world system design.</p>
+<p>1062<br>01:39:59,539 –&gt; 01:40:01,539<br>I have a little more question if you don’t mind.</p>
+<p>1063<br>01:40:01,539 –&gt; 01:40:02,539<br>Yeah, go ahead.</p>
+<p>1064<br>01:40:02,539 –&gt; 01:40:07,539<br>So in the design here where they roughly across different regions.</p>
+<p>1065<br>01:40:07,539 –&gt; 01:40:16,539<br>So sorry, just to clarify, when the first clarification question I have is when they replicate against different regions, each region has like a bunch of internal clusters, right?</p>
+<p>1066<br>01:40:16,539 –&gt; 01:40:17,539<br>Yes, yes.</p>
+<p>1067<br>01:40:17,539 –&gt; 01:40:25,539<br>And then my follow up questions that is it seems like everything is, yeah, everything’s hitting the primary storage.</p>
+<p>1068<br>01:40:25,539 –&gt; 01:40:31,539<br>If let’s say we wanted to scale up so that we didn’t have all the rights hitting the primary storage.</p>
+<p>1069<br>01:40:31,539 –&gt; 01:40:34,539<br>How would you like go about designing.</p>
+<p>1070<br>01:40:34,539 –&gt; 01:40:39,539<br>Yeah, my suspicion is that they’re actually the design is correct.</p>
+<p>1071<br>01:40:39,539 –&gt; 01:40:42,539<br>Okay, so there’s a bunch of point of that.</p>
+<p>1072<br>01:40:42,539 –&gt; 01:40:47,539<br>There’s a whole other paper on this topic about actually how to do the replication.</p>
+<p>1073<br>01:40:47,539 –&gt; 01:40:50,539<br>So this is not the only Facebook paper on scaling things up.</p>
+<p>1074<br>01:40:50,539 –&gt; 01:40:54,539<br>There’s a system that was published in 2015 or wormhole.</p>
+<p>1075<br>01:40:54,539 –&gt; 01:41:00,539<br>We’re, you know, they have a scalable design to propagate these rights.</p>
+<p>1076<br>01:41:00,539 –&gt; 01:41:16,539<br>My suspicion is also that they will or half shark the users to particular regions and make some regions the primary for those users.</p>
+<p>1077<br>01:41:16,539 –&gt; 01:41:20,539<br>I see. So they assign different regions, primaries with different shards.</p>
+<p>1078<br>01:41:20,539 –&gt; 01:41:21,539<br>Yeah, I think so.</p>
+<p>1079<br>01:41:21,539 –&gt; 01:41:24,539<br>That’s why I would do more trying to do.</p>
+<p>1080<br>01:41:24,539 –&gt; 01:41:27,539<br>And I’m speculating here.</p>
+<p>1081<br>01:41:27,539 –&gt; 01:41:35,539<br>Would it be a wise position to do like a consensus protocol across the storage layers or would that just be like too high.</p>
+<p>1082<br>01:41:35,539 –&gt; 01:41:36,539<br>You could do that.</p>
+<p>1083<br>01:41:36,539 –&gt; 01:41:39,539<br>Like what would spend our does not correct.</p>
+<p>1084<br>01:41:39,539 –&gt; 01:41:40,539<br>Right.</p>
+<p>1085<br>01:41:40,539 –&gt; 01:41:43,539<br>And how fast is better.</p>
+<p>1086<br>01:41:43,539 –&gt; 01:41:45,539<br>Pretty fast.</p>
+<p>1087<br>01:41:45,539 –&gt; 01:41:48,539<br>Maybe we’re back into it back into the table.</p>
+<p>1088<br>01:41:48,539 –&gt; 01:41:51,539<br>How many transactions per second could you do?</p>
+<p>1089<br>01:41:51,539 –&gt; 01:41:54,539<br>I do not remember the exact number.</p>
+<p>1090<br>01:41:54,539 –&gt; 01:41:57,539<br>I think about 100.</p>
+<p>1091<br>01:41:57,539 –&gt; 01:42:01,539<br>Oh, affect effect for I think why do you tend.</p>
+<p>1092<br>01:42:01,539 –&gt; 01:42:04,539<br>Right. This is for right transactions. Right.</p>
+<p>1093<br>01:42:04,539 –&gt; 01:42:09,539<br>Yeah. Right. Right. Right. The right transactions are very slow.</p>
+<p>1094<br>01:42:09,539 –&gt; 01:42:12,539<br>Yeah.</p>
+<p>1095<br>01:42:12,539 –&gt; 01:42:13,539<br>Sorry.</p>
+<p>1096<br>01:42:13,539 –&gt; 01:42:18,539<br>I think I realized that I did not understand race one.</p>
+<p>1097<br>01:42:18,539 –&gt; 01:42:22,539<br>Okay. Let me see if I can replicate it.</p>
+<p>1098<br>01:42:22,539 –&gt; 01:42:27,539<br>Yeah, let’s see where we raise one.</p>
+<p>1099<br>01:42:27,539 –&gt; 01:42:32,539<br>I think I’m just confused what is V2.</p>
+<p>1100<br>01:42:32,539 –&gt; 01:42:36,539<br>V2 is this right.</p>
+<p>1101<br>01:42:36,539 –&gt; 01:42:42,539<br>Okay.</p>
+<p>1102<br>01:42:42,539 –&gt; 01:42:51,539<br>And the problem is that it is like wedged in between the first one.</p>
+<p>1103<br>01:42:51,539 –&gt; 01:42:54,539<br>Okay.</p>
+<p>1104<br>01:42:54,539 –&gt; 01:42:57,539<br>Okay.</p>
+<p>1105<br>01:42:57,539 –&gt; 01:43:03,539<br>So, but we wanted it to be deleted so that the next person can read.</p>
+<p>1106<br>01:43:03,539 –&gt; 01:43:07,539<br>Well, I think the database, but now it’s there with the old value.</p>
+<p>1107<br>01:43:07,539 –&gt; 01:43:10,539<br>Yeah. So basically we have a permanent stay with out really the issues.</p>
+<p>1108<br>01:43:10,539 –&gt; 01:43:13,539<br>Dispermanent business.</p>
+<p>1109<br>01:43:13,539 –&gt; 01:43:17,539<br>We’re permanent between quotes. Right. Because it’s a cash.</p>
+<p>1110<br>01:43:17,539 –&gt; 01:43:26,539<br>So, you know, this, this, this, put that came after, you know, basically the K being K the K K,</p>
+<p>1111<br>01:43:26,539 –&gt; 01:43:32,539<br>like K being updated to V2. So we have K to here really. Right. That’s what the right value should be.</p>
+<p>1112<br>01:43:32,539 –&gt; 01:43:36,539<br>And here, actually, this is even so let’s say this is one.</p>
+<p>1113<br>01:43:36,539 –&gt; 01:43:43,539<br>What we’ve done here is we actually put a K one in after.</p>
+<p>1114<br>01:43:43,539 –&gt; 01:43:47,539<br>And that’s just not the right thing.</p>
+<p>1115<br>01:43:47,539 –&gt; 01:43:48,539<br>Okay.</p>
+<p>1116<br>01:43:48,539 –&gt; 01:43:52,539<br>Everybody that comes after now and does get on K. Great.</p>
+<p>1117<br>01:43:52,539 –&gt; 01:43:55,539<br>It’s going to get one back instead of two.</p>
+<p>1118<br>01:43:55,539 –&gt; 01:43:56,539<br>Okay. That makes sense.</p>
+<p>1119<br>01:43:56,539 –&gt; 01:44:00,539<br>Including client to which is going to be bizarre.</p>
+<p>1120<br>01:44:00,539 –&gt; 01:44:04,539<br>Right. Right. Okay. That makes sense. Thank you so much.</p>
+<p>1121<br>01:44:04,539 –&gt; 01:44:05,539<br>You’re welcome.</p>
+<p>1122<br>01:44:05,539 –&gt; 01:44:10,539<br>I’m in the part in the beginning about the evolution was also pretty helpful.</p>
+<p>1123<br>01:44:10,539 –&gt; 01:44:13,539<br>Okay. Good. Good. Thank you so much.</p>
+<p>1124<br>01:44:13,539 –&gt; 01:44:14,539<br>You’re welcome.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>MIT6824 P18Lecture17 CacheConsistency MemcachedatFacebook</div>
+      <div>http://example.com/2025/10/25/MIT6824 P18Lecture17-CacheConsistency-MemcachedatFacebook/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P17Lecture16-BigData-Spark/" title="MIT6824 P17Lecture16 BigData Spark">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">MIT6824 P17Lecture16 BigData Spark</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/MIT6824%20P19Lecture18-ForkConsistencySUNDR/" title="MIT6824 P19Lecture18 ForkConsistencySUNDR">
+                        <span class="hidden-mobile">MIT6824 P19Lecture18 ForkConsistencySUNDR</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>

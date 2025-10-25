@@ -1,0 +1,762 @@
+
+
+<!DOCTYPE html>
+<html lang="zh-CN" data-default-color-scheme=auto>
+
+
+
+<head>
+  <meta charset="UTF-8">
+
+  <link rel="apple-touch-icon" sizes="76x76" href="/img/fluid.png">
+  <link rel="icon" href="/img/fluid.png">
+  
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, shrink-to-fit=no">
+  <meta http-equiv="x-ua-compatible" content="ie=edge">
+  
+  <meta name="theme-color" content="#2f4154">
+  <meta name="author" content="John Doe">
+  <meta name="keywords" content="">
+  
+    <meta name="description" content="100:00:00,000 –&gt; 00:00:08,400So the final step in our regular expression, pattern matching algorithm, is to construct 200:00:08,400 –&gt; 00:00:11,700a non-deterministic finite automaton. 300:00:11">
+<meta property="og:type" content="article">
+<meta property="og:title" content="PrincetonAlgorithms P106Part210 06_nfa Construction">
+<meta property="og:url" content="http://example.com/2025/10/25/PrincetonAlgorithms%20P106Part210-06_nfa-construction/index.html">
+<meta property="og:site_name" content="Hexo">
+<meta property="og:description" content="100:00:00,000 –&gt; 00:00:08,400So the final step in our regular expression, pattern matching algorithm, is to construct 200:00:08,400 –&gt; 00:00:11,700a non-deterministic finite automaton. 300:00:11">
+<meta property="og:locale" content="zh_CN">
+<meta property="article:published_time" content="2025-10-25T05:03:39.811Z">
+<meta property="article:modified_time" content="2025-10-25T05:03:39.812Z">
+<meta property="article:author" content="John Doe">
+<meta name="twitter:card" content="summary_large_image">
+  
+  
+  
+  <title>PrincetonAlgorithms P106Part210 06_nfa Construction - Hexo</title>
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/twitter-bootstrap/4.6.1/css/bootstrap.min.css" />
+
+
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/github-markdown-css/4.0.0/github-markdown.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/hint.css/2.7.0/hint.min.css" />
+
+  <link  rel="stylesheet" href="https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.css" />
+
+
+
+<!-- 主题依赖的图标库，不要自行修改 -->
+<!-- Do not modify the link that theme dependent icons -->
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1749284_5i9bdhy70f8.css">
+
+
+
+<link rel="stylesheet" href="//at.alicdn.com/t/c/font_1736178_k526ubmyhba.css">
+
+
+<link  rel="stylesheet" href="/css/main.css" />
+
+
+  <link id="highlight-css" rel="stylesheet" href="/css/highlight.css" />
+  
+    <link id="highlight-css-dark" rel="stylesheet" href="/css/highlight-dark.css" />
+  
+
+
+
+
+  <script id="fluid-configs">
+    var Fluid = window.Fluid || {};
+    Fluid.ctx = Object.assign({}, Fluid.ctx)
+    var CONFIG = {"hostname":"example.com","root":"/","version":"1.9.8","typing":{"enable":true,"typeSpeed":70,"cursorChar":"_","loop":false,"scope":[]},"anchorjs":{"enable":true,"element":"h1,h2,h3,h4,h5,h6","placement":"left","visible":"hover","icon":""},"progressbar":{"enable":true,"height_px":3,"color":"#29d","options":{"showSpinner":false,"trickleSpeed":100}},"code_language":{"enable":true,"default":"TEXT"},"copy_btn":true,"image_caption":{"enable":true},"image_zoom":{"enable":true,"img_url_replace":["",""]},"toc":{"enable":true,"placement":"right","headingSelector":"h1,h2,h3,h4,h5,h6","collapseDepth":0},"lazyload":{"enable":true,"loading_img":"/img/loading.gif","onlypost":false,"offset_factor":2},"web_analytics":{"enable":false,"follow_dnt":true,"baidu":null,"google":{"measurement_id":null},"tencent":{"sid":null,"cid":null},"leancloud":{"app_id":null,"app_key":null,"server_url":null,"path":"window.location.pathname","ignore_local":false},"umami":{"src":null,"website_id":null,"domains":null,"start_time":"2024-01-01T00:00:00.000Z","token":null,"api_server":null}},"search_path":"/local-search.xml","include_content_in_search":true};
+
+    if (CONFIG.web_analytics.follow_dnt) {
+      var dntVal = navigator.doNotTrack || window.doNotTrack || navigator.msDoNotTrack;
+      Fluid.ctx.dnt = dntVal && (dntVal.startsWith('1') || dntVal.startsWith('yes') || dntVal.startsWith('on'));
+    }
+  </script>
+  <script  src="/js/utils.js" ></script>
+  <script  src="/js/color-schema.js" ></script>
+  
+
+
+  
+<meta name="generator" content="Hexo 8.0.0"></head>
+
+
+<body>
+  
+
+  <header>
+    
+
+<div class="header-inner" style="height: 70vh;">
+  <nav id="navbar" class="navbar fixed-top  navbar-expand-lg navbar-dark scrolling-navbar">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <strong>Fluid</strong>
+    </a>
+
+    <button id="navbar-toggler-btn" class="navbar-toggler" type="button" data-toggle="collapse"
+            data-target="#navbarSupportedContent"
+            aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+      <div class="animated-icon"><span></span><span></span><span></span></div>
+    </button>
+
+    <!-- Collapsible content -->
+    <div class="collapse navbar-collapse" id="navbarSupportedContent">
+      <ul class="navbar-nav ml-auto text-center">
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/" target="_self">
+                <i class="iconfont icon-home-fill"></i>
+                <span>首页</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/archives/" target="_self">
+                <i class="iconfont icon-archive-fill"></i>
+                <span>归档</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/categories/" target="_self">
+                <i class="iconfont icon-category-fill"></i>
+                <span>分类</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/tags/" target="_self">
+                <i class="iconfont icon-tags-fill"></i>
+                <span>标签</span>
+              </a>
+            </li>
+          
+        
+          
+          
+          
+          
+            <li class="nav-item">
+              <a class="nav-link" href="/about/" target="_self">
+                <i class="iconfont icon-user-fill"></i>
+                <span>关于</span>
+              </a>
+            </li>
+          
+        
+        
+          <li class="nav-item" id="search-btn">
+            <a class="nav-link" target="_self" href="javascript:;" data-toggle="modal" data-target="#modalSearch" aria-label="Search">
+              <i class="iconfont icon-search"></i>
+            </a>
+          </li>
+          
+        
+        
+          <li class="nav-item" id="color-toggle-btn">
+            <a class="nav-link" target="_self" href="javascript:;" aria-label="Color Toggle">
+              <i class="iconfont icon-dark" id="color-toggle-icon"></i>
+            </a>
+          </li>
+        
+      </ul>
+    </div>
+  </div>
+</nav>
+
+  
+
+<div id="banner" class="banner" parallax=true
+     style="background: url('/img/default.png') no-repeat center center; background-size: cover;">
+  <div class="full-bg-img">
+    <div class="mask flex-center" style="background-color: rgba(0, 0, 0, 0.3)">
+      <div class="banner-text text-center fade-in-up">
+        <div class="h2">
+          
+            <span id="subtitle" data-typed-text="PrincetonAlgorithms P106Part210 06_nfa Construction"></span>
+          
+        </div>
+
+        
+          
+  <div class="mt-3">
+    
+    
+      <span class="post-meta">
+        <i class="iconfont icon-date-fill" aria-hidden="true"></i>
+        <time datetime="2025-10-25 13:03" pubdate>
+          2025年10月25日 下午
+        </time>
+      </span>
+    
+  </div>
+
+  <div class="mt-1">
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-chart"></i>
+        
+          1.4k 字
+        
+      </span>
+    
+
+    
+      <span class="post-meta mr-2">
+        <i class="iconfont icon-clock-fill"></i>
+        
+        
+        
+          12 分钟
+        
+      </span>
+    
+
+    
+    
+  </div>
+
+
+        
+      </div>
+
+      
+    </div>
+  </div>
+</div>
+
+</div>
+
+  </header>
+
+  <main>
+    
+      
+
+<div class="container-fluid nopadding-x">
+  <div class="row nomargin-x">
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+
+    </div>
+
+    <div class="col-lg-8 nopadding-x-md">
+      <div class="container nopadding-x-md" id="board-ctn">
+        <div id="board">
+          <article class="post-content mx-auto">
+            <h1 id="seo-header">PrincetonAlgorithms P106Part210 06_nfa Construction</h1>
+            
+            
+              <div class="markdown-body">
+                
+                <p>1<br>00:00:00,000 –&gt; 00:00:08,400<br>So the final step in our regular expression, pattern matching algorithm, is to construct</p>
+<p>2<br>00:00:08,400 –&gt; 00:00:11,700<br>a non-deterministic finite automaton.</p>
+<p>3<br>00:00:11,700 –&gt; 00:00:14,700<br>So how do we go ahead and do that?</p>
+<p>4<br>00:00:14,700 –&gt; 00:00:23,300<br>And this is an integral part of the algorithm, but we’ve pretty much got all the pieces,</p>
+<p>5<br>00:00:23,300 –&gt; 00:00:32,100<br>but really what makes it intricate is that an illustration of what a programming language</p>
+<p>6<br>00:00:32,100 –&gt; 00:00:37,420<br>has to do when trying to understand your programming, what your program does.</p>
+<p>7<br>00:00:37,420 –&gt; 00:00:44,900<br>What we need to do is somehow understand what’s in the regular expression and then take</p>
+<p>8<br>00:00:44,900 –&gt; 00:00:47,820<br>that information and use it to build the machine.</p>
+<p>9<br>00:00:47,820 –&gt; 00:00:50,780<br>Now that’s what’s parsing, that’s called parsing.</p>
+<p>10<br>00:00:50,780 –&gt; 00:00:55,880<br>And to try to figure out the structure of your program or regular expression and then</p>
+<p>11<br>00:00:55,880 –&gt; 00:00:57,079<br>do something with it.</p>
+<p>12<br>00:00:57,079 –&gt; 00:01:01,820<br>And this is a simple example of that, but useful as well.</p>
+<p>13<br>00:01:01,820 –&gt; 00:01:09,540<br>So the first thing that’s clear what to do, so we’re going to have one state per character</p>
+<p>14<br>00:01:09,540 –&gt; 00:01:13,099<br>as we talked about before, so that’s easy to set up.</p>
+<p>15<br>00:01:13,099 –&gt; 00:01:21,219<br>And then the match transition edges, if a state contains character in the alphabet, we</p>
+<p>16<br>00:01:21,219 –&gt; 00:01:23,619<br>just put in a match transition to the next state.</p>
+<p>17<br>00:01:23,619 –&gt; 00:01:28,379<br>And actually, that’s implicit in our algorithm.</p>
+<p>18<br>00:01:28,379 –&gt; 00:01:30,219<br>So now what about other things?</p>
+<p>19<br>00:01:30,219 –&gt; 00:01:37,899<br>Well, if we have for any parenthesis, we’ll just put in an epsilon transition to the next</p>
+<p>20<br>00:01:37,899 –&gt; 00:01:39,419<br>state.</p>
+<p>21<br>00:01:39,419 –&gt; 00:01:42,939<br>So our machines all have that.</p>
+<p>22<br>00:01:42,939 –&gt; 00:01:50,019<br>Now closure is the one that has quite a bit of action.</p>
+<p>23<br>00:01:50,019 –&gt; 00:01:55,340<br>So for every star, let’s look at the one that is just a one character closure.</p>
+<p>24<br>00:01:55,340 –&gt; 00:02:00,819<br>So we have a single character closure, so this is a star.</p>
+<p>25<br>00:02:00,819 –&gt; 00:02:10,539<br>And what we need is epsilon transitions for the star that allow the machine to go and</p>
+<p>26<br>00:02:10,539 –&gt; 00:02:19,419<br>pick up, well, there has to be one, an epsilon transition that goes out to the star to</p>
+<p>27<br>00:02:19,419 –&gt; 00:02:22,379<br>cover the case that we have zero matches.</p>
+<p>28<br>00:02:22,379 –&gt; 00:02:27,899<br>And then after zero, then we want to go back to have as many matches as we want before</p>
+<p>29<br>00:02:27,899 –&gt; 00:02:30,899<br>taking the match transition.</p>
+<p>30<br>00:02:30,899 –&gt; 00:02:36,019<br>We’re going to be able to go back and match as many as we want before going out to the</p>
+<p>31<br>00:02:36,019 –&gt; 00:02:37,099<br>next.</p>
+<p>32<br>00:02:37,099 –&gt; 00:02:45,819<br>So for the star, we have to add three epsilon transitions.</p>
+<p>33<br>00:02:45,819 –&gt; 00:02:52,699<br>The ones that goes, if you have a character and I and a star and I plus one, you have to</p>
+<p>34<br>00:02:52,699 –&gt; 00:02:55,060<br>add these edges going both ways.</p>
+<p>35<br>00:02:55,060 –&gt; 00:03:02,219<br>And then an edge going out to the next character to get out of the star.</p>
+<p>36<br>00:03:02,219 –&gt; 00:03:09,620<br>And that works also if there’s a closure involving parentheses that the character before</p>
+<p>37<br>00:03:09,620 –&gt; 00:03:16,460<br>the star is a parenthesis, then we want to add the same kind of mechanism.</p>
+<p>38<br>00:03:16,460 –&gt; 00:03:21,460<br>From the parentheses, go out and skip the whole thing to cover the zero match case or go</p>
+<p>39<br>00:03:21,460 –&gt; 00:03:26,379<br>back and match as many times as we need to match and then finally go out.</p>
+<p>40<br>00:03:26,379 –&gt; 00:03:29,340<br>So this three edges have to be added for each star.</p>
+<p>41<br>00:03:29,340 –&gt; 00:03:33,219<br>And it’s well defined what they are.</p>
+<p>42<br>00:03:33,219 –&gt; 00:03:41,620<br>And then OR, there’s two epsilon transition edges that we have to add.</p>
+<p>43<br>00:03:41,620 –&gt; 00:03:47,620<br>And that is to allow the machine to skip the first part of the expression and do the second</p>
+<p>44<br>00:03:47,620 –&gt; 00:03:53,460<br>or to do the first part of the expression and skip this second.</p>
+<p>45<br>00:03:53,460 –&gt; 00:04:01,180<br>So if we keep track of where the left parenthesis is when we in the OR operator, when we hit</p>
+<p>46<br>00:04:01,180 –&gt; 00:04:06,140<br>the right parenthesis, we have all the information that we need in order to be able to add those</p>
+<p>47<br>00:04:06,140 –&gt; 00:04:08,379<br>two edges.</p>
+<p>48<br>00:04:08,379 –&gt; 00:04:14,939<br>So those are the edges that we have to put together to build the NFA and the trick is keeping</p>
+<p>49<br>00:04:14,939 –&gt; 00:04:22,579<br>track of the information of where the previous operators are, particularly since parentheses</p>
+<p>50<br>00:04:22,579 –&gt; 00:04:24,339<br>can be nested.</p>
+<p>51<br>00:04:24,339 –&gt; 00:04:33,500<br>But this is not that difficult to do because we have a mechanism for doing that to remember</p>
+<p>52<br>00:04:33,500 –&gt; 00:04:40,219<br>where the left parenthesis are and the OR, and that’s to maintain a push down stack.</p>
+<p>53<br>00:04:40,219 –&gt; 00:04:50,180<br>And so the algorithm is to push left parenthesis in OR onto the stack.</p>
+<p>54<br>00:04:50,180 –&gt; 00:04:58,100<br>And then when we hit right parenthesis, then we can pop the corresponding left parenthesis</p>
+<p>55<br>00:04:58,100 –&gt; 00:05:00,459<br>and maybe the OR.</p>
+<p>56<br>00:05:00,459 –&gt; 00:05:06,300<br>That gives us all the information that we need to add the epsilon transition edges.</p>
+<p>57<br>00:05:06,300 –&gt; 00:05:09,500<br>And so the stack takes care of the nesting of the parenthesis.</p>
+<p>58<br>00:05:09,500 –&gt; 00:05:15,860<br>And when you think about it, this is a very natural mechanism to use, very similar to the</p>
+<p>59<br>00:05:15,860 –&gt; 00:05:21,860<br>early programs that we wrote using textures algorithm for arithmetic expressions.</p>
+<p>60<br>00:05:21,860 –&gt; 00:05:26,180<br>So let’s look at a demo and you’ll see how that works.</p>
+<p>61<br>00:05:26,180 –&gt; 00:05:30,980<br>So we’re going to build the machine corresponding to this regular expression and it’s the one</p>
+<p>62<br>00:05:30,980 –&gt; 00:05:33,699<br>that we’ve been working with.</p>
+<p>63<br>00:05:33,699 –&gt; 00:05:43,220<br>So what we do is just go from left to right through the regular expression and take the</p>
+<p>64<br>00:05:43,220 –&gt; 00:05:46,180<br>appropriate action for each character.</p>
+<p>65<br>00:05:46,180 –&gt; 00:05:53,060<br>So for left parenthesis, there’s always an epsilon transition from left parenthesis to the</p>
+<p>66<br>00:05:53,060 –&gt; 00:05:54,060<br>next state.</p>
+<p>67<br>00:05:54,060 –&gt; 00:05:58,580<br>And then the other thing is we remember that left parenthesis on the push down stack.</p>
+<p>68<br>00:05:58,580 –&gt; 00:06:01,620<br>So we put the index 0 onto the stack.</p>
+<p>69<br>00:06:01,620 –&gt; 00:06:04,060<br>So now we have another left parenthesis.</p>
+<p>70<br>00:06:04,060 –&gt; 00:06:10,900<br>Again, we put the epsilon transition on and we push that one onto the stack.</p>
+<p>71<br>00:06:10,899 –&gt; 00:06:19,539<br>So now if we have an alphabet symbol, what we need to do is add the match transition to</p>
+<p>72<br>00:06:19,539 –&gt; 00:06:20,539<br>the next state.</p>
+<p>73<br>00:06:20,539 –&gt; 00:06:22,859<br>And then there’s a couple ways to do this.</p>
+<p>74<br>00:06:22,859 –&gt; 00:06:26,979<br>But one easy way, in this case, is to just look for the star.</p>
+<p>75<br>00:06:26,979 –&gt; 00:06:31,579<br>And if you see that the next one is a star, then you’ve got everything you need for the</p>
+<p>76<br>00:06:31,579 –&gt; 00:06:33,620<br>epsilon transition.</p>
+<p>77<br>00:06:33,620 –&gt; 00:06:38,459<br>So in this case, the next one is a star.</p>
+<p>78<br>00:06:38,459 –&gt; 00:06:49,419<br>So we’ll add those epsilon transitions from 2 to 3 and from 3 to 2.</p>
+<p>79<br>00:06:49,419 –&gt; 00:06:55,259<br>And adding epsilon transitions, that’s just adding edges to the diagram.</p>
+<p>80<br>00:06:55,259 –&gt; 00:06:59,459<br>Then we close that just takes us to the next state.</p>
+<p>81<br>00:06:59,459 –&gt; 00:07:02,459<br>We took care of the other two earlier.</p>
+<p>82<br>00:07:02,459 –&gt; 00:07:06,500<br>Now we have an alphabet symbol, that’s the B. So we just put in the transition to the</p>
+<p>83<br>00:07:06,500 –&gt; 00:07:07,500<br>next state.</p>
+<p>84<br>00:07:07,500 –&gt; 00:07:12,100<br>But all we do for an or is put it on the stack.</p>
+<p>85<br>00:07:12,100 –&gt; 00:07:17,860<br>And now we’ve got for A, we’ve got the match transition for C, we have the match transition.</p>
+<p>86<br>00:07:17,860 –&gt; 00:07:23,180<br>And now we have the first right parenthesis.</p>
+<p>87<br>00:07:23,180 –&gt; 00:07:30,459<br>So this right parenthesis, so one thing we first thing we do is add an epsilon transition</p>
+<p>88<br>00:07:30,459 –&gt; 00:07:32,459<br>over to the next state.</p>
+<p>89<br>00:07:32,459 –&gt; 00:07:36,019<br>But then we go to the push down stack and we pop.</p>
+<p>90<br>00:07:36,019 –&gt; 00:07:41,899<br>And if the thing at the top of the stack is an or, then that’s one thing, piece of information</p>
+<p>91<br>00:07:41,899 –&gt; 00:07:43,459<br>that we need.</p>
+<p>92<br>00:07:43,459 –&gt; 00:07:49,219<br>The other piece of information we need is the position of the corresponding left parenthesis.</p>
+<p>93<br>00:07:49,219 –&gt; 00:07:51,579<br>And that’ll be the next thing in the stack.</p>
+<p>94<br>00:07:51,579 –&gt; 00:07:54,139<br>So we add the transition.</p>
+<p>95<br>00:07:54,139 –&gt; 00:07:57,979<br>We pop the or off the stack.</p>
+<p>96<br>00:07:57,979 –&gt; 00:08:00,620<br>And we pop the one off the stack.</p>
+<p>97<br>00:08:00,620 –&gt; 00:08:04,659<br>And that gives us the information that we need to put in the epsilon transitions.</p>
+<p>98<br>00:08:04,660 –&gt; 00:08:05,660<br>And that’s state 8.</p>
+<p>99<br>00:08:05,660 –&gt; 00:08:09,220<br>We put one from the or to 8.</p>
+<p>100<br>00:08:09,220 –&gt; 00:08:12,500<br>And then we put one from the 1 to the or plus 1.</p>
+<p>101<br>00:08:12,500 –&gt; 00:08:15,580<br>That’s what we need to do.</p>
+<p>102<br>00:08:15,580 –&gt; 00:08:20,580<br>And look for a star, same way as we did for one character.</p>
+<p>103<br>00:08:20,580 –&gt; 00:08:25,580<br>Now in this case, we have a no star.</p>
+<p>104<br>00:08:25,580 –&gt; 00:08:29,500<br>So we just do the find an alphabet symbol.</p>
+<p>105<br>00:08:29,500 –&gt; 00:08:32,100<br>We add the match transition.</p>
+<p>106<br>00:08:32,100 –&gt; 00:08:34,620<br>And now we have the right parenthesis.</p>
+<p>107<br>00:08:34,620 –&gt; 00:08:39,620<br>And so we pop the corresponding left parenthesis.</p>
+<p>108<br>00:08:39,620 –&gt; 00:08:44,059<br>And it’s not an or.</p>
+<p>109<br>00:08:44,059 –&gt; 00:08:50,259<br>So in this case, there’s nothing to do except do the epsilon transition to the except state.</p>
+<p>110<br>00:08:50,259 –&gt; 00:08:56,580<br>So that’s the process for each character in the regular expression as well to find what</p>
+<p>111<br>00:08:56,580 –&gt; 00:08:57,580<br>we do.</p>
+<p>112<br>00:08:57,580 –&gt; 00:09:03,060<br>Left parenthesis in or we put onto the stack.</p>
+<p>113<br>00:09:03,060 –&gt; 00:09:06,980<br>Characters, we do the match transitions and right parenthesis.</p>
+<p>114<br>00:09:06,980 –&gt; 00:09:07,980<br>We do a pop.</p>
+<p>115<br>00:09:07,980 –&gt; 00:09:14,900<br>And if it’s an or put in the or transition, otherwise we do the look at it, check for the star.</p>
+<p>116<br>00:09:14,900 –&gt; 00:09:22,379<br>And that’s the demo of the construction for non-deterministic, panics data.</p>
+<p>117<br>00:09:22,379 –&gt; 00:09:27,259<br>So it’s actually a remarkably simple process.</p>
+<p>118<br>00:09:27,259 –&gt; 00:09:31,620<br>We figured out what to do for each character in the regular expression.</p>
+<p>119<br>00:09:31,620 –&gt; 00:09:35,980<br>And this is the second part of the regular expression pattern matching algorithm, which</p>
+<p>120<br>00:09:35,980 –&gt; 00:09:37,779<br>is constructing the NSA.</p>
+<p>121<br>00:09:37,779 –&gt; 00:09:42,379<br>And again, it’s remarkably little code.</p>
+<p>122<br>00:09:42,379 –&gt; 00:09:50,620<br>So it’s a routine that builds the epsilon transition.</p>
+<p>123<br>00:09:50,620 –&gt; 00:09:53,299<br>This is as part of the NSA.</p>
+<p>124<br>00:09:53,299 –&gt; 00:10:03,139<br>So it’s got the regular expression as an instance variable to refer to.</p>
+<p>125<br>00:10:03,139 –&gt; 00:10:11,220<br>And it’s going to build a new diagram with one extra state, the except state, n plus</p>
+<p>126<br>00:10:11,220 –&gt; 00:10:17,060<br>one if the regular expression has m characters.</p>
+<p>127<br>00:10:17,060 –&gt; 00:10:22,899<br>So the nm we maintain a stack, which is just integers.</p>
+<p>128<br>00:10:22,899 –&gt; 00:10:28,820<br>And for every character in a regular expression, we do the processing that we just described.</p>
+<p>129<br>00:10:28,820 –&gt; 00:10:35,740<br>If it’s a left parenthesis or an or, we just put it onto the stack.</p>
+<p>130<br>00:10:35,740 –&gt; 00:10:37,419<br>And that’s it.</p>
+<p>131<br>00:10:37,419 –&gt; 00:10:41,820<br>If it’s a right parenthesis, then we pop.</p>
+<p>132<br>00:10:41,820 –&gt; 00:10:47,860<br>If that pop is an or, then we put in the two edges to skip the or.</p>
+<p>133<br>00:10:47,860 –&gt; 00:10:53,620<br>And otherwise, we look ahead and do the closure exactly as described.</p>
+<p>134<br>00:10:53,620 –&gt; 00:10:58,220<br>And if it’s any one of the metal symbols, we just put in an epsilon transition to the next</p>
+<p>135<br>00:10:58,220 –&gt; 00:10:59,220<br>edge.</p>
+<p>136<br>00:10:59,220 –&gt; 00:11:05,220<br>And again, remarkably, little code to go ahead and construct the NFA for a given regular</p>
+<p>137<br>00:11:05,220 –&gt; 00:11:07,420<br>expression.</p>
+<p>138<br>00:11:07,420 –&gt; 00:11:12,060<br>And so the final step is the analysis that’s going to take time and space proportional</p>
+<p>139<br>00:11:12,060 –&gt; 00:11:13,580<br>to m.</p>
+<p>140<br>00:11:13,580 –&gt; 00:11:21,660<br>And that’s immediate because for every character, we do most of the two stack operations and</p>
+<p>141<br>00:11:21,660 –&gt; 00:11:24,220<br>add at most three epsilon transitions.</p>
+<p>142<br>00:11:24,220 –&gt; 00:11:26,940<br>And this is a generous upper bound.</p>
+<p>143<br>00:11:26,940 –&gt; 00:11:31,260<br>Space proportional to the number of characters in the regular expression.</p>
+<p>144<br>00:11:31,260 –&gt; 00:11:33,660<br>So that’s how we get the NFA constructed.</p>
+
+                
+              </div>
+            
+            <hr/>
+            <div>
+              <div class="post-metas my-3">
+  
+  
+</div>
+
+
+              
+  
+
+  <div class="license-box my-3">
+    <div class="license-title">
+      <div>PrincetonAlgorithms P106Part210 06_nfa Construction</div>
+      <div>http://example.com/2025/10/25/PrincetonAlgorithms P106Part210-06_nfa-construction/</div>
+    </div>
+    <div class="license-meta">
+      
+        <div class="license-meta-item">
+          <div>作者</div>
+          <div>John Doe</div>
+        </div>
+      
+      
+        <div class="license-meta-item license-meta-date">
+          <div>发布于</div>
+          <div>2025年10月25日</div>
+        </div>
+      
+      
+      
+        <div class="license-meta-item">
+          <div>许可协议</div>
+          <div>
+            
+              
+              
+                <a class="print-no-link" target="_blank" href="https://creativecommons.org/licenses/by/4.0/">
+                  <span class="hint--top hint--rounded" aria-label="BY - 署名">
+                    <i class="iconfont icon-cc-by"></i>
+                  </span>
+                </a>
+              
+            
+          </div>
+        </div>
+      
+    </div>
+    <div class="license-icon iconfont"></div>
+  </div>
+
+
+
+              
+                <div class="post-prevnext my-3">
+                  <article class="post-prev col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P105Part210-05_nfa-simulation/" title="PrincetonAlgorithms P105Part210 05_nfa Simulation">
+                        <i class="iconfont icon-arrowleft"></i>
+                        <span class="hidden-mobile">PrincetonAlgorithms P105Part210 05_nfa Simulation</span>
+                        <span class="visible-mobile">上一篇</span>
+                      </a>
+                    
+                  </article>
+                  <article class="post-next col-6">
+                    
+                    
+                      <a href="/2025/10/25/PrincetonAlgorithms%20P100Part29-04_knuth-morris-pratt/" title="PrincetonAlgorithms P100Part29 04_knuth Morris Pratt">
+                        <span class="hidden-mobile">PrincetonAlgorithms P100Part29 04_knuth Morris Pratt</span>
+                        <span class="visible-mobile">下一篇</span>
+                        <i class="iconfont icon-arrowright"></i>
+                      </a>
+                    
+                  </article>
+                </div>
+              
+            </div>
+
+            
+          </article>
+        </div>
+      </div>
+    </div>
+
+    <div class="side-col d-none d-lg-block col-lg-2">
+      
+  <aside class="sidebar" style="margin-left: -1rem">
+    <div id="toc">
+  <p class="toc-header">
+    <i class="iconfont icon-list"></i>
+    <span>目录</span>
+  </p>
+  <div class="toc-body" id="toc-body"></div>
+</div>
+
+
+
+  </aside>
+
+
+    </div>
+  </div>
+</div>
+
+
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+  
+
+
+
+
+
+
+
+    
+
+    
+      <a id="scroll-top-button" aria-label="TOP" href="#" role="button">
+        <i class="iconfont icon-arrowup" aria-hidden="true"></i>
+      </a>
+    
+
+    
+      <div class="modal fade" id="modalSearch" tabindex="-1" role="dialog" aria-labelledby="ModalLabel"
+     aria-hidden="true">
+  <div class="modal-dialog modal-dialog-scrollable modal-lg" role="document">
+    <div class="modal-content">
+      <div class="modal-header text-center">
+        <h4 class="modal-title w-100 font-weight-bold">搜索</h4>
+        <button type="button" id="local-search-close" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body mx-3">
+        <div class="md-form mb-5">
+          <input type="text" id="local-search-input" class="form-control validate">
+          <label data-error="x" data-success="v" for="local-search-input">关键词</label>
+        </div>
+        <div class="list-group" id="local-search-result"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+    
+
+    
+  </main>
+
+  <footer>
+    <div class="footer-inner">
+  
+    <div class="footer-content">
+       <a href="https://hexo.io" target="_blank" rel="nofollow noopener"><span>Hexo</span></a> <i class="iconfont icon-love"></i> <a href="https://github.com/fluid-dev/hexo-theme-fluid" target="_blank" rel="nofollow noopener"><span>Fluid</span></a> 
+    </div>
+  
+  
+  
+</div>
+
+  </footer>
+
+  <!-- Scripts -->
+  
+  <script  src="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.js" ></script>
+  <link  rel="stylesheet" href="https://lib.baomitu.com/nprogress/0.2.0/nprogress.min.css" />
+
+  <script>
+    NProgress.configure({"showSpinner":false,"trickleSpeed":100})
+    NProgress.start()
+    window.addEventListener('load', function() {
+      NProgress.done();
+    })
+  </script>
+
+
+<script  src="https://lib.baomitu.com/jquery/3.6.4/jquery.min.js" ></script>
+<script  src="https://lib.baomitu.com/twitter-bootstrap/4.6.1/js/bootstrap.min.js" ></script>
+<script  src="/js/events.js" ></script>
+<script  src="/js/plugins.js" ></script>
+
+
+  <script  src="https://lib.baomitu.com/typed.js/2.0.12/typed.min.js" ></script>
+  <script>
+    (function (window, document) {
+      var typing = Fluid.plugins.typing;
+      var subtitle = document.getElementById('subtitle');
+      if (!subtitle || !typing) {
+        return;
+      }
+      var text = subtitle.getAttribute('data-typed-text');
+      
+        typing(text);
+      
+    })(window, document);
+  </script>
+
+
+
+
+  
+    <script  src="/js/img-lazyload.js" ></script>
+  
+
+
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/tocbot/4.20.1/tocbot.min.js', function() {
+    var toc = jQuery('#toc');
+    if (toc.length === 0 || !window.tocbot) { return; }
+    var boardCtn = jQuery('#board-ctn');
+    var boardTop = boardCtn.offset().top;
+
+    window.tocbot.init(Object.assign({
+      tocSelector     : '#toc-body',
+      contentSelector : '.markdown-body',
+      linkClass       : 'tocbot-link',
+      activeLinkClass : 'tocbot-active-link',
+      listClass       : 'tocbot-list',
+      isCollapsedClass: 'tocbot-is-collapsed',
+      collapsibleClass: 'tocbot-is-collapsible',
+      scrollSmooth    : true,
+      includeTitleTags: true,
+      headingsOffset  : -boardTop,
+    }, CONFIG.toc));
+    if (toc.find('.toc-list-item').length > 0) {
+      toc.css('visibility', 'visible');
+    }
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('tocbot' in window) {
+        tocbot.refresh();
+        var toc = jQuery('#toc');
+        if (toc.length === 0 || !tocbot) {
+          return;
+        }
+        if (toc.find('.toc-list-item').length > 0) {
+          toc.css('visibility', 'visible');
+        }
+      }
+    });
+  });
+</script>
+
+
+  <script src=https://lib.baomitu.com/clipboard.js/2.0.11/clipboard.min.js></script>
+
+  <script>Fluid.plugins.codeWidget();</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/anchor-js/5.0.0/anchor.min.js', function() {
+    window.anchors.options = {
+      placement: CONFIG.anchorjs.placement,
+      visible  : CONFIG.anchorjs.visible
+    };
+    if (CONFIG.anchorjs.icon) {
+      window.anchors.options.icon = CONFIG.anchorjs.icon;
+    }
+    var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+    var res = [];
+    for (var item of el) {
+      res.push('.markdown-body > ' + item.trim());
+    }
+    if (CONFIG.anchorjs.placement === 'left') {
+      window.anchors.options.class = 'anchorjs-link-left';
+    }
+    window.anchors.add(res.join(', '));
+
+    Fluid.events.registerRefreshCallback(function() {
+      if ('anchors' in window) {
+        anchors.removeAll();
+        var el = (CONFIG.anchorjs.element || 'h1,h2,h3,h4,h5,h6').split(',');
+        var res = [];
+        for (var item of el) {
+          res.push('.markdown-body > ' + item.trim());
+        }
+        if (CONFIG.anchorjs.placement === 'left') {
+          anchors.options.class = 'anchorjs-link-left';
+        }
+        anchors.add(res.join(', '));
+      }
+    });
+  });
+</script>
+
+
+  
+<script>
+  Fluid.utils.createScript('https://lib.baomitu.com/fancybox/3.5.7/jquery.fancybox.min.js', function() {
+    Fluid.plugins.fancyBox();
+  });
+</script>
+
+
+  <script>Fluid.plugins.imageCaption();</script>
+
+  <script  src="/js/local-search.js" ></script>
+
+
+
+
+
+<!-- 主题的启动项，将它保持在最底部 -->
+<!-- the boot of the theme, keep it at the bottom -->
+<script  src="/js/boot.js" ></script>
+
+
+  
+
+  <noscript>
+    <div class="noscript-warning">博客在允许 JavaScript 运行的环境下浏览效果更佳</div>
+  </noscript>
+</body>
+</html>
